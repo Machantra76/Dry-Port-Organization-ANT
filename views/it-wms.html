@@ -38,6 +38,12 @@
     <!-- Navigation Bar -->
     <header class="bg-cardBg border-b border-borderCol sticky top-0 z-50 px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-md">
         <div class="flex items-center space-x-3">
+            <!-- ប៊ូតុងត្រឡប់ទៅទំព័រដើម -->
+            <a href="/views/index.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-borderCol px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-sm" title="ត្រឡប់ទៅទំព័រដើម">
+                <i class="fa-solid fa-arrow-left text-xs"></i>
+                <span class="hidden sm:inline">ទំព័រដើម</span>
+            </a>
+            <div class="h-6 w-px bg-slate-700 mx-1"></div>
             <div class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-lg flex items-center justify-center">
                 <i class="fa-solid fa-server text-xl"></i>
             </div>
@@ -149,7 +155,7 @@
                     <div class="flex justify-between items-center mb-2">
                         <h3 class="font-semibold text-white text-base">បញ្ជីម៉ាស៊ីន និងប្រព័ន្ធ (WMS Workstations)</h3>
                         <button onclick="openModal('workstationModal')" class="bg-slate-800 hover:bg-slate-700 text-indigo-400 border border-indigo-500/30 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-plus"></span></i> បន្ថែម Workstation
+                            <i class="fa-solid fa-plus"></i> បន្ថែម Workstation
                         </button>
                     </div>
                     <table class="w-full text-left border-collapse">
@@ -275,7 +281,6 @@
 
     <!-- Application Logic Script -->
     <script>
-        // Initial Mock Data (Synchronized with backend structure)
         let workstations = [
             { id: 1, device_name: 'WS-SERVER-01', ip_address: '192.168.1.10', os_type: 'Linux', status: 'Active' },
             { id: 2, device_name: 'DEV-NODE-02', ip_address: '192.168.1.25', os_type: 'Windows', status: 'Active' },
@@ -292,13 +297,11 @@
 
         let currentTab = 'workstations';
 
-        // Initialize App on load
         window.onload = function() {
             renderAll();
             updateStats();
         };
 
-        // Switch Tabs
         function switchTab(tab) {
             currentTab = tab;
             const btnWs = document.getElementById('btnTabWorkstations');
@@ -321,9 +324,7 @@
             filterData();
         }
 
-        // Render Tables
         function renderAll(filteredWs = workstations, filteredOps = operations) {
-            // Render Workstations Table
             const wsTable = document.getElementById('workstationTableBody');
             wsTable.innerHTML = '';
             if (filteredWs.length === 0) {
@@ -349,7 +350,6 @@
                 });
             }
 
-            // Render Operations Table
             const opsTable = document.getElementById('ticketTableBody');
             opsTable.innerHTML = '';
             if (filteredOps.length === 0) {
@@ -383,7 +383,6 @@
             }
         }
 
-        // Update Overview Stats
         function updateStats() {
             document.getElementById('statWorkstations').innerText = workstations.length;
             const openCount = operations.filter(o => o.status === 'Open' || o.status === 'In Progress').length;
@@ -391,10 +390,9 @@
             document.getElementById('statTotalOps').innerText = operations.length;
         }
 
-        // Update Filter Dropdown Options
         function updateFilterDropdown() {
             const select = document.getElementById('filterSelect');
-            select.innerHTML = '<option value="">ស្ថានភាព/OS ทั้งหมด</option>';
+            select.innerHTML = '<option value="">ស្ថានភាព/OS ទាំងអស់</option>';
             if (currentTab === 'workstations') {
                 select.innerHTML += `
                     <option value="Linux">OS: Linux</option>
@@ -413,7 +411,6 @@
             }
         }
 
-        // Filter and Search Logic
         function filterData() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filterVal = document.getElementById('filterSelect').value;
@@ -441,7 +438,6 @@
             }
         }
 
-        // Modal Controls
         function openModal(id) {
             document.getElementById(id).classList.remove('hidden');
         }
@@ -449,7 +445,6 @@
             document.getElementById(id).classList.add('hidden');
         }
 
-        // Add Workstation Handler
         function handleAddWorkstation(e) {
             e.preventDefault();
             const newWs = {
@@ -467,7 +462,6 @@
             showToast('បានបន្ថែម Workstation ជោគជ័យ!');
         }
 
-        // Add Ticket Handler
         function handleAddTicket(e) {
             e.preventDefault();
             const newTicket = {
@@ -486,7 +480,6 @@
             showToast('បានបង្កើតសំណើ IT ជោគជ័យ!');
         }
 
-        // Delete Workstation
         function deleteWorkstation(id) {
             workstations = workstations.filter(w => w.id !== id);
             renderAll();
@@ -494,7 +487,6 @@
             showToast('បានលុប Workstation រួចរាល់');
         }
 
-        // Delete Ticket
         function deleteTicket(id) {
             operations = operations.filter(o => o.id !== id);
             renderAll();
@@ -502,7 +494,6 @@
             showToast('បានលុបសំណើ IT រួចរាល់');
         }
 
-        // Toggle Ticket Status Loop
         function toggleTicketStatus(id) {
             const ticket = operations.find(o => o.id === id);
             if (ticket) {
@@ -514,7 +505,6 @@
             }
         }
 
-        // Toast Notification Helper
         function showToast(message) {
             const toast = document.getElementById('toast');
             document.getElementById('toastMessage').innerText = message;
