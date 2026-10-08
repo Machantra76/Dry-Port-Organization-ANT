@@ -218,7 +218,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations) [បន្ថែមថ្មី]
+        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_yard_locations (
                 id SERIAL PRIMARY KEY,
@@ -228,6 +228,21 @@ async function initializeDatabase() {
                 tier_number INT NOT NULL,
                 status VARCHAR(50) DEFAULT 'Stored',
                 updated_date DATE NOT NULL,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs) [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS container_repair_logs (
+                id SERIAL PRIMARY KEY,
+                container_number VARCHAR(100) NOT NULL,
+                repair_date DATE NOT NULL,
+                repair_type VARCHAR(150) NOT NULL,
+                cost NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                technician_name VARCHAR(150) NOT NULL,
+                status VARCHAR(50) DEFAULT 'In Progress',
                 notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
@@ -302,9 +317,13 @@ app.get('/views/damaged-container.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'damaged-container.html'));
 });
 
-// HTML Route សម្រាប់ទំព័រគ្រប់គ្រងទីតាំងកុងតឺន័រ [បន្ថែមថ្មី]
 app.get('/views/container-yard.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'container-yard.html'));
+});
+
+// HTML Route សម្រាប់ទំព័រការថែទាំ និងជួសជុលកុងតឺន័រ [បន្ថែមថ្មី]
+app.get('/views/container-repair.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'container-repair.html'));
 });
 
 // ==========================================
@@ -983,7 +1002,7 @@ app.post('/api/fleet/damaged-containers', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations) [បន្ថែមថ្មី]
+// API Routes: ការគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
 // ==========================================
 app.get('/api/fleet/container-yard', async (req, res) => {
     const { block_code, status } = req.query;
@@ -1031,6 +1050,58 @@ app.post('/api/fleet/container-yard', async (req, res) => {
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាទីតាំងកុងតឺន័រ' });
+    }
+});
+
+// ==========================================
+// API Routes: ការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/fleet/container-repairs', async (req, res) => {
+    const { status, container_number } = req.query;
+    try {
+        let query = 'SELECT * FROM container_repair_logs WHERE 1=1';
+        let params = [];
+        let paramIndex = 1;
+        
+        if (status) {
+            query += ` AND status = $${paramIndex}`;
+            params.push(status);
+            paramIndex += 1;
+        }
+
+        if (container_number) {
+            query += ` AND container_number ILIKE $${paramIndex}`;
+            params.push(`%${container_number}%`);
+            paramIndex += 1;
+        }
+        
+        query += ' ORDER BY repair_date DESC, id DESC';
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យការជួសជុលកុងតឺន័របានទេ' });
+    }
+});
+
+app.post('/api/fleet/container-repairs', async (req, res) => {
+    const { container_number, repair_date, repair_type, cost, technician_name, status, notes } = req.body;
+    try {
+        const query = `
+            INSERT INTO container_repair_logs (container_number, repair_date, repair_type, cost, technician_name, status, notes) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+        `;
+        const result = await pool.query(query, [
+            container_number, 
+            repair_date, 
+            repair_type, 
+            parseFloat(cost) || 0, 
+            technician_name, 
+            status || 'In Progress', 
+            notes
+        ]);
+        res.status(201).json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការជួសជុលកុងតឺន័រ' });
     }
 });
 
