@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CCTV & Network Infrastructure</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -26,10 +25,8 @@
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased">
 
-    <!-- Navigation Bar -->
     <header class="bg-cardBg border-b border-borderCol sticky top-0 z-50 px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-md">
         <div class="flex items-center space-x-3">
-            <!-- ប៊ូតុងត្រឡប់ទៅទំព័រដើម -->
             <a href="/views/index.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-borderCol px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2">
                 <i class="fa-solid fa-arrow-left text-xs"></i> <span>ទំព័រដើម</span>
             </a>
@@ -46,21 +43,14 @@
             </div>
         </div>
         <div class="flex items-center space-x-3">
-            <div class="hidden sm:flex items-center space-x-2 bg-slate-800 border border-borderCol px-3 py-1.5 rounded-lg text-sm text-slate-300">
-                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>Database: Connected (Neon DB)</span>
-            </div>
-            <!-- ប៊ូតុងបើក Modal បន្ថែមទិន្នន័យ -->
             <button onclick="openModal('cctvModal')" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-lg">
                 <i class="fa-solid fa-plus text-xs"></i> បន្ថែម CCTV/Network
             </button>
         </div>
     </header>
 
-    <!-- Main Content -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
         
-        <!-- Notification Toast -->
         <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-emerald-500">
             <i class="fa-solid fa-circle-check text-lg"></i>
             <div>
@@ -69,7 +59,6 @@
             </div>
         </div>
 
-        <!-- Stats Row -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div class="bg-cardBg border border-borderCol p-5 rounded-2xl flex items-center justify-between">
                 <div>
@@ -93,7 +82,6 @@
             </div>
         </div>
 
-        <!-- Tables Section -->
         <div class="bg-cardBg border border-borderCol rounded-2xl p-4 shadow-sm space-y-6">
             <div>
                 <h3 class="font-semibold text-white text-base mb-3"><i class="fa-solid fa-video text-cyan-400 mr-2"></i> បញ្ជីកាមេរ៉ាសុវត្ថិភាព (CCTV Cameras)</h3>
@@ -134,7 +122,6 @@
         </div>
     </main>
 
-    <!-- Modal: Add CCTV or Network -->
     <div id="cctvModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-cardBg border border-borderCol w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
             <div class="px-6 py-4 border-b border-borderCol flex justify-between items-center">
@@ -153,7 +140,7 @@
                     <label class="block text-xs font-medium text-slate-400 mb-1">ឈ្មោះឧបករណ៍ (Name)</label>
                     <input type="text" id="itemName" required placeholder="ឧ. CAM-YARD-04 ឬ CORE-SW-02" class="w-full bg-slate-900 border border-borderCol rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500">
                 </div>
-                <div id="typeFieldWrapper">
+                <div>
                     <label class="block text-xs font-medium text-slate-400 mb-1">ប្រភេទឧបករណ៍បណ្តាញ (ប្រសិនបើជា Network)</label>
                     <input type="text" id="itemType" placeholder="ឧ. Core Switch, Access Point" class="w-full bg-slate-900 border border-borderCol rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-500">
                 </div>
@@ -181,56 +168,53 @@
         </div>
     </div>
 
-    <!-- Script Application Logic -->
     <script>
-        let cctvList = [
-            { id: 1, name: 'CAM-GATE-01', location: 'ខ្លោងទ្វារចូល-ចេញหลัก', ip: '192.168.10.11', status: 'Online' },
-            { id: 2, name: 'CAM-YARD-02', location: 'ទីលានកុងតឺន័រ Block A', ip: '192.168.10.12', status: 'Online' },
-            { id: 3, name: 'CAM-WAREHOUSE-03', location: 'ឃ្លាំងស្តុកទំនិញក្នុង', ip: '192.168.10.13', status: 'Online' }
-        ];
-
-        let networkList = [
-            { id: 1, name: 'CORE-SW-01', type: 'Core Switch', location: 'Server Room', ip: '192.168.1.1', status: 'Active' },
-            { id: 2, name: 'GATEWAY-RTR', type: 'Router / Firewall', location: 'Server Room', ip: '192.168.1.254', status: 'Active' },
-            { id: 3, name: 'AP-YARD-ZONE', type: 'Access Point', location: 'Yard Control Post', ip: '192.168.10.50', status: 'Active' }
-        ];
-
         window.onload = function() {
-            renderData();
+            fetchData();
         };
 
-        function renderData() {
-            document.getElementById('statCCTV').innerText = cctvList.length;
-            document.getElementById('statNetwork').innerText = networkList.length;
+        async function fetchData() {
+            try {
+                const response = await fetch('/api/it-cctv');
+                const data = await response.json();
+                
+                const cctvList = data.filter(item => item.category === 'cctv');
+                const networkList = data.filter(item => item.category === 'network');
 
-            const cctvBody = document.getElementById('cctvTableBody');
-            cctvBody.innerHTML = cctvList.length === 0 ? `<tr><td colspan="5" class="text-center py-4 text-slate-500">គ្មានទិន្នន័យ CCTV</td></tr>` : 
-                cctvList.map(c => `
-                <tr class="hover:bg-slate-800/50">
-                    <td class="py-3 px-4 font-medium text-white">${c.name}</td>
-                    <td class="py-3 px-4 text-slate-300">${c.location}</td>
-                    <td class="py-3 px-4 font-mono text-xs text-slate-400">${c.ip}</td>
-                    <td class="py-3 px-4"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full text-xs">${c.status}</span></td>
-                    <td class="py-3 px-4 text-right">
-                        <button onclick="deleteCCTV(${c.id})" class="text-slate-500 hover:text-rose-400 p-1.5 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                    </td>
-                </tr>
-            `).join('');
+                document.getElementById('statCCTV').innerText = cctvList.length;
+                document.getElementById('statNetwork').innerText = networkList.length;
 
-            const netBody = document.getElementById('networkTableBody');
-            netBody.innerHTML = networkList.length === 0 ? `<tr><td colspan="6" class="text-center py-4 text-slate-500">គ្មានទិន្នន័យ Network</td></tr>` : 
-                networkList.map(n => `
-                <tr class="hover:bg-slate-800/50">
-                    <td class="py-3 px-4 font-medium text-white">${n.name}</td>
-                    <td class="py-3 px-4 text-slate-300">${n.type}</td>
-                    <td class="py-3 px-4 text-slate-300">${n.location}</td>
-                    <td class="py-3 px-4 font-mono text-xs text-slate-400">${n.ip}</td>
-                    <td class="py-3 px-4"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full text-xs">${n.status}</span></td>
-                    <td class="py-3 px-4 text-right">
-                        <button onclick="deleteNetwork(${n.id})" class="text-slate-500 hover:text-rose-400 p-1.5 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
-                    </td>
-                </tr>
-            `).join('');
+                const cctvBody = document.getElementById('cctvTableBody');
+                cctvBody.innerHTML = cctvList.length === 0 ? `<tr><td colspan="5" class="text-center py-4 text-slate-500">គ្មានទិន្នន័យ CCTV</td></tr>` : 
+                    cctvList.map(c => `
+                    <tr class="hover:bg-slate-800/50">
+                        <td class="py-3 px-4 font-medium text-white">${c.name}</td>
+                        <td class="py-3 px-4 text-slate-300">${c.location}</td>
+                        <td class="py-3 px-4 font-mono text-xs text-slate-400">${c.ip_address}</td>
+                        <td class="py-3 px-4"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full text-xs">${c.status}</span></td>
+                        <td class="py-3 px-4 text-right">
+                            <button onclick="deleteItem(${c.id})" class="text-slate-500 hover:text-rose-400 p-1.5 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                const netBody = document.getElementById('networkTableBody');
+                netBody.innerHTML = networkList.length === 0 ? `<tr><td colspan="6" class="text-center py-4 text-slate-500">គ្មានទិន្នន័យ Network</td></tr>` : 
+                    networkList.map(n => `
+                    <tr class="hover:bg-slate-800/50">
+                        <td class="py-3 px-4 font-medium text-white">${n.name}</td>
+                        <td class="py-3 px-4 text-slate-300">${n.type || '-'}</td>
+                        <td class="py-3 px-4 text-slate-300">${n.location}</td>
+                        <td class="py-3 px-4 font-mono text-xs text-slate-400">${n.ip_address}</td>
+                        <td class="py-3 px-4"><span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full text-xs">${n.status}</span></td>
+                        <td class="py-3 px-4 text-right">
+                            <button onclick="deleteItem(${n.id})" class="text-slate-500 hover:text-rose-400 p-1.5 transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                        </td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading data:', err);
+            }
         }
 
         function openModal(id) {
@@ -241,38 +225,45 @@
             document.getElementById(id).classList.add('hidden');
         }
 
-        function handleAddItem(e) {
+        async function handleAddItem(e) {
             e.preventDefault();
             const category = document.getElementById('itemCategory').value;
             const name = document.getElementById('itemName').value;
+            const type = document.getElementById('itemType').value;
             const location = document.getElementById('itemLocation').value;
-            const ip = document.getElementById('itemIp').value;
+            const ip_address = document.getElementById('itemIp').value;
             const status = document.getElementById('itemStatus').value;
 
-            if (category === 'cctv') {
-                cctvList.unshift({ id: Date.now(), name, location, ip, status });
-                showToast('បានបន្ថែម CCTV ជោគជ័យ!');
-            } else {
-                const type = document.getElementById('itemType').value || 'Network Device';
-                networkList.unshift({ id: Date.now(), name, type, location, ip, status });
-                showToast('បានបន្ថែម Network Device ជោគជ័យ!');
+            try {
+                const response = await fetch('/api/it-cctv', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ category, name, type, location, ip_address, status })
+                });
+
+                if (response.ok) {
+                    closeModal('cctvModal');
+                    document.getElementById('itemForm').reset();
+                    fetchData();
+                    showToast('បានរក្សាទុកទិន្នន័យជោគជ័យ!');
+                }
+            } catch (err) {
+                console.error('Error saving:', err);
             }
-
-            closeModal('cctvModal');
-            document.getElementById('itemForm').reset();
-            renderData();
         }
 
-        function deleteCCTV(id) {
-            cctvList = cctvList.filter(c => c.id !== id);
-            renderData();
-            showToast('បានលុប CCTV រួចរាល់');
-        }
-
-        function deleteNetwork(id) {
-            networkList = networkList.filter(n => n.id !== id);
-            renderData();
-            showToast('បានលុប Network Device រួចរាល់');
+        async function deleteItem(id) {
+            if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
+                try {
+                    const response = await fetch(`/api/it-cctv/${id}`, { method: 'DELETE' });
+                    if (response.ok) {
+                        fetchData();
+                        showToast('បានលុបរួចរាល់');
+                    }
+                } catch (err) {
+                    console.error('Error deleting:', err);
+                }
+            }
         }
 
         function showToast(message) {
