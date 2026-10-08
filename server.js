@@ -22,7 +22,7 @@ async function initializeDatabase() {
     try {
         await client.query('BEGIN');
 
-        // ១. តារាងបុគ្គលិក (Employees)
+        // ១. តារាងបុគ្គលិក (Employees)[cite: 11]
         await client.query(`
             CREATE TABLE IF NOT EXISTS employees (
                 id SERIAL PRIMARY KEY,
@@ -89,7 +89,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable) [បន្ថែមថ្មី][cite: 11]
+        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable)[cite: 11]
         await client.query(`
             CREATE TABLE IF NOT EXISTS accounts_receivable (
                 id SERIAL PRIMARY KEY,
@@ -99,6 +99,19 @@ async function initializeDatabase() {
                 amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 status VARCHAR(50) DEFAULT 'Pending',
                 description TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ៧. តារាងចំណាយ (Expenses) [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS expenses (
+                id SERIAL PRIMARY KEY,
+                expense_date DATE NOT NULL,
+                category VARCHAR(150) NOT NULL,
+                description TEXT,
+                amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                paid_to VARCHAR(150) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -149,9 +162,14 @@ app.get('/views/acc-receivable.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'acc-receivable.html'));
 });
 
-// HTML Route សម្រាប់ទំព័ររបាយការណ៍ហិរញ្ញវត្ថុ [បន្ថែមថ្មី]
+// HTML Route សម្រាប់ទំព័ររបាយការណ៍ហិរញ្ញវត្ថុ[cite: 11]
 app.get('/views/acc-finance.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'acc-finance.html'));
+});
+
+// HTML Route សម្រាប់ទំព័រគ្រប់គ្រងថវិកា / ចំណាយ [បន្ថែមថ្មី]
+app.get('/views/acc-control.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'acc-control.html'));
 });
 
 // ==========================================
@@ -292,7 +310,7 @@ app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => 
         });
     } catch (err) {
         console.error('Error calculating absence:', err);
-        res.status(500).json({ error: 'មានបញ្ហាក្នុងการគណនាវត្តមាន' });
+        res.status(500).json({ error: 'មានបញ្ហាក្នុងការគណនាវត្តមាន' });
     }
 });
 
@@ -397,12 +415,49 @@ app.post('/api/receivables', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: របាយការណ៍ហិរញ្ញវត្ថុ (Financial Summary API) [បន្ថែមថ្មី]
+// API Routes: ចំណាយ (Expenses) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/expenses', async (req, res) => {
+    const { from, to } = req.query;
+    try {
+        let query = 'SELECT * FROM expenses WHERE 1=1';
+        let params = [];
+        
+        if (from && to) {
+            query += ' AND expense_date BETWEEN $1 AND $2';
+            params.push(from, to);
+        }
+        
+        query += ' ORDER BY expense_date DESC, id DESC';
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យចំណាយបានទេ' });
+    }
+});
+
+app.post('/api/expenses', async (req, res) => {
+    const { expense_date, category, description, amount, paid_to } = req.body;
+    try {
+        const query = `
+            INSERT INTO expenses (expense_date, category, description, amount, paid_to) 
+            VALUES ($1, $2, $3, $4, $5) RETURNING *;
+        `;
+        const result = await pool.query(query, [expense_date, category, description, parseFloat(amount) || 0, paid_to]);
+        res.status(201).json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាចំណាយ' });
+    }
+});
+
+// ==========================================
+// API Routes: របាយការណ៍ហិរញ្ញវត្ថុ (Financial Summary API) [អាប់ដេតថ្មី]
 // ==========================================
 app.get('/api/financial/summary', async (req, res) => {
     const { from, to } = req.query;
     try {
         let revQuery = 'SELECT SUM(amount) as total_revenue FROM revenues WHERE 1=1';
+        let expQuery = 'SELECT SUM(amount) as total_expense FROM expenses WHERE 1=1';
         let recQuery = `
             SELECT 
                 SUM(amount) as total_receivable, 
@@ -415,15 +470,22 @@ app.get('/api/financial/summary', async (req, res) => {
 
         if (from && to) {
             revQuery += ' AND revenue_date BETWEEN $1 AND $2';
+            expQuery += ' AND expense_date BETWEEN $1 AND $2';
             recQuery += ' AND invoice_date BETWEEN $1 AND $2';
             params.push(from, to);
         }
 
         const revResult = await pool.query(revQuery, params);
+        const expResult = await pool.query(expQuery, params);
         const recResult = await pool.query(recQuery, params);
 
+        const totalRevenue = parseFloat(revResult.rows[0].total_revenue) || 0;
+        const totalExpense = parseFloat(expResult.rows[0].total_expense) || 0;
+
         res.json({
-            total_revenue: parseFloat(revResult.rows[0].total_revenue) || 0,
+            total_revenue: totalRevenue,
+            total_expense: totalExpense,
+            net_profit: totalRevenue - totalExpense,
             total_receivable: parseFloat(recResult.rows[0].total_receivable) || 0,
             total_paid: parseFloat(recResult.rows[0].total_paid) || 0,
             total_pending: parseFloat(recResult.rows[0].total_pending) || 0
