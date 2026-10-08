@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)[cite: 7, 8, 10]
+// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)[cite: 7, 8]
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/hr_db',
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 8, 10]
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 8]
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តិពេល Start Server
 async function initializeDatabase() {
@@ -34,7 +34,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)[cite: 10]
+        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS attendance_logs (
                 id SERIAL PRIMARY KEY,
@@ -46,7 +46,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)[cite: 10]
+        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)
         await client.query(`
             CREATE TABLE IF NOT EXISTS inventory_items (
                 id SERIAL PRIMARY KEY,
@@ -61,7 +61,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)[cite: 10]
+        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)
         await client.query(`
             CREATE TABLE IF NOT EXISTS payroll_records (
                 id SERIAL PRIMARY KEY,
@@ -76,7 +76,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)[cite: 10]
+        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)
         await client.query(`
             CREATE TABLE IF NOT EXISTS revenues (
                 id SERIAL PRIMARY KEY,
@@ -129,7 +129,20 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៩. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches) [បន្ថែមថ្មី]
+        // ៩. តារាងគ្រប់គ្រងអ្នកបើកបរ (Drivers) [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS drivers (
+                id SERIAL PRIMARY KEY,
+                driver_code VARCHAR(50) UNIQUE NOT NULL,
+                full_name VARCHAR(150) NOT NULL,
+                phone VARCHAR(50) NOT NULL,
+                license_number VARCHAR(100) UNIQUE NOT NULL,
+                status VARCHAR(50) DEFAULT 'Available',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ១០. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches) [បន្ថែមថ្មី]
         await client.query(`
             CREATE TABLE IF NOT EXISTS transport_dispatches (
                 id SERIAL PRIMARY KEY,
@@ -185,28 +198,24 @@ app.get('/views/acc-revenue.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'acc-revenue.html'));
 });
 
-// HTML Route សម្រាប់ទំព័រគណនេយ្យទទួល
 app.get('/views/acc-receivable.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'acc-receivable.html'));
 });
 
-// HTML Route សម្រាប់ទំព័ររបាយការណ៍ហិរញ្ញវត្ថុ
 app.get('/views/acc-finance.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'acc-finance.html'));
 });
 
-// HTML Route សម្រាប់ទំព័រគ្រប់គ្រងថវិកា / ចំណាយ
 app.get('/views/acc-control.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'acc-control.html'));
 });
 
-// HTML Route សម្រាប់ទំព័រចាត់ចែងរថយន្ត & ដឹកជញ្ជូន [បន្ថែមថ្មី]
 app.get('/views/fleet-dispatch.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'fleet-dispatch.html'));
 });
 
 // ==========================================
-// API Routes: បុគ្គលិក (Employees)[cite: 10]
+// API Routes: បុគ្គលិក (Employees)
 // ==========================================
 app.get('/api/employees', async (req, res) => {
     try {
@@ -232,7 +241,7 @@ app.post('/api/employees', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: វត្តមាន (Attendance Logs)[cite: 10]
+// API Routes: វត្តមាន (Attendance Logs)
 // ==========================================
 app.get('/api/attendance/logs', async (req, res) => {
     const { from, to, search } = req.query;
@@ -268,7 +277,7 @@ app.get('/api/attendance/logs', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ទ្រព្យសម្បត្តិ និងស្តុក (Inventory)[cite: 10]
+// API Routes: ទ្រព្យសម្បត្តិ និងស្តុក (Inventory)
 // ==========================================
 app.get('/api/inventory', async (req, res) => {
     const { search, category } = req.query;
@@ -313,7 +322,7 @@ app.post('/api/inventory', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)[cite: 10]
+// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)
 // ==========================================
 app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => {
     const { employee_code, pay_month } = req.params;
@@ -376,7 +385,7 @@ app.post('/api/payroll', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រាក់ចំណូល (Revenues)[cite: 10]
+// API Routes: ប្រាក់ចំណូល (Revenues)
 // ==========================================
 app.get('/api/revenues', async (req, res) => {
     const { from, to } = req.query;
@@ -556,6 +565,32 @@ app.post('/api/fleet/vehicles', async (req, res) => {
 });
 
 // ==========================================
+// API Routes: ការគ្រប់គ្រងអ្នកបើកបរ (Drivers) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/fleet/drivers', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM drivers ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'មិនអាចទាញយកបញ្ជីអ្នកបើកបរបានទេ' });
+    }
+});
+
+app.post('/api/fleet/drivers', async (req, res) => {
+    const { driver_code, full_name, phone, license_number, status } = req.body;
+    try {
+        const query = `
+            INSERT INTO drivers (driver_code, full_name, phone, license_number, status) 
+            VALUES ($1, $2, $3, $4, $5) RETURNING *;
+        `;
+        const result = await pool.query(query, [driver_code, full_name, phone, license_number, status || 'Available']);
+        res.status(201).json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: 'កំហុស៖ លេខកូដ ឬលេខប័ណ្ណបើកបរអាចមានរួចហើយ' });
+    }
+});
+
+// ==========================================
 // API Routes: ការបញ្ជូនដឹកជញ្ជូន (Transport Dispatches) [បន្ថែមថ្មី]
 // ==========================================
 app.get('/api/fleet/dispatches', async (req, res) => {
@@ -590,10 +625,15 @@ app.post('/api/fleet/dispatches', async (req, res) => {
             `;
             const result = await client.query(query, [dispatch_code, vehicle_code, driver_name, destination, dispatch_date, status || 'Dispatched', notes]);
 
-            // ធ្វើបច្ចុប្បន្នភាពស្ថានភាពរថយន្តឱ្យទៅជា 'On Mission' ឬ 'Dispatched'
+            // ធ្វើបច្ចុប្បន្នភាពស្ថានភាពរថយន្តឱ្យទៅជា 'On Mission'
             await client.query(`
                 UPDATE fleet_vehicles SET status = 'On Mission' WHERE vehicle_code = $1
             `, [vehicle_code]);
+
+            // ធ្វើបច្ចុប្បន្នភាពស្ថានភាពអ្នកបើកបរឱ្យទៅជា 'On Duty'
+            await client.query(`
+                UPDATE drivers SET status = 'On Duty' WHERE full_name = $1
+            `, [driver_name]);
 
             await client.query('COMMIT');
             res.status(201).json({ success: true, data: result.rows[0] });
@@ -608,7 +648,7 @@ app.post('/api/fleet/dispatches', async (req, res) => {
     }
 });
 
-// ចាប់ផ្តើមដំណើរការ Server[cite: 8, 10]
+// ចាប់ផ្តើមដំណើរការ Server[cite: 8]
 initializeDatabase().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
