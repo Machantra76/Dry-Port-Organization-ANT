@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)[cite: 7]
+// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)[cite: 7, 8]
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/hr_db',
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
@@ -14,6 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/views', express.static(path.join(__dirname, 'views'))); // [កែសម្រួល] បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តិពេល Start Server
 async function initializeDatabase() {
@@ -75,7 +76,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៥. [ថ្មី] តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)
+        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)
         await client.query(`
             CREATE TABLE IF NOT EXISTS revenues (
                 id SERIAL PRIMARY KEY,
@@ -121,9 +122,13 @@ app.get('/views/hr-payroll.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'hr-payroll.html'));
 });
 
-// [ថ្មី] HTML Route សម្រាប់ទំព័រប្រាក់ចំណូល
+// HTML Route សម្រាប់ទំព័រប្រាក់ចំណូល (รองรับទាំងពីរឈ្មោះ ដើម្បីការពារកំហុស)
 app.get('/views/hr-revenue.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'hr-revenue.html'));
+});
+
+app.get('/views/acc-revenue.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'acc-revenue.html'));
 });
 
 // ==========================================
@@ -297,7 +302,7 @@ app.post('/api/payroll', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: [ថ្មី] ប្រាក់ចំណូល (Revenues)
+// API Routes: ប្រាក់ចំណូល (Revenues)
 // ==========================================
 app.get('/api/revenues', async (req, res) => {
     try {
