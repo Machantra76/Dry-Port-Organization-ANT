@@ -1,313 +1,527 @@
 <!DOCTYPE html>
-<html lang="km">
+<html lang="km" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រព័ន្ធ WMS / OMS (Warehouse & Order Management)</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
+    <title>IT WMS/OMS Dashboard</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Khmer OS Battambang', 'sans-serif'],
+                    },
+                    colors: {
+                        darkBg: '#0f172a',
+                        cardBg: '#1e293b',
+                        borderCol: '#334155'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Font Khmer -->
-    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts for Khmer & Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Kantumruy Pro', sans-serif;
-            background-color: #f8f9fa;
-        }
-        .main-container {
-            max-width: 1300px;
-            margin: 30px auto;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-        }
-        .header-title {
-            color: #1e293b;
-            font-weight: 700;
-        }
-        .header-subtitle {
-            color: #64748b;
-            font-size: 0.9rem;
-            letter-spacing: 0.5px;
-        }
-        .card {
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            box-shadow: none;
-        }
-        .card-header-custom {
-            background-color: #ffffff;
-            border-bottom: 1px solid #e2e8f0;
-            font-weight: 600;
-            color: #1e293b;
-            padding: 15px 20px;
-        }
-        .table-custom thead {
-            background-color: #1e293b;
-            color: #ffffff;
-        }
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-            body {
-                background-color: #ffffff;
-            }
-            .main-container {
-                margin: 0;
-                padding: 0;
-                box-shadow: none;
-            }
+            font-family: 'Kantumruy Pro', 'Inter', sans-serif;
         }
     </style>
 </head>
-<body>
+<body class="bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased">
 
-    <div class="container main-container">
-        <!-- Back Button -->
-        <div class="mb-4 no-print">
-            <a href="/" class="btn btn-primary btn-sm rounded-pill px-3">
-                <i class="fas fa-arrow-left me-1"></i> ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)
-            </a>
-        </div>
-
-        <!-- Title Section -->
-        <div class="mb-4">
-            <h2 class="header-title">ប្រព័ន្ធ WMS / OMS</h2>
-            <div class="header-subtitle">WMS & OMS Systems - Database Connected</div>
-        </div>
-
-        <!-- Form បញ្ចូលទិន្នន័យ -->
-        <div class="card mb-4 no-print">
-            <div class="card-header card-header-custom">
-                <h5 class="mb-0"><i class="fas fa-box-open text-primary me-2"></i> កត់ត្រាទិន្នន័យថ្មី (Record New Item / Order)</h5>
+    <!-- Navigation Bar -->
+    <header class="bg-cardBg border-b border-borderCol sticky top-0 z-50 px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-md">
+        <div class="flex items-center space-x-3">
+            <div class="bg-indigo-600 text-white p-2.5 rounded-xl shadow-lg flex items-center justify-center">
+                <i class="fa-solid fa-server text-xl"></i>
             </div>
-            <div class="card-body p-4">
-                <form id="wmsForm">
-                    <input type="hidden" id="recordId" value="">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label for="itemCode" class="form-label fw-semibold">លេខកូដទំនិញ / លេខបញ្ជាទិញ (Code):</label>
-                            <input type="text" class="form-control" id="itemCode" required placeholder="ឧ. WMS-001 ឬ OMS-102">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="itemName" class="form-label fw-semibold">ឈ្មោះទំនិញ / សេវាកម្ម (Item Name):</label>
-                            <input type="text" class="form-control" id="itemName" required placeholder="ឧ. កុងតឺន័រ ៤០ហ្វីត / ទំនិញនាំចូល">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="systemType" class="form-label fw-semibold">ប្រភេទប្រព័ន្ធ (System Type):</label>
-                            <select class="form-select" id="systemType" required>
-                                <option value="">-- ជ្រើសរើសប្រភេទប្រព័ន្ធ --</option>
-                                <option value="WMS (Warehouse Management)">WMS (គ្រប់គ្រងឃ្លាំង)</option>
-                                <option value="OMS (Order Management)">OMS (គ្រប់គ្រងការបញ្ជាទិញ)</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label for="quantity" class="form-label fw-semibold">បរិមាណ (Quantity):</label>
-                            <input type="number" class="form-control" id="quantity" required placeholder="ឧ. 10">
-                        </div>
-                        <div class="col-md-4">
-                            <label for="locationStatus" class="form-label fw-semibold">ទីតាំង / ស្ថានភាព (Location / Status):</label>
-                            <input type="text" class="form-control" id="locationStatus" required placeholder="ឧ. ឃ្លាំង A / រួចរាល់">
-                        </div>
-                        <div class="col-md-4 d-flex align-items-end">
-                            <button type="submit" class="btn btn-success w-100 py-2 fw-semibold" id="saveBtn">
-                                <i class="fas fa-save me-1"></i> រក្សាទុក (Save Record)
-                            </button>
-                        </div>
-                    </div>
-                </form>
+            <div>
+                <h1 class="font-bold text-lg tracking-wide text-white flex items-center gap-2">
+                    IT WMS & OMS 
+                    <span class="text-xs font-medium bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 rounded-full">ប្រព័ន្ធគ្រប់គ្រង IT</span>
+                </h1>
+                <p class="text-xs text-slate-400">Workstation Management & Operations System</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <div class="hidden sm:flex items-center space-x-2 bg-slate-800 border border-borderCol px-3 py-1.5 rounded-lg text-sm text-slate-300">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Database: Connected (Neon DB)</span>
+            </div>
+            <button onclick="openModal('ticketModal')" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-lg shadow-indigo-600/20">
+                <i class="fa-solid fa-plus text-xs"></i> បង្កើតសំណើ (Ticket)
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Layout -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
+
+        <!-- Notification Toast -->
+        <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-emerald-500 transition-all duration-300">
+            <i class="fa-solid fa-circle-check text-lg"></i>
+            <div>
+                <h4 id="toastTitle" class="font-bold text-sm">ជោគជ័យ</h4>
+                <p id="toastMessage" class="text-xs text-emerald-100">ប្រតិបត្តិការត្រូវបានរក្សាទុកដោយជោគជ័យ។</p>
             </div>
         </div>
 
-        <!-- ផ្នែកតារាង និង មុខងារស្វែងរក -->
-        <div class="card">
-            <div class="card-header card-header-custom d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <h5 class="mb-0"><i class="fas fa-list text-dark me-2"></i> តារាងរបាយការណ៍ និងការគ្រប់គ្រង (WMS & OMS Report & Filter)</h5>
-                <button type="button" class="btn btn-secondary btn-sm no-print" onclick="window.print()">
-                    <i class="fas fa-print me-1"></i> បោះពុម្ព / រក្សាទុក PDF (Print / Save PDF)
-                </button>
+        <!-- Overview Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <!-- Card 1: Total Workstations -->
+            <div class="bg-cardBg border border-borderCol p-5 rounded-2xl shadow-sm hover:border-indigo-500/50 transition flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">ម៉ាស៊ីន និងប្រព័ន្ធ (Workstations)</p>
+                    <h3 id="statWorkstations" class="text-3xl font-bold mt-1 text-white">0</h3>
+                    <p class="text-xs text-emerald-400 mt-2 flex items-center gap-1">
+                        <i class="fa-solid fa-arrow-up"></i> សកម្មធម្មតា (Active)
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center text-indigo-400">
+                    <i class="fa-solid fa-desktop text-xl"></i>
+                </div>
             </div>
-            <div class="card-body p-4">
-                <!-- Filter / Search Section -->
-                <div class="row g-3 align-items-end mb-4 no-print">
-                    <div class="col-md-4">
-                        <label for="searchInput" class="form-label fw-semibold">ស្វែងរកតាមកូដ ឈ្មោះ ឬប្រភេទ:</label>
-                        <input type="text" id="searchInput" class="form-control" placeholder="វាយស្វែងរក..." onkeyup="filterTable()">
-                    </div>
-                    <div class="col-md-4">
-                        <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('searchInput').value=''; renderTable(allData);">
-                            កំណត់ឡើងវិញ (Reset)
-                        </button>
-                    </div>
+
+            <!-- Card 2: Open Tickets -->
+            <div class="bg-cardBg border border-borderCol p-5 rounded-2xl shadow-sm hover:border-amber-500/50 transition flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">សំណើកំពុងរង់ចាំ (Open Tickets)</p>
+                    <h3 id="statOpenTickets" class="text-3xl font-bold mt-1 text-white">0</h3>
+                    <p class="text-xs text-amber-400 mt-2 flex items-center gap-1">
+                        <i class="fa-solid fa-clock"></i> ត្រូវការដោះស្រាយ
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center text-amber-400">
+                    <i class="fa-solid fa-ticket text-xl"></i>
+                </div>
+            </div>
+
+            <!-- Card 3: Active Systems -->
+            <div class="bg-cardBg border border-borderCol p-5 rounded-2xl shadow-sm hover:border-emerald-500/50 transition flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">ប្រព័ន្ធសរុប (Operations)</p>
+                    <h3 id="statTotalOps" class="text-3xl font-bold mt-1 text-white">0</h3>
+                    <p class="text-xs text-emerald-400 mt-2 flex items-center gap-1">
+                        <i class="fa-solid fa-check-circle"></i> រួមបញ្ចូលគ្រប់ស្ថានភាព
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center text-emerald-400">
+                    <i class="fa-solid fa-gears text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation & Filters -->
+        <div class="bg-cardBg border border-borderCol rounded-2xl p-4 shadow-sm">
+            <div class="flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 pb-4 border-b border-borderCol">
+                <!-- Tabs -->
+                <div class="flex bg-slate-900 p-1.5 rounded-xl border border-borderCol">
+                    <button onclick="switchTab('workstations')" id="btnTabWorkstations" class="flex-1 md:flex-initial px-5 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white shadow">
+                        <i class="fa-solid fa-desktop mr-2"></i> គ្រប់គ្រង Workstations (WMS)
+                    </button>
+                    <button onclick="switchTab('operations')" id="btnTabOperations" class="flex-1 md:flex-initial px-5 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-list-check mr-2"></i> សំណើការងារ IT (OMS)
+                    </button>
                 </div>
 
-                <!-- Table -->
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover align-middle table-custom" id="wmsTable">
+                <!-- Search & Filters -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="relative flex-1 sm:w-64">
+                        <i class="fa-solid fa-search absolute left-3.5 top-3 text-slate-400 text-sm"></i>
+                        <input type="text" id="searchInput" oninput="filterData()" placeholder="ស្វែងរក..." class="w-full bg-slate-900 border border-borderCol rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition">
+                    </div>
+                    <select id="filterSelect" onchange="filterData()" class="bg-slate-900 border border-borderCol rounded-xl px-4 py-2 text-sm text-slate-300 focus:outline-none focus:border-indigo-500 transition">
+                        <option value="">ស្ថានភាព/OS ទាំងអស់</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Tables Container -->
+            <div class="pt-4 overflow-x-auto">
+                <!-- WMS Workstations Table -->
+                <div id="sectionWorkstations" class="space-y-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-semibold text-white text-base">បញ្ជីម៉ាស៊ីន និងប្រព័ន្ធ (WMS Workstations)</h3>
+                        <button onclick="openModal('workstationModal')" class="bg-slate-800 hover:bg-slate-700 text-indigo-400 border border-indigo-500/30 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></span></i> បន្ថែម Workstation
+                        </button>
+                    </div>
+                    <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr>
-                                <th>ល.រ (No.)</th>
-                                <th>លេខកូដ (Code)</th>
-                                <th>ឈ្មោះទំនិញ (Item Name)</th>
-                                <th>ប្រភេទប្រព័ន្ធ (System)</th>
-                                <th>បរិមាណ (Qty)</th>
-                                <th>ទីតាំង / ស្ថានភាព (Location/Status)</th>
-                                <th class="no-print text-center">សកម្មភាព (Actions)</th>
+                            <tr class="border-b border-borderCol text-xs font-semibold text-slate-400 uppercase">
+                                <th class="py-3 px-4">ឈ្មោះឧបករណ៍ / Device Name</th>
+                                <th class="py-3 px-4">អាសយដ្ឋាន IP</th>
+                                <th class="py-3 px-4">ប្រភេទ OS</th>
+                                <th class="py-3 px-4">ស្ថានភាព</th>
+                                <th class="py-3 px-4 text-right">សកម្មភាព</th>
                             </tr>
                         </thead>
-                        <tbody id="tableBody">
-                            <!-- ទិន្នន័យទាញចេញពី Database នឹងលូតចូលទីនេះដោយស្វ័យប្រវត្តិ -->
+                        <tbody id="workstationTableBody" class="divide-y divide-borderCol text-sm text-slate-300">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- OMS Operations Table -->
+                <div id="sectionOperations" class="space-y-4 hidden">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-semibold text-white text-base">បញ្ជីសំណើកិច្ចការ IT (OMS Operations Tickets)</h3>
+                        <button onclick="openModal('ticketModal')" class="bg-slate-800 hover:bg-slate-700 text-indigo-400 border border-indigo-500/30 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-plus"></i> បង្កើតសំណើថ្មី
+                        </button>
+                    </div>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-borderCol text-xs font-semibold text-slate-400 uppercase">
+                                <th class="py-3 px-4">លេខកូដសំណើ (Ticket)</th>
+                                <th class="py-3 px-4">ចំណងជើងកិច្ចការ</th>
+                                <th class="py-3 px-4">កម្រិតបន្ទាន់</th>
+                                <th class="py-3 px-4">ผู้รับผิดชอบ / Assignee</th>
+                                <th class="py-3 px-4">ស្ថានភាព</th>
+                                <th class="py-3 px-4 text-right">សកម្មភាព</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticketTableBody" class="divide-y divide-borderCol text-sm text-slate-300">
+                            <!-- Populated by JS -->
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+    </main>
+
+    <!-- Modal: Add Workstation -->
+    <div id="workstationModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-cardBg border border-borderCol w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-borderCol flex justify-between items-center">
+                <h3 class="font-bold text-white">បន្ថែម Workstation / System ថ្មី</h3>
+                <button onclick="closeModal('workstationModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="workstationForm" onsubmit="handleAddWorkstation(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">ឈ្មោះឧបករណ៍ (Device Name)</label>
+                    <input type="text" id="wsName" required placeholder="ឧ. WS-SERVER-03" class="w-full bg-slate-900 border border-borderCol rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">អាសយដ្ឋាន IP (IP Address)</label>
+                    <input type="text" id="wsIp" required placeholder="ឧ. 192.168.1.50" class="w-full bg-slate-900 border border-borderCol rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">ប្រព័ន្ធប្រតិបត្តិការ (OS Type)</label>
+                    <select id="wsOs" class="w-full bg-slate-900 border border-borderCol rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                        <option value="Linux">Linux (Ubuntu / CentOS)</option>
+                        <option value="Windows">Windows Server / Pro</option>
+                        <option value="macOS">macOS</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">ស្ថានភាព (Status)</label>
+                    <select id="wsStatus" class="w-full bg-slate-900 border border-borderCol rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                        <option value="Active">Active (សកម្ម)</option>
+                        <option value="Maintenance">Maintenance (ថែទាំ)</option>
+                        <option value="Offline">Offline (បិទដំណើរការ)</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeModal('workstationModal')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium transition">បោះបង់</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-sm font-medium transition shadow-lg shadow-indigo-600/20">រក្សាទុក</button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <!-- Bootstrap JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Modal: Add Ticket -->
+    <div id="ticketModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-cardBg border border-borderCol w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-borderCol flex justify-between items-center">
+                <h3 class="font-bold text-white">បង្កើតសំណើការងារ IT ថ្មី (OMS Ticket)</h3>
+                <button onclick="closeModal('ticketModal')" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form id="ticketForm" onsubmit="handleAddTicket(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">លេខកូដសំណើ (Ticket Number)</label>
+                    <input type="text" id="tNumber" required placeholder="ឧ. TCK-2026-001" class="w-full bg-slate-900 border border-borderCol rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">ចំណងជើងកិច្ចការ (Task Title)</label>
+                    <input type="text" id="tTitle" required placeholder="ឧ. Upgrade Database Cluster" class="w-full bg-slate-900 border border-borderCol rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">កម្រិតបន្ទាន់ (Priority)</label>
+                    <select id="tPriority" class="w-full bg-slate-900 border border-borderCol rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                        <option value="Low">Low (ទាប)</option>
+                        <option value="Normal" selected>Normal (ធម្មតា)</option>
+                        <option value="High">High (ខ្ពស់)</option>
+                        <option value="Urgent">Urgent (បន្ទាន់ខ្លាំង)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">អ្នកទទួលខុសត្រូវ (Assigned To)</label>
+                    <input type="text" id="tAssignee" required placeholder="ឧ. វណ្ណា (IT Support)" class="w-full bg-slate-900 border border-borderCol rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                </div>
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeModal('ticketModal')" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2 rounded-xl text-sm font-medium transition">បោះបង់</button>
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2 rounded-xl text-sm font-medium transition shadow-lg shadow-indigo-600/20">បង្កើតសំណើ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application Logic Script -->
     <script>
-        let allData = [];
+        // Initial Mock Data (Synchronized with backend structure)
+        let workstations = [
+            { id: 1, device_name: 'WS-SERVER-01', ip_address: '192.168.1.10', os_type: 'Linux', status: 'Active' },
+            { id: 2, device_name: 'DEV-NODE-02', ip_address: '192.168.1.25', os_type: 'Windows', status: 'Active' },
+            { id: 3, device_name: 'GATEWAY-SYS-03', ip_address: '10.0.0.1', os_type: 'Linux', status: 'Maintenance' },
+            { id: 4, device_name: 'BUILD-MAC-01', ip_address: '192.168.1.88', os_type: 'macOS', status: 'Active' }
+        ];
 
-        // ទាញយកទិន្នន័យពី Database ពេលបើកទំព័រ
-        document.addEventListener('DOMContentLoaded', () => {
-            fetchData();
-        });
+        let operations = [
+            { id: 1, ticket_number: 'TCK-2026-101', task_title: 'Database Migration to Neon PostgreSQL', priority: 'High', status: 'In Progress', assigned_to: 'សុខា (DBA)' },
+            { id: 2, ticket_number: 'TCK-2026-102', task_title: 'Configure Nginx Reverse Proxy SSL', priority: 'Normal', status: 'Open', assigned_to: 'រិទ្ធិ (DevOps)' },
+            { id: 3, ticket_number: 'TCK-2026-103', task_title: 'Security Patch Update for Workstations', priority: 'Urgent', status: 'Open', assigned_to: 'ដារ៉ា (Security)' },
+            { id: 4, ticket_number: 'TCK-2026-104', task_title: 'Setup Automated Backup Cron Job', priority: 'Low', status: 'Resolved', assigned_to: 'វណ្ណា (SysAdmin)' }
+        ];
 
-        async function fetchData() {
-            try {
-                let response = await fetch('/api/wms-oms');
-                allData = await response.json();
-                renderTable(allData);
-            } catch (err) {
-                console.error('Error fetching data:', err);
+        let currentTab = 'workstations';
+
+        // Initialize App on load
+        window.onload = function() {
+            renderAll();
+            updateStats();
+        };
+
+        // Switch Tabs
+        function switchTab(tab) {
+            currentTab = tab;
+            const btnWs = document.getElementById('btnTabWorkstations');
+            const btnOps = document.getElementById('btnTabOperations');
+            const secWs = document.getElementById('sectionWorkstations');
+            const secOps = document.getElementById('sectionOperations');
+
+            if (tab === 'workstations') {
+                btnWs.className = "flex-1 md:flex-initial px-5 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white shadow";
+                btnOps.className = "flex-1 md:flex-initial px-5 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white";
+                secWs.classList.remove('hidden');
+                secOps.classList.add('hidden');
+            } else {
+                btnOps.className = "flex-1 md:flex-initial px-5 py-2 rounded-lg text-sm font-medium transition bg-indigo-600 text-white shadow";
+                btnWs.className = "flex-1 md:flex-initial px-5 py-2 rounded-lg text-sm font-medium transition text-slate-400 hover:text-white";
+                secOps.classList.remove('hidden');
+                secWs.classList.add('hidden');
             }
+            updateFilterDropdown();
+            filterData();
         }
 
-        // មុខងារបង្ហាញទិន្នន័យក្នុងតារាង
-        function renderTable(data) {
-            let tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+        // Render Tables
+        function renderAll(filteredWs = workstations, filteredOps = operations) {
+            // Render Workstations Table
+            const wsTable = document.getElementById('workstationTableBody');
+            wsTable.innerHTML = '';
+            if (filteredWs.length === 0) {
+                wsTable.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-500">គ្មានទិន្នន័យ Workstation</td></tr>`;
+            } else {
+                filteredWs.forEach(item => {
+                    let statusBadge = '';
+                    if(item.status === 'Active') statusBadge = '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full text-xs font-medium">Active</span>';
+                    else if(item.status === 'Maintenance') statusBadge = '<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full text-xs font-medium">Maintenance</span>';
+                    else statusBadge = '<span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1 rounded-full text-xs font-medium">Offline</span>';
 
-            if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-3 text-muted">គ្មានទិន្នន័យ WMS / OMS ទេ</td></tr>`;
-                return;
-            }
-
-            data.forEach((item, index) => {
-                let row = `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td>${item.item_code}</td>
-                        <td>${item.item_name}</td>
-                        <td>${item.system_type}</td>
-                        <td>${item.quantity}</td>
-                        <td>${item.location_status}</td>
-                        <td class="no-print text-center">
-                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editItem(${item.id})"><i class="fas fa-edit"></i> កែប្រែ</button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${item.id})"><i class="fas fa-trash"></i> លុប</button>
-                        </td>
-                    </tr>
-                `;
-                tbody.innerHTML += row;
-            });
-        }
-
-        // មុខងារ Form Submit (រក្សាទុកទិន្នន័យចូល Database)
-        document.getElementById('wmsForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            let id = document.getElementById('recordId').value;
-            let item_code = document.getElementById('itemCode').value;
-            let item_name = document.getElementById('itemName').value;
-            let system_type = document.getElementById('systemType').value;
-            let quantity = document.getElementById('quantity').value;
-            let location_status = document.getElementById('locationStatus').value;
-
-            let payload = {
-                id: id ? id : undefined,
-                item_code,
-                item_name,
-                system_type,
-                quantity,
-                location_status
-            };
-
-            try {
-                let response = await fetch('/api/wms-oms', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    wsTable.innerHTML += `
+                        <tr class="hover:bg-slate-800/50 transition">
+                            <td class="py-3 px-4 font-medium text-white flex items-center gap-2"><i class="fa-solid fa-desktop text-indigo-400 text-xs"></i> ${item.device_name}</td>
+                            <td class="py-3 px-4 font-mono text-slate-400 text-xs">${item.ip_address}</td>
+                            <td class="py-3 px-4"><span class="bg-slate-800 px-2.5 py-1 rounded-md text-xs font-mono text-slate-300 border border-borderCol">${item.os_type}</span></td>
+                            <td class="py-3 px-4">${statusBadge}</td>
+                            <td class="py-3 px-4 text-right">
+                                <button onclick="deleteWorkstation(${item.id})" class="text-slate-500 hover:text-rose-400 p-1.5 transition" title="លុប"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                            </td>
+                        </tr>
+                    `;
                 });
+            }
 
-                if (response.ok) {
-                    resetForm();
-                    fetchData(); // ទាញទិន្នន័យថ្មីមកបង្ហាញវិញ
-                } else {
-                    alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ!');
+            // Render Operations Table
+            const opsTable = document.getElementById('ticketTableBody');
+            opsTable.innerHTML = '';
+            if (filteredOps.length === 0) {
+                opsTable.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-500">គ្មានទិន្នន័យសំណើ IT</td></tr>`;
+            } else {
+                filteredOps.forEach(item => {
+                    let priorityBadge = '';
+                    if(item.priority === 'Urgent') priorityBadge = '<span class="text-rose-400 font-semibold flex items-center gap-1"><i class="fa-solid fa-circle-exclamation text-xs"></i> Urgent</span>';
+                    else if(item.priority === 'High') priorityBadge = '<span class="text-amber-400 font-medium">High</span>';
+                    else if(item.priority === 'Normal') priorityBadge = '<span class="text-indigo-400 font-medium">Normal</span>';
+                    else priorityBadge = '<span class="text-slate-400">Low</span>';
+
+                    let statusBadge = '';
+                    if(item.status === 'Open') statusBadge = '<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer" onclick="toggleTicketStatus(${item.id})">Open</span>';
+                    else if(item.status === 'In Progress') statusBadge = '<span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer" onclick="toggleTicketStatus(${item.id})">In Progress</span>';
+                    else statusBadge = '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer" onclick="toggleTicketStatus(${item.id})">Resolved</span>';
+
+                    opsTable.innerHTML += `
+                        <tr class="hover:bg-slate-800/50 transition">
+                            <td class="py-3 px-4 font-mono font-medium text-indigo-400 text-xs">${item.ticket_number}</td>
+                            <td class="py-3 px-4 font-medium text-white">${item.task_title}</td>
+                            <td class="py-3 px-4 text-xs">${priorityBadge}</td>
+                            <td class="py-3 px-4 text-slate-300 text-xs flex items-center gap-1.5"><i class="fa-solid fa-user-shield text-slate-500 text-xs"></i> ${item.assigned_to}</td>
+                            <td class="py-3 px-4">${statusBadge}</td>
+                            <td class="py-3 px-4 text-right">
+                                <button onclick="deleteTicket(${item.id})" class="text-slate-500 hover:text-rose-400 p-1.5 transition" title="លុប"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+
+        // Update Overview Stats
+        function updateStats() {
+            document.getElementById('statWorkstations').innerText = workstations.length;
+            const openCount = operations.filter(o => o.status === 'Open' || o.status === 'In Progress').length;
+            document.getElementById('statOpenTickets').innerText = openCount;
+            document.getElementById('statTotalOps').innerText = operations.length;
+        }
+
+        // Update Filter Dropdown Options
+        function updateFilterDropdown() {
+            const select = document.getElementById('filterSelect');
+            select.innerHTML = '<option value="">ស្ថានភាព/OS ทั้งหมด</option>';
+            if (currentTab === 'workstations') {
+                select.innerHTML += `
+                    <option value="Linux">OS: Linux</option>
+                    <option value="Windows">OS: Windows</option>
+                    <option value="macOS">OS: macOS</option>
+                    <option value="Active">Status: Active</option>
+                    <option value="Maintenance">Status: Maintenance</option>
+                `;
+            } else {
+                select.innerHTML += `
+                    <option value="Open">Status: Open</option>
+                    <option value="In Progress">Status: In Progress</option>
+                    <option value="Resolved">Status: Resolved</option>
+                    <option value="Urgent">Priority: Urgent</option>
+                `;
+            }
+        }
+
+        // Filter and Search Logic
+        function filterData() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filterVal = document.getElementById('filterSelect').value;
+
+            if (currentTab === 'workstations') {
+                let filtered = workstations.filter(item => 
+                    item.device_name.toLowerCase().includes(query) || 
+                    item.ip_address.toLowerCase().includes(query) || 
+                    item.os_type.toLowerCase().includes(query)
+                );
+                if (filterVal) {
+                    filtered = filtered.filter(item => item.os_type === filterVal || item.status === filterVal);
                 }
-            } catch (err) {
-                console.error('Error saving data:', err);
-                alert('កំហុសប្រព័ន្ធក្នុងការរក្សាទុក!');
-            }
-        });
-
-        // មុខងារលុបទិន្នន័យពី Database
-        async function deleteItem(id) {
-            if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?")) {
-                try {
-                    let response = await fetch(`/api/wms-oms/delete/${id}`, {
-                        method: 'POST'
-                    });
-
-                    if (response.ok) {
-                        fetchData();
-                    } else {
-                        alert('មានបញ្ហាក្នុងការលុបទិន្នន័យ!');
-                    }
-                } catch (err) {
-                    console.error('Error deleting data:', err);
+                renderAll(filtered, operations);
+            } else {
+                let filtered = operations.filter(item => 
+                    item.ticket_number.toLowerCase().includes(query) || 
+                    item.task_title.toLowerCase().includes(query) || 
+                    item.assigned_to.toLowerCase().includes(query)
+                );
+                if (filterVal) {
+                    filtered = filtered.filter(item => item.status === filterVal || item.priority === filterVal);
                 }
+                renderAll(workstations, filtered);
             }
         }
 
-        // មុខងារទាញយកទិន្នន័យមកដាក់ក្នុង Form ដើម្បីកែប្រែ
-        function editItem(id) {
-            let item = allData.find(d => d.id === id);
-            if (item) {
-                document.getElementById('recordId').value = item.id;
-                document.getElementById('itemCode').value = item.item_code;
-                document.getElementById('itemName').value = item.item_name;
-                document.getElementById('systemType').value = item.system_type;
-                document.getElementById('quantity').value = item.quantity;
-                document.getElementById('locationStatus').value = item.location_status;
+        // Modal Controls
+        function openModal(id) {
+            document.getElementById(id).classList.remove('hidden');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
 
-                document.getElementById('saveBtn').innerHTML = `<i class="fas fa-sync-alt me-1"></i> កែប្រែព័ត៌មាន (Update Record)`;
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Add Workstation Handler
+        function handleAddWorkstation(e) {
+            e.preventDefault();
+            const newWs = {
+                id: Date.now(),
+                device_name: document.getElementById('wsName').value,
+                ip_address: document.getElementById('wsIp').value,
+                os_type: document.getElementById('wsOs').value,
+                status: document.getElementById('wsStatus').value
+            };
+            workstations.unshift(newWs);
+            closeModal('workstationModal');
+            document.getElementById('workstationForm').reset();
+            renderAll();
+            updateStats();
+            showToast('បានបន្ថែម Workstation ជោគជ័យ!');
+        }
+
+        // Add Ticket Handler
+        function handleAddTicket(e) {
+            e.preventDefault();
+            const newTicket = {
+                id: Date.now(),
+                ticket_number: document.getElementById('tNumber').value,
+                task_title: document.getElementById('tTitle').value,
+                priority: document.getElementById('tPriority').value,
+                status: 'Open',
+                assigned_to: document.getElementById('tAssignee').value
+            };
+            operations.unshift(newTicket);
+            closeModal('ticketModal');
+            document.getElementById('ticketForm').reset();
+            renderAll();
+            updateStats();
+            showToast('បានបង្កើតសំណើ IT ជោគជ័យ!');
+        }
+
+        // Delete Workstation
+        function deleteWorkstation(id) {
+            workstations = workstations.filter(w => w.id !== id);
+            renderAll();
+            updateStats();
+            showToast('បានលុប Workstation រួចរាល់');
+        }
+
+        // Delete Ticket
+        function deleteTicket(id) {
+            operations = operations.filter(o => o.id !== id);
+            renderAll();
+            updateStats();
+            showToast('បានលុបសំណើ IT រួចរាល់');
+        }
+
+        // Toggle Ticket Status Loop
+        function toggleTicketStatus(id) {
+            const ticket = operations.find(o => o.id === id);
+            if (ticket) {
+                if (ticket.status === 'Open') ticket.status = 'In Progress';
+                else if (ticket.status === 'In Progress') ticket.status = 'Resolved';
+                else ticket.status = 'Open';
+                renderAll();
+                updateStats();
             }
         }
 
-        // មុខងារ Reset Form
-        function resetForm() {
-            document.getElementById('wmsForm').reset();
-            document.getElementById('recordId').value = "";
-            document.getElementById('saveBtn').innerHTML = `<i class="fas fa-save me-1"></i> រក្សាទុក (Save Record)`;
-        }
-
-        // មុខងារស្វែងរក (Search Filter)
-        function filterTable() {
-            let filter = document.getElementById('searchInput').value.toLowerCase();
-            let filteredData = allData.filter(item => {
-                let c = (item.item_code || "").toLowerCase();
-                let n = (item.item_name || "").toLowerCase();
-                let t = (item.system_type || "").toLowerCase();
-                let s = (item.location_status || "").toLowerCase();
-                return c.includes(filter) || n.includes(filter) || t.includes(filter) || s.includes(filter);
-            });
-            renderTable(filteredData);
+        // Toast Notification Helper
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMessage').innerText = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
         }
     </script>
 </body>
