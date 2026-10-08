@@ -443,6 +443,11 @@ app.get('/views/wms-oms.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'wms-oms.html'));
 });
 
+// Route សម្រាប់បើកទំព័រ CCTV (IT Infrastructure)
+app.get('/views/it-cctv.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'it-cctv.html'));
+});
+
 // ==========================================
 // API Routes: IT CCTV & Network Infrastructure
 // ==========================================
@@ -1494,7 +1499,7 @@ app.get('/api/wms-oms', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching WMS/OMS records:', err);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ error: 'Server.js error' });
     }
 });
 
