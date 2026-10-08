@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍ - Payroll Processing & Benefits</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Kantumruy Pro', sans-serif; background-color: #f0f4f8; margin: 0; padding: 30px; color: #334155; }
+        .container { max-width: 1100px; margin: 0 auto; background: white; padding: 35px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+        .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; background: #2a5298; color: white; padding: 8px 16px; border-radius: 6px; font-size: 14px; transition: background 0.3s; }
+        .back-btn:hover { background: #1e3c72; }
+        h1 { color: #1e3c72; margin: 0; font-size: 26px; }
+        .eng-sub { color: #64748b; font-size: 14px; text-transform: uppercase; margin-top: 5px; font-weight: 600; letter-spacing: 0.5px; }
+        
+        .section-box { margin-top: 25px; padding: 25px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .section-box h3 { margin-top: 0; color: #1e3c72; font-size: 18px; border-bottom: 2px solid #cbd5e1; padding-bottom: 8px; }
+        
+        form { display: grid; gap: 15px; margin-top: 15px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        label { font-weight: 600; font-size: 14px; color: #1e3c72; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Kantumruy Pro', sans-serif; font-size: 14px; box-sizing: border-box; }
+        button.submit-btn { background: #10b981; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-family: 'Kantumruy Pro', sans-serif; font-size: 15px; transition: background 0.3s; }
+        button.submit-btn:hover { background: #059669; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 6px; overflow: hidden; border: 1px solid #cbd5e1; }
+        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 14px; }
+        th { background: #1e3c72; color: white; font-weight: 600; }
+        tr:hover { background: #f1f5f9; }
+
+        .badge-net { background: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 700; }
+        .footer-note { margin-top: 25px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 15px; }
+
+        @media print {
+            .back-btn, .section-box:first-of-type, .footer-note { display: none; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <a href="/" class="back-btn">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
+        
+        <h1>ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍</h1>
+        <div class="eng-sub">Payroll Processing & Benefits Management</div>
+        
+        <!-- ១. Form គណនា និងកត់ត្រាប្រាក់ខែ -->
+        <div class="section-box">
+            <h3>គណនា និងកត់ត្រាប្រាក់បៀវត្សរ៍ប្រចាំខែ (Calculate & Process Payroll)</h3>
+            <form id="payrollForm">
+                <div class="form-row">
+                    <div>
+                        <label>លេខកូដបុគ្គលិក (Employee Code):</label>
+                        <input type="text" id="employee_code" required placeholder="ឧ. 1001">
+                    </div>
+                    <div>
+                        <label>ឈ្មោះពេញ (Full Name):</label>
+                        <input type="text" id="full_name" required placeholder="ឧ. សុខ សុភា">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>ប្រាក់ខែគោល ($ Base Salary):</label>
+                        <input type="number" id="base_salary" required step="0.01" placeholder="ឧ. 500">
+                    </div>
+                    <div>
+                        <label>ប្រាក់អត្ថប្រយោជន៍បន្ថែម ($ Allowance):</label>
+                        <input type="number" id="allowance" step="0.01" value="0" placeholder="ឧ. 50">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>ប្រាក់ត្រូវកាត់ ($ Deduction - មកយឺត/អវត្តមាន):</label>
+                        <input type="number" id="deduction" step="0.01" value="0" placeholder="ឧ. 10">
+                    </div>
+                    <div>
+                        <label>ខែឆ្នាំប្រាក់បៀវត្សរ៍ (Pay Month):</label>
+                        <input type="text" id="pay_month" required placeholder="ឧ. មិថុនា 2026">
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn">រក្សាទុក និងគណនាប្រាក់ខែ (Process Payroll)</button>
+            </form>
+        </div>
+
+        <!-- ២. តារាងបង្ហាញបញ្ជីប្រាក់ខែ -->
+        <div class="section-box">
+            <h3>របាយការណ៍ប្រាក់បៀវត្សរ៍បុគ្គលិក (Payroll Summary Report)</h3>
+            <div style="text-align: right; margin-bottom: 10px;">
+                <button onclick="window.print()" style="background: #0ea5e9; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 600;">🖨️ បោះពុម្ពរបាយការណ៍ (Print PDF)</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ខែ (Month)</th>
+                        <th>កូដ (PIN)</th>
+                        <th>ឈ្មោះបុគ្គលិក (Full Name)</th>
+                        <th>ប្រាក់ខែគោល</th>
+                        <th>បន្ថែម</th>
+                        <th>កាត់</th>
+                        <th>ប្រាក់ខែទទួលបានសុទ្ធ (Net Salary)</th>
+                    </tr>
+                </thead>
+                <tbody id="payrollTableBody">
+                    <!-- ទិន្នន័យនឹងទាញមកបង្ហាញទីនេះ -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer-note">
+            <p><strong>ចំណាំ៖</strong> ទំព័រនេះគណនាប្រាក់បៀវត្សរ៍ស្វ័យប្រវត្តិ និងរក្សាទុកទិន្នន័យសុវត្ថិភាពក្នុង PostgreSQL Database។</p>
+        </div>
+    </div>
+
+    <script>
+        async function loadPayroll() {
+            try {
+                const response = await fetch('/api/payroll');
+                const data = await response.json();
+                
+                const tbody = document.getElementById('payrollTableBody');
+                tbody.innerHTML = '';
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #64748b;">មិនទាន់មានទិន្នន័យប្រាក់បៀវត្សរ៍នៅឡើយទេ</td></tr>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    const row = `<tr>
+                        <td><strong>${item.pay_month}</strong></td>
+                        <td>${item.employee_code}</td>
+                        <td>${item.full_name}</td>
+                        <td>$${parseFloat(item.base_salary).toFixed(2)}</td>
+                        <td>$${parseFloat(item.allowance).toFixed(2)}</td>
+                        <td>$${parseFloat(item.deduction).toFixed(2)}</td>
+                        <td><span class="badge-net">$${parseFloat(item.net_salary).toFixed(2)}</span></td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            } catch (err) {
+                console.error('Error loading payroll:', err);
+            }
+        }
+
+        document.getElementById('payrollForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const employee_code = document.getElementById('employee_code').value;
+            const full_name = document.getElementById('full_name').value;
+            const base_salary = document.getElementById('base_salary').value;
+            const allowance = document.getElementById('allowance').value;
+            const deduction = document.getElementById('deduction').value;
+            const pay_month = document.getElementById('pay_month').value;
+
+            try {
+                const response = await fetch('/api/payroll', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ employee_code, full_name, base_salary, allowance, deduction, pay_month })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert('បានដំណើរការ និងរក្សាទុកប្រាក់បៀវត្សរ៍ដោយជោគជ័យ!');
+                    document.getElementById('payrollForm').reset();
+                    loadPayroll();
+                } else {
+                    alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                }
+            } catch (err) {
+                console.error('Error submitting payroll:', err);
+            }
+        });
+
+        loadPayroll();
+    </script>
+
+</body>
+</html>
