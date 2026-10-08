@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 7]
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តិពេល Start Server
 async function initializeDatabase() {
@@ -425,6 +425,7 @@ app.get('/views/tech-safety.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'tech-safety.html'));
 });
 
+// Route សម្រាប់បើកទំព័រ WMS / OMS[cite: 7]
 app.get('/views/wms-oms.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'wms-oms.html'));
 });
@@ -1432,7 +1433,7 @@ app.post('/api/fleet/security-logs', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រព័ន្ធ WMS / OMS (Warehouse & Order Management) - បានកែសម្រួលរួច
+// API Routes: ប្រព័ន្ធ WMS / OMS (Warehouse & Order Management)
 // ==========================================
 app.get('/api/wms-oms', async (req, res) => {
     try {
@@ -1445,30 +1446,18 @@ app.get('/api/wms-oms', async (req, res) => {
 });
 
 app.post('/api/wms-oms', async (req, res) => {
+    const { item_code, item_name, system_type, quantity, location_status } = req.body;
     try {
-        // ទាញយកតម្លៃដោយការពារករណី Frontend ផ្ញើឈ្មោះ Field ខុស (ឧ. code, name, type ជាដើម)
-        const item_code = req.body.item_code || req.body.code;
-        const item_name = req.body.item_name || req.body.name;
-        const system_type = req.body.system_type || req.body.type;
-        const quantity = req.body.quantity || req.body.qty || 0;
-        const location_status = req.body.location_status || req.body.status || 'Active';
-
-        // ពិនិត្យបញ្ជាក់ថា item_code មិនត្រូវទទេ
-        if (!item_code) {
-            return res.status(400).json({ success: false, error: 'សូមបញ្ជាក់លេខកូដទំនិញ (item_code) ឱ្យបានត្រឹមត្រូវ!' });
-        }
-
         const query = `
             INSERT INTO wms_oms_records (item_code, item_name, system_type, quantity, location_status)
             VALUES ($1, $2, $3, $4, $5) RETURNING *;
         `;
         const values = [item_code, item_name, system_type, parseInt(quantity) || 0, location_status];
         const result = await pool.query(query, values);
-        
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error saving WMS/OMS record:', err);
-        res.status(500).json({ error: err.message || 'Server error' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
