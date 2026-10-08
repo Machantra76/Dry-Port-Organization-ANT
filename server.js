@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 10]
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តិពេល Start Server
 async function initializeDatabase() {
@@ -22,7 +22,7 @@ async function initializeDatabase() {
     try {
         await client.query('BEGIN');
 
-        // ១. តារាងបុគ្គលិក (Employees)[cite: 10]
+        // ១. តារាងបុគ្គលិក (Employees)
         await client.query(`
             CREATE TABLE IF NOT EXISTS employees (
                 id SERIAL PRIMARY KEY,
@@ -34,7 +34,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)[cite: 10]
+        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS attendance_logs (
                 id SERIAL PRIMARY KEY,
@@ -46,7 +46,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)[cite: 10]
+        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)
         await client.query(`
             CREATE TABLE IF NOT EXISTS inventory_items (
                 id SERIAL PRIMARY KEY,
@@ -61,7 +61,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)[cite: 10]
+        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)
         await client.query(`
             CREATE TABLE IF NOT EXISTS payroll_records (
                 id SERIAL PRIMARY KEY,
@@ -76,7 +76,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)[cite: 10]
+        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)
         await client.query(`
             CREATE TABLE IF NOT EXISTS revenues (
                 id SERIAL PRIMARY KEY,
@@ -89,7 +89,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable)[cite: 10]
+        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable)
         await client.query(`
             CREATE TABLE IF NOT EXISTS accounts_receivable (
                 id SERIAL PRIMARY KEY,
@@ -103,7 +103,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៧. តារាងចំណាយ (Expenses)[cite: 10]
+        // ៧. តារាងចំណាយ (Expenses)
         await client.query(`
             CREATE TABLE IF NOT EXISTS expenses (
                 id SERIAL PRIMARY KEY,
@@ -116,7 +116,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៨. តារាងគ្រប់គ្រងរថយន្ត (Fleet Vehicles)[cite: 10]
+        // ៨. តារាងគ្រប់គ្រងរថយន្ត (Fleet Vehicles)
         await client.query(`
             CREATE TABLE IF NOT EXISTS fleet_vehicles (
                 id SERIAL PRIMARY KEY,
@@ -129,7 +129,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៩. តារាងគ្រប់គ្រងអ្នកបើកបរ (Drivers)[cite: 10]
+        // ៩. តារាងគ្រប់គ្រងអ្នកបើកបរ (Drivers)
         await client.query(`
             CREATE TABLE IF NOT EXISTS drivers (
                 id SERIAL PRIMARY KEY,
@@ -142,7 +142,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១០. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches)[cite: 10]
+        // ១០. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches)
         await client.query(`
             CREATE TABLE IF NOT EXISTS transport_dispatches (
                 id SERIAL PRIMARY KEY,
@@ -157,7 +157,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១១. តារាងគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)[cite: 10]
+        // ១១. តារាងគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS fuel_logs (
                 id SERIAL PRIMARY KEY,
@@ -172,7 +172,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs)[cite: 10]
+        // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS maintenance_logs (
                 id SERIAL PRIMARY KEY,
@@ -187,7 +187,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៣. តារាងរៀបចំផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)[cite: 10]
+        // ១៣. តារាងរៀបចំផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)
         await client.query(`
             CREATE TABLE IF NOT EXISTS transport_plans (
                 id SERIAL PRIMARY KEY,
@@ -203,7 +203,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)[cite: 10]
+        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
         await client.query(`
             CREATE TABLE IF NOT EXISTS damaged_containers (
                 id SERIAL PRIMARY KEY,
@@ -218,7 +218,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)[cite: 10]
+        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_yard_locations (
                 id SERIAL PRIMARY KEY,
@@ -233,7 +233,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)[cite: 10]
+        // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_repair_logs (
                 id SERIAL PRIMARY KEY,
@@ -251,7 +251,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out) - បន្ថែមថ្មី
+        // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out)
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_gate_out (
                 id SERIAL PRIMARY KEY,
@@ -262,6 +262,22 @@ async function initializeDatabase() {
                 destination TEXT NOT NULL,
                 bill_of_lading VARCHAR(100),
                 released_by VARCHAR(100) NOT NULL,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ១៨. តារាងប្រតិបត្តិការទីលាន (Yard Operations) - បន្ថែមថ្មី
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS yard_operations (
+                id SERIAL PRIMARY KEY,
+                container_number VARCHAR(50) NOT NULL,
+                operation_type VARCHAR(100) NOT NULL,
+                yard_location VARCHAR(100) NOT NULL,
+                operation_date TIMESTAMP NOT NULL,
+                equipment_used VARCHAR(100),
+                operator_name VARCHAR(100) NOT NULL,
+                status VARCHAR(50) NOT NULL,
                 notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
@@ -278,7 +294,7 @@ async function initializeDatabase() {
 }
 
 // ==========================================
-// HTML Routes សម្រាប់បើកទំព័រ Views ផ្សេងៗ[cite: 10]
+// HTML Routes សម្រាប់បើកទំព័រ Views ផ្សេងៗ
 // ==========================================
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
@@ -352,8 +368,13 @@ app.get('/views/container-gate-out.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'container-gate-out.html'));
 });
 
+// Route សម្រាប់ទំព័រ Yard Operations - បន្ថែមថ្មី
+app.get('/views/yard-operations.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'yard-operations.html'));
+});
+
 // ==========================================
-// API Routes: បុគ្គលិក (Employees)[cite: 10]
+// API Routes: បុគ្គលិក (Employees)
 // ==========================================
 app.get('/api/employees', async (req, res) => {
     try {
@@ -379,7 +400,7 @@ app.post('/api/employees', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: វត្តមាន (Attendance Logs)[cite: 10]
+// API Routes: វត្តមាន (Attendance Logs)
 // ==========================================
 app.get('/api/attendance/logs', async (req, res) => {
     const { from, to, search } = req.query;
@@ -415,7 +436,7 @@ app.get('/api/attendance/logs', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ទ្រព្យសម្បត្តិ និងស្តុក (Inventory)[cite: 10]
+// API Routes: ទ្រព្យសម្បត្តិ និងស្តុក (Inventory)
 // ==========================================
 app.get('/api/inventory', async (req, res) => {
     const { search, category } = req.query;
@@ -460,7 +481,7 @@ app.post('/api/inventory', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)[cite: 10]
+// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)
 // ==========================================
 app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => {
     const { employee_code, pay_month } = req.params;
@@ -523,7 +544,7 @@ app.post('/api/payroll', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រាក់ចំណូល (Revenues)[cite: 10]
+// API Routes: ប្រាក់ចំណូល (Revenues)
 // ==========================================
 app.get('/api/revenues', async (req, res) => {
     const { from, to } = req.query;
@@ -559,7 +580,7 @@ app.post('/api/revenues', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: គណនេយ្យទទួល (Accounts Receivable)[cite: 10]
+// API Routes: គណនេយ្យទទួល (Accounts Receivable)
 // ==========================================
 app.get('/api/receivables', async (req, res) => {
     const { from, to } = req.query;
@@ -595,7 +616,7 @@ app.post('/api/receivables', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ចំណាយ (Expenses)[cite: 10]
+// API Routes: ចំណាយ (Expenses)
 // ==========================================
 app.get('/api/expenses', async (req, res) => {
     const { from, to } = req.query;
@@ -631,7 +652,7 @@ app.post('/api/expenses', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: របាយការណ៍ហិរញ្ញវត្ថុ (Financial Summary API)[cite: 10]
+// API Routes: របាយការណ៍ហិរញ្ញវត្ថុ (Financial Summary API)
 // ==========================================
 app.get('/api/financial/summary', async (req, res) => {
     const { from, to } = req.query;
@@ -677,7 +698,7 @@ app.get('/api/financial/summary', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការចាត់ចែងរថយន្ត (Fleet Vehicles)[cite: 10]
+// API Routes: ការចាត់ចែងរថយន្ត (Fleet Vehicles)
 // ==========================================
 app.get('/api/fleet/vehicles', async (req, res) => {
     try {
@@ -703,7 +724,7 @@ app.post('/api/fleet/vehicles', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការគ្រប់គ្រងអ្នកបើកបរ (Drivers)[cite: 10]
+// API Routes: ការគ្រប់គ្រងអ្នកបើកបរ (Drivers)
 // ==========================================
 app.get('/api/fleet/drivers', async (req, res) => {
     try {
@@ -729,7 +750,7 @@ app.post('/api/fleet/drivers', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការបញ្ជូនដឹកជញ្ជូន (Transport Dispatches)[cite: 10]
+// API Routes: ការបញ្ជូនដឹកជញ្ជូន (Transport Dispatches)
 // ==========================================
 app.get('/api/fleet/dispatches', async (req, res) => {
     const { from, to } = req.query;
@@ -785,7 +806,7 @@ app.post('/api/fleet/dispatches', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)[cite: 10]
+// API Routes: ការគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)
 // ==========================================
 app.get('/api/fleet/fuel', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
@@ -833,7 +854,7 @@ app.post('/api/fleet/fuel', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការថែទាំយានយន្ត (Maintenance Logs)[cite: 10]
+// API Routes: ការថែទាំយានយន្ត (Maintenance Logs)
 // ==========================================
 app.get('/api/fleet/maintenance', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
@@ -908,7 +929,7 @@ app.post('/api/fleet/maintenance', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)[cite: 10]
+// API Routes: ផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)
 // ==========================================
 app.get('/api/fleet/transport-plans', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
@@ -976,7 +997,7 @@ app.post('/api/fleet/transport-plans', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)[cite: 10]
+// API Routes: ការត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
 // ==========================================
 app.get('/api/fleet/damaged-containers', async (req, res) => {
     const { from, to, severity_level } = req.query;
@@ -1028,7 +1049,7 @@ app.post('/api/fleet/damaged-containers', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)[cite: 10]
+// API Routes: ការគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
 // ==========================================
 app.get('/api/fleet/container-yard', async (req, res) => {
     const { block_code, status } = req.query;
@@ -1080,7 +1101,7 @@ app.post('/api/fleet/container-yard', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)[cite: 10]
+// API Routes: ការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)
 // ==========================================
 app.get('/api/fleet/container-repairs', async (req, res) => {
     const { status, container_number } = req.query;
@@ -1136,7 +1157,7 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការចេញកុងតឺន័រ (Container Gate-Out) - បន្ថែមថ្មី
+// API Routes: ការចេញកុងតឺន័រ (Container Gate-Out)
 // ==========================================
 app.get('/api/fleet/container-gate-out', async (req, res) => {
     const { from, to, container_number } = req.query;
@@ -1208,7 +1229,65 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
     }
 });
 
-// ចាប់ផ្តើមដំណើរការ Server[cite: 10]
+// ==========================================
+// API Routes: ប្រតិបត្តិការទីលាន (Yard Operations) - បន្ថែមថ្មី
+// ==========================================
+app.get('/api/fleet/yard-operations', async (req, res) => {
+    try {
+        const query = 'SELECT * FROM yard_operations ORDER BY operation_date DESC';
+        const result = await pool.query(query);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching yard operations:', err);
+        res.status(500).json({ success: false, error: 'Database error' });
+    }
+});
+
+app.post('/api/fleet/yard-operations', async (req, res) => {
+    try {
+        const { 
+            container_number, 
+            operation_type, 
+            yard_location, 
+            operation_date, 
+            equipment_used, 
+            operator_name, 
+            status, 
+            notes 
+        } = req.body;
+
+        if (!container_number || !operation_type || !yard_location || !operation_date || !operator_name || !status) {
+            return res.status(400).json({ success: false, error: 'សូមបំពេញព័ត៌មានដែលចាំបាច់ឱ្យបានគ្រប់គ្រាន់!' });
+        }
+
+        const query = `
+            INSERT INTO yard_operations 
+            (container_number, operation_type, yard_location, operation_date, equipment_used, operator_name, status, notes) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+            RETURNING *;
+        `;
+
+        const values = [
+            container_number, 
+            operation_type, 
+            yard_location, 
+            operation_date, 
+            equipment_used || null, 
+            operator_name, 
+            status, 
+            notes || null
+        ];
+
+        const result = await pool.query(query, values);
+        res.status(201).json({ success: true, data: result.rows[0] });
+
+    } catch (err) {
+        console.error('Error saving yard operation:', err);
+        res.status(500).json({ success: false, error: 'មិនអាចរក្សាទុកទិន្នន័យក្នុង Database បានទេ' });
+    }
+});
+
+// ចាប់ផ្តើមដំណើរការ Server
 initializeDatabase().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
