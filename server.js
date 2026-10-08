@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 7]
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តិពេល Start Server
 async function initializeDatabase() {
@@ -300,7 +300,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២០. តារាងគ្រប់គ្រងក្រុមសន្តិសុខ (Security Logs) - បន្ថែមថ្មី
+        // ២០. តារាងគ្រប់គ្រងក្រុមសន្តិសុខ (Security Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS security_logs (
                 id SERIAL PRIMARY KEY,
@@ -311,6 +311,19 @@ async function initializeDatabase() {
                 event_type VARCHAR(100) NOT NULL,
                 status VARCHAR(50),
                 notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ២១. តារាងប្រព័ន្ធ WMS / OMS (Warehouse & Order Management Systems) - បន្ថែមថ្មី
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS wms_oms_records (
+                id SERIAL PRIMARY KEY,
+                item_code VARCHAR(50) NOT NULL,
+                item_name VARCHAR(150) NOT NULL,
+                system_type VARCHAR(100) NOT NULL,
+                quantity INT NOT NULL DEFAULT 0,
+                location_status VARCHAR(150) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -408,9 +421,13 @@ app.get('/views/cargo-gate.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'cargo-gate.html'));
 });
 
-// Route សម្រាប់បើកទំព័រ Security Guard Team - បន្ថែមថ្មី
 app.get('/views/tech-safety.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'tech-safety.html'));
+});
+
+// Route សម្រាប់បើកទំព័រ WMS / OMS - បន្ថែមថ្មី[cite: 7]
+app.get('/views/wms-oms.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'wms-oms.html'));
 });
 
 // ==========================================
@@ -1296,7 +1313,7 @@ app.post('/api/fleet/yard-operations', async (req, res) => {
         } = req.body;
 
         if (!container_number || !operation_type || !yard_location || !operation_date || !operator_name || !status) {
-            return res.status(400).json({ success: false, error: 'សូមបំព័នព័ត៌មានដែលចាំបាច់ឱ្យបានគ្រប់គ្រាន់!' });
+            return res.status(400).json({ success: false, error: 'សូមបំពេញព័ត៌មានដែលចាំបាច់ឱ្យបានគ្រប់គ្រាន់!' });
         }
 
         const query = `
@@ -1387,7 +1404,7 @@ app.post('/api/fleet/cargo-gates', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ក្រុមសន្តិសុខ (Security Guard Team) - បន្ថែមថ្មី
+// API Routes: ក្រុមសន្តិសុខ (Security Guard Team)
 // ==========================================
 app.get('/api/fleet/security-logs', async (req, res) => {
     try {
@@ -1411,6 +1428,35 @@ app.post('/api/fleet/security-logs', async (req, res) => {
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error saving security log:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// ==========================================
+// API Routes: ប្រព័ន្ធ WMS / OMS (Warehouse & Order Management) - បន្ថែមថ្មី
+// ==========================================
+app.get('/api/wms-oms', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM wms_oms_records ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching WMS/OMS records:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/wms-oms', async (req, res) => {
+    const { item_code, item_name, system_type, quantity, location_status } = req.body;
+    try {
+        const query = `
+            INSERT INTO wms_oms_records (item_code, item_name, system_type, quantity, location_status)
+            VALUES ($1, $2, $3, $4, $5) RETURNING *;
+        `;
+        const values = [item_code, item_name, system_type, parseInt(quantity) || 0, location_status];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving WMS/OMS record:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
