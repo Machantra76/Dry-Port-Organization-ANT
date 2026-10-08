@@ -19,7 +19,7 @@
         form { display: grid; gap: 15px; margin-top: 15px; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         label { font-weight: 600; font-size: 14px; color: #1e3c72; }
-        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Kantumruy Pro', sans-serif; font-size: 14px; box-sizing: border-box; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-family: 'Kantumruy Pro', sans-serif; font-size: 14px; box-sizing: border-box; background: white; }
         button.submit-btn { background: #10b981; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; font-family: 'Kantumruy Pro', sans-serif; font-size: 15px; transition: background 0.3s; }
         button.submit-btn:hover { background: #059669; }
 
@@ -44,11 +44,11 @@
         <a href="/" class="back-btn">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
         
         <h1>ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍</h1>
-        <div class="eng-sub">Payroll Processing & Benefits Management</div>
+        <div class="eng-sub">Payroll Processing & Benefits Management[cite: 8]</div>
         
         <!-- ១. Form គណនា និងកត់ត្រាប្រាក់ខែ -->
         <div class="section-box">
-            <h3>គណនា និងកត់ត្រាប្រាក់បៀវត្សរ៍ប្រចាំខែ (Calculate & Process Payroll)</h3>
+            <h3>គណនា និងកត់ត្រាប្រាក់បៀវត្សរ៍ប្រចាំខែ (Calculate & Process Payroll)[cite: 8]</h3>
             <form id="payrollForm">
                 <div class="form-row">
                     <div>
@@ -77,7 +77,21 @@
                     </div>
                     <div>
                         <label>ខែឆ្នាំប្រាក់បៀវត្សរ៍ (Pay Month):</label>
-                        <input type="text" id="pay_month" required placeholder="ឧ. មិថុនា 2026">
+                        <select id="pay_month" required>
+                            <option value="">-- ជ្រើសរើសខែឆ្នាំ --</option>
+                            <option value="មករា 2026">មករា 2026</option>
+                            <option value="កុម្ភៈ 2026">កុម្ភៈ 2026</option>
+                            <option value="មីនា 2026">មីនា 2026</option>
+                            <option value="មេសា 2026">មេសា 2026</option>
+                            <option value="ឧសភា 2026">ឧសភា 2026</option>
+                            <option value="មិថុនា 2026">មិថុនា 2026</option>
+                            <option value="កក្កដា 2026">កក្កដា 2026</option>
+                            <option value="សីហា 2026">សីហា 2026</option>
+                            <option value="កញ្ញា 2026">កញ្ញា 2026</option>
+                            <option value="តុលា 2026">តុលា 2026</option>
+                            <option value="វិច្ឆិកា 2026">វិច្ឆិកា 2026</option>
+                            <option value="ធ្នូ 2026">ធ្នូ 2026</option>
+                        </select>
                     </div>
                 </div>
                 <button type="submit" class="submit-btn">រក្សាទុក និងគណនាប្រាក់ខែ (Process Payroll)</button>
@@ -86,7 +100,7 @@
 
         <!-- ២. តារាងបង្ហាញបញ្ជីប្រាក់ខែ -->
         <div class="section-box">
-            <h3>របាយការណ៍ប្រាក់បៀវត្សរ៍បុគ្គលិក (Payroll Summary Report)</h3>
+            <h3>របាយការណ៍ប្រាក់បៀវត្សរ៍បុគ្គលិក (Payroll Summary Report)[cite: 8]</h3>
             <div style="text-align: right; margin-bottom: 10px;">
                 <button onclick="window.print()" style="background: #0ea5e9; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 600;">🖨️ បោះពុម្ពរបាយការណ៍ (Print PDF)</button>
             </div>
@@ -103,13 +117,13 @@
                     </tr>
                 </thead>
                 <tbody id="payrollTableBody">
-                    <!-- ទិន្នន័យនឹងទាញមកបង្ហាញទីនេះ -->
+                    <!-- ទិន្នន័យនឹងទាញមកបង្ហាញទីនេះ[cite: 8] -->
                 </tbody>
             </table>
         </div>
 
         <div class="footer-note">
-            <p><strong>ចំណាំ៖</strong> ទំព័រនេះគណនាប្រាក់បៀវត្សរ៍ស្វ័យប្រវត្តិ និងរក្សាទុកទិន្នន័យសុវត្ថិភាពក្នុង PostgreSQL Database។</p>
+            <p><strong>ចំណាំ៖</strong> ទំព័រនេះគណនាប្រាក់បៀវត្សរ៍ស្វ័យប្រវត្តិ និងរក្សាទុកទិន្នន័យសុវត្ថិភាពក្នុង PostgreSQL Database[cite: 8].</p>
         </div>
     </div>
 
