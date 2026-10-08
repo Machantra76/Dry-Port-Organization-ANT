@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ការគ្រប់គ្រងក្រុមសន្តិសុខ (Security Guard Team & Incident Tracking)</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font (Kantumruy Pro) -->
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+        .main-container {
+            max-width: 1300px;
+            margin: 30px auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        .btn-back {
+            background-color: #1e3a8a;
+            color: white;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 8px 16px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-back:hover {
+            background-color: #1e40af;
+            color: white;
+        }
+        .page-title {
+            color: #1e3a8a;
+            font-weight: 700;
+            margin-top: 20px;
+            font-size: 1.75rem;
+        }
+        .page-subtitle {
+            color: #6c757d;
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+        }
+        .section-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            background-color: #ffffff;
+        }
+        .section-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+        }
+        .form-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #495057;
+        }
+        .form-control, .form-select {
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.15);
+        }
+        .btn-primary-custom {
+            background-color: #10b981;
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .btn-primary-custom:hover {
+            background-color: #059669;
+        }
+        .table-custom-header {
+            background-color: #1e3a8a !important;
+            color: white !important;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+        .table tbody td {
+            vertical-align: middle;
+            font-size: 0.88rem;
+            text-align: center;
+        }
+        .btn-print {
+            background-color: #475569;
+            color: white;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 8px 16px;
+            border: none;
+        }
+        .btn-print:hover {
+            background-color: #334155;
+            color: white;
+        }
+        .btn-filter {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+        }
+        .btn-filter:hover {
+            background-color: #1d4ed8;
+            color: white;
+        }
+        .btn-reset {
+            background-color: #64748b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+        }
+        .btn-reset:hover {
+            background-color: #475569;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <!-- ប៊ូតុងត្រឡប់ទៅ Dashboard វិញ -->
+    <a href="/" class="btn-back">
+        <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)
+    </a>
+
+    <!-- ចំណងជើងទំព័រ -->
+    <h2 class="page-title">ការគ្រប់គ្រងក្រុមសន្តិសុខ និងសុវត្ថិភាព</h2>
+    <p class="page-subtitle">SECURITY GUARD TEAM & INCIDENT / GATE LOGGING SYSTEM</p>
+
+    <!-- Form កត់ត្រាថ្មី -->
+    <div class="section-card">
+        <div class="section-card-title">កត់ត្រាការយាមកាម ឬព្រឹត្តិការណ៍សន្តិសុខថ្មី (Record Security Shift / Incident)</div>
+        <form id="securityForm">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">ឈ្មោះមន្ត្រីសន្តិសុខ / អ្នកយាម (Guard Name):</label>
+                    <input type="text" class="form-control" id="guard_name" placeholder="ឧ. នាយ សុខ (Ex. Guard Name)" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">វេនយាម (Shift Time):</label>
+                    <select class="form-select" id="shift_time" required>
+                        <option value="Morning Shift (06:00 - 14:00)">វេនព្រឹក (Morning: 06:00 - 14:00)</option>
+                        <option value="Afternoon Shift (14:00 - 22:00)">វេនថ្ងៃ (Afternoon: 14:00 - 22:00)</option>
+                        <option value="Night Shift (22:00 - 06:00)">វេនយប់ (Night: 22:00 - 06:00)</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">ទីតាំងประจำការ (Post Location):</label>
+                    <input type="text" class="form-control" id="post_location" placeholder="ឧ. ខ្លោងទ្វារធំ / ទីលានកុងតឺន័រ (Ex. Main Gate / CY)" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">កាលបរិច្ឆេទ និងម៉ោងចុះបញ្ជី (Date & Time):</label>
+                    <input type="datetime-local" class="form-control" id="log_date" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">ប្រភេទព្រឹត្តិការណ៍ (Event Type):</label>
+                    <select class="form-select" id="event_type" required>
+                        <option value="Regular Patrol">ការដើរល្បាតជាប្រចាំ (Regular Patrol)</option>
+                        <option value="Visitor Check">ការពិនិត្យភ្ញៀว/រថយន្តចូល (Visitor/Truck Check)</option>
+                        <option value="Security Incident">អធិការកិច្ច/មានបញ្តហាចោទ (Security Incident)</option>
+                        <option value="Other">ផ្សេងៗ (Other)</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">ស្ថានភាព (Status):</label>
+                    <select class="form-select" id="status">
+                        <option value="Normal">ធម្មតា / សុវត្ថិភាពល្អ (Normal / Safe)</option>
+                        <option value="Attention Needed">ត្រូវការយកចិត្តទុកដាក់ (Attention Needed)</option>
+                        <option value="Resolved">បានដោះស្រាយរួចរាល់ (Resolved)</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">ព័ត៌មានលម្អិត / កំណត់សម្គាល់ (Description / Notes):</label>
+                    <textarea class="form-control" id="notes" rows="2" placeholder="សេចក្តីអធិប្បាយបន្ថែមពីសភាពការណ៍... (Details...)"></textarea>
+                </div>
+                <div class="col-12 text-end mt-4">
+                    <button type="submit" class="btn btn-primary-custom">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> រក្សាទុកទិន្នន័យសន្តិសុខ (Save Record)
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ -->
+    <div class="section-card">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div class="section-card-title mb-0">តារាងតាមដានសន្តិសុខ និងរបាយការណ៍ (Security Log List & Report)</div>
+            <button class="btn btn-print" onclick="window.print()">
+                <i class="fa-solid fa-print me-1"></i> បោះពុម្ព / រក្សាទុក PDF (Print / Save PDF)
+            </button>
+        </div>
+
+        <!-- ផ្នែកតម្រងស្វែងរក (Filter) -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <label class="form-label">ចាប់ពីថ្ងៃទី (From Date):</label>
+                <input type="date" class="form-control" id="filterFrom">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">ដល់ថ្ងៃទី (To Date):</label>
+                <input type="date" class="form-control" id="filterTo">
+            </div>
+            <div class="col-md-6 d-flex align-items-end gap-2">
+                <button class="btn btn-filter" onclick="loadSecurityLogs()">
+                    <i class="fa-solid fa-magnifying-glass me-1"></i> ស្វែងរក / ត្រង (Filter)
+                </button>
+                <button class="btn btn-reset" onclick="resetFilter()">
+                    កំណត់ឡើងវិញ (Reset)
+                </button>
+            </div>
+        </div>
+
+        <!-- តារាងបង្ហាញទិន្នន័យ -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th class="table-custom-header">ល.រ (No.)</th>
+                        <th class="table-custom-header">មន្ត្រីសន្តិសុខ (Guard Name)</th>
+                        <th class="table-custom-header">វេនយាម (Shift)</th>
+                        <th class="table-custom-header">ទីតាំង (Post Location)</th>
+                        <th class="table-custom-header">ប្រភេទ (Event Type)</th>
+                        <th class="table-custom-header">កាលបរិច្ឆេទ (Date & Time)</th>
+                        <th class="table-custom-header">ស្ថានភាព (Status)</th>
+                        <th class="table-custom-header">សកម្មភាព (Actions)</th>
+                    </tr>
+                </thead>
+                <tbody id="securityTableBody">
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">ពុំមានទិន្នន័យសន្តិសុខក្នុងរយះពេលនេះ (No security data found)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript សម្រាប់គ្រប់គ្រង API -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // កំណត់ថ្ងៃម៉ោងបច្ចុប្បន្នស្វ័យប្រវត្តិលើ Form
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('log_date').value = now.toISOString().slice(0, 16);
+
+        loadSecurityLogs();
+    });
+
+    // បញ្ជូនទិន្នន័យថ្មី (Submit Form)
+    document.getElementById('securityForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const data = {
+            guard_name: document.getElementById('guard_name').value,
+            shift_time: document.getElementById('shift_time').value,
+            post_location: document.getElementById('post_location').value,
+            log_date: document.getElementById('log_date').value,
+            event_type: document.getElementById('event_type').value,
+            status: document.getElementById('status').value,
+            notes: document.getElementById('notes').value
+        };
+
+        try {
+            const response = await fetch('/api/fleet/security-logs', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            if (response.ok && result.success) {
+                alert('បានរក្សាទុកទិន្នន័យសន្តិសុខដោយជោគជ័យ!');
+                document.getElementById('securityForm').reset();
+                
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                document.getElementById('log_date').value = now.toISOString().slice(0, 16);
+
+                loadSecurityLogs();
+            } else {
+                alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
+            }
+        } catch (err) {
+            console.error('Error submitting form:', err);
+            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+        }
+    });
+
+    // ទាញយកទិន្នន័យមកបង្ហាញក្នុងតារាង
+    async function loadSecurityLogs() {
+        try {
+            const response = await fetch('/api/fleet/security-logs');
+            const data = await response.json();
+
+            const tbody = document.getElementById('securityTableBody');
+            tbody.innerHTML = '';
+
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">ពុំមានទិន្នន័យសន្តិសុខក្នុងរយះពេលនេះ (No security data found)</td></tr>`;
+                return;
+            }
+
+            data.forEach((item, index) => {
+                const formattedDate = new Date(item.log_date).toLocaleString('km-KH');
+                let badgeClass = 'bg-success';
+                if (item.status === 'Attention Needed') badgeClass = 'bg-warning text-dark';
+                if (item.status === 'Resolved') badgeClass = 'bg-primary';
+
+                const row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td class="fw-bold text-primary">${item.guard_name}</td>
+                        <td>${item.shift_time}</td>
+                        <td>${item.post_location}</td>
+                        <td>${item.event_type}</td>
+                        <td>${formattedDate}</td>
+                        <td><span class="badge ${badgeClass}">${item.status}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" title="មើលព័ត៌មានលម្អិត"><i class="fa-solid fa-eye"></i></button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        } catch (err) {
+            console.error('Error loading security logs:', err);
+        }
+    }
+
+    // សម្អាត Filter
+    function resetFilter() {
+        document.getElementById('filterFrom').value = '';
+        document.getElementById('filterTo').value = '';
+        loadSecurityLogs();
+    }
+</script>
+
+</body>
+</html>
