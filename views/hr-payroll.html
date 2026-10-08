@@ -44,11 +44,11 @@
         <a href="/" class="back-btn">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
         
         <h1>ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍</h1>
-        <div class="eng-sub">Payroll Processing & Benefits Management[cite: 8]</div>
+        <div class="eng-sub">Payroll Processing & Benefits Management</div>
         
         <!-- ១. Form គណនា និងកត់ត្រាប្រាក់ខែ -->
         <div class="section-box">
-            <h3>គណនា និងកត់ត្រាប្រាក់បៀវត្សរ៍ប្រចាំខែ (Calculate & Process Payroll)[cite: 8]</h3>
+            <h3>គណនា និងកត់ត្រាប្រាក់បៀវត្សរ៍ប្រចាំខែ (Calculate & Process Payroll)</h3>
             <form id="payrollForm">
                 <div class="form-row">
                     <div>
@@ -77,21 +77,8 @@
                     </div>
                     <div>
                         <label>ខែឆ្នាំប្រាក់បៀវត្សរ៍ (Pay Month):</label>
-                        <select id="pay_month" required>
-                            <option value="">-- ជ្រើសរើសខែឆ្នាំ --</option>
-                            <option value="មករា 2026">មករា 2026</option>
-                            <option value="កុម្ភៈ 2026">កុម្ភៈ 2026</option>
-                            <option value="មីនា 2026">មីនា 2026</option>
-                            <option value="មេសា 2026">មេសា 2026</option>
-                            <option value="ឧសភា 2026">ឧសភា 2026</option>
-                            <option value="មិថុនា 2026">មិថុនា 2026</option>
-                            <option value="កក្កដា 2026">កក្កដា 2026</option>
-                            <option value="សីហា 2026">សីហា 2026</option>
-                            <option value="កញ្ញា 2026">កញ្ញា 2026</option>
-                            <option value="តុលា 2026">តុលា 2026</option>
-                            <option value="វិច្ឆិកា 2026">វិច្ឆិកា 2026</option>
-                            <option value="ធ្នូ 2026">ធ្នូ 2026</option>
-                        </select>
+                        <!-- ប្រើប្រាស់ input type="month" ដើម្បីឱ្យចេញផ្ទាំងរើសខែឆ្នាំ -->
+                        <input type="month" id="pay_month" required>
                     </div>
                 </div>
                 <button type="submit" class="submit-btn">រក្សាទុក និងគណនាប្រាក់ខែ (Process Payroll)</button>
@@ -100,7 +87,7 @@
 
         <!-- ២. តារាងបង្ហាញបញ្ជីប្រាក់ខែ -->
         <div class="section-box">
-            <h3>របាយការណ៍ប្រាក់បៀវត្សរ៍បុគ្គលិក (Payroll Summary Report)[cite: 8]</h3>
+            <h3>របាយការណ៍ប្រាក់បៀវត្សរ៍បុគ្គលិក (Payroll Summary Report)</h3>
             <div style="text-align: right; margin-bottom: 10px;">
                 <button onclick="window.print()" style="background: #0ea5e9; color: white; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: 600;">🖨️ បោះពុម្ពរបាយការណ៍ (Print PDF)</button>
             </div>
@@ -117,13 +104,13 @@
                     </tr>
                 </thead>
                 <tbody id="payrollTableBody">
-                    <!-- ទិន្នន័យនឹងទាញមកបង្ហាញទីនេះ[cite: 8] -->
+                    <!-- ទិន្នន័យនឹងទាញមកបង្ហាញទីនេះ -->
                 </tbody>
             </table>
         </div>
 
         <div class="footer-note">
-            <p><strong>ចំណាំ៖</strong> ទំព័រនេះគណនាប្រាក់បៀវត្សរ៍ស្វ័យប្រវត្តិ និងរក្សាទុកទិន្នន័យសុវត្ថិភាពក្នុង PostgreSQL Database[cite: 8].</p>
+            <p><strong>ចំណាំ៖</strong> ទំព័រនេះគណនាប្រាក់បៀវត្សរ៍ស្វ័យប្រវត្តិ និងរក្សាទុកទិន្នន័យសុវត្ថិភាពក្នុង PostgreSQL Database។</p>
         </div>
     </div>
 
