@@ -100,6 +100,10 @@ app.get('/views/hr-asset.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'hr-asset.html'));
 });
 
+app.get('/views/hr-management.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'hr-management.html'));
+});
+
 app.get('/views/hr-payroll.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'hr-payroll.html'));
 });
@@ -183,7 +187,7 @@ app.get('/api/inventory', async (req, res) => {
         }
 
         if (category) {
-            query += ` AND category = $${paramIndex}`;
+            query += ` category = $${paramIndex}`;
             params.push(category);
             paramIndex += 1;
         }
@@ -242,7 +246,7 @@ app.post('/api/payroll', async (req, res) => {
     }
 });
 
-// ចាប់ផ្តើមដំណើរការ Server បន្ទាប់ពីបង្កើត Database Tables រួច
+// ចាប់ផ្តើមដំណើរការ Server
 initializeDatabase().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
