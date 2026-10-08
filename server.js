@@ -187,7 +187,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៣. តារាងរៀបចំផែនការដឹកជញ្ជូនទំនិញ (Transport Plans) [បន្ថែមថ្មី]
+        // ១៣. តារាងរៀបចំផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)
         await client.query(`
             CREATE TABLE IF NOT EXISTS transport_plans (
                 id SERIAL PRIMARY KEY,
@@ -199,6 +199,21 @@ async function initializeDatabase() {
                 driver_name VARCHAR(150) NOT NULL,
                 notes TEXT,
                 status VARCHAR(50) DEFAULT 'Planned',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers) [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS damaged_containers (
+                id SERIAL PRIMARY KEY,
+                container_number VARCHAR(100) NOT NULL,
+                inspection_date DATE NOT NULL,
+                damage_location VARCHAR(150) NOT NULL, -- ទីតាំងខូចខាត (ឧ. ទ្វារ, ដំបូល, ជញ្ជាំង...)
+                severity_level VARCHAR(50) NOT NULL,   -- កម្រិតធ្ងន់ធ្ងរ (Minor, Moderate, Severe)
+                inspector_name VARCHAR(150) NOT NULL,
+                description TEXT,
+                status VARCHAR(50) DEFAULT 'Pending Repair', -- ស្ថានភាព (Pending Repair, In Repair, Resolved)
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -264,9 +279,13 @@ app.get('/views/fleet-fuel-maintenance.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'fleet-fuel-maintenance.html'));
 });
 
-// HTML Route សម្រាប់ទំព័រផែនការដឹកជញ្ជូនទំនិញ [បន្ថែមថ្មី]
 app.get('/views/transport-planning.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'transport-planning.html'));
+});
+
+// HTML Route សម្រាប់ទំព័រត្រួតពិនិត្យកុងតឺន័រខូច [បន្ថែមថ្មី]
+app.get('/views/damaged-container.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'damaged-container.html'));
 });
 
 // ==========================================
@@ -680,12 +699,10 @@ app.post('/api/fleet/dispatches', async (req, res) => {
             `;
             const result = await client.query(query, [dispatch_code, vehicle_code, driver_name, destination, dispatch_date, status || 'Dispatched', notes]);
 
-            // ធ្វើបច្ចុប្បន្នភាពស្ថានភាពរថយន្តឱ្យទៅជា 'On Mission'
             await client.query(`
                 UPDATE fleet_vehicles SET status = 'On Mission' WHERE vehicle_code = $1
             `, [vehicle_code]);
 
-            // ធ្វើបច្ចុប្បន្នភាពស្ថានភាពអ្នកបើកបរឱ្យទៅជា 'On Duty'
             await client.query(`
                 UPDATE drivers SET status = 'On Duty' WHERE full_name = $1
             `, [driver_name]);
@@ -827,7 +844,7 @@ app.post('/api/fleet/maintenance', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ផែនការដឹកជញ្ជូនទំនិញ (Transport Plans) [បន្ថែមថ្មី]
+// API Routes: ផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)
 // ==========================================
 app.get('/api/fleet/transport-plans', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
@@ -877,7 +894,6 @@ app.post('/api/fleet/transport-plans', async (req, res) => {
                 notes
             ]);
 
-            // ធ្វើបច្ចុប្បន្នភាពស្ថានភាពរថយន្តទៅជា 'On Mission' ពេលបង្កើតផែនការ
             await client.query(`
                 UPDATE fleet_vehicles SET status = 'On Mission' WHERE vehicle_code = $1
             `, [vehicle_code]);
@@ -892,6 +908,58 @@ app.post('/api/fleet/transport-plans', async (req, res) => {
         }
     } catch (err) {
         res.status(500).json({ error: 'កំហុសក្នុងការបង្កើតផែនការដឹកជញ្ជូនទំនិញ' });
+    }
+});
+
+// ==========================================
+// API Routes: ការត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/fleet/damaged-containers', async (req, res) => {
+    const { from, to, severity_level } = req.query;
+    try {
+        let query = 'SELECT * FROM damaged_containers WHERE 1=1';
+        let params = [];
+        let paramIndex = 1;
+        
+        if (from && to) {
+            query += ` AND inspection_date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
+            params.push(from, to);
+            paramIndex += 2;
+        }
+
+        if (severity_level) {
+            query += ` AND severity_level = $${paramIndex}`;
+            params.push(severity_level);
+            paramIndex += 1;
+        }
+        
+        query += ' ORDER BY inspection_date DESC, id DESC';
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យកុងតឺន័រខូចបានទេ' });
+    }
+});
+
+app.post('/api/fleet/damaged-containers', async (req, res) => {
+    const { container_number, inspection_date, damage_location, severity_level, inspector_name, description, status } = req.body;
+    try {
+        const query = `
+            INSERT INTO damaged_containers (container_number, inspection_date, damage_location, severity_level, inspector_name, description, status) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+        `;
+        const result = await pool.query(query, [
+            container_number, 
+            inspection_date, 
+            damage_location, 
+            severity_level, 
+            inspector_name, 
+            description, 
+            status || 'Pending Repair'
+        ]);
+        res.status(201).json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាកុងតឺន័រខូច' });
     }
 });
 
