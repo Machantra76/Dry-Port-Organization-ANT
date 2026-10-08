@@ -62,26 +62,32 @@
                 </div>
                 <div class="form-row">
                     <div>
-                        <label>ប្រាក់ខែគោល ($ Base Salary):</label>
-                        <input type="number" id="base_salary" required step="0.01" placeholder="ឧ. 500">
+                        <label>ខែឆ្នាំប្រាក់បៀវត្សរ៍ (Pay Month):</label>
+                        <input type="month" id="pay_month" required>
                     </div>
                     <div>
-                        <label>ប្រាក់អត្ថប្រយោជន៍បន្ថែម ($ Allowance):</label>
-                        <input type="number" id="allowance" step="0.01" value="0" placeholder="ឧ. 50">
+                        <label>ប្រាក់ខែគោល ($ Base Salary):</label>
+                        <input type="number" id="base_salary" required step="0.01" placeholder="ឧ. 500" oninput="calculateNet()">
                     </div>
                 </div>
                 <div class="form-row">
                     <div>
-                        <label>ប្រាក់ត្រូវកាត់ ($ Deduction - មកយឺត/អវត្តមាន):</label>
-                        <input type="number" id="deduction" step="0.01" value="0" placeholder="ឧ. 10">
+                        <label>ប្រាក់អត្ថប្រយោជន៍បន្ថែម ($ Allowance):</label>
+                        <input type="number" id="allowance" step="0.01" value="0" placeholder="ឧ. 50" oninput="calculateNet()">
                     </div>
                     <div>
-                        <label>ខែឆ្នាំប្រាក់បៀវត្សរ៍ (Pay Month):</label>
-                        <!-- ប្រើប្រាស់ input type="month" ដើម្បីឱ្យចេញផ្ទាំងរើសខែឆ្នាំ -->
-                        <input type="month" id="pay_month" required>
+                        <label>ប្រាក់ត្រូវកាត់ ($ Deduction - ទាញពីអវត្តមានស្កែនមេដៃ):</label>
+                        <input type="number" id="deduction" step="0.01" value="0" placeholder="ស្វ័យប្រវត្ត ឬ កែសម្រួល" oninput="calculateNet()">
+                        <small id="absentInfo" style="color: #64748b; display: block; margin-top: 4px;"></small>
                     </div>
                 </div>
-                <button type="submit" class="submit-btn">រក្សាទុក និងគណនាប្រាក់ខែ (Process Payroll)</button>
+                <div class="form-row">
+                    <div>
+                        <label>ប្រាក់ខែទទួលបានសុទ្ធ ($ Net Salary):</label>
+                        <input type="text" id="net_salary_preview" readonly style="background: #e2e8f0; font-weight: bold; color: #065f46;" value="$0.00">
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn" style="margin-top: 10px;">រក្សាទុកទិន្នន័យប្រាក់ខែ (Save Payroll)</button>
             </form>
         </div>
 
@@ -110,11 +116,51 @@
         </div>
 
         <div class="footer-note">
-            <p><strong>ចំណាំ៖</strong> ទំព័រនេះគណនាប្រាក់បៀវត្សរ៍ស្វ័យប្រវត្តិ និងរក្សាទុកទិន្នន័យសុវត្ថិភាពក្នុង PostgreSQL Database។</p>
+            <p><strong>ចំណាំ៖</strong> ប្រព័ន្ធទាញទិន្នន័យអវត្តមានពីការស្កែនមេដៃមកគណនាកាត់ប្រាក់ខែដោយស្វ័យប្រវត្ត។</p>
         </div>
     </div>
 
     <script>
+        // មុខងារគណនាសុទ្ធស្វ័យប្រវត្តក្នុង Form
+        function calculateNet() {
+            const base = parseFloat(document.getElementById('base_salary').value) || 0;
+            const allow = parseFloat(document.getElementById('allowance').value) || 0;
+            const deduct = parseFloat(document.getElementById('deduction').value) || 0;
+            const net = (base + allow) - deduct;
+            document.getElementById('net_salary_preview').value = '$' + net.toFixed(2);
+        }
+
+        // មុខងារឆែកថ្ងៃអវត្តមានពី Server ស្កែនមេដៃ មកគណនាកាត់ប្រាក់ខែ
+        async function checkAttendanceAndDeduction() {
+            const empCode = document.getElementById('employee_code').value;
+            const payMonth = document.getElementById('pay_month').value;
+
+            if (empCode && payMonth) {
+                try {
+                    const res = await fetch(`/api/payroll/calculate/${empCode}/${payMonth}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        document.getElementById('full_name').value = data.full_name;
+                        
+                        // គណនាកាត់ប្រាក់ខែ៖ ប្រាក់ខែគោល ÷ ២៦ថ្ងៃ x ចំនួនថ្ងៃអវត្តមាន
+                        const baseSalary = parseFloat(document.getElementById('base_salary').value) || 0;
+                        const dailyRate = baseSalary / 26;
+                        const calculatedDeduction = data.absent_days * dailyRate;
+
+                        document.getElementById('deduction').value = calculatedDeduction.toFixed(2);
+                        document.getElementById('absentInfo').innerText = `រកឃើញអវត្តមាន៖ ${data.absent_days}ថ្ងៃ (គណនាកាត់ស្វ័យប្រវត្ត)`;
+                        calculateNet();
+                    }
+                } catch (err) {
+                    console.error('Error fetching attendance data:', err);
+                }
+            }
+        }
+
+        document.getElementById('employee_code').addEventListener('blur', checkAttendanceAndDeduction);
+        document.getElementById('pay_month').addEventListener('change', checkAttendanceAndDeduction);
+        document.getElementById('base_salary').addEventListener('input', checkAttendanceAndDeduction);
+
         async function loadPayroll() {
             try {
                 const response = await fetch('/api/payroll');
@@ -164,8 +210,9 @@
 
                 const result = await response.json();
                 if (response.ok) {
-                    alert('បានដំណើរការ និងរក្សាទុកប្រាក់បៀវត្សរ៍ដោយជោគជ័យ!');
+                    alert('បានរក្សាទុកទិន្នន័យប្រាក់បៀវត្សរ៍ដោយជោគជ័យ!');
                     document.getElementById('payrollForm').reset();
+                    document.getElementById('net_salary_preview').value = '$0.00';
                     loadPayroll();
                 } else {
                     alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
