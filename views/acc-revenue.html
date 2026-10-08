@@ -10,34 +10,263 @@
             font-family: 'Kantumruy Pro', sans-serif;
             background-color: #f0f4f8;
             margin: 0;
-            padding: 20px;
+            padding: 30px;
+            color: #334155;
         }
         .container {
-            max-width: 900px;
-            margin: 40px auto;
+            max-width: 1100px;
+            margin: 0 auto;
             background: white;
-            padding: 30px;
+            padding: 35px;
             border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            text-decoration: none;
+            background: #2a5298;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .back-btn:hover {
+            background: #1e3c72;
         }
         h1 {
             color: #1e3c72;
-            margin-top: 0;
+            margin: 0;
+            font-size: 26px;
         }
-        a {
-            display: inline-block;
-            margin-top: 20px;
-            text-decoration: none;
-            color: #2a5298;
+        .eng-sub {
+            color: #64748b;
+            font-size: 14px;
+            text-transform: uppercase;
+            margin-top: 5px;
             font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .section-box {
+            margin-top: 25px;
+            padding: 25px;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .section-box h3 {
+            margin-top: 0;
+            color: #1e3c72;
+            font-size: 18px;
+            border-bottom: 2px solid #cbd5e1;
+            padding-bottom: 8px;
+        }
+        form {
+            display: grid;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1e3c72;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-size: 14px;
+            box-sizing: border-box;
+            background: white;
+        }
+        textarea {
+            resize: vertical;
+            height: 80px;
+        }
+        button.submit-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-size: 15px;
+            transition: background 0.3s;
+        }
+        button.submit-btn:hover {
+            background: #059669;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #cbd5e1;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+        th {
+            background: #1e3c72;
+            color: white;
+            font-weight: 600;
+        }
+        tr:hover {
+            background: #f1f5f9;
+        }
+        .badge-revenue {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 700;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>ប្រព័ន្ធគណនេយ្យប្រាក់ចំណូល (Revenue Accounting)</h1>
-        <p>ទំព័រនេះត្រូវបានបង្កើត និងតភ្ជាប់ដោយជោគជ័យ!</p>
-        <a href="/">&larr; ត្រឡប់ក្រោយ (Back to Dashboard)</a>
+        <a href="/" class="back-btn">&larr; ត្រឡប់ទៅ Dashboard វិញ</a>
+        <h1>គណនេយ្យប្រាក់ចំណូល</h1>
+        <div class="eng-sub">Revenue Accounting & Management</div>
+        
+        <!-- Form សម្រាប់បញ្ចូលទិន្នន័យ -->
+        <div class="section-box">
+            <h3>កត់ត្រាប្រាក់ចំណូលថ្មី (Record New Revenue)</h3>
+            <form id="revenueForm">
+                <div class="form-row">
+                    <div>
+                        <label>កាលបរិច្ឆេទទទួលបាន:</label>
+                        <input type="date" id="revenue_date" required>
+                    </div>
+                    <div>
+                        <label>ប្រភេទប្រាក់ចំណូល:</label>
+                        <select id="category" required>
+                            <option value="">-- ជ្រើសរើសប្រភេទចំណូល --</option>
+                            <option value="ប្រាក់ឈ្នួលសេវាកម្ម (Service Fee)">ប្រាក់ឈ្នួលសេវាកម្ម (Service Fee)</option>
+                            <option value="លក់ទំនិញ/ផលិតផល (Sales)">លក់ទំនិញ/ផលិតផល (Sales)</option>
+                            <option value="ប្រាក់កម្រៃជើងសារ (Commission)">ប្រាក់កម្រៃជើងសារ (Commission)</option>
+                            <option value="ចំណូលផ្សេងៗ (Other Income)">ចំណូលផ្សេងៗ (Other Income)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
+                        <label>បរិមាណទឹកប្រាក់ ($):</label>
+                        <input type="number" id="amount" required step="0.01" placeholder="ឧ. 1500.00">
+                    </div>
+                    <div>
+                        <label>អ្នកទទួលប្រាក់:</label>
+                        <input type="text" id="received_by" required placeholder="ឧ. ឈ្មោះបុគ្គលិក">
+                    </div>
+                </div>
+                <div>
+                    <label>បរិយាយ / កំណត់សម្គាល់:</label>
+                    <textarea id="description" placeholder="ព័ត៌មានលម្អិត..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn">រក្សាទុកប្រាក់ចំណូល</button>
+            </form>
+        </div>
+
+        <!-- Table សម្រាប់បង្ហាញបញ្ជីទិន្នន័យ -->
+        <div class="section-box">
+            <h3>របាយការណ៍ប្រាក់ចំណូល</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>កាលបរិច្ឆេទ</th>
+                        <th>ប្រភេទចំណូល</th>
+                        <th>បរិយាយ</th>
+                        <th>អ្នកទទួល</th>
+                        <th>ទឹកប្រាក់ ($)</th>
+                    </tr>
+                </thead>
+                <tbody id="revenueTableBody">
+                    <tr><td colspan="5" style="text-align: center; color: #64748b;">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
+
+    <script>
+        // មុខងារទាញយកទិន្នន័យពី API មកបង្ហាញក្នុង Table
+        async function loadRevenues() {
+            try {
+                const response = await fetch('/api/revenues');
+                const data = await response.json();
+                const tbody = document.getElementById('revenueTableBody');
+                tbody.innerHTML = '';
+                
+                if (data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748b;">មិនទាន់មានទិន្នន័យប្រាក់ចំណូលនៅឡើយទេ</td></tr>';
+                    return;
+                }
+                
+                data.forEach(item => {
+                    const formattedDate = new Date(item.revenue_date).toLocaleDateString('km-KH');
+                    tbody.innerHTML += `<tr>
+                        <td>${formattedDate}</td>
+                        <td><strong>${item.category}</strong></td>
+                        <td>${item.description || '-'}</td>
+                        <td>${item.received_by}</td>
+                        <td><span class="badge-revenue">+$${parseFloat(item.amount).toFixed(2)}</span></td>
+                    </tr>`;
+                });
+            } catch (err) { 
+                console.error(err);
+                document.getElementById('revenueTableBody').innerHTML = '<tr><td colspan="5" style="text-align: center; color: red;">មានបញ្ហាក្នុងការទាញយកទិន្នន័យ</td></tr>';
+            }
+        }
+
+        // មុខងារបញ្ជូនទិន្នន័យពី Form ទៅកាន់ Server API
+        document.getElementById('revenueForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const body = {
+                revenue_date: document.getElementById('revenue_date').value,
+                category: document.getElementById('category').value,
+                amount: document.getElementById('amount').value,
+                received_by: document.getElementById('received_by').value,
+                description: document.getElementById('description').value
+            };
+
+            try {
+                const res = await fetch('/api/revenues', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                
+                if (res.ok) {
+                    alert('បានរក្សាទុកប្រាក់ចំណូលដោយជោគជ័យ!');
+                    e.target.reset();
+                    document.getElementById('revenue_date').valueAsDate = new Date();
+                    loadRevenues();
+                } else {
+                    alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ!');
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        });
+
+        // កំណត់កាលបរិច្ឆេទស្វ័យប្រវត្តិតាមថ្ងៃបច្ចុប្បន្ន
+        document.getElementById('revenue_date').valueAsDate = new Date();
+        loadRevenues();
+    </script>
 </body>
 </html>
