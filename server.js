@@ -157,7 +157,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១១. តារាងគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs) [បន្ថែមថ្មី]
+        // ១១. តារាងគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS fuel_logs (
                 id SERIAL PRIMARY KEY,
@@ -172,7 +172,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs) [បន្ថែមថ្មី]
+        // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS maintenance_logs (
                 id SERIAL PRIMARY KEY,
@@ -183,6 +183,22 @@ async function initializeDatabase() {
                 cost NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 service_provider VARCHAR(150) NOT NULL,
                 status VARCHAR(50) DEFAULT 'Completed',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ១៣. តារាងរៀបចំផែនការដឹកជញ្ជូនទំនិញ (Transport Plans) [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS transport_plans (
+                id SERIAL PRIMARY KEY,
+                cargo_code VARCHAR(100) NOT NULL,
+                vehicle_code VARCHAR(50) NOT NULL,
+                origin VARCHAR(150) NOT NULL,
+                destination VARCHAR(150) NOT NULL,
+                departure_date DATE NOT NULL,
+                driver_name VARCHAR(150) NOT NULL,
+                notes TEXT,
+                status VARCHAR(50) DEFAULT 'Planned',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -244,9 +260,13 @@ app.get('/views/fleet-dispatch.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'fleet-dispatch.html'));
 });
 
-// HTML Route សម្រាប់ទំព័រប្រេង និងថែទាំ [បន្ថែមថ្មី]
 app.get('/views/fleet-fuel-maintenance.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'fleet-fuel-maintenance.html'));
+});
+
+// HTML Route សម្រាប់ទំព័រផែនការដឹកជញ្ជូនទំនិញ [បន្ថែមថ្មី]
+app.get('/views/transport-planning.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'transport-planning.html'));
 });
 
 // ==========================================
@@ -684,7 +704,7 @@ app.post('/api/fleet/dispatches', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs) [បន្ថែមថ្មី]
+// API Routes: ការគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)
 // ==========================================
 app.get('/api/fleet/fuel', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
@@ -732,7 +752,7 @@ app.post('/api/fleet/fuel', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការថែទាំយានយន្ត (Maintenance Logs) [បន្ថែមថ្មី]
+// API Routes: ការថែទាំយានយន្ត (Maintenance Logs)
 // ==========================================
 app.get('/api/fleet/maintenance', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
@@ -783,7 +803,6 @@ app.post('/api/fleet/maintenance', async (req, res) => {
                 mStatus
             ]);
 
-            // ប្រសិនបើស្ថានភាពថែទាំគឺ In Progress អាចប្តូរស្ថានភាពរថយន្តទៅជា In Maintenance 
             if (mStatus === 'In Progress') {
                 await client.query(`
                     UPDATE fleet_vehicles SET status = 'In Maintenance' WHERE vehicle_code = $1
@@ -804,6 +823,75 @@ app.post('/api/fleet/maintenance', async (req, res) => {
         }
     } catch (err) {
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការថែទាំយានយន្ត' });
+    }
+});
+
+// ==========================================
+// API Routes: ផែនការដឹកជញ្ជូនទំនិញ (Transport Plans) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/fleet/transport-plans', async (req, res) => {
+    const { from, to, vehicle_code } = req.query;
+    try {
+        let query = 'SELECT * FROM transport_plans WHERE 1=1';
+        let params = [];
+        let paramIndex = 1;
+        
+        if (from && to) {
+            query += ` AND departure_date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
+            params.push(from, to);
+            paramIndex += 2;
+        }
+
+        if (vehicle_code) {
+            query += ` AND vehicle_code = $${paramIndex}`;
+            params.push(vehicle_code);
+            paramIndex += 1;
+        }
+        
+        query += ' ORDER BY departure_date DESC, id DESC';
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យផែនការដឹកជញ្ជូនបានទេ' });
+    }
+});
+
+app.post('/api/fleet/transport-plans', async (req, res) => {
+    const { cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes } = req.body;
+    try {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            const query = `
+                INSERT INTO transport_plans (cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes, status) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, 'Planned') RETURNING *;
+            `;
+            const result = await client.query(query, [
+                cargo_code, 
+                vehicle_code, 
+                origin, 
+                destination, 
+                departure_date, 
+                driver_name, 
+                notes
+            ]);
+
+            // ធ្វើបច្ចុប្បន្នភាពស្ថានភាពរថយន្តទៅជា 'On Mission' ពេលបង្កើតផែនការ
+            await client.query(`
+                UPDATE fleet_vehicles SET status = 'On Mission' WHERE vehicle_code = $1
+            `, [vehicle_code]);
+
+            await client.query('COMMIT');
+            res.status(201).json({ success: true, data: result.rows[0] });
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'កំហុសក្នុងការបង្កើតផែនការដឹកជញ្ជូនទំនិញ' });
     }
 });
 
