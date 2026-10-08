@@ -70,6 +70,29 @@ async function initializeDatabase() {
             );
         `);
 
+        // ៥. តារាងជ្រើសរើសបុគ្គលិក (Job Vacancies) - [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS job_vacancies (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(150) NOT NULL,
+                dept VARCHAR(100) NOT NULL,
+                qty VARCHAR(50) NOT NULL,
+                status VARCHAR(50) DEFAULT 'កំពុងស្វែងរក',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ៦. តារាងផែនការបណ្តុះបណ្តាល (Training Schedules) - [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS training_schedules (
+                id SERIAL PRIMARY KEY,
+                topic VARCHAR(200) NOT NULL,
+                training_date DATE NOT NULL,
+                status VARCHAR(100) DEFAULT 'គ្រោងទុក (Scheduled)',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
         // បញ្ចូលទិន្នន័យគំរូសម្រាប់ Workflow វត្តមាន (បើមិនទាន់មាន)
         const checkData = await client.query("SELECT COUNT(*) FROM department_workflows WHERE department_id = 'HR_ATTENDANCE'");
         if (parseInt(checkData.rows[0].count) === 0) {
@@ -143,6 +166,10 @@ app.get('/views/hr-in-out.html', (req, res) => {
 
 app.get('/views/hr-asset.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'hr-asset.html'));
+});
+
+app.get('/views/hr-management.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'hr-management.html'));
 });
 
 // ==========================================
@@ -241,6 +268,52 @@ app.post('/api/inventory', async (req, res) => {
     }
 });
 
+// ==========================================
+// API សម្រាប់ HR Recruitment & Training (បន្ថែមថ្មី)
+// ==========================================
+app.get('/api/jobs', async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM job_vacancies ORDER BY id DESC");
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យតំណែងការងារបានទេ!' });
+    }
+});
+
+app.post('/api/jobs', async (req, res) => {
+    const { title, dept, qty } = req.body;
+    try {
+        const query = `INSERT INTO job_vacancies (title, dept, qty, status) VALUES ($1, $2, $3, 'កំពុងស្វែងរក') RETURNING *;`;
+        const result = await pool.query(query, [title, dept, qty + " នាក់"]);
+        res.status(201).json({ success: true, message: 'បានរក្សាទុកតំណែងការងារដោយជោគជ័យ!', data: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: 'កំហុសក្នុងការបញ្ចូលតំណែងការងារចូល Database' });
+    }
+});
+
+app.get('/api/trainings', async (req, res) => {
+    try {
+        const result = await pool.query("SELECT * FROM training_schedules ORDER BY id DESC");
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យបណ្តុះបណ្តាលបានទេ!' });
+    }
+});
+
+app.post('/api/trainings', async (req, res) => {
+    const { topic, training_date } = req.body;
+    try {
+        const query = `INSERT INTO training_schedules (topic, training_date, status) VALUES ($1, $2, 'គ្រោងទុក (Scheduled)') RETURNING *;`;
+        const result = await pool.query(query, [topic, training_date]);
+        res.status(201).json({ success: true, message: 'បានកត់ត្រាការបណ្តុះបណ្តាលដោយជោគជ័យ!', data: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការបណ្តុះបណ្តាល' });
+    }
+});
+
+// ==========================================
+// ចាប់ផ្តើម Server
+// ==========================================
 app.listen(PORT, async () => {
     await initializeDatabase();
     console.log(`Server connected and running at http://localhost:${PORT}`);
