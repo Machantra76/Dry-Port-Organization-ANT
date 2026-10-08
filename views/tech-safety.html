@@ -86,6 +86,7 @@
             </div>
             <div class="card-body p-4">
                 <form id="securityForm">
+                    <input type="hidden" id="editIndex" value="">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="guardName" class="form-label fw-semibold">ឈ្មោះសន្តិសុខ (Guard Name):</label>
@@ -109,7 +110,7 @@
                             </select>
                         </div>
                         <div class="col-12 mt-4">
-                            <button type="submit" class="btn btn-success w-100 py-2 fw-semibold">
+                            <button type="submit" class="btn btn-success w-100 py-2 fw-semibold" id="saveBtn">
                                 <i class="fas fa-save me-1"></i> រក្សាទុកព័ត៌មានសន្តិសុខ (Save Guard)
                             </button>
                         </div>
@@ -134,10 +135,7 @@
                         <input type="text" id="searchInput" class="form-control" placeholder="វាយស្វែងរក...">
                     </div>
                     <div class="col-md-4">
-                        <button type="button" class="btn btn-primary">
-                            <i class="fas fa-search me-1"></i> ស្វែងរក / ត្រង (Filter)
-                        </button>
-                        <button type="reset" class="btn btn-outline-secondary ms-2" onclick="document.getElementById('searchInput').value='';">
+                        <button type="button" class="btn btn-outline-secondary" onclick="document.getElementById('searchInput').value=''; filterTable();">
                             កំណត់ឡើងវិញ (Reset)
                         </button>
                     </div>
@@ -157,17 +155,7 @@
                             </tr>
                         </thead>
                         <tbody id="tableBody">
-                            <tr>
-                                <td>1</td>
-                                <td>សុខ ចាន់</td>
-                                <td>ទ្វារមេ (Main Gate)</td>
-                                <td>012 345 678</td>
-                                <td>វេនព្រឹក (06:00 - 14:00)</td>
-                                <td class="no-print text-center">
-                                    <button class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i> កែប្រែ</button>
-                                    <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i> លុប</button>
-                                </td>
-                            </tr>
+                            <!-- ទិន្នន័យនឹងលូតចូលទីនេះដោយស្វ័យប្រវត្តិ -->
                         </tbody>
                     </table>
                 </div>
@@ -178,16 +166,99 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // មុខងារស្វែងរក (Search Filter)
-        document.getElementById('searchInput').addEventListener('keyup', function() {
-            let filter = this.value.toLowerCase();
-            let rows = document.querySelectorAll('#tableBody tr');
-            
-            rows.forEach(row => {
-                let text = row.textContent.toLowerCase();
-                row.style.display = text.includes(filter) ? '' : 'none';
+        // ទិន្នន័យក្នុងតារាង (Sample / Initial Data)
+        let guardsData = [
+            { name: "សុខ ចាន់", location: "ទ្វារមេ (Main Gate)", phone: "012 345 678", shift: "វេនព្រឹក (06:00 - 14:00)" }
+        ];
+
+        // មុខងារបង្ហាញទិន្នន័យក្នុងតារាង
+        function renderTable(data = guardsData) {
+            let tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-3 text-muted">គ្មានទិន្នន័យសន្តិសុខទេ</td></tr>`;
+                return;
+            }
+
+            data.forEach((guard, index) => {
+                let row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${guard.name}</td>
+                        <td>${guard.location}</td>
+                        <td>${guard.phone}</td>
+                        <td>${guard.shift}</td>
+                        <td class="no-print text-center">
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editGuard(${index})"><i class="fas fa-edit"></i> កែប្រែ</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteGuard(${index})"><i class="fas fa-trash"></i> លុប</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
             });
+        }
+
+        // មុខងារ Form Submit (រក្សាទុក ឬ កែប្រែទិន្នន័យ)
+        document.getElementById('securityForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            let name = document.getElementById('guardName').value;
+            let location = document.getElementById('postLocation').value;
+            let phone = document.getElementById('phoneNumber').value;
+            let shift = document.getElementById('shiftTime').value;
+            let editIndex = document.getElementById('editIndex').value;
+
+            if (editIndex === "") {
+                // បន្ថែមថ្មី
+                guardsData.push({ name, location, phone, shift });
+            } else {
+                // កែប្រែទិន្នន័យដែលមានស្រាប់
+                guardsData[editIndex] = { name, location, phone, shift };
+                document.getElementById('editIndex').value = "";
+                document.getElementById('saveBtn').innerHTML = `<i class="fas fa-save me-1"></i> រក្សាទុកព័ត៌មានសន្តិសុខ (Save Guard)`;
+            }
+
+            this.reset();
+            renderTable();
         });
+
+        // មុខងារលុបទិន្នន័យ
+        function deleteGuard(index) {
+            if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?")) {
+                guardsData.splice(index, 1);
+                renderTable();
+            }
+        }
+
+        // មុខងារកែប្រែទិន្នន័យ (ទាញទិន្នន័យដាក់ចូល Form វិញ)
+        function editGuard(index) {
+            let guard = guardsData[index];
+            document.getElementById('guardName').value = guard.name;
+            document.getElementById('postLocation').value = guard.location;
+            document.getElementById('phoneNumber').value = guard.phone;
+            document.getElementById('shiftTime').value = guard.shift;
+            document.getElementById('editIndex').value = index;
+
+            document.getElementById('saveBtn').innerHTML = `<i class="fas fa-sync-alt me-1"></i> កែប្រែព័ត៌មាន (Update Guard)`;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // មុខងារស្វែងរក (Search Filter)
+        function filterTable() {
+            let filter = document.getElementById('searchInput').value.toLowerCase();
+            let filteredData = guardsData.filter(guard => 
+                guard.name.toLowerCase().includes(filter) || 
+                guard.location.toLowerCase().includes(filter) ||
+                guard.phone.toLowerCase().includes(filter)
+            );
+            renderTable(filteredData);
+        }
+
+        document.getElementById('searchInput').addEventListener('keyup', filterTable);
+
+        // ទាញយកបង្ហាញតារាងដំបូងពេលဖွុះទំព័រ
+        renderTable();
     </script>
 </body>
 </html>
