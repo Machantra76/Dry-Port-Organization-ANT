@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)[cite: 7, 8, 10, 11]
+// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)[cite: 7, 8, 10]
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/hr_db',
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 8, 10, 11]
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 8, 10]
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តិពេល Start Server
 async function initializeDatabase() {
@@ -22,7 +22,7 @@ async function initializeDatabase() {
     try {
         await client.query('BEGIN');
 
-        // ១. តារាងបុគ្គលិក (Employees)[cite: 11]
+        // ១. តារាងបុគ្គលិក (Employees)
         await client.query(`
             CREATE TABLE IF NOT EXISTS employees (
                 id SERIAL PRIMARY KEY,
@@ -34,7 +34,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)[cite: 10, 11]
+        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)[cite: 10]
         await client.query(`
             CREATE TABLE IF NOT EXISTS attendance_logs (
                 id SERIAL PRIMARY KEY,
@@ -46,7 +46,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)[cite: 10, 11]
+        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)[cite: 10]
         await client.query(`
             CREATE TABLE IF NOT EXISTS inventory_items (
                 id SERIAL PRIMARY KEY,
@@ -61,7 +61,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)[cite: 10, 11]
+        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)[cite: 10]
         await client.query(`
             CREATE TABLE IF NOT EXISTS payroll_records (
                 id SERIAL PRIMARY KEY,
@@ -76,7 +76,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)[cite: 10, 11]
+        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)[cite: 10]
         await client.query(`
             CREATE TABLE IF NOT EXISTS revenues (
                 id SERIAL PRIMARY KEY,
@@ -89,7 +89,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable)[cite: 11]
+        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable)
         await client.query(`
             CREATE TABLE IF NOT EXISTS accounts_receivable (
                 id SERIAL PRIMARY KEY,
@@ -112,6 +112,34 @@ async function initializeDatabase() {
                 description TEXT,
                 amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 paid_to VARCHAR(150) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ៨. តារាងគ្រប់គ្រងរថយន្ត (Fleet Vehicles) [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS fleet_vehicles (
+                id SERIAL PRIMARY KEY,
+                vehicle_code VARCHAR(50) UNIQUE NOT NULL,
+                model VARCHAR(150) NOT NULL,
+                plate_number VARCHAR(50) UNIQUE NOT NULL,
+                capacity VARCHAR(100),
+                status VARCHAR(50) DEFAULT 'Available',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ៩. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches) [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS transport_dispatches (
+                id SERIAL PRIMARY KEY,
+                dispatch_code VARCHAR(50) UNIQUE NOT NULL,
+                vehicle_code VARCHAR(50) NOT NULL,
+                driver_name VARCHAR(150) NOT NULL,
+                destination TEXT NOT NULL,
+                dispatch_date DATE NOT NULL,
+                status VARCHAR(50) DEFAULT 'Dispatched',
+                notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -157,23 +185,28 @@ app.get('/views/acc-revenue.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'acc-revenue.html'));
 });
 
-// HTML Route សម្រាប់ទំព័រគណនេយ្យទទួល[cite: 11]
+// HTML Route សម្រាប់ទំព័រគណនេយ្យទទួល
 app.get('/views/acc-receivable.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'acc-receivable.html'));
 });
 
-// HTML Route សម្រាប់ទំព័ររបាយការណ៍ហិរញ្ញវត្ថុ[cite: 11]
+// HTML Route សម្រាប់ទំព័ររបាយការណ៍ហិរញ្ញវត្ថុ
 app.get('/views/acc-finance.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'acc-finance.html'));
 });
 
-// HTML Route សម្រាប់ទំព័រគ្រប់គ្រងថវិកា / ចំណាយ [បន្ថែមថ្មី]
+// HTML Route សម្រាប់ទំព័រគ្រប់គ្រងថវិកា / ចំណាយ
 app.get('/views/acc-control.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'acc-control.html'));
 });
 
+// HTML Route សម្រាប់ទំព័រចាត់ចែងរថយន្ត & ដឹកជញ្ជូន [បន្ថែមថ្មី]
+app.get('/views/fleet-dispatch.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'fleet-dispatch.html'));
+});
+
 // ==========================================
-// API Routes: បុគ្គលិក (Employees)[cite: 10, 11]
+// API Routes: បុគ្គលិក (Employees)[cite: 10]
 // ==========================================
 app.get('/api/employees', async (req, res) => {
     try {
@@ -199,7 +232,7 @@ app.post('/api/employees', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: វត្តមាន (Attendance Logs)[cite: 10, 11]
+// API Routes: វត្តមាន (Attendance Logs)[cite: 10]
 // ==========================================
 app.get('/api/attendance/logs', async (req, res) => {
     const { from, to, search } = req.query;
@@ -235,7 +268,7 @@ app.get('/api/attendance/logs', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ទ្រព្យសម្បត្តិ និងស្តុក (Inventory)[cite: 10, 11]
+// API Routes: ទ្រព្យសម្បត្តិ និងស្តុក (Inventory)[cite: 10]
 // ==========================================
 app.get('/api/inventory', async (req, res) => {
     const { search, category } = req.query;
@@ -280,7 +313,7 @@ app.post('/api/inventory', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)[cite: 10, 11]
+// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)[cite: 10]
 // ==========================================
 app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => {
     const { employee_code, pay_month } = req.params;
@@ -343,7 +376,7 @@ app.post('/api/payroll', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រាក់ចំណូល (Revenues)[cite: 10, 11]
+// API Routes: ប្រាក់ចំណូល (Revenues)[cite: 10]
 // ==========================================
 app.get('/api/revenues', async (req, res) => {
     const { from, to } = req.query;
@@ -379,7 +412,7 @@ app.post('/api/revenues', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: គណនេយ្យទទួល (Accounts Receivable)[cite: 11]
+// API Routes: គណនេយ្យទទួល (Accounts Receivable)
 // ==========================================
 app.get('/api/receivables', async (req, res) => {
     const { from, to } = req.query;
@@ -415,7 +448,7 @@ app.post('/api/receivables', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ចំណាយ (Expenses) [បន្ថែមថ្មី]
+// API Routes: ចំណាយ (Expenses)
 // ==========================================
 app.get('/api/expenses', async (req, res) => {
     const { from, to } = req.query;
@@ -451,7 +484,7 @@ app.post('/api/expenses', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: របាយការណ៍ហិរញ្ញវត្ថុ (Financial Summary API) [អាប់ដេតថ្មី]
+// API Routes: របាយការណ៍ហិរញ្ញវត្ថុ (Financial Summary API)
 // ==========================================
 app.get('/api/financial/summary', async (req, res) => {
     const { from, to } = req.query;
@@ -496,7 +529,86 @@ app.get('/api/financial/summary', async (req, res) => {
     }
 });
 
-// ចាប់ផ្តើមដំណើរការ Server[cite: 8, 10, 11]
+// ==========================================
+// API Routes: ការចាត់ចែងរថយន្ត (Fleet Vehicles) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/fleet/vehicles', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM fleet_vehicles ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'មិនអាចទាញយកបញ្ជីរថយន្តបានទេ' });
+    }
+});
+
+app.post('/api/fleet/vehicles', async (req, res) => {
+    const { vehicle_code, model, plate_number, capacity, status } = req.body;
+    try {
+        const query = `
+            INSERT INTO fleet_vehicles (vehicle_code, model, plate_number, capacity, status) 
+            VALUES ($1, $2, $3, $4, $5) RETURNING *;
+        `;
+        const result = await pool.query(query, [vehicle_code, model, plate_number, capacity, status || 'Available']);
+        res.status(201).json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: 'កំហុស៖ លេខកូដរថយន្ត ឬស្លាកលេខអាចមានរួចហើយ' });
+    }
+});
+
+// ==========================================
+// API Routes: ការបញ្ជូនដឹកជញ្ជូន (Transport Dispatches) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/fleet/dispatches', async (req, res) => {
+    const { from, to } = req.query;
+    try {
+        let query = 'SELECT * FROM transport_dispatches WHERE 1=1';
+        let params = [];
+        
+        if (from && to) {
+            query += ' AND dispatch_date BETWEEN $1 AND $2';
+            params.push(from, to);
+        }
+        
+        query += ' ORDER BY dispatch_date DESC, id DESC';
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យការដឹកជញ្ជូនបានទេ' });
+    }
+});
+
+app.post('/api/fleet/dispatches', async (req, res) => {
+    const { dispatch_code, vehicle_code, driver_name, destination, dispatch_date, status, notes } = req.body;
+    try {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            const query = `
+                INSERT INTO transport_dispatches (dispatch_code, vehicle_code, driver_name, destination, dispatch_date, status, notes) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+            `;
+            const result = await client.query(query, [dispatch_code, vehicle_code, driver_name, destination, dispatch_date, status || 'Dispatched', notes]);
+
+            // ធ្វើបច្ចុប្បន្នភាពស្ថានភាពរថយន្តឱ្យទៅជា 'On Mission' ឬ 'Dispatched'
+            await client.query(`
+                UPDATE fleet_vehicles SET status = 'On Mission' WHERE vehicle_code = $1
+            `, [vehicle_code]);
+
+            await client.query('COMMIT');
+            res.status(201).json({ success: true, data: result.rows[0] });
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការបញ្ជូនរថយន្តដឹកជញ្ជូន' });
+    }
+});
+
+// ចាប់ផ្តើមដំណើរការ Server[cite: 8, 10]
 initializeDatabase().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
