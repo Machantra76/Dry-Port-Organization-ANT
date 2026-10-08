@@ -267,7 +267,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៨. តារាងប្រតិបត្តិការទីលាន (Yard Operations) - បន្ថែមថ្មី
+        // ១៨. តារាងប្រតិបត្តិការទីលាន (Yard Operations)
         await client.query(`
             CREATE TABLE IF NOT EXISTS yard_operations (
                 id SERIAL PRIMARY KEY,
@@ -278,6 +278,23 @@ async function initializeDatabase() {
                 equipment_used VARCHAR(100),
                 operator_name VARCHAR(100) NOT NULL,
                 status VARCHAR(50) NOT NULL,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ១៩. តារាងកត់ត្រាការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out) - បន្ថែមថ្មី
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS cargo_gate_logs (
+                id SERIAL PRIMARY KEY,
+                cargo_code VARCHAR(100) NOT NULL,
+                container_number VARCHAR(100),
+                gate_type VARCHAR(50) NOT NULL,
+                gate_date TIMESTAMP NOT NULL,
+                truck_plate_number VARCHAR(50) NOT NULL,
+                driver_name VARCHAR(150) NOT NULL,
+                company_name VARCHAR(150),
+                status VARCHAR(50) DEFAULT 'Completed',
                 notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
@@ -368,9 +385,13 @@ app.get('/views/container-gate-out.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'container-gate-out.html'));
 });
 
-// Route សម្រាប់ទំព័រ Yard Operations - បន្ថែមថ្មី
 app.get('/views/yard-operations.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'yard-operations.html'));
+});
+
+// Route សម្រាប់បើកទំព័រ Cargo Gate - បន្ថែមថ្មី
+app.get('/views/cargo-gate.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'cargo-gate.html'));
 });
 
 // ==========================================
@@ -1208,7 +1229,6 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
                 notes
             ]);
 
-            // អាប់ដេតស្ថានភាពកុងតឺន័រក្នុង Yard ឱ្យដឹងថាបានចេញរួច (Gate-Out)
             await client.query(`
                 UPDATE container_yard_locations 
                 SET status = 'Gate-Out', updated_date = CURRENT_DATE 
@@ -1230,7 +1250,7 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រតិបត្តិការទីលាន (Yard Operations) - បន្ថែមថ្មី
+// API Routes: ប្រតិបត្តិការទីលាន (Yard Operations)
 // ==========================================
 app.get('/api/fleet/yard-operations', async (req, res) => {
     try {
@@ -1283,6 +1303,66 @@ app.post('/api/fleet/yard-operations', async (req, res) => {
 
     } catch (err) {
         console.error('Error saving yard operation:', err);
+        res.status(500).json({ success: false, error: 'មិនអាចរក្សាទុកទិន្នន័យក្នុង Database បានទេ' });
+    }
+});
+
+// ==========================================
+// API Routes: ការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out) - បន្ថែមថ្មី
+// ==========================================
+app.get('/api/fleet/cargo-gates', async (req, res) => {
+    try {
+        const query = 'SELECT * FROM cargo_gate_logs ORDER BY gate_date DESC, id DESC';
+        const result = await pool.query(query);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching cargo gate logs:', err);
+        res.status(500).json({ success: false, error: 'Database error' });
+    }
+});
+
+app.post('/api/fleet/cargo-gates', async (req, res) => {
+    try {
+        const { 
+            cargo_code, 
+            container_number, 
+            gate_type, 
+            gate_date, 
+            truck_plate_number, 
+            driver_name, 
+            company_name, 
+            status, 
+            notes 
+        } = req.body;
+
+        if (!cargo_code || !gate_type || !gate_date || !truck_plate_number || !driver_name) {
+            return res.status(400).json({ success: false, error: 'សូមបំពេញព័ត៌មានសំខាន់ៗឱ្យបានគ្រប់គ្រាន់!' });
+        }
+
+        const query = `
+            INSERT INTO cargo_gate_logs 
+            (cargo_code, container_number, gate_type, gate_date, truck_plate_number, driver_name, company_name, status, notes) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            RETURNING *;
+        `;
+
+        const values = [
+            cargo_code, 
+            container_number || null, 
+            gate_type, 
+            gate_date, 
+            truck_plate_number, 
+            driver_name, 
+            company_name || null, 
+            status || 'Completed', 
+            notes || null
+        ];
+
+        const result = await pool.query(query, values);
+        res.status(201).json({ success: true, data: result.rows[0] });
+
+    } catch (err) {
+        console.error('Error saving cargo gate log:', err);
         res.status(500).json({ success: false, error: 'មិនអាចរក្សាទុកទិន្នន័យក្នុង Database បានទេ' });
     }
 });
