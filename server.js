@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)
+// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)[cite: 7, 8]
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/hr_db',
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
@@ -218,6 +218,44 @@ app.post('/api/inventory', async (req, res) => {
 // ==========================================
 // API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)
 // ==========================================
+
+// [ใหม่] API សម្រាប់គណនាកាត់ប្រាក់ខែស្វ័យប្រវត្តតាមអវត្តមានពីការស្កែនមេដៃ
+app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => {
+    const { employee_code, pay_month } = req.params; // pay_month ទម្រង់ "YYYY-MM"
+    try {
+        // ១. ទាញយកព័ត៌មានបុគ្គលិក និងប្រាក់ខែគោល
+        const empResult = await pool.query('SELECT * FROM employees WHERE employee_code = $1', [employee_code]);
+        if (empResult.rows.length === 0) {
+            return res.status(404).json({ error: 'រកមិនឃើញកូដបុគ្គលិកនេះទេ' });
+        }
+        const employee = empResult.rows[0];
+
+        // ២. ទាញយកចំនួនថ្ងៃដែលបុគ្គលិកបានស្កែនមេដៃ (វត្តមាន) ក្នុងខែនោះពី attendance_logs
+        const attendanceResult = await pool.query(`
+            SELECT COUNT(DISTINCT work_date) as present_days 
+            FROM attendance_logs 
+            WHERE employee_code = $1 AND TO_CHAR(work_date, 'YYYY-MM') = $2
+        `, [employee_code, pay_month]);
+
+        const presentDays = parseInt(attendanceResult.rows[0].present_days) || 0;
+        
+        // កំណត់ថ្ងៃធ្វើការស្តង់ដារក្នុង១ខែ = 26 ថ្ងៃ
+        const standardWorkingDays = 26;
+        let absentDays = standardWorkingDays - presentDays;
+        if (absentDays < 0) absentDays = 0;
+
+        res.json({
+            employee_code: employee.employee_code,
+            full_name: employee.full_name,
+            present_days: presentDays,
+            absent_days: absentDays
+        });
+    } catch (err) {
+        console.error('Error calculating absence:', err);
+        res.status(500).json({ error: 'មានបញ្ហាក្នុងการគណនាវត្តមាន' });
+    }
+});
+
 app.get('/api/payroll', async (req, res) => {
     try {
         const result = await pool.query("SELECT * FROM payroll_records ORDER BY id DESC");
@@ -246,7 +284,7 @@ app.post('/api/payroll', async (req, res) => {
     }
 });
 
-// ចាប់ផ្តើមដំណើរការ Server
+// ចាប់ផ្តើមដំណើរការ Server[cite: 8]
 initializeDatabase().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
