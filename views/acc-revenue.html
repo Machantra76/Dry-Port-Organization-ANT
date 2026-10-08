@@ -169,7 +169,6 @@
         }
         .action-link:hover { text-decoration: underline; }
 
-        /* Invoice Header for Printing */
         .invoice-header {
             display: none;
             text-align: center;
@@ -208,7 +207,7 @@
 </head>
 <body>
     <div class="container">
-        <a href="/" class="back-btn no-print">&larr; ត្រឡប់ទៅ Dashboard វិញ</a>
+        <a href="/" class="back-btn no-print">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
         
         <div class="invoice-header">
             <h2>ឃ្លាំងស្ងួត (DRY PORT ORGANIZATION)</h2>
@@ -225,13 +224,13 @@
             <form id="revenueForm">
                 <div class="form-row">
                     <div>
-                        <label>កាលបរិច្ឆេទទទួលបាន:</label>
+                        <label>កាលបរិច្ឆេទទទួលបាន (Revenue Date):</label>
                         <input type="date" id="revenue_date" required>
                     </div>
                     <div>
-                        <label>ប្រភេទប្រាក់ចំណូល:</label>
+                        <label>ប្រភេទប្រាក់ចំណូល (Revenue Category):</label>
                         <select id="category" required>
-                            <option value="">-- ជ្រើសរើសប្រភេទចំណូល --</option>
+                            <option value="">-- ជ្រើសរើសប្រភេទចំណូល (Select Category) --</option>
                             <option value="ប្រាក់ឈ្នួលសេវាកម្ម (Service Fee)">ប្រាក់ឈ្នួលសេវាកម្ម (Service Fee)</option>
                             <option value="លក់ទំនិញ/ផលិតផល (Sales)">លក់ទំនិញ/ផលិតផល (Sales)</option>
                             <option value="ប្រាក់កម្រៃជើងសារ (Commission)">ប្រាក់កម្រៃជើងសារ (Commission)</option>
@@ -241,26 +240,26 @@
                 </div>
                 <div class="form-row">
                     <div>
-                        <label>បរិមាណទឹកប្រាក់ ($):</label>
-                        <input type="number" id="amount" required step="0.01" placeholder="ឧ. 1500.00">
+                        <label>បរិមាណទឹកប្រាក់ ($) (Amount):</label>
+                        <input type="number" id="amount" required step="0.01" placeholder="ឧ. 1500.00 (Ex. 1500.00)">
                     </div>
                     <div>
-                        <label>អ្នកទទួលប្រាក់:</label>
-                        <input type="text" id="received_by" required placeholder="ឧ. ឈ្មោះបុគ្គលិក">
+                        <label>អ្នកទទួលប្រាក់ (Received By):</label>
+                        <input type="text" id="received_by" required placeholder="ឧ. ឈ្មោះបុគ្គលិក (Ex. Staff Name)">
                     </div>
                 </div>
                 <div>
-                    <label>បរិយាយ / កំណត់សម្គាល់:</label>
-                    <textarea id="description" placeholder="ព័ត៌មានលម្អិត..."></textarea>
+                    <label>បរិយាយ / កំណត់សម្គាល់ (Description / Notes):</label>
+                    <textarea id="description" placeholder="ព័ត៌មានលម្អិត... (Details...)"></textarea>
                 </div>
-                <button type="submit" class="submit-btn">រក្សាទុកប្រាក់ចំណូល</button>
+                <button type="submit" class="submit-btn">រក្សាទុកប្រាក់ចំណូល (Save Revenue)</button>
             </form>
         </div>
 
-        <!-- ផ្នែកត្រងតាមកាលបរិច្ឆេទ (Filter & Print) -->
+        <!-- ផ្នែកត្រងតាមកាលបរិច្ឆេទ -->
         <div class="section-box">
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                <h3 style="margin: 0; border: none; padding: 0;">តารางរបាយការណ៍ និងការត្រងទិន្នន័យ</h3>
+                <h3 style="margin: 0; border: none; padding: 0;">តារាងរបាយការណ៍ និងការត្រងទិន្នន័យ (Revenue Report & Filter)</h3>
                 <button type="button" class="print-btn" onclick="window.print()">🖨️ បោះពុម្ព / រក្សាទុក PDF (Print / Save PDF)</button>
             </div>
             
@@ -275,30 +274,29 @@
                 </div>
                 <div>
                     <button type="button" class="filter-btn" onclick="loadRevenues()">🔍 ស្វែងរក / ត្រង (Filter)</button>
-                    <button type="button" class="back-btn" style="margin: 0; background: #64748b;" onclick="resetFilter()">รีเซ็ต (Reset)</button>
+                    <button type="button" class="back-btn" style="margin: 0; background: #64748b;" onclick="resetFilter()">កំណត់ឡើងវិញ (Reset)</button>
                 </div>
             </div>
 
             <table>
                 <thead>
                     <tr>
-                        <th>កាលបរិច្ឆេទ</th>
-                        <th>ប្រភេទចំណូល</th>
-                        <th>បរិយាយ</th>
-                        <th>អ្នកទទួល</th>
-                        <th>ទឹកប្រាក់ ($)</th>
+                        <th>កាលបរិច្ឆេទ (Date)</th>
+                        <th>ប្រភេទចំណូល (Category)</th>
+                        <th>បរិយាយ (Description)</th>
+                        <th>អ្នកទទួល (Receiver)</th>
+                        <th>ទឹកប្រាក់ ($) (Amount)</th>
                         <th class="no-print">សកម្មភាព (Actions)</th>
                     </tr>
                 </thead>
                 <tbody id="revenueTableBody">
-                    <tr><td colspan="6" style="text-align: center; color: #64748b;">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                    <tr><td colspan="6" style="text-align: center; color: #64748b;">កំពុងទាញយកទិន្នន័យ... (Loading Data...)</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // មុខងារទាញយកទិន្នន័យពី API មកបង្ហាញក្នុង Table (គាំទ្រ From & To Date)
         async function loadRevenues() {
             const from = document.getElementById('filter_from').value;
             const to = document.getElementById('filter_to').value;
@@ -315,7 +313,7 @@
                 tbody.innerHTML = '';
                 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b;">មិនមានទិន្នន័យប្រាក់ចំណូលในช่วงនេះទេ</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b;">មិនមានទិន្នន័យប្រាក់ចំណូលในช่วงនេះទេ (No revenue data found)</td></tr>';
                     return;
                 }
                 
@@ -334,7 +332,7 @@
                 });
             } catch (err) { 
                 console.error(err);
-                document.getElementById('revenueTableBody').innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">មានបញ្ហាក្នុងการទាញយកទិន្នន័យ</td></tr>';
+                document.getElementById('revenueTableBody').innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">មានបញ្ហាក្នុងការទាញយកទិន្នន័យ (Error loading data)</td></tr>';
             }
         }
 
@@ -344,7 +342,6 @@
             loadRevenues();
         }
 
-        // មុខងារបោះពុម្ពវិក្កយបត្រដាច់ដោយឡែកសម្រាប់មុខទំនិញនីមួយៗ
         function printInvoice(date, category, desc, receiver, amount) {
             const printWindow = window.open('', '_blank');
             printWindow.document.write(`
@@ -384,14 +381,13 @@
                     </div>
                     <script>
                         window.onload = function() { window.print(); }
-                    </script>
+                    <\/script>
                 </body>
                 </html>
             `);
             printWindow.document.close();
         }
 
-        // មុខងារបញ្ជូនទិន្នន័យពី Form ទៅកាន់ Server API
         document.getElementById('revenueForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const body = {
@@ -410,19 +406,18 @@
                 });
                 
                 if (res.ok) {
-                    alert('បានរក្សាទុកប្រាក់ចំណូលដោយជោគជ័យ!');
+                    alert('បានរក្សាទុកប្រាក់ចំណូលដោយជោគជ័យ! (Successfully saved revenue!)');
                     e.target.reset();
                     document.getElementById('revenue_date').valueAsDate = new Date();
                     loadRevenues();
                 } else {
-                    alert('មានបញ្ហាក្នុងการរក្សាទុកទិន្នន័យ!');
+                    alert('មានបញ្ហាក្នុងการរក្សាទុកទិន្នន័យ! (Error saving data!)');
                 }
             } catch (error) {
                 console.error(error);
             }
         });
 
-        // កំណត់កាលបរិច្ឆេទស្វ័យប្រវត្តិតាមថ្ងៃបច្ចុប្បន្ន
         document.getElementById('revenue_date').valueAsDate = new Date();
         loadRevenues();
     </script>
