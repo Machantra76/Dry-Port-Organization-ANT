@@ -218,18 +218,29 @@
             });
         }
 
-        // មុខងារ Form Submit (រក្សាទុកថ្មី ឬ កែប្រែទិន្នន័យទៅ Database)
+        // មុខងារ Form Submit (ផ្ញើឈ្មោះទាំងពីរទម្រង់ដើម្បីការពារ Error Not-Null Constraint)
         document.getElementById('wmsForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             let id = document.getElementById('recordId').value;
+            let codeVal = document.getElementById('itemCode').value;
+            let nameVal = document.getElementById('itemName').value;
+            let typeVal = document.getElementById('systemType').value;
+            let qtyVal = document.getElementById('quantity').value;
+            let statusVal = document.getElementById('locationStatus').value;
+
             let payload = {
                 id: id ? id : null,
-                code: document.getElementById('itemCode').value,
-                name: document.getElementById('itemName').value,
-                type: document.getElementById('systemType').value,
-                qty: document.getElementById('quantity').value,
-                status: document.getElementById('locationStatus').value
+                code: codeVal,
+                item_code: codeVal,
+                name: nameVal,
+                item_name: nameVal,
+                type: typeVal,
+                system_type: typeVal,
+                qty: qtyVal,
+                quantity: qtyVal,
+                status: statusVal,
+                location_status: statusVal
             };
 
             try {
@@ -256,7 +267,7 @@
             if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?")) {
                 try {
                     let response = await fetch(`/api/wms-oms/delete/${id}`, {
-                        method: 'POST' // ប្រសិនបើ Backend របស់អ្នកប្រើ DELETE ផ្លាស់ប្ដូរទីនេះជា method: 'DELETE'
+                        method: 'POST' 
                     });
 
                     if (response.ok) {
@@ -309,3 +320,4 @@
     </script>
 </body>
 </html>
+```[cite: 1, 4]
