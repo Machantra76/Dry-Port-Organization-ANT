@@ -1,36 +1,27 @@
 const express = require('express');
-const path = require('path');
 const { Pool } = require('pg');
-const ZKLib = require('node-zklib'); // Library សម្រាប់ភ្ជាប់ជាមួយម៉ាស៊ីនស្កេន ZKTeco
-require('dotenv').config();
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname)));
-
+// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/hr_db',
+    ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
-// មុខងារបង្កើត Table និងបញ្ចូលទិន្នន័យគំរូទាំងអស់
-async function initializeDatabase() {
-    try {
-        const client = await pool.connect();
-        
-        // ១. តារាង Workflow សម្រាប់គ្រប់ផ្នែក
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS department_workflows (
-                id SERIAL PRIMARY KEY,
-                department_id VARCHAR(50) NOT NULL,
-                step_no INT NOT NULL,
-                workflow_stage VARCHAR(255) NOT NULL,
-                action_description TEXT NOT NULL
-            );
-        `);
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-        // ២. តារាងព័ត៌មានបុគ្គលិក
+// មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តិពេល Start Server
+async function initializeDatabase() {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // ១. តារាងបុគ្គលិក (Employees)
         await client.query(`
             CREATE TABLE IF NOT EXISTS employees (
                 id SERIAL PRIMARY KEY,
@@ -42,7 +33,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣. តារាងកត់ត្រាម៉ោងចេញ/ចូលប្រចាំថ្ងៃ
+        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS attendance_logs (
                 id SERIAL PRIMARY KEY,
@@ -50,14 +41,13 @@ async function initializeDatabase() {
                 work_date DATE NOT NULL,
                 check_in_time TIMESTAMP,
                 check_out_time TIMESTAMP,
-                status VARCHAR(50) DEFAULT 'Present',
-                note TEXT
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
 
-        // ៤. តារាងគ្រប់គ្រងទ្រព្យសម្បត្តិ និងសារពើភណ្ឌ (Assets & Inventory)
+        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)
         await client.query(`
-            CREATE TABLE IF NOT EXISTS inventory_assets (
+            CREATE TABLE IF NOT EXISTS inventory_items (
                 id SERIAL PRIMARY KEY,
                 item_code VARCHAR(50) UNIQUE NOT NULL,
                 item_name VARCHAR(150) NOT NULL,
@@ -70,96 +60,38 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៥. តារាងជ្រើសរើសបុគ្គលិក (Job Vacancies) - [បន្ថែមថ្មី]
+        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)
         await client.query(`
-            CREATE TABLE IF NOT EXISTS job_vacancies (
+            CREATE TABLE IF NOT EXISTS payroll_records (
                 id SERIAL PRIMARY KEY,
-                title VARCHAR(150) NOT NULL,
-                dept VARCHAR(100) NOT NULL,
-                qty VARCHAR(50) NOT NULL,
-                status VARCHAR(50) DEFAULT 'កំពុងស្វែងរក',
+                employee_code VARCHAR(50) NOT NULL,
+                full_name VARCHAR(150) NOT NULL,
+                base_salary NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                allowance NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                deduction NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                net_salary NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                pay_month VARCHAR(50) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
 
-        // ៦. តារាងផែនការបណ្តុះបណ្តាល (Training Schedules) - [បន្ថែមថ្មី]
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS training_schedules (
-                id SERIAL PRIMARY KEY,
-                topic VARCHAR(200) NOT NULL,
-                training_date DATE NOT NULL,
-                status VARCHAR(100) DEFAULT 'គ្រោងទុក (Scheduled)',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-
-        // បញ្ចូលទិន្នន័យគំរូសម្រាប់ Workflow វត្តមាន (បើមិនទាន់មាន)
-        const checkData = await client.query("SELECT COUNT(*) FROM department_workflows WHERE department_id = 'HR_ATTENDANCE'");
-        if (parseInt(checkData.rows[0].count) === 0) {
-            await client.query(`
-                INSERT INTO department_workflows (department_id, step_no, workflow_stage, action_description) 
-                VALUES 
-                ('HR_ATTENDANCE', 1, 'ស្កេនវត្តមានពេលព្រឹក (Morning Check-in)', 'បុគ្គលិកធ្វើការស្កេនម្រាមដៃ ឬកាតវត្តមានចូលធ្វើការពេលព្រឹកតាមម៉ោងកំណត់។'),
-                ('HR_ATTENDANCE', 2, 'ពិនិត្យភាពយឺតយ៉ាវ (Late Tracking)', 'ផ្នែករដ្ឋបាលធ្វើការផ្ទៀងផ្ទាត់ និងកត់ត្រាឈ្មោះបុគ្គលិកមកយឺត ឬអវត្តមានពេលព្រឹក។'),
-                ('HR_ATTENDANCE', 3, 'សម្រាកថ្ងៃត្រង់ ចេញ/ចូល (Lunch Break)', 'គ្រប់គ្រងម៉ោងចេញ និងចូលសម្រាកថ្ងៃត្រង់របស់បុគ្គលិកប្រចាំថ្ងៃ។'),
-                ('HR_ATTENDANCE', 4, 'ស្កេនវត្តមានពេលល្ងាច (Evening Check-out)', 'បុគ្គលិកស្កេនស្ដុបម៉ោងចេញពីការងារពេលល្ងាច និងសង្ខេបិន្នន័យម៉ោងការងារ។');
-            `);
-            console.log('-> បានបញ្ចូលទិន្នន័យគំរូស្តីពី វត្តមាន ម៉ោងចេញ/ចូល ក្នុង Database ដោយជោគជ័យ!');
-        }
-
-        client.release();
-        console.log('-> Database Tables ទាំងអស់បានរៀបចំរួចរាល់!');
+        await client.query('COMMIT');
+        console.log('Database tables initialized successfully.');
     } catch (err) {
-        console.error('Database Initialization Error:', err);
+        await client.query('ROLLBACK');
+        console.error('Error initializing database tables:', err);
+    } finally {
+        client.release();
     }
 }
 
 // ==========================================
-// មុខងារភ្ជាប់ជាមួយម៉ាស៊ីនស្កេនវត្តមាន (Auto Connect ZKTeco)
+// HTML Routes សម្រាប់បើកទំព័រ Views ផ្សេងៗ
 // ==========================================
-const zkInstance = new ZKLib('192.168.1.201', 4370, 10000, 4000);
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
 
-async function connectToBiometricMachine() {
-    try {
-        await zkInstance.createSocket();
-        console.log('-> បានតភ្ជាប់ជាមួយម៉ាស៊ីនស្កេនវត្តមាន (ZKTeco) ដោយជោគជ័យ!');
-
-        zkInstance.getRealTimeLogs(async (data) => {
-            const employee_code = data.pin;
-            const scanTime = new Date(data.time);
-            const today = scanTime.toISOString().split('T')[0];
-
-            try {
-                const checkQuery = `SELECT * FROM attendance_logs WHERE employee_code = $1 AND work_date = $2`;
-                const existing = await pool.query(checkQuery, [employee_code, today]);
-
-                if (existing.rows.length === 0) {
-                    const insertQuery = `
-                        INSERT INTO attendance_logs (employee_code, work_date, check_in_time, status) 
-                        VALUES ($1, $2, $3, 'Present');
-                    `;
-                    await pool.query(insertQuery, [employee_code, today, scanTime]);
-                } else if (!existing.rows[0].check_out_time) {
-                    const updateQuery = `
-                        UPDATE attendance_logs 
-                        SET check_out_time = $1 
-                        WHERE employee_code = $2 AND work_date = $3;
-                    `;
-                    await pool.query(updateQuery, [scanTime, employee_code, today]);
-                }
-            } catch (dbErr) {
-                console.error('កំហុសក្នុងការកត់ត្រាទិន្នន័យពីម៉ាស៊ីនស្កេនចូល Database:', dbErr);
-            }
-        });
-
-    } catch (e) {
-        console.log('មិនអាចតភ្ជាប់ទៅកាន់ម៉ាស៊ីនស្កេនបានទេ:', e.message);
-    }
-}
-
-// ==========================================
-// HTML Routes សម្រាប់បើកទំព័រនីមួយៗ
-// ==========================================
 app.get('/views/hr-in-out.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'hr-in-out.html'));
 });
@@ -168,40 +100,46 @@ app.get('/views/hr-asset.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'hr-asset.html'));
 });
 
-app.get('/views/hr-management.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'hr-management.html'));
+app.get('/views/hr-payroll.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'hr-payroll.html'));
 });
 
 // ==========================================
-// API សម្រាប់ Attendance & Inventory
+// API Routes: បុគ្គលិក (Employees)
 // ==========================================
 app.get('/api/employees', async (req, res) => {
     try {
-        const result = await pool.query("SELECT * FROM employees ORDER BY id DESC");
+        const result = await pool.query('SELECT * FROM employees ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យបុគ្គលិកបានទេ!' });
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យបុគ្គលិកបានទេ' });
     }
 });
 
 app.post('/api/employees', async (req, res) => {
     const { employee_code, full_name, department, position } = req.body;
     try {
-        const query = `INSERT INTO employees (employee_code, full_name, department, position) VALUES ($1, $2, $3, $4) RETURNING *;`;
+        const query = `
+            INSERT INTO employees (employee_code, full_name, department, position) 
+            VALUES ($1, $2, $3, $4) RETURNING *;
+        `;
         const result = await pool.query(query, [employee_code, full_name, department, position]);
-        res.status(201).json({ message: 'បានបន្ថែមបុគ្គលិកដោយជោគជ័យ!', data: result.rows[0] });
+        res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ error: 'កំហុសក្នុងការបញ្ចូលបុគ្គលិក (អាចជាន់កូដ)' });
+        res.status(500).json({ error: 'កំហុស៖ លេខកូដបុគ្គលិកអាចមានរួចហើយ ឬទិន្នន័យមិនត្រឹមត្រូវ' });
     }
 });
 
+// ==========================================
+// API Routes: វត្តមាន (Attendance Logs)
+// ==========================================
 app.get('/api/attendance/logs', async (req, res) => {
+    const { from, to, search } = req.query;
     try {
-        let { from, to, search } = req.query;
         let query = `
-            SELECT a.*, e.full_name, e.department 
-            FROM attendance_logs a 
-            JOIN employees e ON a.employee_code = e.employee_code 
+            SELECT a.id, a.employee_code, e.full_name, e.department, a.work_date, a.check_in_time, a.check_out_time
+            FROM attendance_logs a
+            JOIN employees e ON a.employee_code = e.employee_code
             WHERE 1=1
         `;
         let params = [];
@@ -219,23 +157,27 @@ app.get('/api/attendance/logs', async (req, res) => {
             paramIndex += 1;
         }
 
-        query += ` ORDER BY a.work_date DESC, a.id DESC;`;
+        query += ` ORDER BY a.work_date DESC, a.check_in_time DESC`;
+
         const result = await pool.query(query, params);
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យវត្តមានបានទេ!' });
+        res.status(500).json({ error: 'មិនអាចទាញយកប្រវត្តិកត់ត្រាវត្តមានបានទេ' });
     }
 });
 
+// ==========================================
+// API Routes: ទ្រព្យសម្បត្តិ និងស្តុក (Inventory)
+// ==========================================
 app.get('/api/inventory', async (req, res) => {
+    const { search, category } = req.query;
     try {
-        let { search, category } = req.query;
-        let query = "SELECT * FROM inventory_assets WHERE 1=1";
+        let query = `SELECT * FROM inventory_items WHERE 1=1`;
         let params = [];
         let paramIndex = 1;
 
         if (search) {
-            query += ` AND (item_name ILIKE $${paramIndex} OR item_code ILIKE $${paramIndex} OR holder_or_location ILIKE $${paramIndex})`;
+            query += ` AND (item_code ILIKE $${paramIndex} OR item_name ILIKE $${paramIndex} OR holder_or_location ILIKE $${paramIndex})`;
             params.push(`%${search}%`);
             paramIndex += 1;
         }
@@ -246,11 +188,12 @@ app.get('/api/inventory', async (req, res) => {
             paramIndex += 1;
         }
 
-        query += " ORDER BY id DESC;";
+        query += ` ORDER BY id DESC`;
+
         const result = await pool.query(query, params);
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យស្តុកបានទេ!' });
+        res.status(500).json({ error: 'មិនអាចទាញយកបញ្ជីសារពើភណ្ឌបានទេ' });
     }
 });
 
@@ -258,64 +201,50 @@ app.post('/api/inventory', async (req, res) => {
     const { item_code, item_name, category, quantity, unit, status, holder_or_location } = req.body;
     try {
         const query = `
-            INSERT INTO inventory_assets (item_code, item_name, category, quantity, unit, status, holder_or_location) 
+            INSERT INTO inventory_items (item_code, item_name, category, quantity, unit, status, holder_or_location) 
             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
         `;
-        const result = await pool.query(query, [item_code, item_name, category, quantity, unit, status, holder_or_location]);
-        res.status(201).json({ message: 'បានបន្ថែមទ្រព្យសម្បត្តិដោយជោគជ័យ!', data: result.rows[0] });
+        const result = await pool.query(query, [item_code, item_name, category, quantity, unit, status || 'Available', holder_or_location]);
+        res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ error: 'កំហុសក្នុងការបញ្ចូលទិន្នន័យ (អាចជាន់កូដសម្ភារៈ)' });
+        res.status(500).json({ error: 'កំហុស៖ លេខកូដសម្ភារៈអាចមានរួចហើយ' });
     }
 });
 
 // ==========================================
-// API សម្រាប់ HR Recruitment & Training (បន្ថែមថ្មី)
+// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)
 // ==========================================
-app.get('/api/jobs', async (req, res) => {
+app.get('/api/payroll', async (req, res) => {
     try {
-        const result = await pool.query("SELECT * FROM job_vacancies ORDER BY id DESC");
+        const result = await pool.query("SELECT * FROM payroll_records ORDER BY id DESC");
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យតំណែងការងារបានទេ!' });
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យប្រាក់បៀវត្សរ៍បានទេ' });
     }
 });
 
-app.post('/api/jobs', async (req, res) => {
-    const { title, dept, qty } = req.body;
+app.post('/api/payroll', async (req, res) => {
+    const { employee_code, full_name, base_salary, allowance, deduction, pay_month } = req.body;
     try {
-        const query = `INSERT INTO job_vacancies (title, dept, qty, status) VALUES ($1, $2, $3, 'កំពុងស្វែងរក') RETURNING *;`;
-        const result = await pool.query(query, [title, dept, qty + " នាក់"]);
-        res.status(201).json({ success: true, message: 'បានរក្សាទុកតំណែងការងារដោយជោគជ័យ!', data: result.rows[0] });
+        const bSalary = parseFloat(base_salary) || 0;
+        const allow = parseFloat(allowance) || 0;
+        const deduct = parseFloat(deduction) || 0;
+        const net_salary = (bSalary + allow) - deduct;
+
+        const query = `
+            INSERT INTO payroll_records (employee_code, full_name, base_salary, allowance, deduction, net_salary, pay_month) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+        `;
+        const result = await pool.query(query, [employee_code, full_name, bSalary, allow, deduct, net_salary, pay_month]);
+        res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ error: 'កំហុសក្នុងការបញ្ចូលតំណែងការងារចូល Database' });
+        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាប្រាក់បៀវត្សរ៍' });
     }
 });
 
-app.get('/api/trainings', async (req, res) => {
-    try {
-        const result = await pool.query("SELECT * FROM training_schedules ORDER BY id DESC");
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យបណ្តុះបណ្តាលបានទេ!' });
-    }
-});
-
-app.post('/api/trainings', async (req, res) => {
-    const { topic, training_date } = req.body;
-    try {
-        const query = `INSERT INTO training_schedules (topic, training_date, status) VALUES ($1, $2, 'គ្រោងទុក (Scheduled)') RETURNING *;`;
-        const result = await pool.query(query, [topic, training_date]);
-        res.status(201).json({ success: true, message: 'បានកត់ត្រាការបណ្តុះបណ្តាលដោយជោគជ័យ!', data: result.rows[0] });
-    } catch (err) {
-        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការបណ្តុះបណ្តាល' });
-    }
-});
-
-// ==========================================
-// ចាប់ផ្តើម Server
-// ==========================================
-app.listen(PORT, async () => {
-    await initializeDatabase();
-    console.log(`Server connected and running at http://localhost:${PORT}`);
-    connectToBiometricMachine();
+// ចាប់ផ្តើមដំណើរការ Server បន្ទាប់ពីបង្កើត Database Tables រួច
+initializeDatabase().then(() => {
+    app.listen(PORT, () => {
+        console.log(`Server is running on http://localhost:${PORT}`);
+    });
 });
