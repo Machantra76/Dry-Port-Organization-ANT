@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)[cite: 7, 8]
+// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)[cite: 7]
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/hr_db',
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
@@ -75,6 +75,19 @@ async function initializeDatabase() {
             );
         `);
 
+        // ៥. [ថ្មី] តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS revenues (
+                id SERIAL PRIMARY KEY,
+                revenue_date DATE NOT NULL,
+                category VARCHAR(150) NOT NULL,
+                description TEXT,
+                amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                received_by VARCHAR(100) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
         await client.query('COMMIT');
         console.log('Database tables initialized successfully.');
     } catch (err) {
@@ -106,6 +119,11 @@ app.get('/views/hr-management.html', (req, res) => {
 
 app.get('/views/hr-payroll.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'hr-payroll.html'));
+});
+
+// [ថ្មី] HTML Route សម្រាប់ទំព័រប្រាក់ចំណូល
+app.get('/views/hr-revenue.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'hr-revenue.html'));
 });
 
 // ==========================================
@@ -218,19 +236,15 @@ app.post('/api/inventory', async (req, res) => {
 // ==========================================
 // API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)
 // ==========================================
-
-// [ใหม่] API សម្រាប់គណនាកាត់ប្រាក់ខែស្វ័យប្រវត្តតាមអវត្តមានពីការស្កែនមេដៃ
 app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => {
-    const { employee_code, pay_month } = req.params; // pay_month ទម្រង់ "YYYY-MM"
+    const { employee_code, pay_month } = req.params;
     try {
-        // ១. ទាញយកព័ត៌មានបុគ្គលិក និងប្រាក់ខែគោល
         const empResult = await pool.query('SELECT * FROM employees WHERE employee_code = $1', [employee_code]);
         if (empResult.rows.length === 0) {
             return res.status(404).json({ error: 'រកមិនឃើញកូដបុគ្គលិកនេះទេ' });
         }
         const employee = empResult.rows[0];
 
-        // ២. ទាញយកចំនួនថ្ងៃដែលបុគ្គលិកបានស្កែនមេដៃ (វត្តមាន) ក្នុងខែនោះពី attendance_logs
         const attendanceResult = await pool.query(`
             SELECT COUNT(DISTINCT work_date) as present_days 
             FROM attendance_logs 
@@ -238,8 +252,6 @@ app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => 
         `, [employee_code, pay_month]);
 
         const presentDays = parseInt(attendanceResult.rows[0].present_days) || 0;
-        
-        // កំណត់ថ្ងៃធ្វើការស្តង់ដារក្នុង១ខែ = 26 ថ្ងៃ
         const standardWorkingDays = 26;
         let absentDays = standardWorkingDays - presentDays;
         if (absentDays < 0) absentDays = 0;
@@ -284,7 +296,33 @@ app.post('/api/payroll', async (req, res) => {
     }
 });
 
-// ចាប់ផ្តើមដំណើរការ Server[cite: 8]
+// ==========================================
+// API Routes: [ថ្មី] ប្រាក់ចំណូល (Revenues)
+// ==========================================
+app.get('/api/revenues', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM revenues ORDER BY revenue_date DESC, id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យប្រាក់ចំណូលបានទេ' });
+    }
+});
+
+app.post('/api/revenues', async (req, res) => {
+    const { revenue_date, category, description, amount, received_by } = req.body;
+    try {
+        const query = `
+            INSERT INTO revenues (revenue_date, category, description, amount, received_by) 
+            VALUES ($1, $2, $3, $4, $5) RETURNING *;
+        `;
+        const result = await pool.query(query, [revenue_date, category, description, parseFloat(amount) || 0, received_by]);
+        res.status(201).json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាប្រាក់ចំណូល' });
+    }
+});
+
+// ចាប់ផ្តើមដំណើរការ Server
 initializeDatabase().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
