@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)[cite: 7, 8]
+// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/hr_db',
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 8]
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តិពេល Start Server
 async function initializeDatabase() {
@@ -103,7 +103,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៧. តារាងចំណាយ (Expenses) [បន្ថែមថ្មី]
+        // ៧. តារាងចំណាយ (Expenses)
         await client.query(`
             CREATE TABLE IF NOT EXISTS expenses (
                 id SERIAL PRIMARY KEY,
@@ -116,7 +116,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៨. តារាងគ្រប់គ្រងរថយន្ត (Fleet Vehicles) [បន្ថែមថ្មី]
+        // ៨. តារាងគ្រប់គ្រងរថយន្ត (Fleet Vehicles)
         await client.query(`
             CREATE TABLE IF NOT EXISTS fleet_vehicles (
                 id SERIAL PRIMARY KEY,
@@ -129,7 +129,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៩. តារាងគ្រប់គ្រងអ្នកបើកបរ (Drivers) [បន្ថែមថ្មី]
+        // ៩. តារាងគ្រប់គ្រងអ្នកបើកបរ (Drivers)
         await client.query(`
             CREATE TABLE IF NOT EXISTS drivers (
                 id SERIAL PRIMARY KEY,
@@ -142,7 +142,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១០. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches) [បន្ថែមថ្មី]
+        // ១០. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches)
         await client.query(`
             CREATE TABLE IF NOT EXISTS transport_dispatches (
                 id SERIAL PRIMARY KEY,
@@ -153,6 +153,36 @@ async function initializeDatabase() {
                 dispatch_date DATE NOT NULL,
                 status VARCHAR(50) DEFAULT 'Dispatched',
                 notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ១១. តារាងគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs) [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS fuel_logs (
+                id SERIAL PRIMARY KEY,
+                vehicle_code VARCHAR(50) NOT NULL,
+                log_date DATE NOT NULL,
+                liters NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                cost_per_liter NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                total_cost NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                current_mileage INT NOT NULL DEFAULT 0,
+                filled_by VARCHAR(150) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs) [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS maintenance_logs (
+                id SERIAL PRIMARY KEY,
+                vehicle_code VARCHAR(50) NOT NULL,
+                maintenance_date DATE NOT NULL,
+                service_type VARCHAR(150) NOT NULL,
+                description TEXT,
+                cost NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                service_provider VARCHAR(150) NOT NULL,
+                status VARCHAR(50) DEFAULT 'Completed',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -212,6 +242,11 @@ app.get('/views/acc-control.html', (req, res) => {
 
 app.get('/views/fleet-dispatch.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'fleet-dispatch.html'));
+});
+
+// HTML Route សម្រាប់ទំព័រប្រេង និងថែទាំ [បន្ថែមថ្មី]
+app.get('/views/fleet-fuel-maintenance.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'fleet-fuel-maintenance.html'));
 });
 
 // ==========================================
@@ -539,7 +574,7 @@ app.get('/api/financial/summary', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការចាត់ចែងរថយន្ត (Fleet Vehicles) [បន្ថែមថ្មី]
+// API Routes: ការចាត់ចែងរថយន្ត (Fleet Vehicles)
 // ==========================================
 app.get('/api/fleet/vehicles', async (req, res) => {
     try {
@@ -565,7 +600,7 @@ app.post('/api/fleet/vehicles', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការគ្រប់គ្រងអ្នកបើកបរ (Drivers) [បន្ថែមថ្មី]
+// API Routes: ការគ្រប់គ្រងអ្នកបើកបរ (Drivers)
 // ==========================================
 app.get('/api/fleet/drivers', async (req, res) => {
     try {
@@ -591,7 +626,7 @@ app.post('/api/fleet/drivers', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការបញ្ជូនដឹកជញ្ជូន (Transport Dispatches) [បន្ថែមថ្មី]
+// API Routes: ការបញ្ជូនដឹកជញ្ជូន (Transport Dispatches)
 // ==========================================
 app.get('/api/fleet/dispatches', async (req, res) => {
     const { from, to } = req.query;
@@ -648,7 +683,131 @@ app.post('/api/fleet/dispatches', async (req, res) => {
     }
 });
 
-// ចាប់ផ្តើមដំណើរការ Server[cite: 8]
+// ==========================================
+// API Routes: ការគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/fleet/fuel', async (req, res) => {
+    const { from, to, vehicle_code } = req.query;
+    try {
+        let query = 'SELECT * FROM fuel_logs WHERE 1=1';
+        let params = [];
+        let paramIndex = 1;
+        
+        if (from && to) {
+            query += ` AND log_date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
+            params.push(from, to);
+            paramIndex += 2;
+        }
+
+        if (vehicle_code) {
+            query += ` AND vehicle_code = $${paramIndex}`;
+            params.push(vehicle_code);
+            paramIndex += 1;
+        }
+        
+        query += ' ORDER BY log_date DESC, id DESC';
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យប្រេងឥន្ធនៈបានទេ' });
+    }
+});
+
+app.post('/api/fleet/fuel', async (req, res) => {
+    const { vehicle_code, log_date, liters, cost_per_liter, current_mileage, filled_by } = req.body;
+    try {
+        const l = parseFloat(liters) || 0;
+        const cpl = parseFloat(cost_per_liter) || 0;
+        const total_cost = l * cpl;
+
+        const query = `
+            INSERT INTO fuel_logs (vehicle_code, log_date, liters, cost_per_liter, total_cost, current_mileage, filled_by) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+        `;
+        const result = await pool.query(query, [vehicle_code, log_date, l, cpl, total_cost, parseInt(current_mileage) || 0, filled_by]);
+        res.status(201).json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាទិន្នន័យប្រេងឥន្ធនៈ' });
+    }
+});
+
+// ==========================================
+// API Routes: ការថែទាំយានយន្ត (Maintenance Logs) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/fleet/maintenance', async (req, res) => {
+    const { from, to, vehicle_code } = req.query;
+    try {
+        let query = 'SELECT * FROM maintenance_logs WHERE 1=1';
+        let params = [];
+        let paramIndex = 1;
+        
+        if (from && to) {
+            query += ` AND maintenance_date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
+            params.push(from, to);
+            paramIndex += 2;
+        }
+
+        if (vehicle_code) {
+            query += ` AND vehicle_code = $${paramIndex}`;
+            params.push(vehicle_code);
+            paramIndex += 1;
+        }
+        
+        query += ' ORDER BY maintenance_date DESC, id DESC';
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យការថែទាំបានទេ' });
+    }
+});
+
+app.post('/api/fleet/maintenance', async (req, res) => {
+    const { vehicle_code, maintenance_date, service_type, description, cost, service_provider, status } = req.body;
+    try {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            const query = `
+                INSERT INTO maintenance_logs (vehicle_code, maintenance_date, service_type, description, cost, service_provider, status) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+            `;
+            const mStatus = status || 'Completed';
+            const result = await client.query(query, [
+                vehicle_code, 
+                maintenance_date, 
+                service_type, 
+                description, 
+                parseFloat(cost) || 0, 
+                service_provider, 
+                mStatus
+            ]);
+
+            // ប្រសិនបើស្ថានភាពថែទាំគឺ In Progress អាចប្តូរស្ថានភាពរថយន្តទៅជា In Maintenance 
+            if (mStatus === 'In Progress') {
+                await client.query(`
+                    UPDATE fleet_vehicles SET status = 'In Maintenance' WHERE vehicle_code = $1
+                `, [vehicle_code]);
+            } else {
+                await client.query(`
+                    UPDATE fleet_vehicles SET status = 'Available' WHERE vehicle_code = $1
+                `, [vehicle_code]);
+            }
+
+            await client.query('COMMIT');
+            res.status(201).json({ success: true, data: result.rows[0] });
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+    } catch (err) {
+        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការថែទាំយានយន្ត' });
+    }
+});
+
+// ចាប់ផ្តើមដំណើរការ Server
 initializeDatabase().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
