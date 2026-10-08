@@ -14,9 +14,9 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 4]
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន
 
-// មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តិពេល Start Server
+// មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
     const client = await pool.connect();
     try {
@@ -328,6 +328,20 @@ async function initializeDatabase() {
             );
         `);
 
+        // ២២. តារាងគ្រប់គ្រង CCTV និង Network (IT Infrastructure)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS it_cctv_networks (
+                id SERIAL PRIMARY KEY,
+                category VARCHAR(50) NOT NULL,
+                name VARCHAR(100) NOT NULL,
+                type VARCHAR(100),
+                location VARCHAR(150) NOT NULL,
+                ip_address VARCHAR(50) NOT NULL,
+                status VARCHAR(50) DEFAULT 'Online',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
         await client.query('COMMIT');
         console.log('Database tables initialized successfully.');
     } catch (err) {
@@ -425,14 +439,48 @@ app.get('/views/tech-safety.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'tech-safety.html'));
 });
 
-// Route សម្រាប់បើកទំព័រ WMS / OMS[cite: 4]
 app.get('/views/wms-oms.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'wms-oms.html'));
 });
 
-// Route សម្រាប់បើកទំព័រ IT CCTV & Network
-app.get('/views/it-cctv.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'it-cctv.html'));
+// ==========================================
+// API Routes: IT CCTV & Network Infrastructure
+// ==========================================
+app.get('/api/it-cctv', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM it_cctv_networks ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching IT CCTV/Network:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/it-cctv', async (req, res) => {
+    const { category, name, type, location, ip_address, status } = req.body;
+    try {
+        const query = `
+            INSERT INTO it_cctv_networks (category, name, type, location, ip_address, status)
+            VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
+        `;
+        const values = [category, name, type || null, location, ip_address, status || 'Online'];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving IT CCTV/Network:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.delete('/api/it-cctv/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM it_cctv_networks WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting IT CCTV/Network:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 
 // ==========================================
