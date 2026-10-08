@@ -5,7 +5,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)[cite: 7, 8, 10]
+// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)[cite: 7, 8, 10, 11]
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/hr_db',
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 8, 10]
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 8, 10, 11]
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តិពេល Start Server
 async function initializeDatabase() {
@@ -34,7 +34,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)[cite: 10]
+        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)[cite: 10, 11]
         await client.query(`
             CREATE TABLE IF NOT EXISTS attendance_logs (
                 id SERIAL PRIMARY KEY,
@@ -46,7 +46,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)[cite: 10]
+        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)[cite: 10, 11]
         await client.query(`
             CREATE TABLE IF NOT EXISTS inventory_items (
                 id SERIAL PRIMARY KEY,
@@ -61,7 +61,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)[cite: 10]
+        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)[cite: 10, 11]
         await client.query(`
             CREATE TABLE IF NOT EXISTS payroll_records (
                 id SERIAL PRIMARY KEY,
@@ -76,7 +76,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)[cite: 10]
+        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)[cite: 10, 11]
         await client.query(`
             CREATE TABLE IF NOT EXISTS revenues (
                 id SERIAL PRIMARY KEY,
@@ -89,7 +89,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable) [បន្ថែមใหม่]
+        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable) [បន្ថែមថ្មី][cite: 11]
         await client.query(`
             CREATE TABLE IF NOT EXISTS accounts_receivable (
                 id SERIAL PRIMARY KEY,
@@ -144,13 +144,18 @@ app.get('/views/acc-revenue.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'acc-revenue.html'));
 });
 
-// HTML Route សម្រាប់ទំព័រគណនេយ្យទទួល [បន្ថែមใหม่]
+// HTML Route សម្រាប់ទំព័រគណនេយ្យទទួល[cite: 11]
 app.get('/views/acc-receivable.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'acc-receivable.html'));
 });
 
+// HTML Route សម្រាប់ទំព័ររបាយការណ៍ហិរញ្ញវត្ថុ [បន្ថែមថ្មី]
+app.get('/views/acc-finance.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'acc-finance.html'));
+});
+
 // ==========================================
-// API Routes: បុគ្គលិក (Employees)[cite: 10]
+// API Routes: បុគ្គលិក (Employees)[cite: 10, 11]
 // ==========================================
 app.get('/api/employees', async (req, res) => {
     try {
@@ -176,7 +181,7 @@ app.post('/api/employees', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: វត្តមាន (Attendance Logs)[cite: 10]
+// API Routes: វត្តមាន (Attendance Logs)[cite: 10, 11]
 // ==========================================
 app.get('/api/attendance/logs', async (req, res) => {
     const { from, to, search } = req.query;
@@ -212,7 +217,7 @@ app.get('/api/attendance/logs', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ទ្រព្យសម្បត្តិ និងស្តុក (Inventory)[cite: 10]
+// API Routes: ទ្រព្យសម្បត្តិ និងស្តុក (Inventory)[cite: 10, 11]
 // ==========================================
 app.get('/api/inventory', async (req, res) => {
     const { search, category } = req.query;
@@ -257,7 +262,7 @@ app.post('/api/inventory', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)[cite: 10]
+// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)[cite: 10, 11]
 // ==========================================
 app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => {
     const { employee_code, pay_month } = req.params;
@@ -320,7 +325,7 @@ app.post('/api/payroll', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រាក់ចំណូល (Revenues)[cite: 10]
+// API Routes: ប្រាក់ចំណូល (Revenues)[cite: 10, 11]
 // ==========================================
 app.get('/api/revenues', async (req, res) => {
     const { from, to } = req.query;
@@ -356,7 +361,7 @@ app.post('/api/revenues', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: គណនេយ្យទទួល (Accounts Receivable) [បន្ថែមใหม่]
+// API Routes: គណនេយ្យទទួល (Accounts Receivable)[cite: 11]
 // ==========================================
 app.get('/api/receivables', async (req, res) => {
     const { from, to } = req.query;
@@ -391,7 +396,45 @@ app.post('/api/receivables', async (req, res) => {
     }
 });
 
-// ចាប់ផ្តើមដំណើរការ Server[cite: 8, 10]
+// ==========================================
+// API Routes: របាយការណ៍ហិរញ្ញវត្ថុ (Financial Summary API) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/financial/summary', async (req, res) => {
+    const { from, to } = req.query;
+    try {
+        let revQuery = 'SELECT SUM(amount) as total_revenue FROM revenues WHERE 1=1';
+        let recQuery = `
+            SELECT 
+                SUM(amount) as total_receivable, 
+                SUM(CASE WHEN status = 'Paid' THEN amount ELSE 0 END) as total_paid, 
+                SUM(CASE WHEN status = 'Pending' THEN amount ELSE 0 END) as total_pending 
+            FROM accounts_receivable 
+            WHERE 1=1
+        `;
+        let params = [];
+
+        if (from && to) {
+            revQuery += ' AND revenue_date BETWEEN $1 AND $2';
+            recQuery += ' AND invoice_date BETWEEN $1 AND $2';
+            params.push(from, to);
+        }
+
+        const revResult = await pool.query(revQuery, params);
+        const recResult = await pool.query(recQuery, params);
+
+        res.json({
+            total_revenue: parseFloat(revResult.rows[0].total_revenue) || 0,
+            total_receivable: parseFloat(recResult.rows[0].total_receivable) || 0,
+            total_paid: parseFloat(recResult.rows[0].total_paid) || 0,
+            total_pending: parseFloat(recResult.rows[0].total_pending) || 0
+        });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យរបាយការណ៍ហិរញ្ញវត្ថុបានទេ' });
+    }
+});
+
+// ចាប់ផ្តើមដំណើរការ Server[cite: 8, 10, 11]
 initializeDatabase().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
