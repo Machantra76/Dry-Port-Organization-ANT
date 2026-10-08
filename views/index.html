@@ -3,346 +3,372 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>រចនាសម្ព័ន្ធស្ថាប័នផែស្ងួតអេអិនធី - Dry Port Organization Dashboard​ ANT </title>
-    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>ការគ្រប់គ្រងការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out)</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font (Khmer OS Siemreap ឬ Battambang) -->
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #1e3c72;
-            --secondary-color: #2a5298;
-            --accent-color: #00c6ff;
-            --bg-color: #f0f4f8;
-            --card-bg: #ffffff;
-            --text-main: #333333;
-            --text-sub: #555555;
-            --border-color: #e2e8f0;
-        }
-
         body {
             font-family: 'Kantumruy Pro', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
+            background-color: #f4f6f9;
+            color: #333;
         }
-
-        header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-
-        header h1 {
-            margin: 0;
-            font-size: 28px;
-            font-weight: 700;
-        }
-
-        header p {
-            margin: 8px 0 0 0;
-            font-size: 15px;
-            color: #dbeafe;
-            letter-spacing: 0.5px;
-        }
-
-        .container {
-            max-width: 1400px;
+        .main-container {
+            max-width: 1300px;
             margin: 30px auto;
-            padding: 0 20px;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 24px;
-        }
-
-        .card {
-            background: var(--card-bg);
+            background: #ffffff;
+            padding: 30px;
             border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
-            border-top: 5px solid var(--secondary-color);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px -3px rgba(0, 0, 0, 0.1);
-            border-top-color: var(--accent-color);
-        }
-
-        .card-header {
-            padding: 20px 20px 10px 20px;
-            border-bottom: 1px solid var(--border-color);
-            background-color: #fafbfc;
-        }
-
-        .card-header h3 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        .card-header .eng-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 4px;
-        }
-
-        .card-body {
-            padding: 15px 20px 20px 20px;
-            flex-grow: 1;
-        }
-
-        .role-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .role-item {
-            display: block;
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            padding: 10px 14px;
-            margin-bottom: 8px;
-            border-radius: 8px;
+        .btn-back {
+            background-color: #1e3a8a;
+            color: white;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 8px 16px;
             text-decoration: none;
-            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
         }
-
-        .role-item:hover {
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
-            color: #ffffff;
-            border-color: transparent;
-            transform: translateX(4px);
-            box-shadow: 0 4px 10px rgba(0, 114, 255, 0.3);
+        .btn-back:hover {
+            background-color: #1e40af;
+            color: white;
         }
-
-        .role-item:hover .role-km, 
-        .role-item:hover .role-en {
-            color: #ffffff;
+        .page-title {
+            color: #1e3a8a;
+            font-weight: 700;
+            margin-top: 20px;
+            font-size: 1.75rem;
         }
-
-        .role-km {
-            display: block;
-            font-size: 14px;
+        .page-subtitle {
+            color: #6c757d;
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+        }
+        .section-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            background-color: #ffffff;
+        }
+        .section-card-title {
+            font-size: 1.1rem;
             font-weight: 600;
-            color: var(--text-main);
+            color: #1e3a8a;
+            margin-bottom: 20px;
         }
-
-        .role-en {
-            display: block;
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 2px;
-            text-transform: uppercase;
+        .form-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #495057;
         }
-
-        .loading {
+        .form-control, .form-select {
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.15);
+        }
+        .btn-primary-custom {
+            background-color: #10b981;
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .btn-primary-custom:hover {
+            background-color: #059669;
+        }
+        .table-custom-header {
+            background-color: #1e3a8a !important;
+            color: white !important;
             text-align: center;
-            font-size: 18px;
-            color: var(--text-sub);
-            grid-column: 1 / -1;
-            padding: 50px;
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+        .table tbody td {
+            vertical-align: middle;
+            font-size: 0.88rem;
+            text-align: center;
+        }
+        .btn-print {
+            background-color: #475569;
+            color: white;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 8px 16px;
+            border: none;
+        }
+        .btn-print:hover {
+            background-color: #334155;
+            color: white;
+        }
+        .btn-filter {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+        }
+        .btn-filter:hover {
+            background-color: #1d4ed8;
+            color: white;
+        }
+        .btn-reset {
+            background-color: #64748b;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+        }
+        .btn-reset:hover {
+            background-color: #475569;
+            color: white;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>រចនាសម្ព័ន្ធស្ថាប័នឃ្លាំងស្ងួត</h1>
-        <p>DRY PORT ORGANIZATION CHART & WORKFLOW DASHBOARD</p>
-    </header>
+<div class="main-container">
+    <!-- ប៊ូតុងត្រឡប់ក្រោយ -->
+    <a href="/" class="btn-back">
+        <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)
+    </a>
 
-    <div class="container">
-        <div id="dashboard" class="grid-container">
-            <div class="loading">កំពុងទាញយកទិន្នន័យ... (Loading data...)</div>
-        </div>
+    <!-- ចំណងជើងទំព័រ -->
+    <h2 class="page-title">ការគ្រប់គ្រងការចូល/ចេញទំនិញ</h2>
+    <p class="page-subtitle">CARGO GATE-IN / GATE-OUT SYSTEM & TRACKING</p>
+
+    <!-- Form កត់ត្រាថ្មី -->
+    <div class="section-card">
+        <div class="section-card-title">កត់ត្រាការចូល/ចេញទំនិញថ្មី (Record New Cargo Gate Entry/Exit)</div>
+        <form id="cargoGateForm">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">លេខកូដទំនិញ / កុងតឺន័រ (Cargo Code / Container No.):</label>
+                    <input type="text" class="form-control" id="cargo_code" placeholder="ឧ. CG-2026-001 (Ex. Cargo Code)" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">លេខកុងតឺន័រ (Container Number - បើមាន):</label>
+                    <input type="text" class="form-control" id="container_number" placeholder="ឧ. TGHU1234567 (Ex. Container No.)">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">ប្រភេទខ្លោងទ្វារ (Gate Type):</label>
+                    <select class="form-select" id="gate_type" required>
+                        <option value="Gate-In">Gate-In (ចូល)</option>
+                        <option value="Gate-Out">Gate-Out (ចេញ)</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង (Gate Date & Time):</label>
+                    <input type="datetime-local" class="form-control" id="gate_date" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">ស្លាកលេខរថយន្ត (Truck Plate Number):</label>
+                    <input type="text" class="form-control" id="truck_plate_number" placeholder="ឧ. ភ្នំពេញ 3A-1234 (Ex. Truck Plate)" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">ឈ្មោះអ្នកបើកបរ (Driver Name):</label>
+                    <input type="text" class="form-control" id="driver_name" placeholder="ឧ. សុខ សុភា (Ex. Driver Name)" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">ឈ្មោះក្រុមហ៊ុនដឹកជញ្ជូន (Company Name):</label>
+                    <input type="text" class="form-control" id="company_name" placeholder="ឧ. ក្រុមហ៊ុន ឡូជីស្ទិក (Ex. Company Name)">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">ស្ថានភាព (Status):</label>
+                    <select class="form-select" id="status">
+                        <option value="Completed">បានបញ្ចប់ (Completed)</option>
+                        <option value="Pending">កំពុងរង់ចាំ (Pending)</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">បរិយាយ / កំណត់សម្គាល់ (Description / Notes):</label>
+                    <textarea class="form-control" id="notes" rows="2" placeholder="ព័ត៌មានលម្អិតបន្ថែម... (Details...)"></textarea>
+                </div>
+                <div class="col-12 text-end mt-4">
+                    <button type="submit" class="btn btn-primary-custom">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> រក្សាទុកទិន្នន័យខ្លោងទ្វារ (Save Gate Record)
+                    </button>
+                </div>
+            </div>
+        </form>
     </div>
 
-    <script>
-        const englishTitles = {
-            "HR_ADMIN": "HR & Administration Department",
-            "ACC_FIN": "Accounting & Finance Department",
-            "TRANSPORT": "Transport Department",
-            "CONTAINER_MGT": "Container Management Department",
-            "TECH_STUFFING": "Technical & Stuffing/Unstuffing Department",
-            "IT_SYSTEMS": "IT & Systems Department",
-            "CUSTOMER_SVC": "Customer Service Department",
-            "FACILITIES": "Documentation & General Management"
-        };
+    <!-- តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ -->
+    <div class="section-card">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div class="section-card-title mb-0">តារាងតាមដានការចូល/ចេញទំនិញ (Cargo Gate List & Report)</div>
+            <button class="btn btn-print" onclick="window.print()">
+                <i class="fa-solid fa-print me-1"></i> បោះពុម្ព / រក្សាទុក PDF (Print / Save PDF)
+            </button>
+        </div>
 
-        const roleDetails = {
-            // ធនធានមនុស្ស & រដ្ឋបាល (HR & Administration)
-            "វត្តមាន ចេញ/ចូល": { en: "Staff Attendance Check-in / Check-out", url: "/views/hr-in-out.html" },
-            "ទ្រព្យសម្បត្តិ/ស្តុក និងការគ្រប់គ្រង សារពើភណ្ឌ": { en: "Asset, Stock & Inventory Management", url: "/views/hr-asset.html" },
-            "ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល": { en: "HR Recruitment & Training", url: "/views/hr-management.html" },
-            "ប្រាក់បៀវត្សរ៍ - ដំណើរការប្រាក់ខែ & អត្ថប្រយោជន៍": { en: "Payroll Processing & Benefits", url: "/views/hr-payroll.html" },
-            
-            // គណនេយ្យ & ហិរញ្ញវត្ថុ (Accounting & Finance)
-            "គណនេយ្យប្រាក់ចំណូល": { en: "Revenue Accounting", url: "/views/acc-revenue.html" },
-            "គណនេយ្យទទួល": { en: "Accounts Receivable", url: "/views/acc-receivable.html" },
-            "របាយការណ៍ហិរញ្ញវត្ថុ": { en: "Financial Reporting", url: "/views/acc-finance.html" },
-            "ការគ្រប់គ្រងថវិកា / ចំណាយ": { en: "Budget & Expense Control", url: "/views/acc-control.html" },
+        <!-- ផ្នែកតម្រងស្វែងរក (Filter) -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-3">
+                <label class="form-label">ចាប់ពីថ្ងៃទី (From Date):</label>
+                <input type="date" class="form-control" id="filterFrom">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">ដល់ថ្ងៃទី (To Date):</label>
+                <input type="date" class="form-control" id="filterTo">
+            </div>
+            <div class="col-md-6 d-flex align-items-end gap-2">
+                <button class="btn btn-filter" onclick="loadCargoGates()">
+                    <i class="fa-solid fa-magnifying-glass me-1"></i> ស្វែងរក / ត្រង (Filter)
+                </button>
+                <button class="btn btn-reset" onclick="resetFilter()">
+                    កំណត់ឡើងវិញ (Reset)
+                </button>
+            </div>
+        </div>
 
-            // ផ្នែកដឹកជញ្ជូន (Transport Department)
-            "ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន": { en: "Fleet & Transport Dispatch", url: "/views/transport-fleet.html" },
-            "ការគ្រប់គ្រងអ្នកបើកបរ": { en: "Driver Management", url: "/views/transport-drivers.html" },
-            "ការគ្រប់គ្រងប្រេងឥន្ធនៈ / ការថែទាំ": { en: "Fuel & Maintenance Management", url: "/views/transport-maintenance.html" },
-            "ការរៀបចំផែនការដឹកជញ្ជូនទំនិញ": { en: "Cargo Transport Planning", url: "/views/transport-planning.html" },
+        <!-- តារាងបង្ហាញទិន្នន័យ -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th class="table-custom-header">ល.រ (No.)</th>
+                        <th class="table-custom-header">កូដទំនិញ (Cargo Code)</th>
+                        <th class="table-custom-header">កុងតឺន័រ (Container No.)</th>
+                        <th class="table-custom-header">ប្រភេទ (Gate Type)</th>
+                        <th class="table-custom-header">កាលបរិច្ឆេទ (Date & Time)</th>
+                        <th class="table-custom-header">ស្លាកលេខរថយន្ត (Truck Plate)</th>
+                        <th class="table-custom-header">អ្នកបើកបរ (Driver)</th>
+                        <th class="table-custom-header">ស្ថានភាព (Status)</th>
+                        <th class="table-custom-header">សកម្មភាព (Actions)</th>
+                    </tr>
+                </thead>
+                <tbody id="cargoGateTableBody">
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">ពុំមានទិន្នន័យខ្លោងទ្វារក្នុងช่วงเวลានេះ (No gate data found)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
-            // ផ្នែកគ្រប់គ្រងកុងតឺន័រ (Container Management Department)
-            "ការត្រួតពិនិត្យកុងតឺន័រខូច": { en: "Damaged Container Inspection", url: "/views/container-damage.html" },
-            "ការគ្រប់គ្រងទីតាំងកុងតឺន័រ": { en: "Container Yard Location Management", url: "/views/container-yard.html" },
-            "ការថែទាំ និងជួសជុល": { en: "Maintenance & Repair (M&R)", url: "/views/container-stock.html" },
-            "ការចេញកុងតឺន័រវិញ": { en: "Container Gate-Out", url: "/views/container-gateout.html" },
+<!-- JavaScript សម្រាប់ទាញយក និងបញ្ជូនទិន្នន័យ API -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // កំណត់តម្លៃថ្ងៃខែឆ្នាំបច្ចុប្បន្នស្វ័យប្រវត្តិលើ Form ពេលបើកទំព័រ
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('gate_date').value = now.toISOString().slice(0, 16);
 
-            // ផ្នែកត្រួតពិនិត្យទីលានកុងតឺន័រ (Container Yard Inspection Department)
-            "ប្រតិបត្តិការនៅទីលាន": { en: "Yard Operations", url: "/views/tech-stuffing.html" },
-            "ការចូល / ចេញទំនិញ": { en: "Cargo Gate-In / Gate-Out", url: "/views/tech-unstuffing.html" },
-            "ក្រុមសន្តិសុខ": { en: "Security Guard Team", url: "/views/tech-safety.html" },
+        loadCargoGates();
+    });
 
-            // ផ្នែកព័ត៌មានវិទ្យា & ប្រព័ន្ធ (IT & Systems Department)
-            "ប្រព័ន្ធ WMS / OMS": { en: "WMS & OMS Systems", url: "/views/it-wms.html" },
-            "ប្រព័ន្ធ CCTV & បណ្តាញ": { en: "CCTV & Network Infrastructure", url: "/views/it-cctv.html" },
-            "ការគ្រប់គ្រងទិន្នន័យ": { en: "Data Management & Security", url: "/views/it-data.html" },
-
-            // ផ្នែកសេវាកម្មអតិថិជន (Customer Service Department)
-            "ទំនាក់ទំនងជាមួយអតិថិជន": { en: "Customer Relations", url: "/views/cs-relations.html" },
-            "ការដោះស្រាយបញ្ហា / ការតវ៉ា": { en: "Dispute & Complaint Resolution", url: "/views/cs-complaints.html" },
-            "ជំនួយការផ្នែកស្វែងរកប្រភព": { en: "Sourcing & General Support", url: "/views/cs-support.html" },
-
-            // ប្រធានផ្នែកសម្ភារឯកសារ (Documentation & General Management)
-            "ការគ្រប់គ្រងឯកសារ": { en: "Document Management", url: "/views/doc-management.html" },
-            "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ": { en: "Customs System Data Entry Management", url: "/views/doc-customs.html" },
-            "អ្នកកាន់ឯកសារ": { en: "Document Controller / Handler", url: "/views/doc-handler.html" }
-        };
+    // បញ្ជូនទិន្នន័យបញ្ចូលថ្មី (Submit Form)
+    document.getElementById('cargoGateForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
 
         const data = {
-            "dry_port_project": {
-                "departments": [
-                    {
-                        "id": "HR_ADMIN",
-                        "name": "ធនធានមនុស្ស & រដ្ឋបាល",
-                        "roles": [
-                            "វត្តមាន ចេញ/ចូល",
-                            "ទ្រព្យសម្បត្តិ/ស្តុក និងការគ្រប់គ្រង សារពើភណ្ឌ",
-                            "ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល",
-                            "ប្រាក់បៀវត្សរ៍ - ដំណើរការប្រាក់ខែ & អត្ថប្រយោជន៍"
-                        ]
-                    },
-                    {
-                        "id": "ACC_FIN",
-                        "name": "គណនេយ្យ & ហិរញ្ញវត្ថុ",
-                        "roles": [
-                            "គណនេយ្យប្រាក់ចំណូល",
-                            "គណនេយ្យទទួល",
-                            "របាយការណ៍ហិរញ្ញវត្ថុ",
-                            "ការគ្រប់គ្រងថវិកា / ចំណាយ"
-                        ]
-                    },
-                    {
-                        "id": "TRANSPORT",
-                        "name": "ផ្នែកដឹកជញ្ជូន",
-                        "roles": [
-                            "ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន",
-                            "ការគ្រប់គ្រងអ្នកបើកបរ",
-                            "ការគ្រប់គ្រងប្រេងឥន្ធនៈ / ការថែទាំ",
-                            "ការរៀបចំផែនការដឹកជញ្ជូនទំនិញ"
-                        ]
-                    },
-                    {
-                        "id": "CONTAINER_MGT",
-                        "name": "ផ្នែកគ្រប់គ្រងកុងតឺន័រ",
-                        "roles": [
-                            "ការត្រួតពិនិត្យកុងតឺន័រខូច",
-                            "ការគ្រប់គ្រងទីតាំងកុងតឺន័រ",
-                            "ការថែទាំ និងជួសជុល",
-                            "ការចេញកុងតឺន័រវិញ"
-                        ]
-                    },
-                    {
-                        "id": "TECH_STUFFING",
-                        "name": "ផ្នែកត្រួតពិនិត្យទីលានកុងតឺន័រ",
-                        "roles": [
-                            "ប្រតិបត្តិការនៅទីលាន",
-                            "ការចូល / ចេញទំនិញ",
-                            "ក្រុមសន្តិសុខ"
-                        ]
-                    },
-                    {
-                        "id": "IT_SYSTEMS",
-                        "name": "ផ្នែកព័ត៌មានវិទ្យា & ប្រព័ន្ធ",
-                        "roles": [
-                            "ប្រព័ន្ធ WMS / OMS",
-                            "ប្រព័ន្ធ CCTV & បណ្តាញ",
-                            "ការគ្រប់គ្រងទិន្នន័យ"
-                        ]
-                    },
-                    {
-                        "id": "CUSTOMER_SVC",
-                        "name": "ផ្នែកសេវាកម្មអតិថិជន",
-                        "roles": [
-                            "ទំនាក់ទំនងជាមួយអតិថិជន",
-                            "ការដោះស្រាយបញ្ហា / ការតវ៉ា",
-                            "ជំនួយការផ្នែកស្វែងរកប្រភព"
-                        ]
-                    },
-                    {
-                        "id": "FACILITIES",
-                        "name": "ប្រធានផ្នែកសម្ភារឯកសារ",
-                        "roles": [
-                            "ការគ្រប់គ្រងឯកសារ",
-                            "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ",
-                            "អ្នកកាន់ឯកសារ"
-                        ]
-                    }
-                ]
-            }
+            cargo_code: document.getElementById('cargo_code').value,
+            container_number: document.getElementById('container_number').value,
+            gate_type: document.getElementById('gate_type').value,
+            gate_date: document.getElementById('gate_date').value,
+            truck_plate_number: document.getElementById('truck_plate_number').value,
+            driver_name: document.getElementById('driver_name').value,
+            company_name: document.getElementById('company_name').value,
+            status: document.getElementById('status').value,
+            notes: document.getElementById('notes').value
         };
 
-        const departments = data.dry_port_project.departments;
-        const dashboardContainer = document.getElementById('dashboard');
-        dashboardContainer.innerHTML = '';
+        try {
+            const response = await fetch('/api/fleet/cargo-gates', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
 
-        departments.forEach(dept => {
-            let engName = englishTitles[dept.id] || "Department";
-            
-            let rolesHtml = dept.roles.map(role => {
-                let info = roleDetails[role] || { en: "Workflow Item", url: "#" };
-                return `
-                    <li>
-                        <a href="${info.url}" class="role-item">
-                            <span class="role-km">${role}</span>
-                            <span class="role-en">${info.en}</span>
-                        </a>
-                    </li>
+            const result = await response.json();
+            if (response.ok && result.success) {
+                alert('បានរក្សាទុកទិន្នន័យខ្លោងទ្វារដោយជោគជ័យ!');
+                document.getElementById('cargoGateForm').reset();
+                
+                // កំណត់ថ្ងៃខែបច្ចុប្បន្នសាថ្មីក្រោយ Reset
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                document.getElementById('gate_date').value = now.toISOString().slice(0, 16);
+
+                loadCargoGates();
+            } else {
+                alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
+            }
+        } catch (err) {
+            console.error('Error submitting form:', err);
+            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅยัง Server!');
+        }
+    });
+
+    // ទាញយកទិន្នន័យមកបង្ហាញក្នុងតារាង
+    async function loadCargoGates() {
+        const from = document.getElementById('filterFrom').value;
+        const to = document.getElementById('filterTo').value;
+
+        let url = '/api/fleet/cargo-gates';
+        // បើមាន Filter អាចបន្ថែម query parameter តាមក្រោយបើសោរតម្រូវការ
+
+        try {
+            const response = await fetch(url);
+            const data = await response.json();
+
+            const tbody = document.getElementById('cargoGateTableBody');
+            tbody.innerHTML = '';
+
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">ពុំមានទិន្នន័យខ្លោងទ្វារក្នុងช่วงเวลានេះ (No gate data found)</td></tr>`;
+                return;
+            }
+
+            data.forEach((item, index) => {
+                const formattedDate = new Date(item.gate_date).toLocaleString('km-KH');
+                const badgeClass = item.gate_type === 'Gate-In' ? 'bg-success' : 'bg-primary';
+                
+                const row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td class="fw-bold text-primary">${item.cargo_code}</td>
+                        <td>${item.container_number || '-'}</td>
+                        <td><span class="badge ${badgeClass}">${item.gate_type}</span></td>
+                        <td>${formattedDate}</td>
+                        <td>${item.truck_plate_number}</td>
+                        <td>${item.driver_name}</td>
+                        <td><span class="badge bg-secondary">${item.status}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" title="មើលព័ត៌មានលម្អិត"><i class="fa-solid fa-eye"></i></button>
+                        </td>
+                    </tr>
                 `;
-            }).join('');
-            
-            let card = `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>${dept.name}</h3>
-                        <div class="eng-title">${engName}</div>
-                    </div>
-                    <div class="card-body">
-                        <ul class="role-list">${rolesHtml}</ul>
-                    </div>
-                </div>
-            `;
-            dashboardContainer.innerHTML += card;
-        });
-    </script>
+                tbody.innerHTML += row;
+            });
+        } catch (err) {
+            console.error('Error loading cargo gates:', err);
+        }
+    }
+
+    // សម្អាត Filter
+    function resetFilter() {
+        document.getElementById('filterFrom').value = '';
+        document.getElementById('filterTo').value = '';
+        loadCargoGates();
+    }
+</script>
 
 </body>
 </html>
