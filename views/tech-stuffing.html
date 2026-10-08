@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រវត្តិប្រតិបត្តិការទីលាន (Yard Operations History)</title>
+    <title>Yard Operations</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
@@ -24,56 +24,56 @@
 <body>
 
     <div class="container my-5">
-        <h2 class="mb-4 text-center text-primary"><i class="fas fa-dolly"></i> ការគ្រប់គ្រង និងប្រវត្តិប្រតិបត្តិការទីលាន</h2>
+        <h2 class="mb-4 text-center text-primary"><i class="fas fa-dolly"></i> ប្រតិបត្តិការទីលាន (Yard Operations)</h2>
 
-        <!-- Form សម្រាប់បញ្ចូលទិន្នន័យប្រតិបត្តិការ -->
+        <!-- Form សម្រាប់បញ្ចូលទិន្នន័យ -->
         <div class="card mb-4 p-4">
-            <h4 class="mb-3">បន្ថែមប្រតិបត្តិការទីលានថ្មី</h4>
+            <h4 class="mb-3">បន្ថែមប្រតិបត្តិការថ្មី</h4>
             <form id="yardOperationForm">
                 <div class="row g-3">
                     <div class="col-md-3">
-                        <label class="form-label">លេខកុងតឺន័រ (Container Number)</label>
+                        <label class="form-label">លេខកុងតឺន័រ</label>
                         <input type="text" class="form-control" id="container_number" required>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">ប្រភេទប្រតិបត្តិការ (Operation Type)</label>
+                        <label class="form-label">ប្រភេទប្រតិបត្តិការ</label>
                         <select class="form-select" id="operation_type" required>
                             <option value="">-- ជ្រើសរើស --</option>
-                            <option value="Lift-On">Lift-On (លើកដាក់)</option>
-                            <option value="Lift-Off">Lift-Off (ដំឡើងចុះ)</option>
-                            <option value="Relocation">Relocation (ប្តូរទីតាំង)</option>
+                            <option value="Lift-On">Lift-On</option>
+                            <option value="Lift-Off">Lift-Off</option>
+                            <option value="Relocation">Relocation</option>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">ទីតាំងក្នុងទីលាន (Yard Location)</label>
-                        <input type="text" class="form-control" id="yard_location" placeholder="ឧ. Block A-02-3" required>
+                        <label class="form-label">ទីតាំងទីលាន</label>
+                        <input type="text" class="form-control" id="yard_location" required>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង</label>
                         <input type="datetime-local" class="form-control" id="operation_date" required>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">គ្រឿងចក្រប្រើប្រាស់ (Equipment)</label>
-                        <input type="text" class="form-control" id="equipment_used" placeholder="ឧ. Crane 01">
+                        <label class="form-label">គ្រឿងចក្រប្រើប្រាស់</label>
+                        <input type="text" class="form-control" id="equipment_used">
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">ឈ្មោះអ្នកបញ្ជា (Operator Name)</label>
+                        <label class="form-label">ឈ្មោះអ្នកបញ្ជា</label>
                         <input type="text" class="form-control" id="operator_name" required>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">ស្ថានភាព (Status)</label>
+                        <label class="form-label">ស្ថានភាព</label>
                         <select class="form-select" id="status" required>
-                            <option value="Completed">Completed (បានបញ្ចប់)</option>
-                            <option value="Pending">Pending (កំពុងរង់ចាំ)</option>
+                            <option value="Completed">Completed</option>
+                            <option value="Pending">Pending</option>
                         </select>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label">កំណត់ចំណាំ (Notes)</label>
+                        <label class="form-label">កំណត់ចំណាំ</label>
                         <input type="text" class="form-control" id="notes">
                     </div>
                 </div>
                 <div class="mt-3">
-                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> រក្សាទុកទិន្នន័យ</button>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> រក្សាទុក</button>
                 </div>
             </form>
         </div>
@@ -82,13 +82,13 @@
         <div class="card p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="mb-0">បញ្ជីប្រវត្តិប្រតិបត្តិការទីលាន (Yard Operations History)</h4>
-                <!-- ប៊ូតុងទាញយក PDF -->
+                <!-- ប៊ូតុង SAVE PDF -->
                 <button id="downloadPdfBtn" class="btn btn-danger">
-                    <i class="fas fa-file-pdf"></i> Download PDF
+                    <i class="fas fa-file-pdf"></i> Save PDF
                 </button>
             </div>
 
-            <!-- Container សម្រាប់ចាប់យកទិន្នន័យធ្វើជា PDF -->
+            <!-- ហ៊ុមព័ទ្ធតารางជាមួយ ID ជាក់លាក់ ដើម្បីទាញយកតែតារាងនេះ -->
             <div id="yardHistoryTableContainer" class="table-responsive">
                 <table class="table table-striped table-bordered align-middle">
                     <thead class="table-dark">
@@ -105,16 +105,15 @@
                         </tr>
                     </thead>
                     <tbody id="yardTableBody">
-                        <!-- ទិន្នន័យនឹងត្រូវទាញមកដាក់ទីនេះដោយស្វ័យប្រវត្តិតាមរយៈ JavaScript -->
+                        <!-- ទិន្នន័យទាញមកពី Database នឹងបង្ហាញទីនេះ -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- JavaScript សម្រាប់ទាញយកទិន្នន័យ និងមុខងារ Export PDF -->
     <script>
-        // ១. មុខងារទាញយកទិន្នន័យពី Server មកបង្ហាញក្នុង Table
+        // មុខងារទាញយកទិន្នន័យមកបង្ហាញក្នុង Table
         async function fetchYardOperations() {
             try {
                 const response = await fetch('/api/fleet/yard-operations');
@@ -124,7 +123,7 @@
                 tbody.innerHTML = '';
 
                 if (result.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="9" class="text-center">ពុំទាន់มีទិន្នន័យប្រតិបត្តិការនៅឡើយ</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="9" class="text-center">ពុំទាន់មានទិន្នន័យប្រតិបត្តិការនៅឡើយ</td></tr>`;
                     return;
                 }
 
@@ -149,7 +148,7 @@
             }
         }
 
-        // ២. មុខងារបញ្ជូនទិន្នន័យថ្មីទៅកាន់ Server (Form Submit)
+        // មុខងារបញ្ជូនទិន្នន័យថ្មី (Form Submit)
         document.getElementById('yardOperationForm').addEventListener('submit', async function (e) {
             e.preventDefault();
 
@@ -175,7 +174,7 @@
                 if (result.success) {
                     alert('បានរក្សាទុកដោយជោគជ័យ!');
                     document.getElementById('yardOperationForm').reset();
-                    fetchYardOperations(); // ರಿហ្វ្រេសតារាងឡើងវិញ
+                    fetchYardOperations();
                 } else {
                     alert('កំហុស៖ ' + result.error);
                 }
@@ -185,7 +184,7 @@
             }
         });
 
-        // ៣. កូដសម្រាប់ទាញយកតារាងប្រវត្តិប្រតិបត្តិការជា PDF
+        // មុខងារ SAVE PDF เฉพาะតារាងប្រវត្តិប្រតិបត្តិការទីលាន
         document.getElementById('downloadPdfBtn').addEventListener('click', function () {
             const element = document.getElementById('yardHistoryTableContainer'); 
 
@@ -194,14 +193,13 @@
                 filename:     'Yard-Operations-History.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } // ប្រើទម្រង់ផ្តេក landscape ព្រោះតារាងមានជួរឈរច្រើន
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
-            // បម្លែង Element ទៅជា PDF រួចទាញយកស្វ័យប្រវត្តិ
             html2pdf().from(element).set(options).save();
         });
 
-        // ទាញយកទិន្នន័យពេលបើកទំព័រដំបូង
+        // ទាញយកទិន្នន័យពេលផ្ទុកទំព័ររួច
         window.onload = fetchYardOperations;
     </script>
 </body>
