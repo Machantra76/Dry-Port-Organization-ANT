@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // [កែសម្រួល] បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តិពេល Start Server
 async function initializeDatabase() {
@@ -122,7 +122,6 @@ app.get('/views/hr-payroll.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'hr-payroll.html'));
 });
 
-// HTML Route សម្រាប់ទំព័រប្រាក់ចំណូល (รองรับទាំងពីរឈ្មោះ ដើម្បីការពារកំហុស)
 app.get('/views/hr-revenue.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'hr-revenue.html'));
 });
@@ -302,11 +301,21 @@ app.post('/api/payroll', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រាក់ចំណូល (Revenues)
+// API Routes: ប្រាក់ចំណូល (Revenues) - បានកែសម្រួលដើម្បីគាំទ្រ Date Filtering
 // ==========================================
 app.get('/api/revenues', async (req, res) => {
+    const { from, to } = req.query;
     try {
-        const result = await pool.query('SELECT * FROM revenues ORDER BY revenue_date DESC, id DESC');
+        let query = 'SELECT * FROM revenues WHERE 1=1';
+        let params = [];
+        
+        if (from && to) {
+            query += ' AND revenue_date BETWEEN $1 AND $2';
+            params.push(from, to);
+        }
+        
+        query += ' ORDER BY revenue_date DESC, id DESC';
+        const result = await pool.query(query, params);
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យប្រាក់ចំណូលបានទេ' });
@@ -327,7 +336,7 @@ app.post('/api/revenues', async (req, res) => {
     }
 });
 
-// ចាប់ផ្តើមដំណើរការ Server
+// ចាប់ផ្តើមដំណើរការ Server[cite: 8]
 initializeDatabase().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
