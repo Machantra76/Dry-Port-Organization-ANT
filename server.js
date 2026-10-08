@@ -203,17 +203,32 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers) [បន្ថែមថ្មី]
+        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
         await client.query(`
             CREATE TABLE IF NOT EXISTS damaged_containers (
                 id SERIAL PRIMARY KEY,
                 container_number VARCHAR(100) NOT NULL,
                 inspection_date DATE NOT NULL,
-                damage_location VARCHAR(150) NOT NULL, -- ទីតាំងខូចខាត (ឧ. ទ្វារ, ដំបូល, ជញ្ជាំង...)
-                severity_level VARCHAR(50) NOT NULL,   -- កម្រិតធ្ងន់ធ្ងរ (Minor, Moderate, Severe)
+                damage_location VARCHAR(150) NOT NULL,
+                severity_level VARCHAR(50) NOT NULL,
                 inspector_name VARCHAR(150) NOT NULL,
                 description TEXT,
-                status VARCHAR(50) DEFAULT 'Pending Repair', -- ស្ថានភាព (Pending Repair, In Repair, Resolved)
+                status VARCHAR(50) DEFAULT 'Pending Repair',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations) [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS container_yard_locations (
+                id SERIAL PRIMARY KEY,
+                container_number VARCHAR(100) NOT NULL,
+                block_code VARCHAR(50) NOT NULL,
+                row_number INT NOT NULL,
+                tier_number INT NOT NULL,
+                status VARCHAR(50) DEFAULT 'Stored',
+                updated_date DATE NOT NULL,
+                notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -283,9 +298,13 @@ app.get('/views/transport-planning.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'transport-planning.html'));
 });
 
-// HTML Route សម្រាប់ទំព័រត្រួតពិនិត្យកុងតឺន័រខូច [បន្ថែមថ្មី]
 app.get('/views/damaged-container.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'damaged-container.html'));
+});
+
+// HTML Route សម្រាប់ទំព័រគ្រប់គ្រងទីតាំងកុងតឺន័រ [បន្ថែមថ្មី]
+app.get('/views/container-yard.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'container-yard.html'));
 });
 
 // ==========================================
@@ -912,7 +931,7 @@ app.post('/api/fleet/transport-plans', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers) [បន្ថែមថ្មី]
+// API Routes: ការត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
 // ==========================================
 app.get('/api/fleet/damaged-containers', async (req, res) => {
     const { from, to, severity_level } = req.query;
@@ -960,6 +979,58 @@ app.post('/api/fleet/damaged-containers', async (req, res) => {
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាកុងតឺន័រខូច' });
+    }
+});
+
+// ==========================================
+// API Routes: ការគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/fleet/container-yard', async (req, res) => {
+    const { block_code, status } = req.query;
+    try {
+        let query = 'SELECT * FROM container_yard_locations WHERE 1=1';
+        let params = [];
+        let paramIndex = 1;
+        
+        if (block_code) {
+            query += ` AND block_code = $${paramIndex}`;
+            params.push(block_code);
+            paramIndex += 1;
+        }
+
+        if (status) {
+            query += ` AND status = $${paramIndex}`;
+            params.push(status);
+            paramIndex += 1;
+        }
+        
+        query += ' ORDER BY updated_date DESC, id DESC';
+        const result = await pool.query(query, params);
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យទីតាំងកុងតឺន័របានទេ' });
+    }
+});
+
+app.post('/api/fleet/container-yard', async (req, res) => {
+    const { container_number, block_code, row_number, tier_number, status, updated_date, notes } = req.body;
+    try {
+        const query = `
+            INSERT INTO container_yard_locations (container_number, block_code, row_number, tier_number, status, updated_date, notes) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+        `;
+        const result = await pool.query(query, [
+            container_number, 
+            block_code, 
+            parseInt(row_number) || 1, 
+            parseInt(tier_number) || 1, 
+            status || 'Stored', 
+            updated_date, 
+            notes
+        ]);
+        res.status(201).json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាទីតាំងកុងតឺន័រ' });
     }
 });
 
