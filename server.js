@@ -233,12 +233,15 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs) [បន្ថែមថ្មី]
+        // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs) [បានអាប់ដេតបន្ថែមស្តុក Block, Row, Tier]
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_repair_logs (
                 id SERIAL PRIMARY KEY,
                 container_number VARCHAR(100) NOT NULL,
                 repair_date DATE NOT NULL,
+                block_code VARCHAR(50),
+                row_number INT DEFAULT 1,
+                tier_number INT DEFAULT 1,
                 repair_type VARCHAR(150) NOT NULL,
                 cost NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 technician_name VARCHAR(150) NOT NULL,
@@ -321,7 +324,7 @@ app.get('/views/container-yard.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'container-yard.html'));
 });
 
-// HTML Route សម្រាប់ទំព័រការថែទាំ និងជួសជុលកុងតឺន័រ [បន្ថែមថ្មី]
+// HTML Route សម្រាប់ទំព័រការថែទាំ និងជួសជុលកុងតឺន័រ
 app.get('/views/container-repair.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'container-repair.html'));
 });
@@ -405,7 +408,7 @@ app.get('/api/inventory', async (req, res) => {
         }
 
         if (category) {
-            query += ` category = $${paramIndex}`;
+            query += ` AND category = $${paramIndex}`;
             params.push(category);
             paramIndex += 1;
         }
@@ -1054,7 +1057,7 @@ app.post('/api/fleet/container-yard', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs) [បន្ថែមថ្មី]
+// API Routes: ការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs) [បានអាប់ដេតបន្ថែមស្តុក]
 // ==========================================
 app.get('/api/fleet/container-repairs', async (req, res) => {
     const { status, container_number } = req.query;
@@ -1084,15 +1087,18 @@ app.get('/api/fleet/container-repairs', async (req, res) => {
 });
 
 app.post('/api/fleet/container-repairs', async (req, res) => {
-    const { container_number, repair_date, repair_type, cost, technician_name, status, notes } = req.body;
+    const { container_number, repair_date, block_code, row_number, tier_number, repair_type, cost, technician_name, status, notes } = req.body;
     try {
         const query = `
-            INSERT INTO container_repair_logs (container_number, repair_date, repair_type, cost, technician_name, status, notes) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+            INSERT INTO container_repair_logs (container_number, repair_date, block_code, row_number, tier_number, repair_type, cost, technician_name, status, notes) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
         `;
         const result = await pool.query(query, [
             container_number, 
             repair_date, 
+            block_code || null, 
+            parseInt(row_number) || 1, 
+            parseInt(tier_number) || 1, 
             repair_type, 
             parseFloat(cost) || 0, 
             technician_name, 
@@ -1101,7 +1107,8 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
         ]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការជួសជុលកុងតឺន័រ' });
+        console.error(err);
+        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការជួសជុល និងស្តុកកុងតឺន័រ' });
     }
 });
 
