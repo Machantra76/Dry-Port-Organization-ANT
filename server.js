@@ -283,7 +283,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៩. តារាងកត់ត្រាការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out) - បន្ថែមថ្មី
+        // ១៩. តារាងកត់ត្រាការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out)
         await client.query(`
             CREATE TABLE IF NOT EXISTS cargo_gate_logs (
                 id SERIAL PRIMARY KEY,
@@ -295,6 +295,21 @@ async function initializeDatabase() {
                 driver_name VARCHAR(150) NOT NULL,
                 company_name VARCHAR(150),
                 status VARCHAR(50) DEFAULT 'Completed',
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ២០. តារាងគ្រប់គ្រងក្រុមសន្តិសុខ (Security Logs) - បន្ថែមថ្មី
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS security_logs (
+                id SERIAL PRIMARY KEY,
+                guard_name VARCHAR(150) NOT NULL,
+                shift_time VARCHAR(100) NOT NULL,
+                post_location VARCHAR(150) NOT NULL,
+                log_date TIMESTAMP NOT NULL,
+                event_type VARCHAR(100) NOT NULL,
+                status VARCHAR(50),
                 notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
@@ -389,9 +404,13 @@ app.get('/views/yard-operations.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'yard-operations.html'));
 });
 
-// Route សម្រាប់បើកទំព័រ Cargo Gate - បន្ថែមថ្មី
 app.get('/views/cargo-gate.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'cargo-gate.html'));
+});
+
+// Route សម្រាប់បើកទំព័រ Security Guard Team - បន្ថែមថ្មី
+app.get('/views/tech-safety.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'tech-safety.html'));
 });
 
 // ==========================================
@@ -1277,7 +1296,7 @@ app.post('/api/fleet/yard-operations', async (req, res) => {
         } = req.body;
 
         if (!container_number || !operation_type || !yard_location || !operation_date || !operator_name || !status) {
-            return res.status(400).json({ success: false, error: 'សូមបំពេញព័ត៌មានដែលចាំបាច់ឱ្យបានគ្រប់គ្រាន់!' });
+            return res.status(400).json({ success: false, error: 'សូមបំព័នព័ត៌មានដែលចាំបាច់ឱ្យបានគ្រប់គ្រាន់!' });
         }
 
         const query = `
@@ -1308,7 +1327,7 @@ app.post('/api/fleet/yard-operations', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out) - បន្ថែមថ្មី
+// API Routes: ការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out)
 // ==========================================
 app.get('/api/fleet/cargo-gates', async (req, res) => {
     try {
@@ -1364,6 +1383,35 @@ app.post('/api/fleet/cargo-gates', async (req, res) => {
     } catch (err) {
         console.error('Error saving cargo gate log:', err);
         res.status(500).json({ success: false, error: 'មិនអាចរក្សាទុកទិន្នន័យក្នុង Database បានទេ' });
+    }
+});
+
+// ==========================================
+// API Routes: ក្រុមសន្តិសុខ (Security Guard Team) - បន្ថែមថ្មី
+// ==========================================
+app.get('/api/fleet/security-logs', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM security_logs ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching security logs:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/fleet/security-logs', async (req, res) => {
+    const { guard_name, shift_time, post_location, log_date, event_type, status, notes } = req.body;
+    try {
+        const query = `
+            INSERT INTO security_logs (guard_name, shift_time, post_location, log_date, event_type, status, notes)
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+        `;
+        const values = [guard_name, shift_time, post_location, log_date, event_type, status, notes];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving security log:', err);
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
