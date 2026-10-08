@@ -96,8 +96,8 @@
         <div class="card p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="text-primary mb-0"><i class="fa-solid fa-warehouse me-1"></i> ប្រព័ន្ធគ្រប់គ្រងឃ្លាំង (WMS Report & Management)</h4>
-                <div class="no-print">
-                    <input type="text" id="wmsSearch" class="form-control form-control-sm" placeholder="ស្វែងរកទិន្នន័យ WMS..." onkeyup="filterWmsTable()">
+                <div class="no-print" style="width: 250px;">
+                    <input type="text" id="wmsSearch" class="form-control form-control-sm" placeholder="ស្វែងរកកូដ ឬ ឈ្មោះទំនិញ WMS..." onkeyup="filterWmsTable()">
                 </div>
             </div>
             <div class="table-responsive">
@@ -124,8 +124,8 @@
         <div class="card p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h4 class="text-success mb-0"><i class="fa-solid fa-cart-shopping me-1"></i> ប្រព័ន្ធការបញ្ជាទិញ (OMS Report & Management)</h4>
-                <div class="no-print">
-                    <input type="text" id="omsSearch" class="form-control form-control-sm" placeholder="ស្វែងរកទិន្នន័យ OMS..." onkeyup="filterOmsTable()">
+                <div class="no-print" style="width: 250px;">
+                    <input type="text" id="omsSearch" class="form-control form-control-sm" placeholder="ស្វែងរកកូដ ឬ ឈ្មោះទំនិញ OMS..." onkeyup="filterOmsTable()">
                 </div>
             </div>
             <div class="table-responsive">
@@ -192,7 +192,7 @@
                             <td>${item.item_name}</td>
                             <td>${item.quantity}</td>
                             <td>${item.location_status}</td>
-                            <td>${new Date(item.created_at).toLocaleDateString()}</td>
+                            <td>${item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</td>
                             <td class="no-print text-center">
                                 <button class="btn btn-sm btn-warning text-white me-1" onclick="editRecord(${item.id})"><i class="fa-solid fa-pen-to-square"></i> កែប្រែ</button>
                                 <button class="btn btn-sm btn-danger" onclick="deleteRecord(${item.id})"><i class="fa-solid fa-trash"></i> លុប</button>
@@ -213,7 +213,7 @@
                             <td>${item.item_name}</td>
                             <td>${item.quantity}</td>
                             <td>${item.location_status}</td>
-                            <td>${new Date(item.created_at).toLocaleDateString()}</td>
+                            <td>${item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</td>
                             <td class="no-print text-center">
                                 <button class="btn btn-sm btn-warning text-white me-1" onclick="editRecord(${item.id})"><i class="fa-solid fa-pen-to-square"></i> កែប្រែ</button>
                                 <button class="btn btn-sm btn-danger" onclick="deleteRecord(${item.id})"><i class="fa-solid fa-trash"></i> លុប</button>
@@ -224,9 +224,10 @@
             }
         }
 
-        // រក្សាទុកទិន្នន័យ
+        // រក្សាទុក ឬ កែប្រែទិន្នន័យ (Save / Update)
         document.getElementById('wmsOmsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const id = document.getElementById('recordId').value;
             const payload = {
                 item_code: document.getElementById('item_code').value,
                 item_name: document.getElementById('item_name').value,
@@ -236,32 +237,42 @@
             };
 
             try {
-                const response = await fetch('/api/wms-oms', {
-                    method: 'POST',
+                let url = '/api/wms-oms';
+                let method = 'POST';
+
+                if (id) {
+                    url = `/api/wms-oms/${id}`;
+                    method = 'PUT'; // ឬ POST អាស្រ័យលើ Backend របស់អ្នក បើ Backend ប្រើ POST សម្រាប់ Update អាចប្តូរមក POST វិញ
+                }
+
+                const response = await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
                 const result = await response.json();
-                if (result.success) {
+                if (result.success || response.ok) {
                     resetForm();
                     fetchData();
                 } else {
-                    alert('មានបញ្ហាក្នុងการរក្សាទុកទិន្នន័យ!');
+                    alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ!');
                 }
             } catch (err) {
                 console.error('Error saving data:', err);
+                alert('កំហុសប្រព័ន្ធក្នុងការរក្សាទុក!');
             }
         });
 
-        // មុខងារ Search WMS Table
+        // មុខងារ Search WMS Table ត្រឹមត្រូវតាម លេខកូដ និង ឈ្មោះទំនិញ
         function filterWmsTable() {
             const keyword = document.getElementById('wmsSearch').value.toLowerCase();
-            const filtered = allData.filter(item => item.system_type === 'WMS' && (
-                item.item_code.toLowerCase().includes(keyword) || 
-                item.item_name.toLowerCase().includes(keyword) || 
-                item.location_status.toLowerCase().includes(keyword)
-            ));
+            const wmsData = allData.filter(item => item.system_type === 'WMS');
+            const filtered = wmsData.filter(item => 
+                (item.item_code && item.item_code.toLowerCase().includes(keyword)) || 
+                (item.item_name && item.item_name.toLowerCase().includes(keyword)) || 
+                (item.location_status && item.location_status.toLowerCase().includes(keyword))
+            );
             
             const wmsBody = document.getElementById('wmsTableBody');
             wmsBody.innerHTML = '';
@@ -277,7 +288,7 @@
                         <td>${item.item_name}</td>
                         <td>${item.quantity}</td>
                         <td>${item.location_status}</td>
-                        <td>${new Date(item.created_at).toLocaleDateString()}</td>
+                        <td>${item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</td>
                         <td class="no-print text-center">
                             <button class="btn btn-sm btn-warning text-white me-1" onclick="editRecord(${item.id})"><i class="fa-solid fa-pen-to-square"></i> កែប្រែ</button>
                             <button class="btn btn-sm btn-danger" onclick="deleteRecord(${item.id})"><i class="fa-solid fa-trash"></i> លុប</button>
@@ -287,14 +298,15 @@
             });
         }
 
-        // មុខងារ Search OMS Table
+        // មុខងារ Search OMS Table ត្រឹមត្រូវតាម លេខកូដ និង ឈ្មោះទំនិញ
         function filterOmsTable() {
             const keyword = document.getElementById('omsSearch').value.toLowerCase();
-            const filtered = allData.filter(item => item.system_type === 'OMS' && (
-                item.item_code.toLowerCase().includes(keyword) || 
-                item.item_name.toLowerCase().includes(keyword) || 
-                item.location_status.toLowerCase().includes(keyword)
-            ));
+            const omsData = allData.filter(item => item.system_type === 'OMS');
+            const filtered = omsData.filter(item => 
+                (item.item_code && item.item_code.toLowerCase().includes(keyword)) || 
+                (item.item_name && item.item_name.toLowerCase().includes(keyword)) || 
+                (item.location_status && item.location_status.toLowerCase().includes(keyword))
+            );
             
             const omsBody = document.getElementById('omsTableBody');
             omsBody.innerHTML = '';
@@ -310,7 +322,7 @@
                         <td>${item.item_name}</td>
                         <td>${item.quantity}</td>
                         <td>${item.location_status}</td>
-                        <td>${new Date(item.created_at).toLocaleDateString()}</td>
+                        <td>${item.created_at ? new Date(item.created_at).toLocaleDateString() : ''}</td>
                         <td class="no-print text-center">
                             <button class="btn btn-sm btn-warning text-white me-1" onclick="editRecord(${item.id})"><i class="fa-solid fa-pen-to-square"></i> កែប្រែ</button>
                             <button class="btn btn-sm btn-danger" onclick="deleteRecord(${item.id})"><i class="fa-solid fa-trash"></i> លុប</button>
@@ -332,16 +344,29 @@
                 document.getElementById('location_status').value = item.location_status;
 
                 document.getElementById('form-title').innerHTML = `<i class="fa-solid fa-pen-to-square me-1"></i> កែប្រែទិន្នន័យ WMS / OMS`;
-                document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync me-1"></i> កែប្រែទិន្នន័យ`;
+                document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync me-1"></i> រក្សាទុកការកែប្រែ`;
                 document.getElementById('cancelBtn').classList.remove('d-none');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
 
-        // មុខងារលុបទិន្នន័យ
-        function deleteRecord(id) {
+        // មុខងារលុបទិន្នន័យពិតប្រាកដ (Delete API)
+        async function deleteRecord(id) {
             if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
-                alert('មុខងារលុបត្រូវបានចុចសម្រាប់ ID: ' + id);
+                try {
+                    const response = await fetch(`/api/wms-oms/${id}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    if (result.success || response.ok) {
+                        fetchData();
+                    } else {
+                        alert('មានបញ្ហាក្នុងការលុបទិន្នន័យ!');
+                    }
+                } catch (err) {
+                    console.error('Error deleting data:', err);
+                    alert('កំហុសប្រព័ន្ធក្នុងការលុប!');
+                }
             }
         }
 
