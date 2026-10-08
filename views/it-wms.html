@@ -76,7 +76,7 @@
         <!-- Title Section -->
         <div class="mb-4">
             <h2 class="header-title">ប្រព័ន្ធ WMS / OMS</h2>
-            <div class="header-subtitle">WAREHOUSE & ORDER MANAGEMENT SYSTEMS, FORM & FILTER</div>
+            <div class="header-subtitle">WMS & OMS Systems - Database Connected</div>
         </div>
 
         <!-- Form បញ្ចូលទិន្នន័យ -->
@@ -159,7 +159,7 @@
                             </tr>
                         </thead>
                         <tbody id="tableBody">
-                            <!-- ទិន្នន័យទាញចេញពី Database នឹងលូតចូលទីនេះ -->
+                            <!-- ទិន្នន័យទាញចេញពី Database នឹងលូតចូលទីនេះដោយស្វ័យប្រវត្តិ -->
                         </tbody>
                     </table>
                 </div>
@@ -172,6 +172,7 @@
     <script>
         let allData = [];
 
+        // ទាញយកទិន្នន័យពី Database ពេលបើកទំព័រ
         document.addEventListener('DOMContentLoaded', () => {
             fetchData();
         });
@@ -186,11 +187,12 @@
             }
         }
 
+        // មុខងារបង្ហាញទិន្នន័យក្នុងតារាង
         function renderTable(data) {
             let tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            if (data.length === 0) {
+            if (!data || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="text-center py-3 text-muted">គ្មានទិន្នន័យ WMS / OMS ទេ</td></tr>`;
                 return;
             }
@@ -214,18 +216,24 @@
             });
         }
 
-        // កែសម្រួល Payload ឱ្យត្រូវគ្នាជាមួយ Database និង Backend
+        // មុខងារ Form Submit (រក្សាទុកទិន្នន័យចូល Database)
         document.getElementById('wmsForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             let id = document.getElementById('recordId').value;
+            let item_code = document.getElementById('itemCode').value;
+            let item_name = document.getElementById('itemName').value;
+            let system_type = document.getElementById('systemType').value;
+            let quantity = document.getElementById('quantity').value;
+            let location_status = document.getElementById('locationStatus').value;
+
             let payload = {
                 id: id ? id : undefined,
-                item_code: document.getElementById('itemCode').value,
-                item_name: document.getElementById('itemName').value,
-                system_type: document.getElementById('systemType').value,
-                quantity: document.getElementById('quantity').value,
-                location_status: document.getElementById('locationStatus').value
+                item_code,
+                item_name,
+                system_type,
+                quantity,
+                location_status
             };
 
             try {
@@ -237,7 +245,7 @@
 
                 if (response.ok) {
                     resetForm();
-                    fetchData();
+                    fetchData(); // ទាញទិន្នន័យថ្មីមកបង្ហាញវិញ
                 } else {
                     alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ!');
                 }
@@ -247,6 +255,7 @@
             }
         });
 
+        // មុខងារលុបទិន្នន័យពី Database
         async function deleteItem(id) {
             if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?")) {
                 try {
@@ -265,6 +274,7 @@
             }
         }
 
+        // មុខងារទាញយកទិន្នន័យមកដាក់ក្នុង Form ដើម្បីកែប្រែ
         function editItem(id) {
             let item = allData.find(d => d.id === id);
             if (item) {
@@ -280,12 +290,14 @@
             }
         }
 
+        // មុខងារ Reset Form
         function resetForm() {
             document.getElementById('wmsForm').reset();
             document.getElementById('recordId').value = "";
             document.getElementById('saveBtn').innerHTML = `<i class="fas fa-save me-1"></i> រក្សាទុក (Save Record)`;
         }
 
+        // មុខងារស្វែងរក (Search Filter)
         function filterTable() {
             let filter = document.getElementById('searchInput').value.toLowerCase();
             let filteredData = allData.filter(item => {
