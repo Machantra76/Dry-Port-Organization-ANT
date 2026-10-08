@@ -46,7 +46,7 @@
         <div class="header-section d-flex justify-content-between align-items-center no-print">
             <div>
                 <h2><i class="fa-solid fa-boxes-stacked me-2"></i>ប្រព័ន្ធគ្រប់គ្រងឃ្លាំង និងការបញ្ជាទិញ (WMS & OMS)</h2>
-                <p class="mb-0">គ្រប់គ្រងទិន្នន័យទំនិញ ស្ថានភាពឃ្លាំង និងការបញ្ជាទិញយ៉ាងមានប្រសិទ្ធភាព</p>
+                <p class="mb-0">គ្រប់គ្រងទិន្នន័យ WMS និង OMS ដាច់ដោយឡែកពីគ្នាយ៉ាងមានប្រសិទ្ធភាព</p>
             </div>
             <div>
                 <a href="/" class="btn btn-light fw-bold"><i class="fa-solid fa-arrow-left me-1"></i> ត្រឡប់ទៅ Dashboard</a>
@@ -71,8 +71,8 @@
                         <label class="form-label fw-bold">ប្រភេទប្រព័ន្ធ (System Type)</label>
                         <select class="form-select" id="system_type" required>
                             <option value="">-- ជ្រើសរើសប្រភេទ --</option>
-                            <option value="WMS (Warehouse)">WMS (Warehouse Management)</option>
-                            <option value="OMS (Order)">OMS (Order Management)</option>
+                            <option value="WMS">WMS (Warehouse Management)</option>
+                            <option value="OMS">OMS (Order Management)</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -92,57 +92,57 @@
             </form>
         </div>
 
-        <!-- ផ្នែកទី ១៖ តារាងរបាយការណ៍ (WMS & OMS Report) -->
+        <!-- ផ្នែកទី ១៖ របាយការណ៍ និងគ្រប់គ្រង WMS (Warehouse) -->
         <div class="card p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="text-info mb-0"><i class="fa-solid fa-chart-line me-1"></i> របាយការណ៍សង្ខេប (WMS & OMS Report)</h4>
-                <div class="no-print d-flex gap-2">
-                    <input type="text" id="reportSearch" class="form-control form-control-sm" placeholder="ស្វែងរកក្នុងរបាយការណ៍..." onkeyup="filterReportTable()">
+                <h4 class="text-primary mb-0"><i class="fa-solid fa-warehouse me-1"></i> ប្រព័ន្ធគ្រប់គ្រងឃ្លាំង (WMS Report & Management)</h4>
+                <div class="no-print">
+                    <input type="text" id="wmsSearch" class="form-control form-control-sm" placeholder="ស្វែងរកទិន្នន័យ WMS..." onkeyup="filterWmsTable()">
                 </div>
             </div>
             <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle" id="reportTable">
-                    <thead class="table-info">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-primary">
                         <tr>
                             <th>ល.រ</th>
                             <th>កូដទំនិញ</th>
                             <th>ឈ្មោះទំនិញ</th>
-                            <th>ប្រភេទប្រព័ន្ធ</th>
                             <th>បរិមាណ</th>
-                            <th>ទីតាំង / ស្ថានភាព</th>
-                            <th>កាលបរិច្ឆេទបង្កើត</th>
+                            <th>ទីតាំងឃ្លាំង</th>
+                            <th>កាលបរិច្ឆេទ</th>
+                            <th class="no-print text-center">សកម្មភាព (Actions)</th>
                         </tr>
                     </thead>
-                    <tbody id="reportTableBody">
-                        <!-- ទិន្នន័យទាញតាម JS -->
+                    <tbody id="wmsTableBody">
+                        <!-- ទិន្នន័យ WMS -->
                     </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- ផ្នែកទី ២៖ តារាងការគ្រប់គ្រង (WMS & OMS Management) -->
+        <!-- ផ្នែកទី ២៖ របាយការណ៍ និងគ្រប់គ្រង OMS (Order) -->
         <div class="card p-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="text-warning mb-0"><i class="fa-solid fa-sliders me-1"></i> ការគ្រប់គ្រងទិន្នន័យ (WMS & OMS Management)</h4>
-                <div class="no-print d-flex gap-2">
-                    <input type="text" id="manageSearch" class="form-control form-control-sm" placeholder="ស្វែងរកដើម្បីគ្រប់គ្រង..." onkeyup="filterManageTable()">
+                <h4 class="text-success mb-0"><i class="fa-solid fa-cart-shopping me-1"></i> ប្រព័ន្ធការបញ្ជាទិញ (OMS Report & Management)</h4>
+                <div class="no-print">
+                    <input type="text" id="omsSearch" class="form-control form-control-sm" placeholder="ស្វែងរកទិន្នន័យ OMS..." onkeyup="filterOmsTable()">
                 </div>
             </div>
             <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle" id="manageTable">
-                    <thead class="table-warning">
+                <table class="table table-striped table-hover align-middle">
+                    <thead class="table-success">
                         <tr>
                             <th>ល.រ</th>
                             <th>កូដទំនិញ</th>
                             <th>ឈ្មោះទំនិញ</th>
-                            <th>ប្រភេទប្រព័ន្ធ</th>
                             <th>បរិមាណ</th>
-                            <th>ទីតាំង / ស្ថានភាព</th>
+                            <th>ស្ថានភាពការបញ្ជាទិញ</th>
+                            <th>កាលបរិច្ឆេទ</th>
                             <th class="no-print text-center">សកម្មភាព (Actions)</th>
                         </tr>
                     </thead>
-                    <tbody id="manageTableBody">
-                        <!-- ទិន្នន័យទាញតាម JS -->
+                    <tbody id="omsTableBody">
+                        <!-- ទិន្នន័យ OMS -->
                     </tbody>
                 </table>
             </div>
@@ -170,56 +170,63 @@
             }
         }
 
-        // បង្ហាញទិន្នន័យចូលក្នុងតារាងទាំងពីរ
+        // បែងចែកទិន្នន័យបង្ហាញចូលតារាង WMS និង OMS ដាច់ពីគ្នា
         function renderTables(data) {
-            const reportBody = document.getElementById('reportTableBody');
-            const manageBody = document.getElementById('manageTableBody');
+            const wmsBody = document.getElementById('wmsTableBody');
+            const omsBody = document.getElementById('omsTableBody');
             
-            reportBody.innerHTML = '';
-            manageBody.innerHTML = '';
+            wmsBody.innerHTML = '';
+            omsBody.innerHTML = '';
 
-            if (data.length === 0) {
-                reportBody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">គ្មានទិន្នន័យ</td></tr>`;
-                manageBody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">គ្មានទិន្នន័យ</td></tr>`;
-                return;
+            const wmsData = data.filter(item => item.system_type === 'WMS');
+            const omsData = data.filter(item => item.system_type === 'OMS');
+
+            if (wmsData.length === 0) {
+                wmsBody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">គ្មានទិន្នន័យ WMS</td></tr>`;
+            } else {
+                wmsData.forEach((item, index) => {
+                    wmsBody.innerHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td><span class="badge bg-secondary">${item.item_code}</span></td>
+                            <td>${item.item_name}</td>
+                            <td>${item.quantity}</td>
+                            <td>${item.location_status}</td>
+                            <td>${new Date(item.created_at).toLocaleDateString()}</td>
+                            <td class="no-print text-center">
+                                <button class="btn btn-sm btn-warning text-white me-1" onclick="editRecord(${item.id})"><i class="fa-solid fa-pen-to-square"></i> កែប្រែ</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(${item.id})"><i class="fa-solid fa-trash"></i> លុប</button>
+                            </td>
+                        </tr>
+                    `;
+                });
             }
 
-            data.forEach((item, index) => {
-                // Render Report Table
-                reportBody.innerHTML += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td><span class="badge bg-secondary">${item.item_code}</span></td>
-                        <td>${item.item_name}</td>
-                        <td><span class="badge ${item.system_type.includes('WMS') ? 'bg-primary' : 'bg-success'}">${item.system_type}</span></td>
-                        <td>${item.quantity}</td>
-                        <td>${item.location_status}</td>
-                        <td>${new Date(item.created_at).toLocaleDateString()}</td>
-                    </tr>
-                `;
-
-                // Render Management Table
-                manageBody.innerHTML += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td><span class="badge bg-secondary">${item.item_code}</span></td>
-                        <td>${item.item_name}</td>
-                        <td><span class="badge ${item.system_type.includes('WMS') ? 'bg-primary' : 'bg-success'}">${item.system_type}</span></td>
-                        <td>${item.quantity}</td>
-                        <td>${item.location_status}</td>
-                        <td class="no-print text-center">
-                            <button class="btn btn-sm btn-warning text-white me-1" onclick="editRecord(${item.id})"><i class="fa-solid fa-pen-to-square"></i> កែប្រែ</button>
-                            <button class="btn btn-sm btn-danger" onclick="deleteRecord(${item.id})"><i class="fa-solid fa-trash"></i> លុប</button>
-                        </td>
-                    </tr>
-                `;
-            });
+            if (omsData.length === 0) {
+                omsBody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">គ្មានទិន្នន័យ OMS</td></tr>`;
+            } else {
+                omsData.forEach((item, index) => {
+                    omsBody.innerHTML += `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td><span class="badge bg-secondary">${item.item_code}</span></td>
+                            <td>${item.item_name}</td>
+                            <td>${item.quantity}</td>
+                            <td>${item.location_status}</td>
+                            <td>${new Date(item.created_at).toLocaleDateString()}</td>
+                            <td class="no-print text-center">
+                                <button class="btn btn-sm btn-warning text-white me-1" onclick="editRecord(${item.id})"><i class="fa-solid fa-pen-to-square"></i> កែប្រែ</button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteRecord(${item.id})"><i class="fa-solid fa-trash"></i> លុប</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            }
         }
 
-        // រក្សាទុក ឬ កែប្រែទិន្នន័យ
+        // រក្សាទុកទិន្នន័យ
         document.getElementById('wmsOmsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const id = document.getElementById('recordId').value;
             const payload = {
                 item_code: document.getElementById('item_code').value,
                 item_name: document.getElementById('item_name').value,
@@ -229,12 +236,8 @@
             };
 
             try {
-                let url = '/api/wms-oms';
-                let method = 'POST';
-
-                // ប្រសិនបើមាន ID គឺការ Update (បញ្ជាក់៖ បើ API គាំទ្រ PUT/DELETE អាចកែបន្ថែមតាមក្រោយ ឬប្រើប្រាស់ POST រួមបញ្ចូលគ្នា)
-                const response = await fetch(url, {
-                    method: method,
+                const response = await fetch('/api/wms-oms', {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
@@ -244,65 +247,70 @@
                     resetForm();
                     fetchData();
                 } else {
-                    alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ!');
+                    alert('មានបញ្ហាក្នុងการរក្សាទុកទិន្នន័យ!');
                 }
             } catch (err) {
                 console.error('Error saving data:', err);
             }
         });
 
-        // មុខងារ Search សម្រាប់តារាងរបាយការណ៍
-        function filterReportTable() {
-            const keyword = document.getElementById('reportSearch').value.toLowerCase();
-            const filtered = allData.filter(item => 
+        // មុខងារ Search WMS Table
+        function filterWmsTable() {
+            const keyword = document.getElementById('wmsSearch').value.toLowerCase();
+            const filtered = allData.filter(item => item.system_type === 'WMS' && (
                 item.item_code.toLowerCase().includes(keyword) || 
                 item.item_name.toLowerCase().includes(keyword) || 
-                item.system_type.toLowerCase().includes(keyword)
-            );
-            renderFilteredReport(filtered);
-        }
-
-        function renderFilteredReport(data) {
-            const reportBody = document.getElementById('reportTableBody');
-            reportBody.innerHTML = '';
-            data.forEach((item, index) => {
-                reportBody.innerHTML += `
+                item.location_status.toLowerCase().includes(keyword)
+            ));
+            
+            const wmsBody = document.getElementById('wmsTableBody');
+            wmsBody.innerHTML = '';
+            if (filtered.length === 0) {
+                wmsBody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">រកមិនឃើញទិន្នន័យ WMS</td></tr>`;
+                return;
+            }
+            filtered.forEach((item, index) => {
+                wmsBody.innerHTML += `
                     <tr>
                         <td>${index + 1}</td>
                         <td><span class="badge bg-secondary">${item.item_code}</span></td>
                         <td>${item.item_name}</td>
-                        <td><span class="badge ${item.system_type.includes('WMS') ? 'bg-primary' : 'bg-success'}">${item.system_type}</span></td>
                         <td>${item.quantity}</td>
                         <td>${item.location_status}</td>
                         <td>${new Date(item.created_at).toLocaleDateString()}</td>
+                        <td class="no-print text-center">
+                            <button class="btn btn-sm btn-warning text-white me-1" onclick="editRecord(${item.id})"><i class="fa-solid fa-pen-to-square"></i> កែប្រែ</button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteRecord(${item.id})"><i class="fa-solid fa-trash"></i> លុប</button>
+                        </td>
                     </tr>
                 `;
             });
         }
 
-        // មុខងារ Search សម្រាប់តារាងគ្រប់គ្រង
-        function filterManageTable() {
-            const keyword = document.getElementById('manageSearch').value.toLowerCase();
-            const filtered = allData.filter(item => 
+        // មុខងារ Search OMS Table
+        function filterOmsTable() {
+            const keyword = document.getElementById('omsSearch').value.toLowerCase();
+            const filtered = allData.filter(item => item.system_type === 'OMS' && (
                 item.item_code.toLowerCase().includes(keyword) || 
                 item.item_name.toLowerCase().includes(keyword) || 
-                item.system_type.toLowerCase().includes(keyword)
-            );
-            renderFilteredManage(filtered);
-        }
-
-        function renderFilteredManage(data) {
-            const manageBody = document.getElementById('manageTableBody');
-            manageBody.innerHTML = '';
-            data.forEach((item, index) => {
-                manageBody.innerHTML += `
+                item.location_status.toLowerCase().includes(keyword)
+            ));
+            
+            const omsBody = document.getElementById('omsTableBody');
+            omsBody.innerHTML = '';
+            if (filtered.length === 0) {
+                omsBody.innerHTML = `<tr><td colspan="7" class="text-center text-muted">រកមិនឃើញទិន្នន័យ OMS</td></tr>`;
+                return;
+            }
+            filtered.forEach((item, index) => {
+                omsBody.innerHTML += `
                     <tr>
                         <td>${index + 1}</td>
                         <td><span class="badge bg-secondary">${item.item_code}</span></td>
                         <td>${item.item_name}</td>
-                        <td><span class="badge ${item.system_type.includes('WMS') ? 'bg-primary' : 'bg-success'}">${item.system_type}</span></td>
                         <td>${item.quantity}</td>
                         <td>${item.location_status}</td>
+                        <td>${new Date(item.created_at).toLocaleDateString()}</td>
                         <td class="no-print text-center">
                             <button class="btn btn-sm btn-warning text-white me-1" onclick="editRecord(${item.id})"><i class="fa-solid fa-pen-to-square"></i> កែប្រែ</button>
                             <button class="btn btn-sm btn-danger" onclick="deleteRecord(${item.id})"><i class="fa-solid fa-trash"></i> លុប</button>
@@ -330,10 +338,9 @@
             }
         }
 
-        // មុខងារលុបទិន្នន័យ (កំណត់ចំណាំ៖ អាចបន្ថែម API Route DELETE ក្នុង server.js បន្ថែមបើត្រូវការលុបពិតប្រាកដ)
+        // មុខងារលុបទិន្នន័យ
         function deleteRecord(id) {
             if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
-                // គំរូកូដសម្រាប់លុប (អាចភ្ជាប់ជាមួយ backend DELETE route)
                 alert('មុខងារលុបត្រូវបានចុចសម្រាប់ ID: ' + id);
             }
         }
