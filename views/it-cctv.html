@@ -43,6 +43,10 @@
             </div>
         </div>
         <div class="flex items-center space-x-3">
+            <!-- ប៊ូតុងបើកកាមេរ៉ា -->
+            <button onclick="startCamera()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-lg">
+                <i class="fa-solid fa-camera text-xs"></i> បើកកាមេរ៉ា
+            </button>
             <button onclick="openModal('cctvModal')" class="bg-cyan-600 hover:bg-cyan-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-lg">
                 <i class="fa-solid fa-plus text-xs"></i> បន្ថែម CCTV/Network
             </button>
@@ -51,6 +55,21 @@
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
         
+        <!-- កន្លែងបង្ហាញវីដេអូកាមេរ៉ា (លាក់ទុកជាមុន ពេលចុចប៊ូតុងទើបលេចចេញមក) -->
+        <div id="cameraContainer" class="hidden bg-cardBg border border-borderCol p-4 rounded-2xl shadow-sm">
+            <div class="flex justify-between items-center mb-3">
+                <h3 class="font-semibold text-white text-base flex items-center gap-2">
+                    <i class="fa-solid fa-video text-emerald-400"></i> ការផ្សាយផ្ទាល់ពីកាមេរ៉ា (Camera Stream)
+                </h3>
+                <button onclick="stopCamera()" class="text-slate-400 hover:text-rose-400 text-xs bg-slate-800 px-3 py-1.5 rounded-lg border border-borderCol transition">
+                    បិទកាមេរ៉ាវិញ
+                </button>
+            </div>
+            <div class="flex justify-center bg-slate-950 rounded-xl overflow-hidden p-2 border border-borderCol">
+                <video id="cameraStream" autoplay playsinline class="w-full max-w-2xl rounded-lg max-h-[400px] object-contain"></video>
+            </div>
+        </div>
+
         <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-emerald-500">
             <i class="fa-solid fa-circle-check text-lg"></i>
             <div>
@@ -172,6 +191,35 @@
         window.onload = function() {
             fetchData();
         };
+
+        // មុខងារបើកកាមេរ៉ា
+        async function startCamera() {
+            const container = document.getElementById('cameraContainer');
+            const videoElement = document.getElementById('cameraStream');
+            
+            container.classList.remove('hidden');
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                videoElement.srcObject = stream;
+            } catch (err) {
+                console.error('មិនអាចបើកកាមេរ៉ាបានទេ:', err);
+                alert('សូមអនុញ្ញាតសិទ្ធិប្រើប្រាស់កាមេរ៉ា (Camera Permission) នៅក្នុង Browser ជាមុនសិន!');
+                container.classList.add('hidden');
+            }
+        }
+
+        // មុខងារបិទកាមេរ៉ាវិញ
+        function stopCamera() {
+            const videoElement = document.getElementById('cameraStream');
+            const container = document.getElementById('cameraContainer');
+            
+            if (videoElement.srcObject) {
+                const tracks = videoElement.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+                videoElement.srcObject = null;
+            }
+            container.classList.add('hidden');
+        }
 
         async function fetchData() {
             try {
