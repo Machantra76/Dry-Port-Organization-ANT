@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair & M&R)</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Font (Khmer OS Siemreap) -->
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12 d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold text-dark"><i class="fas fa-tools text-primary me-2"></i>ការថែទាំ និងជួសជុលកុងតឺន័រ (Container M&R)</h2>
+                    <p class="text-muted mb-0">គ្រប់គ្រងការជួសជុល ប្រភេទខូចខាត ប៉ាន់ស្មានតម្លៃ និងជាងបច្ចេកទេស</p>
+                </div>
+                <div>
+                    <a href="/" class="btn btn-outline-secondary"><i class="fas fa-home me-1"></i> ទំព័រដើម</a>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addRepairModal">
+                        <i class="fas fa-plus-circle me-1"></i> កត់ត្រាការជួសជុលថ្មី
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter & Search Section -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">ស្វែងរកតាមលេខកុងតឺន័រ</label>
+                        <input type="text" id="filterContainerNo" class="form-control" placeholder="ឧ. TGHU1234567">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-semibold">ស្ថានភាពជួសជុល</label>
+                        <select id="filterStatus" class="form-select">
+                            <option value="">-- ទាំងអស់ --</option>
+                            <option value="In Progress">កំពុងជួសជុល (In Progress)</option>
+                            <option value="Completed">បានរួចរាល់ (Completed)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button class="btn btn-dark w-100" onclick="loadContainerRepairs()">
+                            <i class="fas fa-search me-1"></i> ស្វែងរក / ស្រង់ទិន្នន័យ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Data Section -->
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>ល.រ</th>
+                                <th>លេខកុងតឺន័រ (Container No.)</th>
+                                <th>កាលបរិច្ឆេទជួសជុល</th>
+                                <th>ប្រភេទការជួសជុល (Repair Type)</th>
+                                <th>ថ្លៃចំណាយ ($)</th>
+                                <th>ជាងបច្ចេកទេស</th>
+                                <th>ស្ថានភាព (Status)</th>
+                                <th>កំណត់សម្គាល់</th>
+                            </tr>
+                        </thead>
+                        <tbody id="repairTableBody">
+                            <!-- ទិន្នន័យទាញមកបង្ហាញតាមរយៈ JavaScript -->
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">កំពុងទាញយកទិន្នន័យ...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal បន្ថែមការជួសជុលថ្មី -->
+    <div class="modal fade" id="addRepairModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas.fa-tools me-2"></i>កត់ត្រាការជួសជុលកុងតឺន័រថ្មី</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addRepairForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">លេខកុងតឺន័រ (Container Number) *</label>
+                                <input type="text" name="container_number" class="form-control" required placeholder="ឧ. TGHU1234567">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">កាលបរិច្ឆេទជួសជុល *</label>
+                                <input type="date" name="repair_date" class="form-control" required id="currentDate">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">ប្រភេទការជួសជុល (Repair Type) *</label>
+                                <input type="text" name="repair_type" class="form-control" required placeholder="ឧ. ប្តូរជញ្ជាំង, បិទប៊ូឡុង, លាបថ្នាំ...">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">ថ្លៃចំណាយ ($) *</label>
+                                <input type="number" step="0.01" name="cost" class="form-control" required placeholder="0.00">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">ឈ្មោះជាងបច្ចេកទេស *</label>
+                                <input type="text" name="technician_name" class="form-control" required placeholder="ឈ្មោះជាង ឬក្រុមជាង">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">ស្ថានភាព (Status)</label>
+                                <select name="status" class="form-select">
+                                    <option value="In Progress">កំពុងជួសជុល (In Progress)</option>
+                                    <option value="Completed">បានរួចរាល់ (Completed)</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">កំណត់សម្គាល់ (Notes)</label>
+                                <textarea name="notes" class="form-control" rows="2" placeholder="ព័ត៌មានលម្អិតបន្ថែមពីការខូចខាត ឬការជួសជុល"></textarea>
+                            </div>
+                        </div>
+                        <div class="text-end mt-4">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">បោះបង់</button>
+                            <button type="submit" class="btn btn-primary">រក្សាទុកទិន្នន័យ</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap & jQuery JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // កំណត់ថ្ងៃខែបច្ចុប្បន្នស្វ័យប្រវត្តិលើ Form
+        document.getElementById('currentDate').valueAsDate = new Date();
+
+        // មុខងារទាញយកទិន្នន័យពី Server API
+        async function loadContainerRepairs() {
+            const containerNo = document.getElementById('filterContainerNo').value;
+            const status = document.getElementById('filterStatus').value;
+
+            let url = '/api/fleet/container-repairs?';
+            if (containerNo) url += `container_number=${encodeURIComponent(containerNo)}&`;
+            if (status) url += `status=${encodeURIComponent(status)}`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                const tbody = document.getElementById('repairTableBody');
+                tbody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-muted">គ្មានទិន្នន័យការជួសជុលកុងតឺន័រទេ</td></tr>`;
+                    return;
+                }
+
+                data.forEach((item, index) => {
+                    let badgeClass = 'bg-warning text-dark';
+                    if (item.status === 'Completed') badgeClass = 'bg-success';
+
+                    const row = `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td class="fw-bold text-primary">${item.container_number}</td>
+                            <td>${new Date(item.repair_date).toLocaleDateString('km-KH')}</td>
+                            <td>${item.repair_type}</td>
+                            <td class="fw-semibold text-danger">$${parseFloat(item.cost).toFixed(2)}</td>
+                            <td>${item.technician_name}</td>
+                            <td><span class="badge ${badgeClass}">${item.status}</span></td>
+                            <td>${item.notes || '-'}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } catch (err) {
+                console.error('Error loading container repairs:', err);
+                alert('មានបញ្ហាក្នុងការទាញយកទិន្នន័យ');
+            }
+        }
+
+        // មុខងារបញ្ជូនទិន្នន័យ Form បន្ថែមថ្មីទៅកាន់ API
+        document.getElementById('addRepairForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const payload = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/api/fleet/container-repairs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert('កត់ត្រាការជួសជុលកុងតឺន័របានដោយជោគជ័យ!');
+                    location.reload();
+                } else {
+                    alert('កំហុស: ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                }
+            } catch (err) {
+                console.error('Error submitting form:', err);
+                alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
+            }
+        });
+
+        // ហៅទិន្នន័យមកបង្ហាញពេលចាប់ផ្តើមបើកទំព័រ
+        loadContainerRepairs();
+    </script>
+</body>
+</html>
