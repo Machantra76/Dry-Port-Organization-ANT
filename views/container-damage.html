@@ -8,180 +8,248 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Khmer -->
-    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts Battambang -->
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
         body {
-            font-family: 'Kantumruy Pro', sans-serif;
-            background-color: #f4f6f9;
+            font-family: 'Battambang', sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
         }
-        .sidebar {
-            min-height: 100vh;
-            background-color: #343a40;
+        .container-box {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+        .btn-back {
+            background-color: #1e3a8a;
             color: #fff;
-        }
-        .sidebar a {
-            color: #cfd8dc;
+            border-radius: 8px;
+            padding: 8px 16px;
             text-decoration: none;
-            padding: 10px 15px;
-            display: block;
-            border-radius: 5px;
-            margin-bottom: 5px;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            transition: all 0.3s ease;
         }
-        .sidebar a:hover, .sidebar a.active {
-            background-color: #0d6efd;
+        .btn-back:hover {
+            background-color: #1e40af;
             color: #fff;
         }
-        .card {
+        .section-title {
+            color: #1e3a8a;
+            font-weight: 700;
+            font-size: 24px;
+        }
+        .section-subtitle {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+        .form-label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1e293b;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            padding: 10px 15px;
+            border: 1px solid #cbd5e1;
+            font-family: 'Battambang', sans-serif;
+        }
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15);
+            border-color: #1e3a8a;
+        }
+        .card-inner {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #fff;
+            margin-bottom: 25px;
+        }
+        .card-inner-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e3a8a;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+        }
+        .btn-submit {
+            background-color: #10b981;
             border: none;
-            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+            color: white;
+            font-weight: 700;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            transition: all 0.3s;
+        }
+        .btn-submit:hover {
+            background-color: #059669;
+        }
+        .table thead th {
+            background-color: #1e3a8a;
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            vertical-align: middle;
+        }
+        .table tbody td {
+            vertical-align: middle;
+            text-align: center;
+            font-size: 14px;
+        }
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
         }
     </style>
 </head>
 <body>
 
-    <div class="container-fluid">
-        <div class="row">
-            <!-- Navigation Sidebar -->
-            <div class="col-md-3 col-lg-2 sidebar p-3 d-none d-md-block">
-                <h4 class="text-center py-3 text-white border-bottom mb-4">ប្រព័ន្ធគ្រប់គ្រង</h4>
-                <a href="/views/transport-planning.html"><i class="fas fa-route me-2"></i> ផែនការដឹកជញ្ជូន</a>
-                <a href="/views/damaged-container.html" class="active"><i class="fas fa-box-open me-2"></i> កុងតឺន័រខូច</a>
-                <a href="/"><i class="fas fa-home me-2"></i> ទំព័រដើម</a>
+    <div class="container">
+        <!-- Back Button -->
+        <div class="pt-4">
+            <a href="/" class="btn-back">
+                <i class="fas fa-arrow-left me-2"></i> ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)
+            </a>
+        </div>
+
+        <div class="container-box">
+            <!-- Header Title -->
+            <div class="mb-4">
+                <h2 class="section-title">ការត្រួតពិនិត្យកុងតឺន័រខូច</h2>
+                <div class="section-subtitle">DAMAGED CONTAINER INSPECTION & FILTER SYSTEM</div>
             </div>
 
-            <!-- Main Content -->
-            <div class="col-md-9 col-lg-10 ms-sm-auto px-md-4 py-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    <h1 class="h2"><i class="fas fa-exclamation-triangle text-danger me-2"></i> ការត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)</h1>
-                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addContainerModal">
-                        <i class="fas fa-plus me-2"></i> កត់ត្រាកុងតឺន័រខូចថ្មី
-                    </button>
+            <!-- Form កត់ត្រាកុងតឺន័រខូចថ្មី -->
+            <div class="card-inner">
+                <div class="card-inner-title">
+                    <i class="fas fa-plus-circle me-2"></i> កត់ត្រាកុងតឺន័រខូចថ្មី (Record New Damaged Container)
                 </div>
-
-                <!-- Search & Filter Section -->
-                <div class="card mb-4 p-3">
+                <form id="containerForm">
                     <div class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label">ចាប់ពីថ្ងៃទី</label>
-                            <input type="date" id="filterFrom" class="form-control">
+                        <div class="col-md-6">
+                            <label class="form-label">លេខកុងតឺន័រ (Container Number):</label>
+                            <input type="text" class="form-control" name="container_number" required placeholder="ឧ. TGHU1234567">
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">ដល់ថ្ងៃទី</label>
-                            <input type="date" id="filterTo" class="form-control">
+                        <div class="col-md-6">
+                            <label class="form-label">ថ្ងៃខែត្រួតពិនិត្យ (Inspection Date):</label>
+                            <input type="date" class="form-control" name="inspection_date" required>
                         </div>
-                        <div class="col-md-3">
-                            <label class="form-label">កម្រិតធ្ងន់ធ្ងរ</label>
-                            <select id="filterSeverity" class="form-select">
-                                <option value="">ទាំងអស់</option>
+                        <div class="col-md-6">
+                            <label class="form-label">ទីតាំងខូចខាត (Damage Location):</label>
+                            <input type="text" class="form-control" name="damage_location" required placeholder="ឧ. ទ្វារខាងមុខ, ដំបូល, ជញ្ជាំងឆ្វេង">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">កម្រិតធ្ងន់ធ្ងរ (Severity Level):</label>
+                            <select class="form-select" name="severity_level" required>
+                                <option value="" selected disabled>-- ជ្រើសរើសកម្រិតខូចខាត (Select Severity) --</option>
                                 <option value="Minor">ស្រាល (Minor)</option>
                                 <option value="Moderate">មធ្យម (Moderate)</option>
                                 <option value="Severe">ធ្ងន់ធ្ងរ (Severe)</option>
                             </select>
                         </div>
-                        <div class="col-md-3 d-flex align-items-end">
-                            <button class="btn btn-secondary w-100" onclick="loadDamagedContainers()">
-                                <i class="fas fa-filter me-2"></i> ស្វែងរក / ឆែកមើល
+                        <div class="col-md-6">
+                            <label class="form-label">ឈ្មោះអ្នកត្រួតពិនិត្យ (Inspector Name):</label>
+                            <input type="text" class="form-control" name="inspector_name" required placeholder="ឈ្មោះមន្ត្រីត្រួតពិនិត្យ (Staff Name)">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">ស្ថានភាព (Status):</label>
+                            <select class="form-select" name="status">
+                                <option value="Pending Repair">រង់ចាំជួសជុល (Pending Repair)</option>
+                                <option value="In Repair">កំពុងជួសជុល (In Repair)</option>
+                                <option value="Resolved">បានជួសជុលរួចរាល់ (Resolved)</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">បរិយាយ / កំណត់ចំណាំ (Description / Notes):</label>
+                            <textarea class="form-control" name="description" rows="3" placeholder="ព័ត៌មានលម្អិតបន្ថែមអំពីការខូចខាត... (Details...)"></textarea>
+                        </div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn-submit">
+                                <i class="fas fa-save me-2"></i> រក្សាទុកកុងតឺន័រខូច (Save Container Record)
                             </button>
                         </div>
                     </div>
-                </div>
-
-                <!-- Table Data -->
-                <div class="card p-3">
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>ល.រ</th>
-                                    <th>លេខកុងតឺន័រ</th>
-                                    <th>ថ្ងៃខែត្រួតពិនិត្យ</th>
-                                    <th>ទីតាំងខូចខាត</th>
-                                    <th>កម្រិតធ្ងន់ធ្ងរ</th>
-                                    <th>អ្នកពិនិត្យ</th>
-                                    <th>ស្ថានភាព</th>
-                                    <th>ពិពណ៌នា</th>
-                                </tr>
-                            </thead>
-                            <tbody id="containerTableBody">
-                                <!-- ទិន្នន័យនឹងត្រូវទាញមកបង្ហាញទីនេះដោយ JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal เพิ่มข้อมูลកុងតឺន័រខូច -->
-    <div class="modal fade" id="addContainerModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form id="containerForm">
-                    <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title"><i class="fas fa-plus-circle me-2"></i> កត់ត្រាទិន្នន័យកុងតឺន័រខូច</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">លេខកុងតឺន័រ (Container Number) *</label>
-                                <input type="text" class="form-control" name="container_number" required placeholder="ឧ. TGHU1234567">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">ថ្ងៃខែត្រួតពិនិត្យ *</label>
-                                <input type="date" class="form-control" name="inspection_date" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">ទីតាំងខូចខាត (Damage Location) *</label>
-                                <input type="text" class="form-control" name="damage_location" required placeholder="ឧ. ទ្វារខាងមុខ, ដំបូល, ជញ្ជាំងឆ្វេង">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">កម្រិតធ្ងន់ធ្ងរ (Severity Level) *</label>
-                                <select class="form-select" name="severity_level" required>
-                                    <option value="Minor">ស្រាល (Minor)</option>
-                                    <option value="Moderate">មធ្យម (Moderate)</option>
-                                    <option value="Severe">ធ្ងន់ធ្ងរ (Severe)</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">ឈ្មោះអ្នកត្រួតពិនិត្យ (Inspector Name) *</label>
-                                <input type="text" class="form-control" name="inspector_name" required placeholder="ឈ្មោះមន្ត្រីត្រួតពិនិត្យ">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">ស្ថានភាព (Status)</label>
-                                <select class="form-select" name="status">
-                                    <option value="Pending Repair">រង់ចាំជួសជុល (Pending Repair)</option>
-                                    <option value="In Repair">កំពុងជួសជុល (In Repair)</option>
-                                    <option value="Resolved">បានជួសជុលរួចរាល់ (Resolved)</option>
-                                </select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label">បរិយាយ / កំណត់ចំណាំបន្ថែម</label>
-                                <textarea class="form-control" name="description" rows="3" placeholder="ពិពណ៌នាអំពីលក្ខណៈនៃការខូចខាត..."></textarea>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">បោះបង់</button>
-                        <button type="submit" class="btn btn-primary">រក្សាទុក</button>
-                    </div>
                 </form>
             </div>
+
+            <!-- របាយការណ៍ និងការតម្រៀបទិន្នន័យ (Report & Filter Section) -->
+            <div class="card-inner mt-4">
+                <div class="card-inner-title d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-table me-2"></i> តារាងរបាយការណ៍ និងការត្រងទិន្នន័យ (Container Report & Filter)</span>
+                </div>
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label class="form-label">ចាប់ពីថ្ងៃទី (From Date):</label>
+                        <input type="date" id="filterFrom" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">ដល់ថ្ងៃទី (To Date):</label>
+                        <input type="date" id="filterTo" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">កម្រិតធ្ងន់ធ្ងរ (Severity):</label>
+                        <select id="filterSeverity" class="form-select">
+                            <option value="">ទាំងអស់ (All Severity)</option>
+                            <option value="Minor">ស្រាល (Minor)</option>
+                            <option value="Moderate">មធ្យម (Moderate)</option>
+                            <option value="Severe">ធ្ងន់ធ្ងរ (Severe)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end gap-2">
+                        <button class="btn btn-primary w-100 py-2" onclick="loadDamagedContainers()" style="border-radius: 8px;">
+                            <i class="fas fa-search me-1"></i> ស្វែងរក
+                        </button>
+                        <button class="btn btn-secondary w-100 py-2" onclick="resetFilter()" style="border-radius: 8px;">
+                            កំណត់ឡើងវិញ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table Data Display -->
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>ល.រ (No.)</th>
+                                <th>លេខកុងតឺន័រ (Container No.)</th>
+                                <th>ថ្ងៃខែត្រួតពិនិត្យ (Date)</th>
+                                <th>ទីតាំងខូចខាត (Location)</th>
+                                <th>កម្រិត (Severity)</th>
+                                <th>អ្នកពិនិត្យ (Inspector)</th>
+                                <th>ស្ថានភាព (Status)</th>
+                                <th>ពិពណ៌នា (Description)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="containerTableBody">
+                            <!-- ទិន្នន័យទាញមកបង្ហាញទីនេះ -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // កំណត់ថ្ងៃខែបច្ចុប្បន្នស្វ័យប្រវត្តិក្នុង Form
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date().toISOString().split('T')[0];
             document.querySelector('input[name="inspection_date"]').value = today;
             loadDamagedContainers();
         });
 
-        // មុខងារទាញយកទិន្នន័យមកបង្ហាញក្នុង Table
         async function loadDamagedContainers() {
             const from = document.getElementById('filterFrom').value;
             const to = document.getElementById('filterTo').value;
@@ -199,19 +267,19 @@
                 tbody.innerHTML = '';
 
                 if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">ពុំមានទិន្នន័យកុងតឺន័រខូចទេ</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">ពុំមានទិន្នន័យកុងតឺន័រខូចទេ (No data found)</td></tr>`;
                     return;
                 }
 
                 data.forEach((item, index) => {
-                    let badgeClass = 'bg-secondary';
+                    let badgeClass = 'bg-secondary text-white';
                     if (item.severity_level === 'Minor') badgeClass = 'bg-info text-dark';
                     else if (item.severity_level === 'Moderate') badgeClass = 'bg-warning text-dark';
-                    else if (item.severity_level === 'Severe') badgeClass = 'bg-danger';
+                    else if (item.severity_level === 'Severe') badgeClass = 'bg-danger text-white';
 
                     let statusBadge = 'bg-warning text-dark';
-                    if (item.status === 'Resolved') statusBadge = 'bg-success';
-                    else if (item.status === 'In Repair') statusBadge = 'bg-primary';
+                    if (item.status === 'Resolved') statusBadge = 'bg-success text-white';
+                    else if (item.status === 'In Repair') statusBadge = 'bg-primary text-white';
 
                     const row = `
                         <tr>
@@ -229,11 +297,16 @@
                 });
             } catch (err) {
                 console.error('Error loading data:', err);
-                alert('មានបញ្ហាក្នុងการទាញយកទិន្នន័យ');
             }
         }
 
-        // មុខងារបញ្ជូនទិន្នន័យ Form ទៅកាន់ API
+        function resetFilter() {
+            document.getElementById('filterFrom').value = '';
+            document.getElementById('filterTo').value = '';
+            document.getElementById('filterSeverity').value = '';
+            loadDamagedContainers();
+        }
+
         document.getElementById('containerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const formData = new FormData(this);
@@ -250,11 +323,8 @@
                 if (response.ok) {
                     alert('បានកត់ត្រាទិន្នន័យកុងតឺន័រខូចដោយជោគជ័យ!');
                     this.reset();
-                    // បិទ Modal
-                    const modalElement = document.getElementById('addContainerModal');
-                    const modal = bootstrap.Modal.getInstance(modalElement);
-                    modal.hide();
-                    // ទាញយកទិន្នន័យមកបង្ហាញសាថ្មី
+                    const today = new Date().toISOString().split('T')[0];
+                    document.querySelector('input[name="inspection_date"]').value = today;
                     loadDamagedContainers();
                 } else {
                     alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
