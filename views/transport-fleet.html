@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន (Fleet & Transport Dispatch)</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font (Khmer OS Battambang) -->
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Battambang', sans-serif;
+            background-color: #f4f6f9;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/"><i class="fas fa-truck-moving me-2"></i>ប្រព័ន្ធគ្រប់គ្រងស្ថាប័ន</a>
+            <div class="d-flex">
+                <a href="/" class="btn btn-outline-light btn-sm"><i class="fas fa-home me-1"></i> ទំព័រដើម</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <h2 class="mb-4 text-primary"><i class="fas fa-shipping-fast me-2"></i>ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន</h2>
+
+        <!-- Tabs Navigation -->
+        <ul class="nav nav-tabs mb-4" id="fleetTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="vehicles-tab" data-bs-toggle="tab" data-bs-target="#vehicles-pane" type="button" role="tab">
+                    <i class="fas fa-car me-1"></i> គ្រប់គ្រងរថយន្ត (Fleet Vehicles)
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="dispatch-tab" data-bs-toggle="tab" data-bs-target="#dispatch-pane" type="button" role="tab">
+                    <i class="fas fa-paper-plane me-1"></i> ការបញ្ជូនដឹកជញ្ជូន (Dispatches)
+                </button>
+            </li>
+        </ul>
+
+        <!-- Tabs Content -->
+        <div class="tab-content" id="fleetTabContent">
+            
+            <!-- Tab 1: Fleet Vehicles -->
+            <div class="tab-pane fade show active" id="vehicles-pane" role="tabpanel">
+                <div class="row">
+                    <!-- Form បន្ថែមរថយន្ត -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-3">
+                            <h5 class="card-title text-success mb-3"><i class="fas fa-plus-circle me-1"></i> បន្ថែមរថយន្តថ្មី</h5>
+                            <form id="vehicleForm">
+                                <div class="mb-3">
+                                    <label class="form-label">លេខកូដរថយន្ត (Vehicle Code)</label>
+                                    <input type="text" class="form-control" id="vehicle_code" required placeholder="ឧ. V-001">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">ម៉ូឌែលរថយន្ត (Model)</label>
+                                    <input type="text" class="form-control" id="model" required placeholder="ឧ. Toyota Hilux">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">ស្លាកលេខ (Plate Number)</label>
+                                    <input type="text" class="form-control" id="plate_number" required placeholder="ឧ. ភ្នំពេញ 2A-1234">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">ចំណុះផ្ទុក (Capacity)</label>
+                                    <input type="text" class="form-control" id="capacity" placeholder="ឧ. 3 តោន">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">ស្ថានភាព (Status)</label>
+                                    <select class="form-select" id="vehicle_status">
+                                        <option value="Available">ទំនេរ (Available)</option>
+                                        <option value="On Mission">កំពុងបំពេញបេសកកម្ម (On Mission)</option>
+                                        <option value="Maintenance">ជួសជុល (Maintenance)</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-success w-100"><i class="fas fa-save me-1"></i> រក្សាទុករថយន្ត</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- ຕາຕະລາງបង្ហាញរថយន្ត -->
+                    <div class="col-md-8">
+                        <div class="card p-3">
+                            <h5 class="card-title mb-3"><i class="fas fa-list me-1"></i> បញ្ជីរថយន្តសរុប</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover align-middle">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>កូដ</th>
+                                            <th>ម៉ូឌែល</th>
+                                            <th>ស្លាកលេខ</th>
+                                            <th>ចំណុះ</th>
+                                            <th>ស្ថានភាព</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="vehicleTableBody">
+                                        <!-- ទិន្នន័យទាញតាម JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Transport Dispatches -->
+            <div class="tab-pane fade" id="dispatch-pane" role="tabpanel">
+                <div class="row">
+                    <!-- Form បញ្ជូនរថយន្ត -->
+                    <div class="col-md-4 mb-4">
+                        <div class="card p-3">
+                            <h5 class="card-title text-primary mb-3"><i class="fas fa-plus-circle me-1"></i> កត់ត្រាការបញ្ជូនចេញ</h5>
+                            <form id="dispatchForm">
+                                <div class="mb-3">
+                                    <label class="form-label">លេខកូដដឹកជញ្ជូន (Dispatch Code)</label>
+                                    <input type="text" class="form-control" id="dispatch_code" required placeholder="ឧ. DIS-001">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">ជ្រើសរើសរថយន្ត</label>
+                                    <select class="form-select" id="dispatch_vehicle_code" required>
+                                        <option value="">-- ជ្រើសរើសរថយន្ត --</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">ឈ្មោះអ្នកបើកបរ (Driver Name)</label>
+                                    <input type="text" class="form-control" id="driver_name" required placeholder="ឈ្មោះអ្នកបើកបរ">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">ទិសដៅ / គោលដៅ (Destination)</label>
+                                    <input type="text" class="form-control" id="destination" required placeholder="ទីតាំងត្រូវទៅ">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">កាលបរិច្ឆេទចេញដំណើរ (Date)</label>
+                                    <input type="date" class="form-control" id="dispatch_date" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">កំណត់ចំណាំ (Notes)</label>
+                                    <textarea class="form-control" id="notes" rows="2" placeholder="ព័ត៌មានបន្ថែម..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100"><i class="fas fa-paper-plane me-1"></i> បញ្ជូនចេញ (Dispatch)</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- តារាងបង្ហាញការបញ្ជូន -->
+                    <div class="col-md-8">
+                        <div class="card p-3">
+                            <h5 class="card-title mb-3"><i class="fas fa-history me-1"></i> ប្រវត្តិកត់ត្រាការដឹកជញ្ជូន</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover align-middle">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>កូដ</th>
+                                            <th>រថយន្ត</th>
+                                            <th>អ្នកបើកបរ</th>
+                                            <th>គោលដៅ</th>
+                                            <th>កាលបរិច្ឆេទ</th>
+                                            <th>ស្ថានភាព</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dispatchTableBody">
+                                        <!-- ទិន្នន័យទាញតាម JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // កំណត់ថ្ងៃខែបច្ចុប្បន្នស្វ័យប្រវត្តិឱ្យ Form ដឹកជញ្ជូន
+        document.getElementById('dispatch_date').valueAsDate = new Date();
+
+        // មុខងារទាញយកបញ្ជីរថយន្តមកបង្ហាញ និងដាក់ចូល Dropdown
+        async function loadVehicles() {
+            try {
+                const response = await fetch('/api/fleet/vehicles');
+                const vehicles = await response.json();
+                
+                const tbody = document.getElementById('vehicleTableBody');
+                const select = document.getElementById('dispatch_vehicle_code');
+                
+                tbody.innerHTML = '';
+                select.innerHTML = '<option value="">-- ជ្រើសរើសរថយន្ត --</option>';
+
+                vehicles.forEach(v => {
+                    // បន្ថែមចូល Table
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${v.vehicle_code}</strong></td>
+                            <td>${v.model}</td>
+                            <td>${v.plate_number}</td>
+                            <td>${v.capacity || '-'}</td>
+                            <td><span class="badge bg-${v.status === 'Available' ? 'success' : (v.status === 'On Mission' ? 'warning' : 'secondary')}">${v.status}</span></td>
+                        </tr>
+                    `;
+
+                    // បន្ថែមចូល Dropdown (ប្រសិនបើទំនេរ ឬចង់បង្ហាញទាំងអស់)
+                    if(v.status === 'Available') {
+                        select.innerHTML += `<option value="${v.vehicle_code}">${v.vehicle_code} - ${v.model} (${v.plate_number})</option>`;
+                    }
+                });
+            } catch (err) {
+                console.error('Error loading vehicles:', err);
+            }
+        }
+
+        // មុខងារទាញយកប្រវត្តិកត់ត្រាការដឹកជញ្ជូន
+        async function loadDispatches() {
+            try {
+                const response = await fetch('/api/fleet/dispatches');
+                const dispatches = await response.json();
+                
+                const tbody = document.getElementById('dispatchTableBody');
+                tbody.innerHTML = '';
+
+                dispatches.forEach(d => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong>${d.dispatch_code}</strong></td>
+                            <td>${d.vehicle_code}</td>
+                            <td>${d.driver_name}</td>
+                            <td>${d.destination}</td>
+                            <td>${new Date(d.dispatch_date).toLocaleDateString('km-KH')}</td>
+                            <td><span class="badge bg-primary">${d.status}</span></td>
+                        </tr>
+                    `;
+                });
+            } catch (err) {
+                console.error('Error loading dispatches:', err);
+            }
+        }
+
+        // Handle Form បន្ថែមរថយន្ត
+        document.getElementById('vehicleForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const data = {
+                vehicle_code: document.getElementById('vehicle_code').value,
+                model: document.getElementById('model').value,
+                plate_number: document.getElementById('plate_number').value,
+                capacity: document.getElementById('capacity').value,
+                status: document.getElementById('vehicle_status').value
+            };
+
+            const res = await fetch('/api/fleet/vehicles', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await res.json();
+            if (result.success) {
+                alert('បានបន្ថែមរថយន្តដោយជោគជ័យ!');
+                this.reset();
+                loadVehicles();
+            } else {
+                alert('កំហុស៖ ' + result.error);
+            }
+        });
+
+        // Handle Form បញ្ជូនរថយន្ត
+        document.getElementById('dispatchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const data = {
+                dispatch_code: document.getElementById('dispatch_code').value,
+                vehicle_code: document.getElementById('dispatch_vehicle_code').value,
+                driver_name: document.getElementById('driver_name').value,
+                destination: document.getElementById('destination').value,
+                dispatch_date: document.getElementById('dispatch_date').value,
+                notes: document.getElementById('notes').value
+            };
+
+            const res = await fetch('/api/fleet/dispatches', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await res.json();
+            if (result.success) {
+                alert('បានកត់ត្រាការបញ្ជូនរថយន្តដោយជោគជ័យ!');
+                this.reset();
+                document.getElementById('dispatch_date').valueAsDate = new Date();
+                loadDispatches();
+                loadVehicles(); // Reload เพื่ออัปเดตสถานะรถ
+            } else {
+                alert('កំហុស៖ ' + result.error);
+            }
+        });
+
+        // Load ទិន្នន័យពេលបើកទំព័រដំបូង
+        loadVehicles();
+        loadDispatches();
+    </script>
+</body>
+</html>
