@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន | Fleet & Transport Dispatch</title>
+    <title>ការចាត់ចែងរថយន្ត & អ្នកបើកបរ | Fleet & Driver Management</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
@@ -110,15 +110,20 @@
 
         <!-- Header Title -->
         <div class="mb-4">
-            <h3 class="fw-bold text-dark">ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន</h3>
-            <p class="text-muted small">FLEET MANAGEMENT, TRANSPORT DISPATCH & FILTER SYSTEM</p>
+            <h3 class="fw-bold text-dark">ការចាត់ចែងរថយន្ត និងអ្នកបើកបរ</h3>
+            <p class="text-muted small">FLEET, DRIVER MANAGEMENT & TRANSPORT DISPATCH SYSTEM</p>
         </div>
 
-        <!-- Nav Tabs សម្រាប់បំបែកទំព័ររថយន្ត និង ការបញ្ជូន -->
+        <!-- Nav Tabs -->
         <ul class="nav nav-tabs mb-4 no-print" id="fleetTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="vehicles-tab" data-bs-toggle="tab" data-bs-target="#vehicles-pane" type="button" role="tab">
                     <i class="fas fa-car me-1"></i> គ្រប់គ្រងរថយន្ត (Fleet Vehicles)
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="drivers-tab" data-bs-toggle="tab" data-bs-target="#drivers-pane" type="button" role="tab">
+                    <i class="fas fa-id-card me-1"></i> គ្រប់គ្រងអ្នកបើកបរ (Driver Management)
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -167,11 +172,8 @@
                     </form>
                 </div>
 
-                <!-- ຕາຕະລາງបញ្ជីរថយន្ត -->
                 <div class="section-box">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <div class="section-title mb-0"><i class="fas fa-list me-2"></i>បញ្ជីរថយន្តសរុប (Fleet List)</div>
-                    </div>
+                    <div class="section-title mb-3"><i class="fas fa-list me-2"></i>បញ្ជីរថយន្តសរុប (Fleet List)</div>
                     <div class="table-responsive">
                         <table class="table table-striped table-hover align-middle">
                             <thead>
@@ -183,15 +185,69 @@
                                     <th>ស្ថានភាព (Status)</th>
                                 </tr>
                             </thead>
-                            <tbody id="vehicleTableBody">
-                                <!-- ទិន្នន័យទាញតាម JS -->
-                            </tbody>
+                            <tbody id="vehicleTableBody"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB 2: ការបញ្ជូនដឹកជញ្ជូន (Dispatches) -->
+            <!-- TAB 2: អ្នកបើកបរ (Drivers) [បន្ថែមថ្មី] -->
+            <div class="tab-pane fade" id="drivers-pane" role="tabpanel">
+                <div class="section-box no-print">
+                    <div class="section-title text-primary"><i class="fas fa-user-plus me-2"></i>កត់ត្រាអ្នកបើកបរថ្មី (Record New Driver)</div>
+                    <form id="driverForm">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">លេខកូដអ្នកបើកបរ (Driver Code):</label>
+                                <input type="text" class="form-control" id="driver_code" required placeholder="ឧ. DRV-001">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">ឈ្មោះពេញ (Full Name):</label>
+                                <input type="text" class="form-control" id="driver_name" required placeholder="ឈ្មោះអ្នកបើកបរ">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">លេខទូរសព្ទ (Phone Number):</label>
+                                <input type="text" class="form-control" id="driver_phone" required placeholder="012 345 678">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">លេខប័ណ្ណបើកបរ (License Number):</label>
+                                <input type="text" class="form-control" id="license_number" required placeholder="លេខប័ណ្ណបើកបរ">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ស្ថានភាព (Status):</label>
+                                <select class="form-select" id="driver_status">
+                                    <option value="Available">ទំនេរ (Available)</option>
+                                    <option value="On Duty">កំពុងបំពេញការងារ (On Duty)</option>
+                                    <option value="Off">សម្រាក (Off)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn-submit" style="background-color: #4e73df;"><i class="fas fa-save me-2"></i>រក្សាទុកអ្នកបើកបរ (Save Driver)</button>
+                    </form>
+                </div>
+
+                <div class="section-box">
+                    <div class="section-title mb-3"><i class="fas fa-users me-2"></i>បញ្ជីអ្នកបើកបរសរុប (Driver List)</div>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>កូដ (Code)</th>
+                                    <th>ឈ្មោះ (Full Name)</th>
+                                    <th>ទូរសព្ទ (Phone)</th>
+                                    <th>លេខប័ណ្ណបើកបរ (License No.)</th>
+                                    <th>ស្ថានភាព (Status)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="driverTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: ការបញ្ជូនដឹកជញ្ជូន (Dispatches) -->
             <div class="tab-pane fade" id="dispatch-pane" role="tabpanel">
                 <div class="section-box no-print">
                     <div class="section-title text-primary"><i class="fas fa-plus-circle me-2"></i>កត់ត្រាការបញ្ជូនចេញថ្មី (Record New Dispatch)</div>
@@ -208,8 +264,10 @@
                                 </select>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">ឈ្មោះអ្នកបើកបរ (Driver Name):</label>
-                                <input type="text" class="form-control" id="driver_name" required placeholder="ឈ្មោះអ្នកបើកបរ">
+                                <label class="form-label">ជ្រើសរើសអ្នកបើកបរ (Select Driver):</label>
+                                <select class="form-select" id="dispatch_driver_name" required>
+                                    <option value="">-- ជ្រើសរើសអ្នកបើកបរទំនេរ --</option>
+                                </select>
                             </div>
                         </div>
                         <div class="row">
@@ -230,14 +288,12 @@
                     </form>
                 </div>
 
-                <!-- ຕາຕະລາງរបាយការណ៍ និង Filter ដឹកជញ្ជូន -->
                 <div class="section-box">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                         <div class="section-title mb-0"><i class="fas fa-filter me-2"></i>តារាងរបាយការណ៍ និងការត្រងទិន្នន័យ (Dispatch Report & Filter)</div>
                         <button onclick="window.print()" class="btn btn-secondary btn-sm no-print"><i class="fas fa-print me-1"></i> បោះពុម្ព / រក្សាទុក PDF (Print / Save PDF)</button>
                     </div>
 
-                    <!-- Filter Form -->
                     <div class="row g-3 mb-4 no-print align-items-end">
                         <div class="col-md-3">
                             <label class="form-label">ចាប់ពីថ្ងៃទី (From Date):</label>
@@ -265,9 +321,7 @@
                                     <th>ស្ថានភាព (Status)</th>
                                 </tr>
                             </thead>
-                            <tbody id="dispatchTableBody">
-                                <!-- ទិន្នន័យទាញតាម JS -->
-                            </tbody>
+                            <tbody id="dispatchTableBody"></tbody>
                         </table>
                     </div>
                 </div>
@@ -281,12 +335,11 @@
     <script>
         document.getElementById('dispatch_date').valueAsDate = new Date();
 
-        // មុខងារទាញយកបញ្ជីរថយន្ត
+        // មុខងារទាញយករថយន្ត
         async function loadVehicles() {
             try {
                 const response = await fetch('/api/fleet/vehicles');
                 const vehicles = await response.json();
-                
                 const tbody = document.getElementById('vehicleTableBody');
                 const select = document.getElementById('dispatch_vehicle_code');
                 
@@ -307,30 +360,55 @@
                             <td><span class="badge ${badgeBg}">${v.status}</span></td>
                         </tr>
                     `;
-
                     if(v.status === 'Available') {
                         select.innerHTML += `<option value="${v.vehicle_code}">${v.vehicle_code} - ${v.model} (${v.plate_number})</option>`;
                     }
                 });
-            } catch (err) {
-                console.error('Error loading vehicles:', err);
-            }
+            } catch (err) { console.error(err); }
         }
 
-        // មុខងារទាញយកប្រវត្តិកត់ត្រាការដឹកជញ្ជូន ព្រមទាំងគាំទ្រ Filter តាមកាលបរិច្ឆេទ
+        // មុខងារទាញយកអ្នកបើកបរ [បន្ថែមថ្មី]
+        async function loadDrivers() {
+            try {
+                const response = await fetch('/api/fleet/drivers');
+                const drivers = await response.json();
+                const tbody = document.getElementById('driverTableBody');
+                const select = document.getElementById('dispatch_driver_name');
+                
+                tbody.innerHTML = '';
+                select.innerHTML = '<option value="">-- ជ្រើសរើសអ្នកបើកបរទំនេរ --</option>';
+
+                drivers.forEach(d => {
+                    let badgeBg = 'bg-success';
+                    if (d.status === 'On Duty') badgeBg = 'bg-warning text-dark';
+                    else if (d.status === 'Off') badgeBg = 'bg-secondary';
+
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><strong class="text-primary">${d.driver_code}</strong></td>
+                            <td>${d.full_name}</td>
+                            <td>${d.phone}</td>
+                            <td>${d.license_number}</td>
+                            <td><span class="badge ${badgeBg}">${d.status}</span></td>
+                        </tr>
+                    `;
+                    if(d.status === 'Available') {
+                        select.innerHTML += `<option value="${d.full_name}">${d.full_name} (${d.phone})</option>`;
+                    }
+                });
+            } catch (err) { console.error(err); }
+        }
+
+        // មុខងារទាញយកប្រវត្តិកត់ត្រាការដឹកជញ្ជូន
         async function loadDispatches() {
             const from = document.getElementById('filter_from').value;
             const to = document.getElementById('filter_to').value;
-
             let url = '/api/fleet/dispatches';
-            if (from && to) {
-                url += `?from=${from}&to=${to}`;
-            }
+            if (from && to) url += `?from=${from}&to=${to}`;
 
             try {
                 const response = await fetch(url);
                 const dispatches = await response.json();
-                
                 const tbody = document.getElementById('dispatchTableBody');
                 tbody.innerHTML = '';
 
@@ -351,9 +429,7 @@
                         </tr>
                     `;
                 });
-            } catch (err) {
-                console.error('Error loading dispatches:', err);
-            }
+            } catch (err) { console.error(err); }
         }
 
         function resetFilter() {
@@ -372,21 +448,34 @@
                 capacity: document.getElementById('capacity').value,
                 status: document.getElementById('vehicle_status').value
             };
-
             const res = await fetch('/api/fleet/vehicles', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-
             const result = await res.json();
-            if (result.success) {
-                alert('បានបន្ថែមរថយន្តដោយជោគជ័យ!');
-                this.reset();
-                loadVehicles();
-            } else {
-                alert('កំហុស៖ ' + result.error);
-            }
+            if (result.success) { alert('បានបន្ថែមរថយន្តដោយជោគជ័យ!'); this.reset(); loadVehicles(); }
+            else { alert('កំហុស៖ ' + result.error); }
+        });
+
+        // Handle Form បន្ថែមអ្នកបើកបរ [បន្ថែមថ្មី]
+        document.getElementById('driverForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const data = {
+                driver_code: document.getElementById('driver_code').value,
+                full_name: document.getElementById('driver_name').value,
+                phone: document.getElementById('driver_phone').value,
+                license_number: document.getElementById('license_number').value,
+                status: document.getElementById('driver_status').value
+            };
+            const res = await fetch('/api/fleet/drivers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.success) { alert('បានបន្ថែមអ្នកបើកបរដោយជោគជ័យ!'); this.reset(); loadDrivers(); }
+            else { alert('កំហុស៖ ' + result.error); }
         });
 
         // Handle Form បញ្ជូនរថយន្ត
@@ -395,32 +484,30 @@
             const data = {
                 dispatch_code: document.getElementById('dispatch_code').value,
                 vehicle_code: document.getElementById('dispatch_vehicle_code').value,
-                driver_name: document.getElementById('driver_name').value,
+                driver_name: document.getElementById('dispatch_driver_name').value,
                 destination: document.getElementById('destination').value,
                 dispatch_date: document.getElementById('dispatch_date').value,
                 notes: document.getElementById('notes').value
             };
-
             const res = await fetch('/api/fleet/dispatches', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-
             const result = await res.json();
             if (result.success) {
-                alert('បានកត់ត្រាការបញ្ជូនរថយន្តដោយជោគជ័យ!');
+                alert('បានកត់ត្រាការបញ្ជូនរថយន្ត និងអ្នកបើកបរដោយជោគជ័យ!');
                 this.reset();
                 document.getElementById('dispatch_date').valueAsDate = new Date();
                 loadDispatches();
                 loadVehicles();
-            } else {
-                alert('កំហុស៖ ' + result.error);
-            }
+                loadDrivers();
+            } else { alert('កំហុស៖ ' + result.error); }
         });
 
-        // Load ទិន្នន័យពេលបើកទំព័រដំបូង
+        // Load ទិន្នន័យពេលបើកទំព័រ
         loadVehicles();
+        loadDrivers();
         loadDispatches();
     </script>
 </body>
