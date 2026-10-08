@@ -84,7 +84,7 @@
                         <input type="text" class="form-control" id="location_status" required placeholder="ឧ. ឃ្លាំង A - ធ្នើរកងទី ២">
                     </div>
                     <div class="col-md-6 d-flex align-items-end">
-                        <button type="submit" class="btn btn-success me-2" id="saveBtn"><i class="fa-solid fa-save me-1"></i> រក្សាទុក</button>
+                        <button type="submit" class="btn btn-success me-2" id="saveBtn"><i class="fa-solid fa-save me-1"></i> រก្សាទុក</button>
                         <button type="button" class="btn btn-secondary d-none" id="cancelBtn" onclick="resetForm()">បោះបង់</button>
                         <button type="button" class="btn btn-outline-secondary ms-auto" onclick="window.print()"><i class="fa-solid fa-print me-1"></i> បោះពុម្ពទំព័រ</button>
                     </div>
@@ -224,11 +224,12 @@
             }
         }
 
-        // រក្សាទុក ឬ កែប្រែទិន្នន័យ (Save / Update)
+        // រក្សាទុក ឬ កែប្រែទិន្នន័យ (ផ្ញើតាម POST ព្រមទាំងបញ្ចូល id បើមានការកែប្រែ)
         document.getElementById('wmsOmsForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('recordId').value;
             const payload = {
+                id: id ? id : undefined,
                 item_code: document.getElementById('item_code').value,
                 item_name: document.getElementById('item_name').value,
                 system_type: document.getElementById('system_type').value,
@@ -237,16 +238,8 @@
             };
 
             try {
-                let url = '/api/wms-oms';
-                let method = 'POST';
-
-                if (id) {
-                    url = `/api/wms-oms/${id}`;
-                    method = 'PUT'; // ឬ POST អាស្រ័យលើ Backend របស់អ្នក បើ Backend ប្រើ POST សម្រាប់ Update អាចប្តូរមក POST វិញ
-                }
-
-                const response = await fetch(url, {
-                    method: method,
+                const response = await fetch('/api/wms-oms', {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
@@ -256,7 +249,7 @@
                     resetForm();
                     fetchData();
                 } else {
-                    alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ!');
+                    alert('មានបញ្ហាក្នុងการរក្សាទុកទិន្នន័យ!');
                 }
             } catch (err) {
                 console.error('Error saving data:', err);
@@ -350,12 +343,12 @@
             }
         }
 
-        // មុខងារលុបទិន្នន័យពិតប្រាកដ (Delete API)
+        // មុខងារលុបទិន្នន័យ (ផ្ញើតាម POST ទៅកាន់ endpoint លុប ឬ /api/wms-oms/delete)
         async function deleteRecord(id) {
             if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
                 try {
-                    const response = await fetch(`/api/wms-oms/${id}`, {
-                        method: 'DELETE'
+                    const response = await fetch(`/api/wms-oms/delete/${id}`, {
+                        method: 'POST' // ប្រើប្រាស់ POST ប្រសិនបើ backend មិនទាន់មាន DELETE route
                     });
                     const result = await response.json();
                     if (result.success || response.ok) {
@@ -365,7 +358,8 @@
                     }
                 } catch (err) {
                     console.error('Error deleting data:', err);
-                    alert('កំហុសប្រព័ន្ធក្នុងការលុប!');
+                    // បើគ្មាន route ពិសេសទេ អាចសាកល្បងប្រើវិធីផ្ញើ status delete ទៅកាន់ API ដើម
+                    alert('កំហុសប្រព័ន្ធក្នុងការលុប! សូមពិនិត្យមើល Backend Route របស់អ្នក។');
                 }
             }
         }
