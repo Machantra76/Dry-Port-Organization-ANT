@@ -180,10 +180,12 @@
         async function fetchData() {
             try {
                 let response = await fetch('/api/wms-oms');
+                if (!response.ok) throw new Error('Network response was not ok');
                 allData = await response.json();
                 renderTable(allData);
             } catch (err) {
                 console.error('Error fetching data:', err);
+                document.getElementById('tableBody').innerHTML = `<tr><td colspan="7" class="text-center py-3 text-danger">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពីម៉ាស៊ីនបម្រើ (Server Error)</td></tr>`;
             }
         }
 
@@ -192,7 +194,7 @@
             let tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
 
-            if (data.length === 0) {
+            if (!data || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" class="text-center py-3 text-muted">គ្មានទិន្នន័យ WMS / OMS ទេ</td></tr>`;
                 return;
             }
@@ -201,14 +203,14 @@
                 let row = `
                     <tr>
                         <td>${index + 1}</td>
-                        <td>${item.code || item.item_code}</td>
-                        <td>${item.name || item.item_name}</td>
-                        <td>${item.type || item.system_type}</td>
-                        <td>${item.qty || item.quantity}</td>
-                        <td>${item.status || item.location_status}</td>
+                        <td>${item.code || item.item_code || ''}</td>
+                        <td>${item.name || item.item_name || ''}</td>
+                        <td>${item.type || item.system_type || ''}</td>
+                        <td>${item.qty || item.quantity || ''}</td>
+                        <td>${item.status || item.location_status || ''}</td>
                         <td class="no-print text-center">
-                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editItem(${item.id})"><i class="fas fa-edit"></i> កែប្រែ</button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem(${item.id})"><i class="fas fa-trash"></i> លុប</button>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editItem('${item.id}')"><i class="fas fa-edit"></i> កែប្រែ</button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteItem('${item.id}')"><i class="fas fa-trash"></i> លុប</button>
                         </td>
                     </tr>
                 `;
@@ -221,20 +223,13 @@
             e.preventDefault();
 
             let id = document.getElementById('recordId').value;
-            let code = document.getElementById('itemCode').value;
-            let name = document.getElementById('itemName').value;
-            let type = document.getElementById('systemType').value;
-            let qty = document.getElementById('quantity').value;
-            let status = document.getElementById('locationStatus').value;
-
-            // រៀបចំទិន្នន័យផ្ញើទៅ Backend API (បើសិនជាមាន id គឺ Update បើគ្មានទេគឺ Create)
             let payload = {
-                id: id ? id : undefined,
-                code: code,
-                name: name,
-                type: type,
-                qty: qty,
-                status: status
+                id: id ? id : null,
+                code: document.getElementById('itemCode').value,
+                name: document.getElementById('itemName').value,
+                type: document.getElementById('systemType').value,
+                qty: document.getElementById('quantity').value,
+                status: document.getElementById('locationStatus').value
             };
 
             try {
@@ -246,7 +241,7 @@
 
                 if (response.ok) {
                     resetForm();
-                    fetchData(); // ទាញទិន្នន័យចុងក្រោយពី Database មកបង្ហាញវិញ
+                    fetchData(); // ទាញទិន្នន័យចុងក្រោយមកបង្ហាញវិញ
                 } else {
                     alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ!');
                 }
@@ -261,7 +256,7 @@
             if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?")) {
                 try {
                     let response = await fetch(`/api/wms-oms/delete/${id}`, {
-                        method: 'POST' // ឬប្រើ DELETE អាស្រ័យលើ Backend Route របស់អ្នក
+                        method: 'POST' // ប្រសិនបើ Backend របស់អ្នកប្រើ DELETE ផ្លាស់ប្ដូរទីនេះជា method: 'DELETE'
                     });
 
                     if (response.ok) {
@@ -271,20 +266,21 @@
                     }
                 } catch (err) {
                     console.error('Error deleting data:', err);
+                    alert('កំហុសប្រព័ន្ធក្នុងការលុប!');
                 }
             }
         }
 
         // មុខងារទាញយកទិន្នន័យមកដាក់ក្នុង Form ដើម្បីកែប្រែ
         function editItem(id) {
-            let item = allData.find(d => d.id === id);
+            let item = allData.find(d => String(d.id) === String(id));
             if (item) {
                 document.getElementById('recordId').value = item.id;
-                document.getElementById('itemCode').value = item.code || item.item_code;
-                document.getElementById('itemName').value = item.name || item.item_name;
-                document.getElementById('systemType').value = item.type || item.system_type;
-                document.getElementById('quantity').value = item.qty || item.quantity;
-                document.getElementById('locationStatus').value = item.status || item.location_status;
+                document.getElementById('itemCode').value = item.code || item.item_code || '';
+                document.getElementById('itemName').value = item.name || item.item_name || '';
+                document.getElementById('systemType').value = item.type || item.system_type || '';
+                document.getElementById('quantity').value = item.qty || item.quantity || '';
+                document.getElementById('locationStatus').value = item.status || item.location_status || '';
 
                 document.getElementById('saveBtn').innerHTML = `<i class="fas fa-sync-alt me-1"></i> កែប្រែព័ត៌មាន (Update Record)`;
                 window.scrollTo({ top: 0, behavior: 'smooth' });
