@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 7]
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 4]
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តិពេល Start Server
 async function initializeDatabase() {
@@ -425,9 +425,14 @@ app.get('/views/tech-safety.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'tech-safety.html'));
 });
 
-// Route សម្រាប់បើកទំព័រ WMS / OMS[cite: 7]
+// Route សម្រាប់បើកទំព័រ WMS / OMS[cite: 4]
 app.get('/views/wms-oms.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'wms-oms.html'));
+});
+
+// Route សម្រាប់បើកទំព័រ IT CCTV & Network
+app.get('/views/it-cctv.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'it-cctv.html'));
 });
 
 // ==========================================
