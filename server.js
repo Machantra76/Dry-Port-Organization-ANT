@@ -1166,6 +1166,30 @@ app.post('/api/fleet/transport-plans', async (req, res) => {
     }
 });
 
+// 📌 API Route សម្រាប់កែប្រែ / ដោះដូរផែនការដឹកជញ្ជូនទំនិញ (Update Transport Plan)
+app.put('/api/fleet/transport-plans/:id', async (req, res) => {
+    const { id } = req.params;
+    const { cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes, status } = req.body;
+    try {
+        const query = `
+            UPDATE transport_plans 
+            SET cargo_code = $1, vehicle_code = $2, origin = $3, destination = $4, departure_date = $5, driver_name = $6, notes = $7, status = $8
+            WHERE id = $9 
+            RETURNING *;
+        `;
+        const result = await pool.query(query, [cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes, status, id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យផែនការដឹកជញ្ជូននេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating transport plan:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែ/ដោះដូរផែនការដឹកជញ្ជូន' });
+    }
+});
+
 // ==========================================
 // API Routes: ការត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
 // ==========================================
