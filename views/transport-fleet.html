@@ -191,7 +191,7 @@
                 </div>
             </div>
 
-            <!-- TAB 2: អ្នកបើកបរ (Drivers) [បន្ថែមថ្មី] -->
+            <!-- TAB 2: អ្នកបើកបរ (Drivers) -->
             <div class="tab-pane fade" id="drivers-pane" role="tabpanel">
                 <div class="section-box no-print">
                     <div class="section-title text-primary"><i class="fas fa-user-plus me-2"></i>កត់ត្រាអ្នកបើកបរថ្មី (Record New Driver)</div>
@@ -258,13 +258,13 @@
                                 <input type="text" class="form-control" id="dispatch_code" required placeholder="ឧ. DIS-001">
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">ជ្រើសរើសរថយន្ត (Select Vehicle):</label>
+                                <label class="form-label">ជ្រើសរើសរថយន្ត (Select Vehicle - ស្លាកលេខ):</label>
                                 <select class="form-select" id="dispatch_vehicle_code" required>
                                     <option value="">-- ជ្រើសរើសរថយន្តទំនេរ --</option>
                                 </select>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">ជ្រើសរើសអ្នកបើកបរ (Select Driver):</label>
+                                <label class="form-label">ជ្រើសរើសអ្នកបើកបរ (Select Driver - ឈ្មោះ):</label>
                                 <select class="form-select" id="dispatch_driver_name" required>
                                     <option value="">-- ជ្រើសរើសអ្នកបើកបរទំនេរ --</option>
                                 </select>
@@ -335,7 +335,7 @@
     <script>
         document.getElementById('dispatch_date').valueAsDate = new Date();
 
-        // មុខងារទាញយករថយន្ត
+        // មុខងារទាញយករថយន្ត (បង្ហាញតែស្លាកលេខ)
         async function loadVehicles() {
             try {
                 const response = await fetch('/api/fleet/vehicles');
@@ -361,13 +361,14 @@
                         </tr>
                     `;
                     if(v.status === 'Available') {
-                        select.innerHTML += `<option value="${v.vehicle_code}">${v.vehicle_code} - ${v.model} (${v.plate_number})</option>`;
+                        // កែសម្រួលទីនេះ៖ ឱ្យបង្ហាញតែស្លាកលេខ (plate_number)
+                        select.innerHTML += `<option value="${v.plate_number}">${v.plate_number} (${v.model})</option>`;
                     }
                 });
             } catch (err) { console.error(err); }
         }
 
-        // មុខងារទាញយកអ្នកបើកបរ [បន្ថែមថ្មី]
+        // មុខងារទាញយកអ្នកបើកបរ (បង្ហាញតែឈ្មោះពេញ)
         async function loadDrivers() {
             try {
                 const response = await fetch('/api/fleet/drivers');
@@ -393,7 +394,8 @@
                         </tr>
                     `;
                     if(d.status === 'Available') {
-                        select.innerHTML += `<option value="${d.full_name}">${d.full_name} (${d.phone})</option>`;
+                        // កែសម្រួលទីនេះ៖ ឱ្យបង្ហាញតែឈ្មោះពេញ (full_name)
+                        select.innerHTML += `<option value="${d.full_name}">${d.full_name}</option>`;
                     }
                 });
             } catch (err) { console.error(err); }
@@ -458,7 +460,7 @@
             else { alert('កំហុស៖ ' + result.error); }
         });
 
-        // Handle Form បន្ថែមអ្នកបើកបរ [បន្ថែមថ្មី]
+        // Handle Form បន្ថែមអ្នកបើកបរ
         document.getElementById('driverForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const data = {
