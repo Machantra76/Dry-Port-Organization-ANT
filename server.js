@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីឱ្យអានហ្វាលក្នុង views បានយ៉ាងរលូន
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
@@ -443,7 +443,6 @@ app.get('/views/wms-oms.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'wms-oms.html'));
 });
 
-// Route សម្រាប់បើកទំព័រ CCTV (IT Infrastructure)
 app.get('/views/it-cctv.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'it-cctv.html'));
 });
@@ -727,6 +726,30 @@ app.post('/api/receivables', async (req, res) => {
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាគណនេយ្យទទួល' });
+    }
+});
+
+// 📌 API Route សម្រាប់កែប្រែស្ថានភាពគណនេយ្យទទួល (Update Accounts Receivable Status)
+app.put('/api/receivables/:id', async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        const query = `
+            UPDATE accounts_receivable 
+            SET status = $1 
+            WHERE id = $2 
+            RETURNING *;
+        `;
+        const result = await pool.query(query, [status, id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យគណនេយ្យទទួលនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating receivable status:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែស្ថានភាពគណនេយ្យទទួល' });
     }
 });
 
