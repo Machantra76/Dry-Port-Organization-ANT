@@ -294,7 +294,12 @@
                         <button onclick="window.print()" class="btn btn-secondary btn-sm no-print"><i class="fas fa-print me-1"></i> បោះពុម្ព / រក្សាទុក PDF (Print / Save PDF)</button>
                     </div>
 
+                    <!-- ផ្នែក Search និង Filter -->
                     <div class="row g-3 mb-4 no-print align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label">ស្វែងរក (Search):</label>
+                            <input type="text" class="form-control" id="filter_search" placeholder="ស្លាកលេខ ឬ ឈ្មោះអ្នកបើកបរ...">
+                        </div>
                         <div class="col-md-3">
                             <label class="form-label">ចាប់ពីថ្ងៃទី (From Date):</label>
                             <input type="date" class="form-control" id="filter_from">
@@ -303,9 +308,9 @@
                             <label class="form-label">ដល់ថ្ងៃទី (To Date):</label>
                             <input type="date" class="form-control" id="filter_to">
                         </div>
-                        <div class="col-md-6">
-                            <button type="button" onclick="loadDispatches()" class="btn btn-primary px-4"><i class="fas fa-search me-1"></i> ស្វែងរក / ត្រង (Filter)</button>
-                            <button type="button" onclick="resetFilter()" class="btn btn-outline-secondary px-3 ms-2">កំណត់ឡើងវិញ (Reset)</button>
+                        <div class="col-md-3">
+                            <button type="button" onclick="loadDispatches()" class="btn btn-primary px-3"><i class="fas fa-search me-1"></i> ស្វែងរក</button>
+                            <button type="button" onclick="resetFilter()" class="btn btn-outline-secondary px-2 ms-1">កំណត់ឡើងវិញ</button>
                         </div>
                     </div>
 
@@ -462,12 +467,23 @@
             } catch (err) { console.error(err); }
         }
 
-        // មុខងារទាញយកប្រវត្តិកត់ត្រាការដឹកជញ្ជូន
+        // មុខងារទាញយកប្រវត្តិកត់ត្រាការដឹកជញ្ជូន (រួមបញ្ចូល Search និង Filter)
         async function loadDispatches() {
             const from = document.getElementById('filter_from').value;
             const to = document.getElementById('filter_to').value;
-            let url = '/api/fleet/dispatches';
-            if (from && to) url += `?from=${from}&to=${to}`;
+            const search = document.getElementById('filter_search').value;
+            
+            let url = '/api/fleet/dispatches?';
+            let params = [];
+            if (from && to) {
+                params.push(`from=${from}&to=${to}`);
+            }
+            if (search) {
+                params.push(`search=${encodeURIComponent(search)}`);
+            }
+            if (params.length > 0) {
+                url += params.join('&');
+            }
 
             try {
                 const response = await fetch(url);
@@ -549,6 +565,7 @@
         });
 
         function resetFilter() {
+            document.getElementById('filter_search').value = '';
             document.getElementById('filter_from').value = '';
             document.getElementById('filter_to').value = '';
             loadDispatches();
