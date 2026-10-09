@@ -126,11 +126,11 @@
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">ទីតាំងដើម / ដើមทาง (Origin):</label>
+                    <label class="form-label">ទីតាំងដើម (Origin):</label>
                     <input type="text" class="form-control" name="origin" placeholder="ឧ. ភ្នំពេញ (Dry Port)" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label">គោលដៅ / ปลายทาง (Destination):</label>
+                    <label class="form-label">គោលដៅ (Destination):</label>
                     <input type="text" class="form-control" name="destination" placeholder="ឧ. ព្រះសីហនុ (Port)" required>
                 </div>
             </div>
@@ -171,6 +171,7 @@
                         <th>កាលបរិច្ឆេទចេញ</th>
                         <th>អ្នកបើកបរ</th>
                         <th>ស្ថានភាព</th>
+                        <th class="no-print">សកម្មភាព (Actions)</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -182,10 +183,76 @@
 
 </div>
 
+<!-- Modal សម្រាប់ដោះដូរ / កែប្រែផែនការដឹកជញ្ជូន -->
+<div class="modal fade" id="editPlanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-exchange-alt me-2"></i>ដោះដូរ / កែប្រែផែនការដឹកជញ្ជូន (Edit Transport Plan)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editPlanForm">
+                    <input type="hidden" id="edit_plan_id">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">លេខកូដកុងតឺន័រ / ទំនិញ (Cargo Code):</label>
+                            <input type="text" class="form-control" id="edit_cargo_code" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">ជ្រើសរើសរថយន្ត (Vehicle Code):</label>
+                            <select class="form-select vehicle-select" id="edit_vehicle_code" required>
+                                <option value="">-- ជ្រើសរើសរថយន្ត --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">ទីតាំងដើម (Origin):</label>
+                            <input type="text" class="form-control" id="edit_origin" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">គោលដៅ (Destination):</label>
+                            <input type="text" class="form-control" id="edit_destination" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">កាលបរិច្ឆេទចេញដំណើរ (Departure Date):</label>
+                            <input type="date" class="form-control" id="edit_departure_date" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">ឈ្មោះអ្នកបើកបរ (Driver Name):</label>
+                            <select class="form-select driver-select" id="edit_driver_name" required>
+                                <option value="">-- ជ្រើសរើសឈ្មោះអ្នកបើកបរ --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">ស្ថានភាព (Status):</label>
+                            <select class="form-select" id="edit_status" required>
+                                <option value="Planned">បានរៀបចំ (Planned)</option>
+                                <option value="Completed">បានរួចរាល់ (Completed)</option>
+                                <option value="Cancelled">បានលុបចោល (Cancelled)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">កំណត់សម្គាល់ (Notes):</label>
+                        <textarea class="form-control" id="edit_notes" rows="2"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100 fw-bold"><i class="fas fa-save me-2"></i>រក្សាទុកការផ្លាស់ប្តូរ (Save Changes)</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // ទាញយកបញ្ជីរថយន្តមកដាក់ក្នុង Dropdown[cite: 16]
+    // ទាញយកបញ្ជីរថយន្តមកដាក់ក្នុង Dropdown
     async function loadVehiclesDropdown() {
         try {
             const res = await fetch('/api/fleet/vehicles');
@@ -202,7 +269,7 @@
         }
     }
 
-    // ទាញយកបញ្ជីអ្នកបើកបរមកដាក់ក្នុង Dropdown តាមសំណូមពរ
+    // ទាញយកបញ្ជីអ្នកបើកបរមកដាក់ក្នុង Dropdown
     async function loadDriversDropdown() {
         try {
             const res = await fetch('/api/fleet/drivers');
@@ -219,7 +286,7 @@
         }
     }
 
-    // ទាញយកបញ្ជីផែនការដឹកជញ្ជូន[cite: 16]
+    // ទាញយកបញ្ជីផែនការដឹកជញ្ជូន
     async function loadTransportPlans() {
         try {
             const res = await fetch('/api/fleet/transport-plans');
@@ -228,12 +295,12 @@
             tbody.innerHTML = '';
             
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-3">ពុំមានទិន្នន័យផែនការដឹកជញ្ជូនទេ</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">ពុំមានទិន្នន័យផែនការដឹកជញ្ជូនទេ</td></tr>`;
                 return;
             }
 
             data.forEach((item, index) => {
-                let badgeClass = item.status === 'Completed' ? 'bg-success' : 'bg-warning text-dark';
+                let badgeClass = item.status === 'Completed' ? 'bg-success' : (item.status === 'Cancelled' ? 'bg-danger' : 'bg-warning text-dark');
                 tbody.innerHTML += `
                     <tr>
                         <td>${index + 1}</td>
@@ -243,6 +310,11 @@
                         <td>${item.departure_date.split('T')[0]}</td>
                         <td>${item.driver_name}</td>
                         <td><span class="badge ${badgeClass}">${item.status || 'Planned'}</span></td>
+                        <td class="no-print">
+                            <button class="btn btn-warning btn-sm fw-bold" onclick='openEditModal(${JSON.stringify(item)})'>
+                                <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
+                            </button>
+                        </td>
                     </tr>
                 `;
             });
@@ -251,7 +323,58 @@
         }
     }
 
-    // បញ្ជូនទិន្នន័យបង្កើតផែនការថ្មី[cite: 16]
+    // បើក Modal សម្រាប់ដោះដូរ/កែប្រែផែនការ
+    function openEditModal(item) {
+        document.getElementById('edit_plan_id').value = item.id;
+        document.getElementById('edit_cargo_code').value = item.cargo_code;
+        document.getElementById('edit_vehicle_code').value = item.vehicle_code;
+        document.getElementById('edit_origin').value = item.origin;
+        document.getElementById('edit_destination').value = item.destination;
+        document.getElementById('edit_departure_date').value = item.departure_date.split('T')[0];
+        document.getElementById('edit_driver_name').value = item.driver_name;
+        document.getElementById('edit_status').value = item.status || 'Planned';
+        document.getElementById('edit_notes').value = item.notes || '';
+
+        const modal = new bootstrap.Modal(document.getElementById('editPlanModal'));
+        modal.show();
+    }
+
+    // Handle Form កែប្រែ/ដោះដូរ (Submit Edit Form)
+    document.getElementById('editPlanForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const id = document.getElementById('edit_plan_id').value;
+        const data = {
+            cargo_code: document.getElementById('edit_cargo_code').value,
+            vehicle_code: document.getElementById('edit_vehicle_code').value,
+            origin: document.getElementById('edit_origin').value,
+            destination: document.getElementById('edit_destination').value,
+            departure_date: document.getElementById('edit_departure_date').value,
+            driver_name: document.getElementById('edit_driver_name').value,
+            status: document.getElementById('edit_status').value,
+            notes: document.getElementById('edit_notes').value
+        };
+
+        try {
+            const res = await fetch(`/api/fleet/transport-plans/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (result.success) {
+                alert('បានដោះដូរ និងកែប្រែផែនការដឹកជញ្ជូនដោយជោគជ័យ!');
+                bootstrap.Modal.getInstance(document.getElementById('editPlanModal')).hide();
+                loadTransportPlans();
+            } else {
+                alert('កំហុស៖ ' + result.error);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('មានបញ្ហាក្នុងការបញ្ជូនទិន្នន័យទៅកាន់ Server');
+        }
+    });
+
+    // បញ្ជូនទិន្នន័យបង្កើតផែនការថ្មី
     document.getElementById('transportPlanForm').addEventListener('submit', async (e) => {
         e.preventDefault();
         const formData = Object.fromEntries(new FormData(e.target).entries());
@@ -270,7 +393,7 @@
                 alert('កំហុស៖ ' + result.error);
             }
         } catch (err) {
-            alert('មានបញ្ហាក្នុងการបញ្ជូនទិន្នន័យ');
+            alert('មានបញ្ហាក្នុងការបញ្ជូនទិន្នន័យ');
         }
     });
 
