@@ -790,7 +790,7 @@ app.post('/api/expenses', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: របាយការណ៍ហិរញ្ញវត្ថុ (Financial Summary API) - បន្ថែមការគណនាចំណាយ និងប្រាក់ចំណេញសុទ្ធ
+// API Routes: របាយការណ៍ហិរញ្ញវត្ថុ (Financial Summary API)
 // ==========================================
 app.get('/api/financial/summary', async (req, res) => {
     const { from, to } = req.query;
@@ -820,12 +820,11 @@ app.get('/api/financial/summary', async (req, res) => {
 
         const totalRevenue = parseFloat(revResult.rows[0].total_revenue) || 0;
         const totalExpense = parseFloat(expResult.rows[0].total_expense) || 0;
-        const netProfit = totalRevenue - totalExpense; // គណនាប្រាក់ចំណេញសុទ្ធ
 
         res.json({
             total_revenue: totalRevenue,
-            total_expense: totalExpense,     // បន្ថែមចំណាយសរុប
-            net_profit: netProfit,           // បន្ថែមប្រាក់ចំណេញសុទ្ធ
+            total_expense: totalExpense,
+            net_profit: totalRevenue - totalExpense,
             total_receivable: parseFloat(recResult.rows[0].total_receivable) || 0,
             total_paid: parseFloat(recResult.rows[0].total_paid) || 0,
             total_pending: parseFloat(recResult.rows[0].total_pending) || 0
@@ -924,7 +923,7 @@ app.post('/api/fleet/dispatches', async (req, res) => {
             const result = await client.query(query, [dispatch_code, vehicle_code, driver_name, destination, dispatch_date, status || 'Dispatched', notes]);
 
             await client.query(`
-                UPDATE fleet_vehicles SET status = 'On Mission' WHERE vehicle_code = $1
+                UPDATE fleet_vehicles SET status = 'On Mission' WHERE plate_number = $1
             `, [vehicle_code]);
 
             await client.query(`
@@ -941,6 +940,30 @@ app.post('/api/fleet/dispatches', async (req, res) => {
         }
     } catch (err) {
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការបញ្ជូនរថយន្តដឹកជញ្ជូន' });
+    }
+});
+
+// 📌 API Route ថ្មី សម្រាប់ដោះដូររថយន្ត និងអ្នកបើកបរ (Update / Change Dispatch)
+app.put('/api/fleet/dispatches/:id', async (req, res) => {
+    const { id } = req.params;
+    const { vehicle_code, driver_name, destination, notes, status } = req.body;
+    try {
+        const query = `
+            UPDATE transport_dispatches 
+            SET vehicle_code = $1, driver_name = $2, destination = $3, notes = $4, status = $5
+            WHERE id = $6 
+            RETURNING *;
+        `;
+        const result = await pool.query(query, [vehicle_code, driver_name, destination, notes, status, id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យការដឹកជញ្ជូននេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating dispatch:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការដោះដូររថយន្ត និងអ្នកបើកបរ' });
     }
 });
 
