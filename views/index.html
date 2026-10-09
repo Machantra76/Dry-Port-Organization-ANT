@@ -31,16 +31,6 @@
             padding: 30px 20px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0, 198, 255, 0.4);
-            animation: headerGlow 3s infinite alternate;
-        }
-
-        @keyframes headerGlow {
-            0% {
-                box-shadow: 0 4px 10px rgba(0, 198, 255, 0.2);
-            }
-            100% {
-                box-shadow: 0 4px 25px rgba(0, 198, 255, 0.7);
-            }
         }
 
         header h1 {
@@ -68,34 +58,43 @@
             gap: 24px;
         }
 
-        /* បន្ថែមបែបផែនពន្លឺភ្លឹបភ្លែតៗ (Glow Animation) ពណ៌ផ្ទៃមេឃនៅលើកាត */
+        /* បែបផែនកាត និងពណ៌រត់ប្រដេញគ្នាមានពន្លឺភ្លឺចែងចាំងដូចពេជ្រ (Diamond Shimmer & Gradient Flow) */
         .card {
             background: var(--card-bg);
             border-radius: 12px;
             transition: all 0.3s ease;
-            border-top: 5px solid var(--accent-color);
+            position: relative;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 198, 255, 0.25);
-            animation: cardNeonPulse 2.5s infinite alternate;
+            box-shadow: 0 6px 20px rgba(0, 198, 255, 0.25);
         }
 
-        @keyframes cardNeonPulse {
+        /* បន្ថែមបន្ទាត់ពណ៌រត់ប្រដេញគ្នាផ្នែកខាងលើកាត */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #00c6ff, #ffffff, #8ae9ff, #0072ff, #00c6ff);
+            background-size: 300% 100%;
+            animation: diamondShimmer 3s linear infinite;
+        }
+
+        @keyframes diamondShimmer {
             0% {
-                border-top-color: #00c6ff;
-                box-shadow: 0 4px 10px rgba(0, 198, 255, 0.15);
+                background-position: 0% 50%;
             }
             100% {
-                border-top-color: #0072ff;
-                box-shadow: 0 0 20px rgba(0, 198, 255, 0.6), inset 0 0 5px rgba(0, 198, 255, 0.2);
+                background-position: 100% 50%;
             }
         }
 
         .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0, 198, 255, 0.8);
-            border-top-color: #00c6ff;
+            box-shadow: 0 12px 35px rgba(0, 198, 255, 0.6);
         }
 
         .card-header {
