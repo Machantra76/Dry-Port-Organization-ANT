@@ -319,6 +319,7 @@
                                     <th>គោលដៅ (Destination)</th>
                                     <th>កាលបរិច្ឆេទ (Date)</th>
                                     <th>ស្ថានភាព (Status)</th>
+                                    <th class="no-print">សកម្មភាព (Actions)</th>
                                 </tr>
                             </thead>
                             <tbody id="dispatchTableBody"></tbody>
@@ -330,23 +331,81 @@
         </div>
     </div>
 
+    <!-- Modal សម្រាប់ដោះដូររថយន្ត និងអ្នកបើកបរ (Edit/Change Dispatch Modal) -->
+    <div class="modal fade" id="editDispatchModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-exchange-alt me-2"></i>ដោះដូររថយន្ត និងអ្នកបើកបរ (Change Vehicle & Driver)</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editDispatchForm">
+                        <input type="hidden" id="edit_dispatch_id">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">លេខកូដដឹកជញ្ជូន (Dispatch Code):</label>
+                                <input type="text" class="form-control" id="edit_dispatch_code" readonly>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ស្ថានភាព (Status):</label>
+                                <select class="form-select" id="edit_status">
+                                    <option value="Dispatched">កំពុងដឹកជញ្ជូន (Dispatched)</option>
+                                    <option value="Completed">បានបញ្ចប់ (Completed)</option>
+                                    <option value="Cancelled">បានលុបចោល (Cancelled)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ដោះដូររថយន្ត (Change Vehicle):</label>
+                                <select class="form-select" id="edit_vehicle_code" required>
+                                    <option value="">-- ជ្រើសរើសរថយន្ត --</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">ដោះដូរអ្នកបើកបរ (Change Driver):</label>
+                                <select class="form-select" id="edit_driver_name" required>
+                                    <option value="">-- ជ្រើសរើសអ្នកបើកបរ --</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">ទិសដៅ / គោលដៅ (Destination):</label>
+                            <input type="text" class="form-control" id="edit_destination" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">កំណត់ចំណាំ (Notes):</label>
+                            <textarea class="form-control" id="edit_notes" rows="2"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100 fw-bold"><i class="fas fa-save me-2"></i>រក្សាទុកការផ្លាស់ប្តូរ (Save Changes)</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.getElementById('dispatch_date').valueAsDate = new Date();
+        let allVehicles = [];
+        let allDrivers = [];
 
-        // មុខងារទាញយករថយន្ត (បង្ហាញតែស្លាកលេខ)
+        // មុខងារទាញយករថយន្ត
         async function loadVehicles() {
             try {
                 const response = await fetch('/api/fleet/vehicles');
-                const vehicles = await response.json();
+                allVehicles = await response.json();
                 const tbody = document.getElementById('vehicleTableBody');
                 const select = document.getElementById('dispatch_vehicle_code');
+                const editSelect = document.getElementById('edit_vehicle_code');
                 
                 tbody.innerHTML = '';
                 select.innerHTML = '<option value="">-- ជ្រើសរើសរថយន្តទំនេរ --</option>';
+                editSelect.innerHTML = '<option value="">-- ជ្រើសរើសរថយន្ត --</option>';
 
-                vehicles.forEach(v => {
+                allVehicles.forEach(v => {
                     let badgeBg = 'bg-success';
                     if (v.status === 'On Mission') badgeBg = 'bg-warning text-dark';
                     else if (v.status === 'Maintenance') badgeBg = 'bg-danger';
@@ -361,25 +420,27 @@
                         </tr>
                     `;
                     if(v.status === 'Available') {
-                        // កែសម្រួលទីនេះ៖ ឱ្យបង្ហាញតែស្លាកលេខ (plate_number)
                         select.innerHTML += `<option value="${v.plate_number}">${v.plate_number} (${v.model})</option>`;
                     }
+                    editSelect.innerHTML += `<option value="${v.plate_number}">${v.plate_number} (${v.model})</option>`;
                 });
             } catch (err) { console.error(err); }
         }
 
-        // មុខងារទាញយកអ្នកបើកបរ (បង្ហាញតែឈ្មោះពេញ)
+        // មុខងារទាញយកអ្នកបើកបរ
         async function loadDrivers() {
             try {
                 const response = await fetch('/api/fleet/drivers');
-                const drivers = await response.json();
+                allDrivers = await response.json();
                 const tbody = document.getElementById('driverTableBody');
                 const select = document.getElementById('dispatch_driver_name');
+                const editSelect = document.getElementById('edit_driver_name');
                 
                 tbody.innerHTML = '';
                 select.innerHTML = '<option value="">-- ជ្រើសរើសអ្នកបើកបរទំនេរ --</option>';
+                editSelect.innerHTML = '<option value="">-- ជ្រើសរើសអ្នកបើកបរ --</option>';
 
-                drivers.forEach(d => {
+                allDrivers.forEach(d => {
                     let badgeBg = 'bg-success';
                     if (d.status === 'On Duty') badgeBg = 'bg-warning text-dark';
                     else if (d.status === 'Off') badgeBg = 'bg-secondary';
@@ -394,9 +455,9 @@
                         </tr>
                     `;
                     if(d.status === 'Available') {
-                        // កែសម្រួលទីនេះ៖ ឱ្យបង្ហាញតែឈ្មោះពេញ (full_name)
                         select.innerHTML += `<option value="${d.full_name}">${d.full_name}</option>`;
                     }
+                    editSelect.innerHTML += `<option value="${d.full_name}">${d.full_name}</option>`;
                 });
             } catch (err) { console.error(err); }
         }
@@ -415,7 +476,7 @@
                 tbody.innerHTML = '';
 
                 if (dispatches.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">ពុំមានទិន្នន័យដឹកជញ្ជូនទេ</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">ពុំមានទិន្នន័យដឹកជញ្ជូនទេ</td></tr>`;
                     return;
                 }
 
@@ -428,11 +489,64 @@
                             <td>${d.destination}</td>
                             <td>${new Date(d.dispatch_date).toLocaleDateString('km-KH')}</td>
                             <td><span class="badge bg-primary">${d.status}</span></td>
+                            <td class="no-print">
+                                <button class="btn btn-warning btn-sm fw-bold" onclick='openEditModal(${JSON.stringify(d)})'>
+                                    <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
+                                </button>
+                            </td>
                         </tr>
                     `;
                 });
             } catch (err) { console.error(err); }
         }
+
+        // បើក Modal សម្រាប់ដោះដូររថយន្ត និងអ្នកបើកបរ
+        function openEditModal(dispatch) {
+            document.getElementById('edit_dispatch_id').value = dispatch.id;
+            document.getElementById('edit_dispatch_code').value = dispatch.dispatch_code;
+            document.getElementById('edit_vehicle_code').value = dispatch.vehicle_code;
+            document.getElementById('edit_driver_name').value = dispatch.driver_name;
+            document.getElementById('edit_destination').value = dispatch.destination;
+            document.getElementById('edit_notes').value = dispatch.notes || '';
+            document.getElementById('edit_status').value = dispatch.status;
+
+            const modal = new bootstrap.Modal(document.getElementById('editDispatchModal'));
+            modal.show();
+        }
+
+        // Handle Form ដោះដូរ (Submit Edit)
+        document.getElementById('editDispatchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit_dispatch_id').value;
+            const data = {
+                vehicle_code: document.getElementById('edit_vehicle_code').value,
+                driver_name: document.getElementById('edit_driver_name').value,
+                destination: document.getElementById('edit_destination').value,
+                notes: document.getElementById('edit_notes').value,
+                status: document.getElementById('edit_status').value
+            };
+
+            try {
+                const res = await fetch(`/api/fleet/dispatches/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert('បានដោះដូររថយន្ត និងអ្នកបើកបរដោយជោគជ័យ!');
+                    bootstrap.Modal.getInstance(document.getElementById('editDispatchModal')).hide();
+                    loadDispatches();
+                    loadVehicles();
+                    loadDrivers();
+                } else {
+                    alert('កំហុស៖ ' + result.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('មានបញ្ហាក្នុងការបញ្ជូនទិន្នន័យទៅកាន់ Server');
+            }
+        });
 
         function resetFilter() {
             document.getElementById('filter_from').value = '';
