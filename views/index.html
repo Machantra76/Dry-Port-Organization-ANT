@@ -25,12 +25,26 @@
             padding: 0;
         }
 
+        /* ផ្នែក Header ជាមួយបន្ទាត់ពន្លឺរត់ពេញទទឹងអេក្រង់ */
         header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             padding: 30px 20px;
             text-align: center;
+            position: relative;
             box-shadow: 0 4px 15px rgba(0, 198, 255, 0.4);
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: linear-gradient(90deg, #00c6ff, #ffffff, #8ae9ff, #0072ff, #00c6ff);
+            background-size: 300% 100%;
+            animation: diamondShimmer 3s linear infinite;
         }
 
         header h1 {
@@ -58,7 +72,7 @@
             gap: 24px;
         }
 
-        /* បែបផែនកាត និងពណ៌រត់ប្រដេញគ្នាមានពន្លឺភ្លឺចែងចាំងដូចពេជ្រ (Diamond Shimmer & Gradient Flow) */
+        /* បែបផែនកាត និងពណ៌រត់ប្រដេញគ្នាមានពន្លឺភ្លឺចែងចាំងដូចពេជ្រលើកាត */
         .card {
             background: var(--card-bg);
             border-radius: 12px;
@@ -70,7 +84,6 @@
             box-shadow: 0 6px 20px rgba(0, 198, 255, 0.25);
         }
 
-        /* បន្ថែមបន្ទាត់ពណ៌រត់ប្រដេញគ្នាផ្នែកខាងលើកាត */
         .card::before {
             content: '';
             position: absolute;
