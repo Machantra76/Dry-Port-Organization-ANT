@@ -888,17 +888,25 @@ app.post('/api/fleet/drivers', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការបញ្ជូនដឹកជញ្ជូន (Transport Dispatches)
+// API Routes: ការបញ្ជូនដឹកជញ្ជូន (Transport Dispatches) - កែប្រែបន្ថែម Search
 // ==========================================
 app.get('/api/fleet/dispatches', async (req, res) => {
-    const { from, to } = req.query;
+    const { from, to, search } = req.query;
     try {
         let query = 'SELECT * FROM transport_dispatches WHERE 1=1';
         let params = [];
+        let paramIndex = 1;
         
         if (from && to) {
-            query += ' AND dispatch_date BETWEEN $1 AND $2';
+            query += ` AND dispatch_date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
             params.push(from, to);
+            paramIndex += 2;
+        }
+
+        if (search) {
+            query += ` AND (vehicle_code ILIKE $${paramIndex} OR driver_name ILIKE $${paramIndex} OR dispatch_code ILIKE $${paramIndex})`;
+            params.push(`%${search}%`);
+            paramIndex += 1;
         }
         
         query += ' ORDER BY dispatch_date DESC, id DESC';
@@ -943,7 +951,7 @@ app.post('/api/fleet/dispatches', async (req, res) => {
     }
 });
 
-// 📌 API Route ថ្មី សម្រាប់ដោះដូររថយន្ត និងអ្នកបើកបរ (Update / Change Dispatch)
+// 📌 API Route សម្រាប់ដោះដូររថយន្ត និងអ្នកបើកបរ (Update / Change Dispatch)
 app.put('/api/fleet/dispatches/:id', async (req, res) => {
     const { id } = req.params;
     const { vehicle_code, driver_name, destination, notes, status } = req.body;
