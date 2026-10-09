@@ -790,7 +790,7 @@ app.post('/api/expenses', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: របាយការណ៍ហិរញ្ញវត្ថុ (Financial Summary API)
+// API Routes: របាយការណ៍ហិរញ្ញវត្ថុ (Financial Summary API) - បន្ថែមការគណនាចំណាយ និងប្រាក់ចំណេញសុទ្ធ
 // ==========================================
 app.get('/api/financial/summary', async (req, res) => {
     const { from, to } = req.query;
@@ -820,11 +820,12 @@ app.get('/api/financial/summary', async (req, res) => {
 
         const totalRevenue = parseFloat(revResult.rows[0].total_revenue) || 0;
         const totalExpense = parseFloat(expResult.rows[0].total_expense) || 0;
+        const netProfit = totalRevenue - totalExpense; // គណនាប្រាក់ចំណេញសុទ្ធ
 
         res.json({
             total_revenue: totalRevenue,
-            total_expense: totalExpense,
-            net_profit: totalRevenue - totalExpense,
+            total_expense: totalExpense,     // បន្ថែមចំណាយសរុប
+            net_profit: netProfit,           // បន្ថែមប្រាក់ចំណេញសុទ្ធ
             total_receivable: parseFloat(recResult.rows[0].total_receivable) || 0,
             total_paid: parseFloat(recResult.rows[0].total_paid) || 0,
             total_pending: parseFloat(recResult.rows[0].total_pending) || 0
