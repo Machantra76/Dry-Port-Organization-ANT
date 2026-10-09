@@ -57,7 +57,9 @@
             border-left: 5px solid #2563eb;
         }
         .stat-card.success { border-left-color: #10b981; }
+        .stat-card.danger { border-left-color: #dc2626; }
         .stat-card.warning { border-left-color: #f59e0b; }
+        .stat-card.profit { border-left-color: #7c3aed; }
         .stat-title { font-size: 14px; color: #64748b; font-weight: 600; }
         .stat-value { font-size: 24px; font-weight: 700; color: #1e3c72; margin-top: 8px; }
         .section-box {
@@ -160,9 +162,17 @@
             </div>
 
             <div class="stats-grid">
-                <div class="stat-card">
+                <div class="stat-card success">
                     <div class="stat-title">ប្រាក់ចំណូលសរុប (Total Revenues)</div>
                     <div class="stat-value" id="val_revenue">$0.00</div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-title">ចំណាយសរុប (Total Expenses)</div>
+                    <div class="stat-value" id="val_expense" style="color: #dc2626;">$0.00</div>
+                </div>
+                <div class="stat-card profit">
+                    <div class="stat-title">ប្រាក់ចំណេញសុទ្ធ (Net Profit)</div>
+                    <div class="stat-value" id="val_net_profit" style="color: #7c3aed;">$0.00</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-title">គណនេយ្យទទួលសរុប (Total Receivables)</div>
@@ -195,12 +205,14 @@
                 const data = await response.json();
 
                 document.getElementById('val_revenue').innerText = `$${data.total_revenue.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                document.getElementById('val_expense').innerText = `$${data.total_expense.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                document.getElementById('val_net_profit').innerText = `$${data.net_profit.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                 document.getElementById('val_receivable').innerText = `$${data.total_receivable.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                 document.getElementById('val_paid').innerText = `$${data.total_paid.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                 document.getElementById('val_pending').innerText = `$${data.total_pending.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
             } catch (err) {
                 console.error(err);
-                alert('មានបញ្ហាក្នុងការទាញយកទិន្នន័យហិរញ្ញវត្ថុ');
+                alert('មានបញ្ហាក្នុងการទាញយកទិន្នន័យហិរញ្ញវត្ថុ');
             }
         }
 
