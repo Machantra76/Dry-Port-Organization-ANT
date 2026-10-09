@@ -124,8 +124,12 @@
         }
         th { background: #1e3c72; color: white; font-weight: 600; }
         tr:hover { background: #f1f5f9; }
+        
+        /* Status Badges */
         .badge-pending { background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 700; }
         .badge-paid { background: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 700; }
+        .badge-overdue { background: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 700; }
+
         .action-link { color: #2563eb; text-decoration: none; font-weight: 600; cursor: pointer; }
         .action-link:hover { text-decoration: underline; }
         .invoice-header { display: none; text-align: center; margin-bottom: 20px; }
@@ -253,15 +257,38 @@
                 tbody.innerHTML = '';
                 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #64748b;">មិនមានទិន្នន័យគណនេយ្យទទួលในช่วงនេះទេ (No receivable data found)</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #64748b;">មិនមានទិន្នន័យគណនេយ្យទទួលក្នុងកំឡុងពេលនេះទេ (No receivable data found)</td></tr>';
                     return;
                 }
                 
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); // កំណត់ម៉ោងស្មើ 0 ដើម្បីប្រៀបធៀបថ្ងៃជាមួយ Due Date
+
                 data.forEach(item => {
                     const invDate = new Date(item.invoice_date).toLocaleDateString('km-KH');
-                    const dueDate = new Date(item.due_date).toLocaleDateString('km-KH');
-                    const badgeClass = item.status === 'Paid' ? 'badge-paid' : 'badge-pending';
-                    const statusText = item.status === 'Paid' ? 'បានទូទាត់ (Paid)' : 'មិនទាន់ទូទាត់ (Pending)';
+                    const dueDateVal = new Date(item.due_date);
+                    const dueDate = dueDateVal.toLocaleDateString('km-KH');
+                    
+                    let badgeClass = 'badge-pending';
+                    let statusText = 'មិនទាន់ទូទាត់ (Pending)';
+
+                    // Logic ឆែកមើលស្ថានភាព Paid, Overdue ឬ Pending
+                    if (item.status === 'Paid') {
+                        badgeClass = 'badge-paid';
+                        statusText = 'បានទូទាត់ (Paid)';
+                    } else if (dueDateVal < today) {
+                        badgeClass = 'badge-overdue';
+                        statusText = 'ហួសថ្ងៃកំណត់ (Overdue)';
+                    }
+
+                    // បង្កើត Action Buttons (បោះពុម្ពវិក្កយបត្រ និងប៊ូតុងបង់ប្រាក់រួច)
+                    let actionButtons = `
+                        <a class="action-link" onclick="printInvoice('${item.customer_name}', '${invDate}', '${dueDate}', '${item.amount}', '${statusText}', '${item.description || '-'}')">🧾 វិក្កយបត្រ</a>
+                    `;
+
+                    if (item.status !== 'Paid') {
+                        actionButtons += ` | <a class="action-link" style="color: #10b981;" onclick="markAsPaid('${item.id}')">✅ បង់ប្រាក់រួច</a>`;
+                    }
 
                     tbody.innerHTML += `<tr>
                         <td><strong>${item.customer_name}</strong></td>
@@ -270,14 +297,35 @@
                         <td>$${parseFloat(item.amount).toFixed(2)}</td>
                         <td><span class="${badgeClass}">${statusText}</span></td>
                         <td>${item.description || '-'}</td>
-                        <td class="no-print">
-                            <a class="action-link" onclick="printInvoice('${item.customer_name}', '${invDate}', '${dueDate}', '${item.amount}', '${statusText}', '${item.description || '-'}')">🧾 បោះពុម្ពវិក្កយបត្រ (Invoice)</a>
-                        </td>
+                        <td class="no-print">${actionButtons}</td>
                     </tr>`;
                 });
             } catch (err) { 
                 console.error(err);
                 document.getElementById('receivableTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">មានបញ្ហាក្នុងការទាញយកទិន្នន័យ (Error loading data)</td></tr>';
+            }
+        }
+
+        // Function សម្រាប់អតិថិជនមកបង់ប្រាក់ (Update ទៅ Paid)
+        async function markAsPaid(receivableId) {
+            if (confirm('តើអ្នកពិតជាចង់កំណត់ថាអតិថិជនបានទូទាត់ប្រាក់រួចហើយមែនទេ?')) {
+                try {
+                    const response = await fetch(`/api/receivables/${receivableId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: 'Paid' })
+                    });
+
+                    if (response.ok) {
+                        alert('បានកែប្រែស្ថានភាពជា "បានទូទាត់" ដោយជោគជ័យ!');
+                        loadReceivables();
+                    } else {
+                        alert('មានបញ្ហាក្នុងការកែប្រែទិន្នន័យ!');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('មានបញ្ហា kết nối ទៅកាន់ Server!');
+                }
             }
         }
 
@@ -358,7 +406,7 @@
                     document.getElementById('invoice_date').valueAsDate = new Date();
                     loadReceivables();
                 } else {
-                    alert('មានបញ្ហាក្នុងการរក្សាទុកទិន្នន័យ! (Error saving data!)');
+                    alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ! (Error saving data!)');
                 }
             } catch (error) {
                 console.error(error);
