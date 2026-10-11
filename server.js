@@ -888,7 +888,7 @@ app.post('/api/fleet/drivers', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការបញ្ជូនដឹកជញ្ជូន (Transport Dispatches) - កែប្រែបន្ថែម Search
+// API Routes: ការបញ្ជូនដឹកជញ្ជូន (Transport Dispatches)
 // ==========================================
 app.get('/api/fleet/dispatches', async (req, res) => {
     const { from, to, search } = req.query;
@@ -951,7 +951,6 @@ app.post('/api/fleet/dispatches', async (req, res) => {
     }
 });
 
-// 📌 API Route សម្រាប់ដោះដូររថយន្ត និងអ្នកបើកបរ (Update / Change Dispatch)
 app.put('/api/fleet/dispatches/:id', async (req, res) => {
     const { id } = req.params;
     const { vehicle_code, driver_name, destination, notes, status } = req.body;
@@ -1166,7 +1165,6 @@ app.post('/api/fleet/transport-plans', async (req, res) => {
     }
 });
 
-// 📌 API Route សម្រាប់កែប្រែ / ដោះដូរផែនការដឹកជញ្ជូនទំនិញ (Update Transport Plan)
 app.put('/api/fleet/transport-plans/:id', async (req, res) => {
     const { id } = req.params;
     const { cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes, status } = req.body;
@@ -1419,6 +1417,30 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការចេញកុងតឺន័រ (Gate-Out)' });
+    }
+});
+
+// 📌 API Route សម្រាប់កែប្រែ / ដោះដូរព័ត៌មានការចេញកុងតឺន័រ (Update Container Gate-Out)
+app.put('/api/fleet/container-gate-out/:id', async (req, res) => {
+    const { id } = req.params;
+    const { container_number, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes } = req.body;
+    try {
+        const query = `
+            UPDATE container_gate_out 
+            SET container_number = $1, gate_out_date = $2, truck_plate_number = $3, driver_name = $4, destination = $5, bill_of_lading = $6, released_by = $7, notes = $8
+            WHERE id = $9 
+            RETURNING *;
+        `;
+        const result = await pool.query(query, [container_number, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes, id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យការចេញកុងតឺន័រនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating container gate-out:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែ/ដោះដូរទិន្នន័យ' });
     }
 });
 
