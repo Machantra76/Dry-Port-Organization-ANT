@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីให้อានហ្វាលក្នុង views បានយ៉ាងរលូន
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
@@ -1240,6 +1240,30 @@ app.post('/api/fleet/damaged-containers', async (req, res) => {
     }
 });
 
+// 📌 API Route សម្រាប់កែប្រែ / ដោះដូរព័ត៌មានកុងតឺន័រខូច (Update Damaged Container)
+app.put('/api/fleet/damaged-containers/:id', async (req, res) => {
+    const { id } = req.params;
+    const { container_number, inspection_date, damage_location, severity_level, inspector_name, status, description } = req.body;
+    try {
+        const query = `
+            UPDATE damaged_containers 
+            SET container_number = $1, inspection_date = $2, damage_location = $3, severity_level = $4, inspector_name = $5, status = $6, description = $7
+            WHERE id = $8 
+            RETURNING *;
+        `;
+        const result = await pool.query(query, [container_number, inspection_date, damage_location, severity_level, inspector_name, status, description, id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យកុងតឺន័រខូចនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating damaged container:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែ/ដោះដូរទិន្នន័យ' });
+    }
+});
+
 // ==========================================
 // API Routes: ការគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
 // ==========================================
@@ -1420,7 +1444,6 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
     }
 });
 
-// 📌 API Route សម្រាប់កែប្រែ / ដោះដូរព័ត៌មានការចេញកុងតឺន័រ (Update Container Gate-Out)
 app.put('/api/fleet/container-gate-out/:id', async (req, res) => {
     const { id } = req.params;
     const { container_number, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes } = req.body;
