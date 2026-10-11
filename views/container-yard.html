@@ -149,9 +149,47 @@
                 </div>
                 <form id="yardForm">
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">លេខកុងតឺន័រ (Container Number):</label>
                             <input type="text" class="form-control" name="container_number" required placeholder="ឧ. TGHU1234567">
+                        </div>
+                        <!-- Container Size -->
+                        <div class="col-md-4">
+                            <label class="form-label">ទំហំកុងតឺន័រ (Size):</label>
+                            <select name="container_size" class="form-select" required>
+                                <option value="20'">20 Feet</option>
+                                <option value="40'" selected>40 Feet</option>
+                                <option value="45'">45 Feet</option>
+                            </select>
+                        </div>
+                        <!-- Container Type -->
+                        <div class="col-md-4">
+                            <label class="form-label">ប្រភេទ (Type):</label>
+                            <select name="container_type" class="form-select" required>
+                                <option value="DC" selected>Dry Van (DC)</option>
+                                <option value="HC">High Cube (HC)</option>
+                                <option value="OT">Open Top (OT)</option>
+                                <option value="FR">Flat Rack (FR)</option>
+                                <option value="RF">Reefer (RF)</option>
+                            </select>
+                        </div>
+                        <!-- Shipping Line -->
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label mb-0">Shipping Line:</label>
+                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 12px;" onclick="toggleCustomShippingLine()">
+                                    <i class="fas fa-plus me-1"></i> បន្ថែមផ្សេងទៀត
+                                </button>
+                            </div>
+                            <select name="shipping_line" id="shippingLineSelect" class="form-select" required>
+                                <option value="HMM">HMM</option>
+                                <option value="MSC">MSC</option>
+                                <option value="CMA CGM">CMA CGM</option>
+                                <option value="Evergreen">Evergreen</option>
+                                <option value="Maersk">Maersk</option>
+                                <option value="ONE">ONE</option>
+                            </select>
+                            <input type="text" name="shipping_line" id="shippingLineCustomInput" class="form-control mt-2 d-none" placeholder="បញ្ចូលឈ្មោះ Shipping Line..." disabled>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">ប្លុកទីតាំង (Block Code):</label>
@@ -201,13 +239,23 @@
                 
                 <!-- Search Filter Form -->
                 <form id="filterForm" class="row g-3 mb-4">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label">លេខកុងតឺន័រ (Container No.):</label>
                         <input type="text" id="filterContainer" class="form-control" placeholder="ឧ. 4567 ឬ TGHU1234567">
                     </div>
+                    <!-- Filter Shipping Line -->
                     <div class="col-md-3">
-                        <label class="form-label">ស្វែងរកតាមប្លុក (Filter Block):</label>
-                        <input type="text" id="filterBlock" class="form-control" placeholder="ឧ. Block A">
+                        <label class="form-label">Shipping Line:</label>
+                        <select id="filterShippingLine" class="form-select">
+                            <option value="">-- គ្រប់ Shipping Line --</option>
+                            <option value="HMM">HMM</option>
+                            <option value="MSC">MSC</option>
+                            <option value="CMA CGM">CMA CGM</option>
+                            <option value="Evergreen">Evergreen</option>
+                            <option value="Maersk">Maersk</option>
+                            <option value="ONE">ONE</option>
+                            <option value="Other">ផ្សេងៗ</option>
+                        </select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">ស្ថានភាព (Status):</label>
@@ -218,7 +266,7 @@
                             <option value="Moved">ប្តូរទីតាំង</option>
                         </select>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end gap-2">
+                    <div class="col-md-4 d-flex align-items-end gap-2">
                         <button type="submit" class="btn btn-primary w-100 py-2" style="border-radius: 8px;">
                             <i class="fas fa-search me-1"></i> ស្វែងរក
                         </button>
@@ -234,13 +282,15 @@
                         <thead>
                             <tr>
                                 <th>ល.រ (No.)</th>
-                                <th>លេខកុងតឺន័រ (Container No.)</th>
+                                <th>លេខកុងតឺន័រ</th>
+                                <th>Size / Type</th>
+                                <th>Shipping Line</th>
                                 <th>ប្លុក (Block)</th>
                                 <th>ជួរ (Row)</th>
                                 <th>ជាន់ (Tier)</th>
                                 <th>ស្ថានភាព (Status)</th>
                                 <th>កាលបរិច្ឆេទ (Date)</th>
-                                <th>កំណត់ចំណាំ (Notes)</th>
+                                <th>កំណត់ចំណាំ</th>
                                 <th class="text-center">សកម្មភាព (Actions)</th>
                             </tr>
                         </thead>
@@ -266,24 +316,46 @@
                     <form id="editYardForm">
                         <input type="hidden" id="edit_id">
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">លេខកុងតឺន័រ (Container Number):</label>
+                            <div class="col-md-4">
+                                <label class="form-label">លេខកុងតឺន័រ:</label>
                                 <input type="text" class="form-control" id="edit_container_number" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">ទំហំ (Size):</label>
+                                <select class="form-select" id="edit_container_size">
+                                    <option value="20'">20 Feet</option>
+                                    <option value="40'">40 Feet</option>
+                                    <option value="45'">45 Feet</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">ប្រភេទ (Type):</label>
+                                <select class="form-select" id="edit_container_type">
+                                    <option value="DC">Dry Van (DC)</option>
+                                    <option value="HC">High Cube (HC)</option>
+                                    <option value="OT">Open Top (OT)</option>
+                                    <option value="FR">Flat Rack (FR)</option>
+                                    <option value="RF">Reefer (RF)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Shipping Line:</label>
+                                <input type="text" class="form-control" id="edit_shipping_line" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">ប្លុកទីតាំង (Block Code):</label>
                                 <input type="text" class="form-control" id="edit_block_code" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">លេខជួរ (Row Number):</label>
+                                <label class="form-label">លេខជួរ (Row):</label>
                                 <input type="number" class="form-control" id="edit_row_number" required min="1">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">លេខជាន់ / កំពស់ (Tier Number):</label>
+                                <label class="form-label">លេខជាន់ (Tier):</label>
                                 <input type="number" class="form-control" id="edit_tier_number" required min="1">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">កាលបរិច្ឆេទធ្វើបច្ចុប្បន្នភាព (Updated Date):</label>
+                                <label class="form-label">កាលបរិច្ឆេទ (Updated Date):</label>
                                 <input type="date" class="form-control" id="edit_updated_date" required>
                             </div>
                             <div class="col-md-6">
@@ -321,6 +393,27 @@
             loadYardLocations();
         });
 
+        // ប្តូររវាង Select Shipping Line និង Custom Input ពេលចង់វាយបញ្ចូលផ្ទាល់
+        function toggleCustomShippingLine() {
+            const selectEl = document.getElementById('shippingLineSelect');
+            const inputEl = document.getElementById('shippingLineCustomInput');
+            if (inputEl.classList.contains('d-none')) {
+                inputEl.classList.remove('d-none');
+                inputEl.removeAttribute('disabled');
+                inputEl.setAttribute('name', 'shipping_line');
+                selectEl.classList.add('d-none');
+                selectEl.setAttribute('disabled', 'true');
+                selectEl.removeAttribute('name');
+            } else {
+                inputEl.classList.add('d-none');
+                inputEl.setAttribute('disabled', 'true');
+                inputEl.removeAttribute('name');
+                selectEl.classList.remove('d-none');
+                selectEl.removeAttribute('disabled');
+                selectEl.setAttribute('name', 'shipping_line');
+            }
+        }
+
         async function loadYardLocations() {
             try {
                 const response = await fetch('/api/fleet/container-yard');
@@ -335,7 +428,7 @@
                 }
             } catch (err) {
                 console.error('Error loading data:', err);
-                document.getElementById('yardTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+                document.getElementById('yardTableBody').innerHTML = `<tr><td colspan="11" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
             }
         }
 
@@ -344,7 +437,7 @@
             tbody.innerHTML = '';
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">ពុំមានទិន្នន័យទីតាំងកុងតឺន័រទេ (No data found)</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">ពុំមានទិន្នន័យទីតាំងកុងតឺន័រទេ (No data found)</td></tr>`;
                 return;
             }
 
@@ -358,6 +451,8 @@
                     <tr>
                         <td>${index + 1}</td>
                         <td><strong>${item.container_number}</strong></td>
+                        <td><span class="badge bg-info text-dark">${item.container_size || "40'"} / ${item.container_type || "DC"}</span></td>
+                        <td><span class="fw-semibold text-dark">${item.shipping_line || '-'}</span></td>
                         <td><span class="badge bg-dark">${item.block_code}</span></td>
                         <td>${item.row_number}</td>
                         <td>${item.tier_number}</td>
@@ -365,7 +460,7 @@
                         <td>${item.updated_date ? item.updated_date.split('T')[0] : ''}</td>
                         <td>${item.notes || '-'}</td>
                         <td>
-                            <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1" style="font-size: 0.8rem;" onclick='openEditModal(${JSON.stringify(item)})'>
+                            <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1" style="font-size: 0.8rem;" onclick="openEditModal(${item.id})">
                                 <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
                             </button>
                         </td>
@@ -375,11 +470,11 @@
             });
         }
 
-        // មុខងារស្វែងរក និង Filter ទិន្នន័យ
+        // មុខងារស្វែងរក និង Filter ទិន្នន័យ (រួមទាំង Shipping Line)
         document.getElementById('filterForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const searchText = document.getElementById('filterContainer').value.trim().toLowerCase();
-            const blockText = document.getElementById('filterBlock').value.trim().toLowerCase();
+            const shippingLineFilter = document.getElementById('filterShippingLine').value.trim().toLowerCase();
             const status = document.getElementById('filterStatus').value;
 
             const filtered = allYardData.filter(item => {
@@ -390,10 +485,15 @@
                     matchContainer = containerNum.includes(searchText) || last4Digits.includes(searchText);
                 }
 
-                let matchBlock = true;
-                if (blockText) {
-                    const blockCode = (item.block_code || '').toLowerCase();
-                    matchBlock = blockCode.includes(blockText);
+                let matchLine = true;
+                if (shippingLineFilter) {
+                    const itemLine = (item.shipping_line || '').trim().toLowerCase();
+                    if (shippingLineFilter === 'other') {
+                        const standardLines = ['hmm', 'msc', 'cma cgm', 'evergreen', 'maersk', 'one'];
+                        matchLine = !standardLines.includes(itemLine);
+                    } else {
+                        matchLine = itemLine === shippingLineFilter;
+                    }
                 }
 
                 let matchStatus = true;
@@ -401,7 +501,7 @@
                     matchStatus = false;
                 }
 
-                return matchContainer && matchBlock && matchStatus;
+                return matchContainer && matchLine && matchStatus;
             });
 
             displayTableData(filtered);
@@ -409,20 +509,29 @@
 
         function resetFilter() {
             document.getElementById('filterContainer').value = '';
-            document.getElementById('filterBlock').value = '';
+            document.getElementById('filterShippingLine').value = '';
             document.getElementById('filterStatus').value = '';
             displayTableData(allYardData);
         }
 
-        // បើក Modal សម្រាប់កែប្រែ/ដោះដូរទិន្នន័យ
-        function openEditModal(item) {
+        // បើក Modal សម្រាប់កែប្រែ/ដោះដូរទិន្នន័យតាម ID
+        function openEditModal(id) {
+            const item = allYardData.find(d => d.id === id);
+            if (!item) {
+                alert('រកមិនឃើញទិន្នន័យសម្រាប់កែប្រែទេ!');
+                return;
+            }
+
             document.getElementById('edit_id').value = item.id;
-            document.getElementById('edit_container_number').value = item.container_number;
-            document.getElementById('edit_block_code').value = item.block_code;
-            document.getElementById('edit_row_number').value = item.row_number;
-            document.getElementById('edit_tier_number').value = item.tier_number;
+            document.getElementById('edit_container_number').value = item.container_number || '';
+            document.getElementById('edit_container_size').value = item.container_size || "40'";
+            document.getElementById('edit_container_type').value = item.container_type || "DC";
+            document.getElementById('edit_shipping_line').value = item.shipping_line || '';
+            document.getElementById('edit_block_code').value = item.block_code || '';
+            document.getElementById('edit_row_number').value = item.row_number || 1;
+            document.getElementById('edit_tier_number').value = item.tier_number || 1;
             document.getElementById('edit_updated_date').value = item.updated_date ? item.updated_date.split('T')[0] : '';
-            document.getElementById('edit_status').value = item.status;
+            document.getElementById('edit_status').value = item.status || 'Stored';
             document.getElementById('edit_notes').value = item.notes || '';
 
             const editModal = new bootstrap.Modal(document.getElementById('editYardModal'));
@@ -435,6 +544,9 @@
             const id = document.getElementById('edit_id').value;
             const updatedData = {
                 container_number: document.getElementById('edit_container_number').value.trim(),
+                container_size: document.getElementById('edit_container_size').value,
+                container_type: document.getElementById('edit_container_type').value,
+                shipping_line: document.getElementById('edit_shipping_line').value.trim(),
                 block_code: document.getElementById('edit_block_code').value.trim(),
                 row_number: parseInt(document.getElementById('edit_row_number').value) || 1,
                 tier_number: parseInt(document.getElementById('edit_tier_number').value) || 1,
@@ -463,14 +575,14 @@
             }
         });
 
-        // មុខងារ Download PDF (លាក់ Form ស្វែងរក និងប៊ូតុង Actions)
+        // មុខងារ Download PDF
         function exportHistoryToPDF() {
             const { jsPDF } = window.jspdf;
             const historyElement = document.getElementById('historySection');
 
             const filterForm = historyElement.querySelector('#filterForm');
             const pdfBtn = historyElement.querySelector('.btn-pdf');
-            const actionCells = historyElement.querySelectorAll('th:nth-child(9), td:nth-child(9)');
+            const actionCells = historyElement.querySelectorAll('th:nth-child(11), td:nth-child(11)');
             
             if(filterForm) filterForm.style.display = 'none';
             if(pdfBtn) pdfBtn.style.display = 'none';
@@ -509,7 +621,7 @@
             });
         }
 
-        // កត់ត្រាទីតាំងថ្មី
+        // កត់ត្រាទីតាំងថ្មី (POST API)
         document.getElementById('yardForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const formData = new FormData(this);
