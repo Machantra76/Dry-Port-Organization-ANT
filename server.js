@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 15]
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
@@ -22,7 +22,7 @@ async function initializeDatabase() {
     try {
         await client.query('BEGIN');
 
-        // ១. តារាងបុគ្គលិក (Employees)
+        // ១. តារាងបុគ្គលិក (Employees)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS employees (
                 id SERIAL PRIMARY KEY,
@@ -34,7 +34,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)
+        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS attendance_logs (
                 id SERIAL PRIMARY KEY,
@@ -46,7 +46,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)
+        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS inventory_items (
                 id SERIAL PRIMARY KEY,
@@ -61,7 +61,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)
+        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS payroll_records (
                 id SERIAL PRIMARY KEY,
@@ -76,7 +76,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)
+        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS revenues (
                 id SERIAL PRIMARY KEY,
@@ -89,7 +89,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable)
+        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS accounts_receivable (
                 id SERIAL PRIMARY KEY,
@@ -103,7 +103,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៧. តារាងចំណាយ (Expenses)
+        // ៧. តារាងចំណាយ (Expenses)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS expenses (
                 id SERIAL PRIMARY KEY,
@@ -116,7 +116,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៨. តារាងគ្រប់គ្រងរថយន្ត (Fleet Vehicles)
+        // ៨. តារាងគ្រប់គ្រងរថយន្ត (Fleet Vehicles)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS fleet_vehicles (
                 id SERIAL PRIMARY KEY,
@@ -129,7 +129,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៩. តារាងគ្រប់គ្រងអ្នកបើកបរ (Drivers)
+        // ៩. តារាងគ្រប់គ្រងអ្នកបើកបរ (Drivers)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS drivers (
                 id SERIAL PRIMARY KEY,
@@ -142,7 +142,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១០. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches)
+        // ១០. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS transport_dispatches (
                 id SERIAL PRIMARY KEY,
@@ -157,7 +157,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១១. តារាងគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)
+        // ១១. តារាងគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS fuel_logs (
                 id SERIAL PRIMARY KEY,
@@ -172,7 +172,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs)
+        // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS maintenance_logs (
                 id SERIAL PRIMARY KEY,
@@ -187,7 +187,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៣. តារាងរៀបចំផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)
+        // ១៣. តារាងរៀបចំផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS transport_plans (
                 id SERIAL PRIMARY KEY,
@@ -203,7 +203,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
+        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS damaged_containers (
                 id SERIAL PRIMARY KEY,
@@ -218,7 +218,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
+        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_yard_locations (
                 id SERIAL PRIMARY KEY,
@@ -233,11 +233,14 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)
+        // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs) - បានបន្ថែម Size, Type, Shipping Line[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_repair_logs (
                 id SERIAL PRIMARY KEY,
                 container_number VARCHAR(100) NOT NULL,
+                container_size VARCHAR(20) DEFAULT '40''',
+                container_type VARCHAR(20) DEFAULT 'DC',
+                shipping_line VARCHAR(100),
                 repair_date DATE NOT NULL,
                 block_code VARCHAR(50),
                 row_number INT DEFAULT 1,
@@ -251,7 +254,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out)
+        // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_gate_out (
                 id SERIAL PRIMARY KEY,
@@ -267,7 +270,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៨. តារាងប្រតិបត្តិការទីលាន (Yard Operations)
+        // ១៨. តារាងប្រតិបត្តិការទីលាន (Yard Operations)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS yard_operations (
                 id SERIAL PRIMARY KEY,
@@ -283,7 +286,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៩. តារាងកត់ត្រាការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out)
+        // ១៩. តារាងកត់ត្រាការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS cargo_gate_logs (
                 id SERIAL PRIMARY KEY,
@@ -300,7 +303,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២០. តារាងគ្រប់គ្រងក្រុមសន្តិសុខ (Security Logs)
+        // ២០. តារាងគ្រប់គ្រងក្រុមសន្តិសុខ (Security Logs)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS security_logs (
                 id SERIAL PRIMARY KEY,
@@ -315,7 +318,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២១. តារាងប្រព័ន្ធ WMS / OMS (Warehouse & Order Management Systems)
+        // ២១. តារាងប្រព័ន្ធ WMS / OMS (Warehouse & Order Management Systems)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS wms_oms_records (
                 id SERIAL PRIMARY KEY,
@@ -328,7 +331,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២២. តារាងគ្រប់គ្រង CCTV និង Network (IT Infrastructure)
+        // ២២. តារាងគ្រប់គ្រង CCTV និង Network (IT Infrastructure)[cite: 15]
         await client.query(`
             CREATE TABLE IF NOT EXISTS it_cctv_networks (
                 id SERIAL PRIMARY KEY,
@@ -1315,7 +1318,6 @@ app.post('/api/fleet/container-yard', async (req, res) => {
     }
 });
 
-// 📌 API Route សម្រាប់កែប្រែ / ដោះដូរទីតាំងកុងតឺន័រក្នុងទីធ្លា (Update Container Yard Location)
 app.put('/api/fleet/container-yard/:id', async (req, res) => {
     const { id } = req.params;
     const { container_number, block_code, row_number, tier_number, status, updated_date, notes } = req.body;
@@ -1370,14 +1372,22 @@ app.get('/api/fleet/container-repairs', async (req, res) => {
 });
 
 app.post('/api/fleet/container-repairs', async (req, res) => {
-    const { container_number, repair_date, block_code, row_number, tier_number, repair_type, cost, technician_name, status, notes } = req.body;
+    const { 
+        container_number, container_size, container_type, shipping_line, 
+        repair_date, block_code, row_number, tier_number, 
+        repair_type, cost, technician_name, status, notes 
+    } = req.body;
     try {
         const query = `
-            INSERT INTO container_repair_logs (container_number, repair_date, block_code, row_number, tier_number, repair_type, cost, technician_name, status, notes) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
+            INSERT INTO container_repair_logs 
+            (container_number, container_size, container_type, shipping_line, repair_date, block_code, row_number, tier_number, repair_type, cost, technician_name, status, notes) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *;
         `;
         const result = await pool.query(query, [
             container_number, 
+            container_size || "40'", 
+            container_type || "DC", 
+            shipping_line || null, 
             repair_date, 
             block_code || null, 
             parseInt(row_number) || 1, 
@@ -1392,6 +1402,41 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការជួសជុល និងស្តុកកុងតឺន័រ' });
+    }
+});
+
+// 📌 API Route សម្រាប់កែប្រែ / ដោះដូរការជួសជុលកុងតឺន័រ (Update Container Repair)
+app.put('/api/fleet/container-repairs/:id', async (req, res) => {
+    const { id } = req.params;
+    const { 
+        container_number, container_size, container_type, shipping_line, 
+        repair_date, block_code, row_number, tier_number, 
+        repair_type, cost, technician_name, status, notes 
+    } = req.body;
+    try {
+        const query = `
+            UPDATE container_repair_logs 
+            SET container_number = $1, container_size = $2, container_type = $3, shipping_line = $4, 
+                repair_date = $5, block_code = $6, row_number = $7, tier_number = $8, 
+                repair_type = $9, cost = $10, technician_name = $11, status = $12, notes = $13
+            WHERE id = $14 
+            RETURNING *;
+        `;
+        const values = [
+            container_number, container_size, container_type, shipping_line, 
+            repair_date, block_code || null, parseInt(row_number) || 1, parseInt(tier_number) || 1, 
+            repair_type, parseFloat(cost) || 0, technician_name, status, notes, id
+        ];
+        const result = await pool.query(query, values);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating container repair:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យ' });
     }
 });
 
