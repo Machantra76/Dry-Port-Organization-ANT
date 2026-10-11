@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីให้อានហ្វាលក្នុង views បានយ៉ាងរលូន
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
@@ -1240,7 +1240,6 @@ app.post('/api/fleet/damaged-containers', async (req, res) => {
     }
 });
 
-// 📌 API Route សម្រាប់កែប្រែ / ដោះដូរព័ត៌មានកុងតឺន័រខូច (Update Damaged Container)
 app.put('/api/fleet/damaged-containers/:id', async (req, res) => {
     const { id } = req.params;
     const { container_number, inspection_date, damage_location, severity_level, inspector_name, status, description } = req.body;
@@ -1313,6 +1312,30 @@ app.post('/api/fleet/container-yard', async (req, res) => {
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាទីតាំងកុងតឺន័រ' });
+    }
+});
+
+// 📌 API Route សម្រាប់កែប្រែ / ដោះដូរទីតាំងកុងតឺន័រក្នុងទីធ្លា (Update Container Yard Location)
+app.put('/api/fleet/container-yard/:id', async (req, res) => {
+    const { id } = req.params;
+    const { container_number, block_code, row_number, tier_number, status, updated_date, notes } = req.body;
+    try {
+        const query = `
+            UPDATE container_yard_locations 
+            SET container_number = $1, block_code = $2, row_number = $3, tier_number = $4, status = $5, updated_date = $6, notes = $7
+            WHERE id = $8 
+            RETURNING *;
+        `;
+        const result = await pool.query(query, [container_number, block_code, parseInt(row_number) || 1, parseInt(tier_number) || 1, status, updated_date, notes, id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យទីតាំងកុងតឺន័រនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating container yard location:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែ/ដោះដូរទិន្នន័យ' });
     }
 });
 
