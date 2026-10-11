@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts Battambang -->
     <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <!-- jsPDF & html2canvas for PDF Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body {
             font-family: 'Battambang', sans-serif;
@@ -78,6 +81,9 @@
             margin-bottom: 15px;
             border-bottom: 2px solid #f1f5f9;
             padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .btn-submit {
             background-color: #10b981;
@@ -91,6 +97,19 @@
         }
         .btn-submit:hover {
             background-color: #059669;
+        }
+        .btn-pdf {
+            background-color: #dc2626;
+            color: white;
+            border: none;
+            font-weight: 600;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+        .btn-pdf:hover {
+            background-color: #b91c1c;
+            color: white;
         }
         .table thead th {
             background-color: #1e3a8a;
@@ -126,7 +145,7 @@
             <!-- Form កត់ត្រាទីតាំងកុងតឺន័រថ្មី -->
             <div class="card-inner">
                 <div class="card-inner-title">
-                    <i class="fas fa-map-marker-alt me-2"></i> កត់ត្រាទីតាំងកុងតឺន័រថ្មី (Assign New Yard Location)
+                    <span><i class="fas fa-map-marker-alt me-2"></i> កត់ត្រាទីតាំងកុងតឺន័រថ្មី (Assign New Yard Location)</span>
                 </div>
                 <form id="yardForm">
                     <div class="row g-3">
@@ -172,34 +191,42 @@
             </div>
 
             <!-- តារាងបង្ហាញ និងតម្រៀបទីតាំង (Filter & Table Section) -->
-            <div class="card-inner mt-4">
-                <div class="card-inner-title d-flex justify-content-between align-items-center">
+            <div class="card-inner mt-4" id="historySection">
+                <div class="card-inner-title">
                     <span><i class="fas fa-th-list me-2"></i> បញ្ជីទីតាំងកុងតឺន័រក្នុងទីធ្លា (Yard Inventory & Mapping)</span>
+                    <button type="button" class="btn-pdf" onclick="exportHistoryToPDF()">
+                        <i class="fas fa-file-pdf me-1"></i> Download PDF
+                    </button>
                 </div>
                 
-                <div class="row g-3 mb-4">
+                <!-- Search Filter Form -->
+                <form id="filterForm" class="row g-3 mb-4">
                     <div class="col-md-4">
+                        <label class="form-label">លេខកុងតឺន័រ (Container No.):</label>
+                        <input type="text" id="filterContainer" class="form-control" placeholder="ឧ. 4567 ឬ TGHU1234567">
+                    </div>
+                    <div class="col-md-3">
                         <label class="form-label">ស្វែងរកតាមប្លុក (Filter Block):</label>
                         <input type="text" id="filterBlock" class="form-control" placeholder="ឧ. Block A">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-2">
                         <label class="form-label">ស្ថានភាព (Status):</label>
                         <select id="filterStatus" class="form-select">
-                            <option value="">ទាំងអស់ (All Status)</option>
-                            <option value="Stored">កំពុងរក្សាទុក (Stored)</option>
-                            <option value="Dispatched">បានបញ្ចេញ (Dispatched)</option>
-                            <option value="Moved">បានប្តូរទីតាំង (Moved)</option>
+                            <option value="">ទាំងអស់</option>
+                            <option value="Stored">រក្សាទុក</option>
+                            <option value="Dispatched">បានបញ្ចេញ</option>
+                            <option value="Moved">ប្តូរទីតាំង</option>
                         </select>
                     </div>
-                    <div class="col-md-4 d-flex align-items-end gap-2">
-                        <button class="btn btn-primary w-100 py-2" onclick="loadYardLocations()" style="border-radius: 8px;">
+                    <div class="col-md-3 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary w-100 py-2" style="border-radius: 8px;">
                             <i class="fas fa-search me-1"></i> ស្វែងរក
                         </button>
-                        <button class="btn btn-secondary w-100 py-2" onclick="resetFilter()" style="border-radius: 8px;">
+                        <button type="button" class="btn btn-secondary w-100 py-2" onclick="resetFilter()" style="border-radius: 8px;">
                             កំណត់ឡើងវិញ
                         </button>
                     </div>
-                </div>
+                </form>
 
                 <!-- Table Data Display -->
                 <div class="table-responsive">
@@ -214,6 +241,7 @@
                                 <th>ស្ថានភាព (Status)</th>
                                 <th>កាលបរិច្ឆេទ (Date)</th>
                                 <th>កំណត់ចំណាំ (Notes)</th>
+                                <th class="text-center">សកម្មភាព (Actions)</th>
                             </tr>
                         </thead>
                         <tbody id="yardTableBody">
@@ -226,9 +254,67 @@
         </div>
     </div>
 
+    <!-- Modal សម្រាប់ដោះដូរ / កែប្រែព័ត៌មានទីតាំងកុងតឺន័រ (Edit Modal) -->
+    <div class="modal fade" id="editYardModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-exchange-alt me-2"></i>ដោះដូរ / កែប្រែទីតាំងកុងតឺន័រក្នុងទីធ្លា</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editYardForm">
+                        <input type="hidden" id="edit_id">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">លេខកុងតឺន័រ (Container Number):</label>
+                                <input type="text" class="form-control" id="edit_container_number" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">ប្លុកទីតាំង (Block Code):</label>
+                                <input type="text" class="form-control" id="edit_block_code" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">លេខជួរ (Row Number):</label>
+                                <input type="number" class="form-control" id="edit_row_number" required min="1">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">លេខជាន់ / កំពស់ (Tier Number):</label>
+                                <input type="number" class="form-control" id="edit_tier_number" required min="1">
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">កាលបរិច្ឆេទធ្វើបច្ចុប្បន្នភាព (Updated Date):</label>
+                                <input type="date" class="form-control" id="edit_updated_date" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">ស្ថានភាព (Status):</label>
+                                <select class="form-select" id="edit_status">
+                                    <option value="Stored">កំពុងរក្សាទុក (Stored)</option>
+                                    <option value="Dispatched">បានបញ្ចេញដឹកជញ្ជូន (Dispatched)</option>
+                                    <option value="Moved">បានប្តូរទីតាំង (Moved)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">កំណត់ចំណាំ (Notes):</label>
+                                <input type="text" class="form-control" id="edit_notes">
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-success w-100 fw-bold py-2" style="border-radius: 8px;">
+                                    <i class="fas fa-save me-2"></i>រក្សាទុកការផ្លាស់ប្តូរ (Save Changes)
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap 5 JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let allYardData = [];
+
         document.addEventListener('DOMContentLoaded', () => {
             const today = new Date().toISOString().split('T')[0];
             document.querySelector('input[name="updated_date"]').value = today;
@@ -236,56 +322,194 @@
         });
 
         async function loadYardLocations() {
-            const block = document.getElementById('filterBlock').value.trim();
-            const status = document.getElementById('filterStatus').value;
-
-            let url = '/api/fleet/container-yard?';
-            if (block) url += `block_code=${encodeURIComponent(block)}&`;
-            if (status) url += `status=${status}`;
-
             try {
-                const response = await fetch(url);
+                const response = await fetch('/api/fleet/container-yard');
                 const data = await response.json();
                 
-                const tbody = document.getElementById('yardTableBody');
-                tbody.innerHTML = '';
-
-                if (data.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4">ពុំមានទិន្នន័យទីតាំងកុងតឺន័រទេ (No data found)</td></tr>`;
-                    return;
+                if (Array.isArray(data)) {
+                    allYardData = data;
+                    displayTableData(allYardData);
+                } else {
+                    allYardData = [];
+                    displayTableData([]);
                 }
-
-                data.forEach((item, index) => {
-                    let statusBadge = 'bg-primary text-white';
-                    if (item.status === 'Stored') statusBadge = 'bg-success text-white';
-                    else if (item.status === 'Dispatched') statusBadge = 'bg-secondary text-white';
-                    else if (item.status === 'Moved') statusBadge = 'bg-warning text-dark';
-
-                    const row = `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td><strong>${item.container_number}</strong></td>
-                            <td><span class="badge bg-dark">${item.block_code}</span></td>
-                            <td>${item.row_number}</td>
-                            <td>${item.tier_number}</td>
-                            <td><span class="badge ${statusBadge}">${item.status}</span></td>
-                            <td>${item.updated_date ? item.updated_date.split('T')[0] : ''}</td>
-                            <td>${item.notes || '-'}</td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += row;
-                });
             } catch (err) {
                 console.error('Error loading data:', err);
+                document.getElementById('yardTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
             }
         }
 
-        function resetFilter() {
-            document.getElementById('filterBlock').value = '';
-            document.getElementById('filterStatus').value = '';
-            loadYardLocations();
+        function displayTableData(data) {
+            const tbody = document.getElementById('yardTableBody');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">ពុំមានទិន្នន័យទីតាំងកុងតឺន័រទេ (No data found)</td></tr>`;
+                return;
+            }
+
+            data.forEach((item, index) => {
+                let statusBadge = 'bg-primary text-white';
+                if (item.status === 'Stored') statusBadge = 'bg-success text-white';
+                else if (item.status === 'Dispatched') statusBadge = 'bg-secondary text-white';
+                else if (item.status === 'Moved') statusBadge = 'bg-warning text-dark';
+
+                const row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${item.container_number}</strong></td>
+                        <td><span class="badge bg-dark">${item.block_code}</span></td>
+                        <td>${item.row_number}</td>
+                        <td>${item.tier_number}</td>
+                        <td><span class="badge ${statusBadge}">${item.status}</span></td>
+                        <td>${item.updated_date ? item.updated_date.split('T')[0] : ''}</td>
+                        <td>${item.notes || '-'}</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1" style="font-size: 0.8rem;" onclick='openEditModal(${JSON.stringify(item)})'>
+                                <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
         }
 
+        // មុខងារស្វែងរក និង Filter ទិន្នន័យ
+        document.getElementById('filterForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const searchText = document.getElementById('filterContainer').value.trim().toLowerCase();
+            const blockText = document.getElementById('filterBlock').value.trim().toLowerCase();
+            const status = document.getElementById('filterStatus').value;
+
+            const filtered = allYardData.filter(item => {
+                let matchContainer = true;
+                if (searchText) {
+                    const containerNum = (item.container_number || '').toLowerCase();
+                    const last4Digits = containerNum.slice(-4);
+                    matchContainer = containerNum.includes(searchText) || last4Digits.includes(searchText);
+                }
+
+                let matchBlock = true;
+                if (blockText) {
+                    const blockCode = (item.block_code || '').toLowerCase();
+                    matchBlock = blockCode.includes(blockText);
+                }
+
+                let matchStatus = true;
+                if (status && item.status !== status) {
+                    matchStatus = false;
+                }
+
+                return matchContainer && matchBlock && matchStatus;
+            });
+
+            displayTableData(filtered);
+        });
+
+        function resetFilter() {
+            document.getElementById('filterContainer').value = '';
+            document.getElementById('filterBlock').value = '';
+            document.getElementById('filterStatus').value = '';
+            displayTableData(allYardData);
+        }
+
+        // បើក Modal សម្រាប់កែប្រែ/ដោះដូរទិន្នន័យ
+        function openEditModal(item) {
+            document.getElementById('edit_id').value = item.id;
+            document.getElementById('edit_container_number').value = item.container_number;
+            document.getElementById('edit_block_code').value = item.block_code;
+            document.getElementById('edit_row_number').value = item.row_number;
+            document.getElementById('edit_tier_number').value = item.tier_number;
+            document.getElementById('edit_updated_date').value = item.updated_date ? item.updated_date.split('T')[0] : '';
+            document.getElementById('edit_status').value = item.status;
+            document.getElementById('edit_notes').value = item.notes || '';
+
+            const editModal = new bootstrap.Modal(document.getElementById('editYardModal'));
+            editModal.show();
+        }
+
+        // រក្សាទុកការកែប្រែទិន្នន័យ (PUT API)
+        document.getElementById('editYardForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('edit_id').value;
+            const updatedData = {
+                container_number: document.getElementById('edit_container_number').value.trim(),
+                block_code: document.getElementById('edit_block_code').value.trim(),
+                row_number: parseInt(document.getElementById('edit_row_number').value) || 1,
+                tier_number: parseInt(document.getElementById('edit_tier_number').value) || 1,
+                updated_date: document.getElementById('edit_updated_date').value,
+                status: document.getElementById('edit_status').value,
+                notes: document.getElementById('edit_notes').value.trim()
+            };
+
+            try {
+                const response = await fetch(`/api/fleet/container-yard/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(updatedData)
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    alert('បានដោះដូរនិងកែប្រែទីតាំងកុងតឺន័រដោយជោគជ័យ!');
+                    bootstrap.Modal.getInstance(document.getElementById('editYardModal')).hide();
+                    loadYardLocations();
+                } else {
+                    alert('កំហុស៖ ' + (result.error || 'មិនអាចកែប្រែបានទេ'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
+            }
+        });
+
+        // មុខងារ Download PDF (លាក់ Form ស្វែងរក និងប៊ូតុង Actions)
+        function exportHistoryToPDF() {
+            const { jsPDF } = window.jspdf;
+            const historyElement = document.getElementById('historySection');
+
+            const filterForm = historyElement.querySelector('#filterForm');
+            const pdfBtn = historyElement.querySelector('.btn-pdf');
+            const actionCells = historyElement.querySelectorAll('th:nth-child(9), td:nth-child(9)');
+            
+            if(filterForm) filterForm.style.display = 'none';
+            if(pdfBtn) pdfBtn.style.display = 'none';
+            actionCells.forEach(cell => cell.style.display = 'none');
+
+            html2canvas(historyElement, { scale: 2 }).then(canvas => {
+                if(filterForm) filterForm.style.display = '';
+                if(pdfBtn) pdfBtn.style.display = '';
+                actionCells.forEach(cell => cell.style.display = '');
+
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgWidth = 210; 
+                const pageHeight = 295;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                let heightLeft = imgHeight;
+                let position = 0;
+
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+
+                while (heightLeft >= 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+
+                pdf.save('container-yard-report.pdf');
+            }).catch(err => {
+                console.error('PDF Export Error:', err);
+                if(filterForm) filterForm.style.display = '';
+                if(pdfBtn) pdfBtn.style.display = '';
+                actionCells.forEach(cell => cell.style.display = '');
+                alert('មានបញ្ហាក្នុងការទាញយក PDF');
+            });
+        }
+
+        // កត់ត្រាទីតាំងថ្មី
         document.getElementById('yardForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const formData = new FormData(this);
