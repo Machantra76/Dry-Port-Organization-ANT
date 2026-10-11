@@ -126,8 +126,9 @@
                     <!-- Filter Shipping Line -->
                     <div class="col-md-3">
                         <label class="form-label fw-semibold small text-muted brand-font">Shipping Line</label>
-                        <select id="filterShippingLine" class="form-select">
+                        <select id="filterShippingLine" class="form-select" onchange="filterAndDisplayData()">
                             <option value="">-- គ្រប់ Shipping Line --</option>
+                            <option value="HMM">HMM</option>
                             <option value="MSC">MSC</option>
                             <option value="CMA CGM">CMA CGM</option>
                             <option value="Evergreen">Evergreen</option>
@@ -236,6 +237,7 @@
                                     </button>
                                 </div>
                                 <select name="shipping_line" id="shippingLineSelect" class="form-select" required>
+                                    <option value="HMM">HMM</option>
                                     <option value="MSC">MSC</option>
                                     <option value="CMA CGM">CMA CGM</option>
                                     <option value="Evergreen">Evergreen</option>
@@ -444,14 +446,20 @@
         }
 
         function filterAndDisplayData() {
-            const shippingLineFilter = document.getElementById('filterShippingLine').value;
+            const shippingLineFilter = document.getElementById('filterShippingLine').value.trim().toLowerCase();
             const dateFrom = document.getElementById('dateFrom').value;
             const dateTo = document.getElementById('dateTo').value;
 
             const filtered = allRepairData.filter(item => {
                 let matchLine = true;
                 if (shippingLineFilter) {
-                    matchLine = (item.shipping_line || '').toLowerCase() === shippingLineFilter.toLowerCase();
+                    const itemLine = (item.shipping_line || '').trim().toLowerCase();
+                    if (shippingLineFilter === 'other') {
+                        const standardLines = ['hmm', 'msc', 'cma cgm', 'evergreen', 'maersk', 'one'];
+                        matchLine = !standardLines.includes(itemLine);
+                    } else {
+                        matchLine = itemLine === shippingLineFilter;
+                    }
                 }
 
                 let matchDate = true;
