@@ -499,7 +499,7 @@
                         <td><span class="badge ${badgeClass}">${item.status}</span></td>
                         <td>${item.notes || '-'}</td>
                         <td class="pe-4 action-col">
-                            <button class="btn btn-sm btn-outline-warning text-dark fw-bold px-2 py-1" onclick='openEditModal(${JSON.stringify(item)})'>
+                            <button class="btn btn-sm btn-outline-warning text-dark fw-bold px-2 py-1" onclick="openEditModal(${item.id})">
                                 <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
                             </button>
                         </td>
@@ -518,10 +518,16 @@
             displayTable(allRepairData);
         }
 
-        // បើក Modal កែប្រែ / ដោះដូរ
-        function openEditModal(item) {
+        // មុខងារបើក Modal កែប្រែ / ដោះដូរ ដោយស្វែងរកទិន្នន័យតាម ID
+        function openEditModal(id) {
+            const item = allRepairData.find(d => d.id === id);
+            if (!item) {
+                alert('រកមិនឃើញទិន្នន័យសម្រាប់កែប្រែទេ!');
+                return;
+            }
+
             document.getElementById('edit_id').value = item.id;
-            document.getElementById('edit_container_number').value = item.container_number;
+            document.getElementById('edit_container_number').value = item.container_number || '';
             document.getElementById('edit_container_size').value = item.container_size || "40'";
             document.getElementById('edit_container_type').value = item.container_type || "DC";
             document.getElementById('edit_shipping_line').value = item.shipping_line || '';
@@ -529,10 +535,10 @@
             document.getElementById('edit_block_code').value = item.block_code || '';
             document.getElementById('edit_row_number').value = item.row_number || 1;
             document.getElementById('edit_tier_number').value = item.tier_number || 1;
-            document.getElementById('edit_repair_type').value = item.repair_type;
-            document.getElementById('edit_cost').value = item.cost;
-            document.getElementById('edit_technician_name').value = item.technician_name;
-            document.getElementById('edit_status').value = item.status;
+            document.getElementById('edit_repair_type').value = item.repair_type || '';
+            document.getElementById('edit_cost').value = item.cost || 0;
+            document.getElementById('edit_technician_name').value = item.technician_name || '';
+            document.getElementById('edit_status').value = item.status || 'In Progress';
             document.getElementById('edit_notes').value = item.notes || '';
 
             const editModal = new bootstrap.Modal(document.getElementById('editRepairModal'));
