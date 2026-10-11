@@ -223,6 +223,9 @@ async function initializeDatabase() {
             CREATE TABLE IF NOT EXISTS container_yard_locations (
                 id SERIAL PRIMARY KEY,
                 container_number VARCHAR(100) NOT NULL,
+                container_size VARCHAR(20) DEFAULT '40''',
+                container_type VARCHAR(20) DEFAULT 'DC',
+                shipping_line VARCHAR(100),
                 block_code VARCHAR(50) NOT NULL,
                 row_number INT NOT NULL,
                 tier_number INT NOT NULL,
@@ -231,6 +234,13 @@ async function initializeDatabase() {
                 notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+        `);
+
+        // 📌 បន្ថែម Migration Scripts សម្រាប់ធានាថា Table container_yard_locations មាន Columns ថ្មីស្រាប់
+        await client.query(`
+            ALTER TABLE container_yard_locations ADD COLUMN IF NOT EXISTS container_size VARCHAR(20) DEFAULT '40''';
+            ALTER TABLE container_yard_locations ADD COLUMN IF NOT EXISTS container_type VARCHAR(20) DEFAULT 'DC';
+            ALTER TABLE container_yard_locations ADD COLUMN IF NOT EXISTS shipping_line VARCHAR(100);
         `);
 
         // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)
@@ -254,7 +264,6 @@ async function initializeDatabase() {
             );
         `);
 
-        // 📌 បន្ថែម Migration Scripts ដើម្បីធានាថា Database ដែលមានស្រាប់នឹង Update Columns ទាំងនេះស្វ័យប្រវត្តិ
         await client.query(`
             ALTER TABLE container_repair_logs ADD COLUMN IF NOT EXISTS container_size VARCHAR(20) DEFAULT '40''';
             ALTER TABLE container_repair_logs ADD COLUMN IF NOT EXISTS container_type VARCHAR(20) DEFAULT 'DC';
@@ -739,7 +748,6 @@ app.post('/api/receivables', async (req, res) => {
     }
 });
 
-// 📌 API Route សម្រាប់កែប្រែស្ថានភាពគណនេយ្យទទួល (Update Accounts Receivable Status)
 app.put('/api/receivables/:id', async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
@@ -1274,10 +1282,10 @@ app.put('/api/fleet/damaged-containers/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
+// API Routes: ការគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations) - បានកែសម្រួលគាំទ្រ Size, Type, Shipping Line
 // ==========================================
 app.get('/api/fleet/container-yard', async (req, res) => {
-    const { block_code, status } = req.query;
+    const { block_code, status, shipping_line } = req.query;
     try {
         let query = 'SELECT * FROM container_yard_locations WHERE 1=1';
         let params = [];
@@ -1294,6 +1302,12 @@ app.get('/api/fleet/container-yard', async (req, res) => {
             params.push(status);
             paramIndex += 1;
         }
+
+        if (shipping_line) {
+            query += ` AND shipping_line ILIKE $${paramIndex}`;
+            params.push(`%${shipping_line}%`);
+            paramIndex += 1;
+        }
         
         query += ' ORDER BY updated_date DESC, id DESC';
         const result = await pool.query(query, params);
@@ -1304,14 +1318,18 @@ app.get('/api/fleet/container-yard', async (req, res) => {
 });
 
 app.post('/api/fleet/container-yard', async (req, res) => {
-    const { container_number, block_code, row_number, tier_number, status, updated_date, notes } = req.body;
+    const { container_number, container_size, container_type, shipping_line, block_code, row_number, tier_number, status, updated_date, notes } = req.body;
     try {
         const query = `
-            INSERT INTO container_yard_locations (container_number, block_code, row_number, tier_number, status, updated_date, notes) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+            INSERT INTO container_yard_locations 
+            (container_number, container_size, container_type, shipping_line, block_code, row_number, tier_number, status, updated_date, notes) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
         `;
         const result = await pool.query(query, [
             container_number, 
+            container_size || "40'", 
+            container_type || "DC", 
+            shipping_line || null, 
             block_code, 
             parseInt(row_number) || 1, 
             parseInt(tier_number) || 1, 
@@ -1321,21 +1339,28 @@ app.post('/api/fleet/container-yard', async (req, res) => {
         ]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាទីតាំងកុងតឺន័រ' });
     }
 });
 
 app.put('/api/fleet/container-yard/:id', async (req, res) => {
     const { id } = req.params;
-    const { container_number, block_code, row_number, tier_number, status, updated_date, notes } = req.body;
+    const { container_number, container_size, container_type, shipping_line, block_code, row_number, tier_number, status, updated_date, notes } = req.body;
     try {
         const query = `
             UPDATE container_yard_locations 
-            SET container_number = $1, block_code = $2, row_number = $3, tier_number = $4, status = $5, updated_date = $6, notes = $7
-            WHERE id = $8 
+            SET container_number = $1, container_size = $2, container_type = $3, shipping_line = $4, 
+                block_code = $5, row_number = $6, tier_number = $7, status = $8, updated_date = $9, notes = $10
+            WHERE id = $11 
             RETURNING *;
         `;
-        const result = await pool.query(query, [container_number, block_code, parseInt(row_number) || 1, parseInt(tier_number) || 1, status, updated_date, notes, id]);
+        const values = [
+            container_number, container_size, container_type, shipping_line, 
+            block_code, parseInt(row_number) || 1, parseInt(tier_number) || 1, 
+            status, updated_date, notes, id
+        ];
+        const result = await pool.query(query, values);
         
         if (result.rows.length === 0) {
             return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យទីតាំងកុងតឺន័រនេះទេ' });
@@ -1412,7 +1437,6 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
     }
 });
 
-// 📌 API Route សម្រាប់កែប្រែ / ដោះដូរការជួសជុលកុងតឺន័រ (Update Container Repair)
 app.put('/api/fleet/container-repairs/:id', async (req, res) => {
     const { id } = req.params;
     const { 
