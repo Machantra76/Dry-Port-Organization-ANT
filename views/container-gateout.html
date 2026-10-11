@@ -483,20 +483,23 @@
             displayData(filtered);
         });
 
-        // មុខងារ Export เฉพาะតារាងប្រវត្តិ (Gate-Out History Records) ទៅជា PDF
+        // មុខងារ Export เฉพาะតារាងប្រវត្តិ (Gate-Out History Records) ទៅជា PDF (លាក់ Form ស្វែងរក)
         function exportHistoryToPDF() {
             const { jsPDF } = window.jspdf;
             const historyElement = document.getElementById('historySection');
 
-            // លាក់ប៊ូតុង Download PDF និងប៊ូតុងដោះដូរក្នុងតារាងបណ្តោះអាសន្ន មិនឱ្យជាប់ក្នុង PDF
+            // 1. លាក់ Form ស្វែងរក ប៊ូតុង PDF និងកោសិកាសកម្មភាពដោះដូរក្នុងតារាងបណ្តោះអាសន្ន
+            const filterForm = historyElement.querySelector('#filterForm');
             const pdfBtn = historyElement.querySelector('.btn-pdf');
             const actionCells = historyElement.querySelectorAll('th:nth-child(9), td:nth-child(9)');
             
+            if(filterForm) filterForm.style.display = 'none';
             if(pdfBtn) pdfBtn.style.display = 'none';
             actionCells.forEach(cell => cell.style.display = 'none');
 
             html2canvas(historyElement, { scale: 2 }).then(canvas => {
-                // បង្ហាញប៊ូតុងនិងខ្សែកោសិកាឡើងវិញ
+                // 2. បង្ហាញ Form ប៊ូតុង និងកោសិកាឡើងវិញក្រោយពេល Render រร็จ
+                if(filterForm) filterForm.style.display = '';
                 if(pdfBtn) pdfBtn.style.display = '';
                 actionCells.forEach(cell => cell.style.display = '');
 
@@ -521,6 +524,7 @@
                 pdf.save('container-gate-out-history.pdf');
             }).catch(err => {
                 console.error('PDF Export Error:', err);
+                if(filterForm) filterForm.style.display = '';
                 if(pdfBtn) pdfBtn.style.display = '';
                 actionCells.forEach(cell => cell.style.display = '');
                 alert('មានបញ្ហាក្នុងការទាញយក PDF');
