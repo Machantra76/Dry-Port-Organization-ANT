@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 15]
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
@@ -22,7 +22,7 @@ async function initializeDatabase() {
     try {
         await client.query('BEGIN');
 
-        // ១. តារាងបុគ្គលិក (Employees)[cite: 15]
+        // ១. តារាងបុគ្គលិក (Employees)
         await client.query(`
             CREATE TABLE IF NOT EXISTS employees (
                 id SERIAL PRIMARY KEY,
@@ -34,7 +34,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)[cite: 15]
+        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS attendance_logs (
                 id SERIAL PRIMARY KEY,
@@ -46,7 +46,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)[cite: 15]
+        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)
         await client.query(`
             CREATE TABLE IF NOT EXISTS inventory_items (
                 id SERIAL PRIMARY KEY,
@@ -61,7 +61,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)[cite: 15]
+        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)
         await client.query(`
             CREATE TABLE IF NOT EXISTS payroll_records (
                 id SERIAL PRIMARY KEY,
@@ -76,7 +76,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)[cite: 15]
+        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)
         await client.query(`
             CREATE TABLE IF NOT EXISTS revenues (
                 id SERIAL PRIMARY KEY,
@@ -89,7 +89,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable)[cite: 15]
+        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable)
         await client.query(`
             CREATE TABLE IF NOT EXISTS accounts_receivable (
                 id SERIAL PRIMARY KEY,
@@ -103,7 +103,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៧. តារាងចំណាយ (Expenses)[cite: 15]
+        // ៧. តារាងចំណាយ (Expenses)
         await client.query(`
             CREATE TABLE IF NOT EXISTS expenses (
                 id SERIAL PRIMARY KEY,
@@ -116,7 +116,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៨. តារាងគ្រប់គ្រងរថយន្ត (Fleet Vehicles)[cite: 15]
+        // ៨. តារាងគ្រប់គ្រងរថយន្ត (Fleet Vehicles)
         await client.query(`
             CREATE TABLE IF NOT EXISTS fleet_vehicles (
                 id SERIAL PRIMARY KEY,
@@ -129,7 +129,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៩. តារាងគ្រប់គ្រងអ្នកបើកបរ (Drivers)[cite: 15]
+        // ៩. តារាងគ្រប់គ្រងអ្នកបើកបរ (Drivers)
         await client.query(`
             CREATE TABLE IF NOT EXISTS drivers (
                 id SERIAL PRIMARY KEY,
@@ -142,7 +142,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១០. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches)[cite: 15]
+        // ១០. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches)
         await client.query(`
             CREATE TABLE IF NOT EXISTS transport_dispatches (
                 id SERIAL PRIMARY KEY,
@@ -157,7 +157,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១១. តារាងគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)[cite: 15]
+        // ១១. តារាងគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS fuel_logs (
                 id SERIAL PRIMARY KEY,
@@ -172,7 +172,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs)[cite: 15]
+        // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS maintenance_logs (
                 id SERIAL PRIMARY KEY,
@@ -187,7 +187,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៣. តារាងរៀបចំផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)[cite: 15]
+        // ១៣. តារាងរៀបចំផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)
         await client.query(`
             CREATE TABLE IF NOT EXISTS transport_plans (
                 id SERIAL PRIMARY KEY,
@@ -203,7 +203,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)[cite: 15]
+        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
         await client.query(`
             CREATE TABLE IF NOT EXISTS damaged_containers (
                 id SERIAL PRIMARY KEY,
@@ -218,7 +218,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)[cite: 15]
+        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_yard_locations (
                 id SERIAL PRIMARY KEY,
@@ -233,7 +233,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs) - បានបន្ថែម Size, Type, Shipping Line[cite: 15]
+        // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_repair_logs (
                 id SERIAL PRIMARY KEY,
@@ -254,7 +254,14 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out)[cite: 15]
+        // 📌 បន្ថែម Migration Scripts ដើម្បីធានាថា Database ដែលមានស្រាប់នឹង Update Columns ទាំងនេះស្វ័យប្រវត្តិ
+        await client.query(`
+            ALTER TABLE container_repair_logs ADD COLUMN IF NOT EXISTS container_size VARCHAR(20) DEFAULT '40''';
+            ALTER TABLE container_repair_logs ADD COLUMN IF NOT EXISTS container_type VARCHAR(20) DEFAULT 'DC';
+            ALTER TABLE container_repair_logs ADD COLUMN IF NOT EXISTS shipping_line VARCHAR(100);
+        `);
+
+        // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out)
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_gate_out (
                 id SERIAL PRIMARY KEY,
@@ -270,7 +277,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៨. តារាងប្រតិបត្តិការទីលាន (Yard Operations)[cite: 15]
+        // ១៨. តារាងប្រតិបត្តិការទីលាន (Yard Operations)
         await client.query(`
             CREATE TABLE IF NOT EXISTS yard_operations (
                 id SERIAL PRIMARY KEY,
@@ -286,7 +293,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៩. តារាងកត់ត្រាការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out)[cite: 15]
+        // ១៩. តារាងកត់ត្រាការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out)
         await client.query(`
             CREATE TABLE IF NOT EXISTS cargo_gate_logs (
                 id SERIAL PRIMARY KEY,
@@ -303,7 +310,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២០. តារាងគ្រប់គ្រងក្រុមសន្តិសុខ (Security Logs)[cite: 15]
+        // ២០. តារាងគ្រប់គ្រងក្រុមសន្តិសុខ (Security Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS security_logs (
                 id SERIAL PRIMARY KEY,
@@ -318,7 +325,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២១. តារាងប្រព័ន្ធ WMS / OMS (Warehouse & Order Management Systems)[cite: 15]
+        // ២១. តារាងប្រព័ន្ធ WMS / OMS (Warehouse & Order Management Systems)
         await client.query(`
             CREATE TABLE IF NOT EXISTS wms_oms_records (
                 id SERIAL PRIMARY KEY,
@@ -331,7 +338,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២២. តារាងគ្រប់គ្រង CCTV និង Network (IT Infrastructure)[cite: 15]
+        // ២២. តារាងគ្រប់គ្រង CCTV និង Network (IT Infrastructure)
         await client.query(`
             CREATE TABLE IF NOT EXISTS it_cctv_networks (
                 id SERIAL PRIMARY KEY,
