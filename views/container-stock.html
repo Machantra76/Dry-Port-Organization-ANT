@@ -123,7 +123,7 @@
                             <option value="Completed">បានរួចរាល់</option>
                         </select>
                     </div>
-                    <!-- បន្ថែម Filter Shipping Line -->
+                    <!-- Filter Shipping Line -->
                     <div class="col-md-3">
                         <label class="form-label fw-semibold small text-muted brand-font">Shipping Line</label>
                         <select id="filterShippingLine" class="form-select">
@@ -242,7 +242,7 @@
                                     <option value="Maersk">Maersk</option>
                                     <option value="ONE">ONE</option>
                                 </select>
-                                <input type="text" name="shipping_line_custom" id="shippingLineCustomInput" class="form-control mt-2 d-none" placeholder="បញ្ចូលឈ្មោះ Shipping Line ផ្សេងទៀត...">
+                                <input type="text" name="shipping_line" id="shippingLineCustomInput" class="form-control mt-2 d-none" placeholder="បញ្ចូលឈ្មោះ Shipping Line ផ្សេងទៀត..." disabled>
                             </div>
 
                             <div class="col-md-6">
@@ -403,13 +403,17 @@
             const inputEl = document.getElementById('shippingLineCustomInput');
             if (inputEl.classList.contains('d-none')) {
                 inputEl.classList.remove('d-none');
+                inputEl.removeAttribute('disabled');
                 inputEl.setAttribute('name', 'shipping_line');
                 selectEl.classList.add('d-none');
+                selectEl.setAttribute('disabled', 'true');
                 selectEl.removeAttribute('name');
             } else {
                 inputEl.classList.add('d-none');
+                inputEl.setAttribute('disabled', 'true');
                 inputEl.removeAttribute('name');
                 selectEl.classList.remove('d-none');
+                selectEl.removeAttribute('disabled');
                 selectEl.setAttribute('name', 'shipping_line');
             }
         }
@@ -417,9 +421,6 @@
         async function loadContainerRepairs() {
             const containerNo = document.getElementById('filterContainerNo').value.trim();
             const status = document.getElementById('filterStatus').value;
-            const shippingLine = document.getElementById('filterShippingLine').value;
-            const dateFrom = document.getElementById('dateFrom').value;
-            const dateTo = document.getElementById('dateTo').value;
 
             let url = '/api/fleet/container-repairs?';
             if (containerNo) url += `container_number=${encodeURIComponent(containerNo)}&`;
@@ -607,8 +608,6 @@
         // មុខងារ Save PDF (From Date to Date)
         function exportPDF() {
             const { jsPDF } = window.jspdf;
-            const element = document.getElementById('reportSection'); // ឬជ្រើសរើសផ្នែកតារាង
-
             const actionCols = document.querySelectorAll('.action-col');
             actionCols.forEach(col => col.style.display = 'none');
 
