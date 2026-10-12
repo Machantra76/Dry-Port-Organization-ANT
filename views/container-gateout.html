@@ -182,7 +182,9 @@
                     <div class="row g-3">
                         <div class="col-md-3">
                             <label for="container_number" class="form-label">លេខកូដកុងតឺន័រ (Container No.):</label>
-                            <input type="text" class="form-control" id="container_number" required placeholder="ឧ. TGHU1234567">
+                            <select class="form-select" id="container_number" required onchange="onContainerSelected()">
+                                <option value="">-- ជ្រើសរើសកុងតឺន័រក្នុងស្តុក --</option>
+                            </select>
                         </div>
                         <!-- Container Size -->
                         <div class="col-md-3">
@@ -206,21 +208,8 @@
                         </div>
                         <!-- Shipping Line -->
                         <div class="col-md-3">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label class="form-label mb-0">Shipping Line:</label>
-                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 11px;" onclick="toggleCustomShippingLine()">
-                                    <i class="fas fa-plus me-1"></i> ផ្សេងទៀត
-                                </button>
-                            </div>
-                            <select id="shippingLineSelect" class="form-select" required>
-                                <option value="HMM">HMM</option>
-                                <option value="MSC">MSC</option>
-                                <option value="CMA CGM">CMA CGM</option>
-                                <option value="Evergreen">Evergreen</option>
-                                <option value="Maersk">Maersk</option>
-                                <option value="ONE">ONE</option>
-                            </select>
-                            <input type="text" id="shippingLineCustomInput" class="form-control d-none mt-1" placeholder="បញ្ចូលឈ្មោះ Shipping Line..." disabled>
+                            <label class="form-label">Shipping Line:</label>
+                            <input type="text" id="shippingLineInput" class="form-control" required readonly placeholder="Shipping Line...">
                         </div>
                         <div class="col-md-3">
                             <label for="gate_out_date" class="form-label">កាលបរិច្ឆេទចេញ (Gate-Out Date):</label>
@@ -279,7 +268,6 @@
                         <label class="form-label">Shipping Line:</label>
                         <select id="filterShippingLine" class="form-select">
                             <option value="">-- ទាំងអស់ --</option>
-                            <!-- Options នឹងត្រូវបានបង្កើតឡើងដោយស្វ័យប្រវត្តនៅទីនេះ -->
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -334,88 +322,11 @@
         </div>
     </div>
 
-    <!-- Modal សម្រាប់ដោះដូរ / កែប្រែព័ត៌មាន Gate-Out -->
-    <div class="modal fade" id="editGateOutModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title"><i class="fas fa-exchange-alt me-2"></i>ដោះដូរ / កែប្រែព័ត៌មានកុងតឺន័រចេញ (Edit Gate-Out)</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="editGateOutForm">
-                        <input type="hidden" id="edit_id">
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label">លេខកូដកុងតឺន័រ:</label>
-                                <input type="text" class="form-control" id="edit_container_number" required>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">ទំហំ (Size):</label>
-                                <select class="form-select" id="edit_container_size">
-                                    <option value="20'">20 Feet</option>
-                                    <option value="40'">40 Feet</option>
-                                    <option value="45'">45 Feet</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">ប្រភេទ (Type):</label>
-                                <select class="form-select" id="edit_container_type">
-                                    <option value="DC">Dry Van (DC)</option>
-                                    <option value="HC">High Cube (HC)</option>
-                                    <option value="OT">Open Top (OT)</option>
-                                    <option value="FR">Flat Rack (FR)</option>
-                                    <option value="RF">Reefer (RF)</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Shipping Line:</label>
-                                <input type="text" class="form-control" id="edit_shipping_line" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">កាលបរិច្ឆេទចេញ (Gate-Out Date):</label>
-                                <input type="datetime-local" class="form-control" id="edit_gate_out_date" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">ស្លាកលេខរថយន្ត (Truck Plate):</label>
-                                <input type="text" class="form-control" id="edit_truck_plate_number" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">ឈ្មោះអ្នកបើកបរ (Driver Name):</label>
-                                <input type="text" class="form-control" id="edit_driver_name" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">គោលដៅ (Destination):</label>
-                                <input type="text" class="form-control" id="edit_destination" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">លេខវិក្កយបត្រដឹកជញ្ជូន (B/L No.):</label>
-                                <input type="text" class="form-control" id="edit_bill_of_lading">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">អ្នកចេញ/អនុញ្ញាត (Released By):</label>
-                                <input type="text" class="form-control" id="edit_released_by" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">បរិយាយ / មូលហេតុ (Notes):</label>
-                                <input type="text" class="form-control" id="edit_notes">
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-success w-100 fw-bold">
-                                <i class="fas fa-save me-2"></i>រក្សាទុកការផ្លាស់ប្តូរ (Save Changes)
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let allGateOutData = [];
+        let availableYardContainers = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             const now = new Date();
@@ -424,22 +335,43 @@
             if(dateInput) {
                 dateInput.value = now.toISOString().slice(0, 16);
             }
+            fetchYardContainers();
             fetchGateOutData();
         });
 
-        function toggleCustomShippingLine() {
-            const selectEl = document.getElementById('shippingLineSelect');
-            const inputEl = document.getElementById('shippingLineCustomInput');
-            if (inputEl.classList.contains('d-none')) {
-                inputEl.classList.remove('d-none');
-                inputEl.removeAttribute('disabled');
-                selectEl.classList.add('d-none');
-                selectEl.setAttribute('disabled', 'true');
+        // មុខងារទាញយកកុងតឺន័រដែលមានស្ថានភាព Stored ពី Yard មកដាក់ក្នុង Dropdown
+        async function fetchYardContainers() {
+            try {
+                const response = await fetch('/api/fleet/container-yard?status=Stored');
+                const data = await response.json();
+                if (Array.isArray(data)) {
+                    availableYardContainers = data;
+                    const selectEl = document.getElementById('container_number');
+                    selectEl.innerHTML = '<option value="">-- ជ្រើសរើសកុងតឺន័រក្នុងស្តុក --</option>';
+                    data.forEach(item => {
+                        const opt = document.createElement('option');
+                        opt.value = item.container_number;
+                        opt.textContent = `${item.container_number} (${item.shipping_line || 'N/A'} - Block: ${item.block_code})`;
+                        selectEl.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error('Error fetching yard containers:', err);
+            }
+        }
+
+        // ពេលជ្រើសរើសលេខកុងតឺន័រ វានឹងទាញយក Size, Type និង Shipping Line មកដាក់ដោយស្វ័យប្រវត្ត
+        function onContainerSelected() {
+            const selectedContainerNo = document.getElementById('container_number').value;
+            const found = availableYardContainers.find(i => i.container_number === selectedContainerNo);
+            if (found) {
+                document.getElementById('container_size').value = found.container_size || "40'";
+                document.getElementById('container_type').value = found.container_type || "DC";
+                document.getElementById('shippingLineInput').value = found.shipping_line || '';
             } else {
-                inputEl.classList.add('d-none');
-                inputEl.setAttribute('disabled', 'true');
-                selectEl.classList.remove('d-none');
-                selectEl.removeAttribute('disabled');
+                document.getElementById('container_size').value = "40'";
+                document.getElementById('container_type').value = "DC";
+                document.getElementById('shippingLineInput').value = '';
             }
         }
 
@@ -485,7 +417,7 @@
             tbody.innerHTML = '';
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="empty-text">រកមិនឃើញទិន្នន័យកុងតឺន័រចេញទេ</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="empty-text">រកមិនឃើញទិន្នន័យកុងតឺន័រចេញទេ[cite: 8]</td></tr>`;
                 return;
             }
 
@@ -514,84 +446,12 @@
                     <td>${item.bill_of_lading || '-'}</td>
                     <td>${item.released_by}</td>
                     <td class="text-center">
-                        <button type="button" class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1" style="font-size: 0.8rem;" onclick='openEditModal(${index})'>
-                            <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
-                        </button>
+                        <span class="badge bg-secondary">Released</span>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
-
-        function openEditModal(index) {
-            const item = allGateOutData[index];
-            if (!item) return;
-
-            document.getElementById('edit_id').value = item.id;
-            document.getElementById('edit_container_number').value = item.container_number || '';
-            document.getElementById('edit_container_size').value = item.container_size || "40'";
-            document.getElementById('edit_container_type').value = item.container_type || "DC";
-            document.getElementById('edit_shipping_line').value = item.shipping_line || '';
-            
-            if(item.gate_out_date) {
-                const d = new Date(item.gate_out_date);
-                d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-                document.getElementById('edit_gate_out_date').value = d.toISOString().slice(0, 16);
-            }
-
-            document.getElementById('edit_truck_plate_number').value = item.truck_plate_number || '';
-            document.getElementById('edit_driver_name').value = item.driver_name || '';
-            document.getElementById('edit_destination').value = item.destination || '';
-            document.getElementById('edit_bill_of_lading').value = item.bill_of_lading || '';
-            document.getElementById('edit_released_by').value = item.released_by || '';
-            document.getElementById('edit_notes').value = item.notes || '';
-
-            const modalElement = document.getElementById('editGateOutModal');
-            let editModal = bootstrap.Modal.getInstance(modalElement);
-            if (!editModal) {
-                editModal = new bootstrap.Modal(modalElement);
-            }
-            editModal.show();
-        }
-
-        document.getElementById('editGateOutForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('edit_id').value;
-            const updatedData = {
-                container_number: document.getElementById('edit_container_number').value.trim(),
-                container_size: document.getElementById('edit_container_size').value,
-                container_type: document.getElementById('edit_container_type').value,
-                shipping_line: document.getElementById('edit_shipping_line').value.trim(),
-                gate_out_date: document.getElementById('edit_gate_out_date').value,
-                truck_plate_number: document.getElementById('edit_truck_plate_number').value.trim(),
-                driver_name: document.getElementById('edit_driver_name').value.trim(),
-                destination: document.getElementById('edit_destination').value.trim(),
-                bill_of_lading: document.getElementById('edit_bill_of_lading').value.trim(),
-                released_by: document.getElementById('edit_released_by').value.trim(),
-                notes: document.getElementById('edit_notes').value.trim()
-            };
-
-            try {
-                const response = await fetch(`/api/fleet/container-gate-out/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedData)
-                });
-                const result = await response.json();
-                if(response.ok && result.success) {
-                    alert('បានដោះដូរនិងកែប្រែព័ត៌មានដោយជោគជ័យ!');
-                    const modalElement = document.getElementById('editGateOutModal');
-                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
-                    if(modalInstance) modalInstance.hide();
-                    fetchGateOutData();
-                } else {
-                    alert('កំហុស៖ ' + (result.error || 'មិនអាចកែប្រែបានទេ'));
-                }
-            } catch(err) {
-                console.error(err);
-                alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
-            }
-        });
 
         document.getElementById('filterForm').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -679,20 +539,11 @@
         document.getElementById('gateOutForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            let shippingLineValue = '';
-            const customInput = document.getElementById('shippingLineCustomInput');
-            const selectSelect = document.getElementById('shippingLineSelect');
-            if (!customInput.classList.contains('d-none')) {
-                shippingLineValue = customInput.value.trim();
-            } else {
-                shippingLineValue = selectSelect.value;
-            }
-
             const formData = {
-                container_number: document.getElementById('container_number').value.trim(),
+                container_number: document.getElementById('container_number').value,
                 container_size: document.getElementById('container_size').value,
                 container_type: document.getElementById('container_type').value,
-                shipping_line: shippingLineValue,
+                shipping_line: document.getElementById('shippingLineInput').value,
                 gate_out_date: document.getElementById('gate_out_date').value,
                 truck_plate_number: document.getElementById('truck_plate_number').value.trim(),
                 driver_name: document.getElementById('driver_name').value.trim(),
@@ -711,7 +562,7 @@
 
                 const result = await response.json();
                 if (response.ok && result.success) {
-                    alert('កត់ត្រាការចេញកុងតឺន័របានជោគជ័យ!');
+                    alert('កត់ត្រាការចេញកុងតឺន័រ និងកាត់ស្តុកបានជោគជ័យ!');
                     location.reload();
                 } else {
                     alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកទិន្នន័យបានទេ'));
