@@ -490,7 +490,8 @@
             }
 
             data.forEach((item, index) => {
-                const formattedDate = item.gate_out_date ? new Date(item.gate_out_date).toLocaleString('km-KH', { 
+                const formattedDate = item.gate_out_date ? new Date(item.gate_out_date).toLocaleString('en-US', { 
+                    timeZone: 'UTC', 
                     year: 'numeric', 
                     month: '2-digit', 
                     day: '2-digit', 
