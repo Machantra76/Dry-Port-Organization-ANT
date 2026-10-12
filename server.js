@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 16]
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
@@ -278,7 +278,7 @@ async function initializeDatabase() {
             ALTER TABLE container_repair_logs ADD COLUMN IF NOT EXISTS shipping_line VARCHAR(100);
         `);
 
-        // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out) - បានបន្ថែម Size, Type, Shipping Line
+        // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out)
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_gate_out (
                 id SERIAL PRIMARY KEY,
@@ -297,7 +297,6 @@ async function initializeDatabase() {
             );
         `);
 
-        // 📌 បន្ថែម Migration Scripts សម្រាប់ធានាថា Table container_gate_out មាន Columns ថ្មីស្រាប់
         await client.query(`
             ALTER TABLE container_gate_out ADD COLUMN IF NOT EXISTS container_size VARCHAR(20) DEFAULT '40''';
             ALTER TABLE container_gate_out ADD COLUMN IF NOT EXISTS container_type VARCHAR(20) DEFAULT 'DC';
@@ -1414,7 +1413,7 @@ app.put('/api/fleet/container-yard/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)
+// API Routes: ការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs) - [បានភ្ជាប់កែប្រែ Yard Status]
 // ==========================================
 app.get('/api/fleet/container-repairs', async (req, res) => {
     const { status, container_number } = req.query;
@@ -1449,13 +1448,20 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
         repair_date, block_code, row_number, tier_number, 
         repair_type, cost, technician_name, status, notes 
     } = req.body;
+    
+    const repairStatus = status || 'In Progress';
+
+    const client = await pool.connect();
     try {
+        await client.query('BEGIN');
+
+        // ១. រក្សាទុកទិន្នន័យការជួសជុល
         const query = `
             INSERT INTO container_repair_logs 
             (container_number, container_size, container_type, shipping_line, repair_date, block_code, row_number, tier_number, repair_type, cost, technician_name, status, notes) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *;
         `;
-        const result = await pool.query(query, [
+        const result = await client.query(query, [
             container_number, 
             container_size || "40'", 
             container_type || "DC", 
@@ -1467,13 +1473,27 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
             repair_type, 
             parseFloat(cost) || 0, 
             technician_name, 
-            status || 'In Progress', 
+            repairStatus, 
             notes
         ]);
+
+        // ២. ធ្វើបច្ចុប្បន្នភាព Status ក្នុង container_yard_locations ស្វ័យប្រវត្ត
+        // បើ In Progress ដូរជា 'In Repair' | បើ Completed ដូរជា 'Stored' វិញ
+        const yardStatus = repairStatus === 'Completed' ? 'Stored' : 'In Repair';
+        await client.query(`
+            UPDATE container_yard_locations 
+            SET status = $1, updated_date = CURRENT_DATE 
+            WHERE container_number = $2
+        `, [yardStatus, container_number]);
+
+        await client.query('COMMIT');
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការជួសជុល និងស្តុកកុងតឺន័រ' });
+        await client.query('ROLLBACK');
+        console.error('Error saving container repair and updating yard:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកត់ត្រាការជួសជុល និងធ្វើបច្ចុប្បន្នភាពស្តុក' });
+    } finally {
+        client.release();
     }
 });
 
@@ -1484,7 +1504,11 @@ app.put('/api/fleet/container-repairs/:id', async (req, res) => {
         repair_date, block_code, row_number, tier_number, 
         repair_type, cost, technician_name, status, notes 
     } = req.body;
+
+    const client = await pool.connect();
     try {
+        await client.query('BEGIN');
+
         const query = `
             UPDATE container_repair_logs 
             SET container_number = $1, container_size = $2, container_type = $3, shipping_line = $4, 
@@ -1498,21 +1522,34 @@ app.put('/api/fleet/container-repairs/:id', async (req, res) => {
             repair_date, block_code || null, parseInt(row_number) || 1, parseInt(tier_number) || 1, 
             repair_type, parseFloat(cost) || 0, technician_name, status, notes, id
         ];
-        const result = await pool.query(query, values);
+        const result = await client.query(query, values);
         
         if (result.rows.length === 0) {
+            await client.query('ROLLBACK');
             return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
         }
 
+        // ធ្វើបច្ចុប្បន្នភាព Status ក្នុង Yard ឡើងវិញពេលកែប្រែការជួសជុល
+        const yardStatus = status === 'Completed' ? 'Stored' : 'In Repair';
+        await client.query(`
+            UPDATE container_yard_locations 
+            SET status = $1, updated_date = CURRENT_DATE 
+            WHERE container_number = $2
+        `, [yardStatus, container_number]);
+
+        await client.query('COMMIT');
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        await client.query('ROLLBACK');
         console.error('Error updating container repair:', err);
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យ' });
+    } finally {
+        client.release();
     }
 });
 
 // ==========================================
-// API Routes: ការចេញកុងតឺន័រ (Container Gate-Out) - បានកែសម្រួលទទួល Size, Type, Shipping Line
+// API Routes: ការចេញកុងតឺន័រ (Container Gate-Out)
 // ==========================================
 app.get('/api/fleet/container-gate-out', async (req, res) => {
     const { from, to, container_number } = req.query;
