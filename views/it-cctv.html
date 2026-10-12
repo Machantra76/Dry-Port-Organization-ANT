@@ -43,7 +43,6 @@
             </div>
         </div>
         <div class="flex items-center space-x-3">
-            <!-- ប៊ូតុងបើកកាមេរ៉ា -->
             <button onclick="startCamera()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-lg">
                 <i class="fa-solid fa-camera text-xs"></i> បើកកាមេរ៉ា
             </button>
@@ -55,7 +54,7 @@
 
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
         
-        <!-- កន្លែងបង្ហាញវីដេអូកាមេរ៉ា (លាក់ទុកជាមុន ពេលចុចប៊ូតុងទើបលេចចេញមក) -->
+        <!-- កន្លែងបង្ហាញវីដេអូកាមេរ៉ា -->
         <div id="cameraContainer" class="hidden bg-cardBg border border-borderCol p-4 rounded-2xl shadow-sm">
             <div class="flex justify-between items-center mb-3">
                 <h3 class="font-semibold text-white text-base flex items-center gap-2">
@@ -192,7 +191,6 @@
             fetchData();
         };
 
-        // មុខងារបើកកាមេរ៉ា
         async function startCamera() {
             const container = document.getElementById('cameraContainer');
             const videoElement = document.getElementById('cameraStream');
@@ -208,7 +206,6 @@
             }
         }
 
-        // មុខងារបិទកាមេរ៉ាវិញ
         function stopCamera() {
             const videoElement = document.getElementById('cameraStream');
             const container = document.getElementById('cameraContainer');
