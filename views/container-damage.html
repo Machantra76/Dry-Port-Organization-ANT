@@ -155,9 +155,47 @@
                 </div>
                 <form id="containerForm">
                     <div class="row g-3">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="form-label">លេខកុងតឺន័រ (Container Number):</label>
                             <input type="text" class="form-control" name="container_number" required placeholder="ឧ. TGHU1234567">
+                        </div>
+                        <!-- Container Size -->
+                        <div class="col-md-4">
+                            <label class="form-label">ទំហំកុងតឺន័រ (Size):</label>
+                            <select name="container_size" class="form-select" required>
+                                <option value="20'">20 Feet</option>
+                                <option value="40'" selected>40 Feet</option>
+                                <option value="45'">45 Feet</option>
+                            </select>
+                        </div>
+                        <!-- Container Type -->
+                        <div class="col-md-4">
+                            <label class="form-label">ប្រភេទ (Type):</label>
+                            <select name="container_type" class="form-select" required>
+                                <option value="DC" selected>Dry Van (DC)</option>
+                                <option value="HC">High Cube (HC)</option>
+                                <option value="OT">Open Top (OT)</option>
+                                <option value="FR">Flat Rack (FR)</option>
+                                <option value="RF">Reefer (RF)</option>
+                            </select>
+                        </div>
+                        <!-- Shipping Line -->
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label mb-0">Shipping Line:</label>
+                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 12px;" onclick="toggleCustomShippingLine()">
+                                    <i class="fas fa-plus me-1"></i> បន្ថែមផ្សេងទៀត
+                                </button>
+                            </div>
+                            <select name="shipping_line" id="shippingLineSelect" class="form-select" required>
+                                <option value="HMM">HMM</option>
+                                <option value="MSC">MSC</option>
+                                <option value="CMA CGM">CMA CGM</option>
+                                <option value="Evergreen">Evergreen</option>
+                                <option value="Maersk">Maersk</option>
+                                <option value="ONE">ONE</option>
+                            </select>
+                            <input type="text" name="shipping_line" id="shippingLineCustomInput" class="form-control mt-2 d-none" placeholder="បញ្ចូលឈ្មោះ Shipping Line..." disabled>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">ថ្ងៃខែត្រួតពិនិត្យ (Inspection Date):</label>
@@ -217,12 +255,17 @@
                         <input type="text" id="filterContainer" class="form-control" placeholder="ឧ. 4567 ឬ TGHU1234567">
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">ចាប់ពីថ្ងៃទី (From):</label>
-                        <input type="date" id="filterFrom" class="form-control">
-                    </div>
-                    <div class="col-md-2">
-                        <label class="form-label">ដល់ថ្ងៃទី (To):</label>
-                        <input type="date" id="filterTo" class="form-control">
+                        <label class="form-label">Shipping Line:</label>
+                        <select id="filterShippingLine" class="form-select">
+                            <option value="">-- ទាំងអស់ --</option>
+                            <option value="HMM">HMM</option>
+                            <option value="MSC">MSC</option>
+                            <option value="CMA CGM">CMA CGM</option>
+                            <option value="Evergreen">Evergreen</option>
+                            <option value="Maersk">Maersk</option>
+                            <option value="ONE">ONE</option>
+                            <option value="Other">ផ្សេងៗ</option>
+                        </select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">កម្រិត (Severity):</label>
@@ -233,11 +276,20 @@
                             <option value="Severe">ធ្ងន់ធ្ងរ</option>
                         </select>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end gap-2">
+                    <div class="col-md-3">
+                        <label class="form-label">ចាប់ពីថ្ងៃទី - ដល់ថ្ងៃទី:</label>
+                        <div class="input-group">
+                            <input type="date" id="filterFrom" class="form-control form-control-sm">
+                            <input type="date" id="filterTo" class="form-control form-control-sm">
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary w-100 py-2" style="border-radius: 8px;">
                             <i class="fas fa-search me-1"></i> ស្វែងរក
                         </button>
-                        <button type="button" class="btn btn-secondary w-100 py-2" onclick="resetFilter()" style="border-radius: 8px;">
+                    </div>
+                    <div class="col-12 text-end">
+                        <button type="button" class="btn btn-secondary px-4 py-2" onclick="resetFilter()" style="border-radius: 8px;">
                             កំណត់ឡើងវិញ
                         </button>
                     </div>
@@ -249,14 +301,16 @@
                         <thead>
                             <tr>
                                 <th>ល.រ (No.)</th>
-                                <th>លេខកុងតឺន័រ (Container No.)</th>
-                                <th>ថ្ងៃខែត្រួតពិនិត្យ (Date)</th>
-                                <th>ទីតាំងខូចខាត (Location)</th>
-                                <th>កម្រិត (Severity)</th>
-                                <th>អ្នកពិនិត្យ (Inspector)</th>
-                                <th>ស្ថានភាព (Status)</th>
-                                <th>ពិពណ៌នា (Description)</th>
-                                <th class="text-center">សកម្មភាព (Actions)</th>
+                                <th>លេខកុងតឺន័រ</th>
+                                <th>Size / Type</th>
+                                <th>Shipping Line</th>
+                                <th>ថ្ងៃខែត្រួតពិនិត្យ</th>
+                                <th>ទីតាំងខូចខាត</th>
+                                <th>កម្រិត</th>
+                                <th>អ្នកពិនិត្យ</th>
+                                <th>ស្ថានភាព</th>
+                                <th>ពិពណ៌នា</th>
+                                <th class="text-center">សកម្មភាព</th>
                             </tr>
                         </thead>
                         <tbody id="containerTableBody">
@@ -281,9 +335,31 @@
                     <form id="editContainerForm">
                         <input type="hidden" id="edit_id">
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">លេខកុងតឺន័រ (Container Number):</label>
+                            <div class="col-md-4">
+                                <label class="form-label">លេខកុងតឺន័រ:</label>
                                 <input type="text" class="form-control" id="edit_container_number" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">ទំហំ (Size):</label>
+                                <select class="form-select" id="edit_container_size">
+                                    <option value="20'">20 Feet</option>
+                                    <option value="40'">40 Feet</option>
+                                    <option value="45'">45 Feet</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">ប្រភេទ (Type):</label>
+                                <select class="form-select" id="edit_container_type">
+                                    <option value="DC">Dry Van (DC)</option>
+                                    <option value="HC">High Cube (HC)</option>
+                                    <option value="OT">Open Top (OT)</option>
+                                    <option value="FR">Flat Rack (FR)</option>
+                                    <option value="RF">Reefer (RF)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Shipping Line:</label>
+                                <input type="text" class="form-control" id="edit_shipping_line" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">ថ្ងៃខែត្រួតពិនិត្យ (Inspection Date):</label>
@@ -340,6 +416,26 @@
             loadDamagedContainers();
         });
 
+        function toggleCustomShippingLine() {
+            const selectEl = document.getElementById('shippingLineSelect');
+            const inputEl = document.getElementById('shippingLineCustomInput');
+            if (inputEl.classList.contains('d-none')) {
+                inputEl.classList.remove('d-none');
+                inputEl.removeAttribute('disabled');
+                inputEl.setAttribute('name', 'shipping_line');
+                selectEl.classList.add('d-none');
+                selectEl.setAttribute('disabled', 'true');
+                selectEl.removeAttribute('name');
+            } else {
+                inputEl.classList.add('d-none');
+                inputEl.setAttribute('disabled', 'true');
+                inputEl.removeAttribute('name');
+                selectEl.classList.remove('d-none');
+                selectEl.removeAttribute('disabled');
+                selectEl.setAttribute('name', 'shipping_line');
+            }
+        }
+
         async function loadDamagedContainers() {
             try {
                 const response = await fetch('/api/fleet/damaged-containers');
@@ -354,7 +450,7 @@
                 }
             } catch (err) {
                 console.error('Error loading data:', err);
-                document.getElementById('containerTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+                document.getElementById('containerTableBody').innerHTML = `<tr><td colspan="11" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
             }
         }
 
@@ -363,7 +459,7 @@
             tbody.innerHTML = '';
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">ពុំមានទិន្នន័យកុងតឺន័រខូចទេ (No data found)</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">ពុំមានទិន្នន័យកុងតឺន័រខូចទេ (No data found)</td></tr>`;
                 return;
             }
 
@@ -381,6 +477,8 @@
                     <tr>
                         <td>${index + 1}</td>
                         <td><strong>${item.container_number}</strong></td>
+                        <td><span class="badge bg-info text-dark">${item.container_size || "40'"} / ${item.container_type || "DC"}</span></td>
+                        <td><span class="fw-semibold text-dark">${item.shipping_line || '-'}</span></td>
                         <td>${item.inspection_date ? item.inspection_date.split('T')[0] : ''}</td>
                         <td>${item.damage_location}</td>
                         <td><span class="badge ${badgeClass}">${item.severity_level}</span></td>
@@ -388,7 +486,7 @@
                         <td><span class="badge ${statusBadge}">${item.status}</span></td>
                         <td>${item.description || '-'}</td>
                         <td>
-                            <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1" style="font-size: 0.8rem;" onclick='openEditModal(${JSON.stringify(item)})'>
+                            <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1" style="font-size: 0.8rem;" onclick="openEditModal(${item.id})">
                                 <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
                             </button>
                         </td>
@@ -402,9 +500,10 @@
         document.getElementById('filterForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const searchText = document.getElementById('filterContainer').value.trim().toLowerCase();
+            const shippingLineFilter = document.getElementById('filterShippingLine').value.trim().toLowerCase();
+            const severity = document.getElementById('filterSeverity').value;
             const fromDate = document.getElementById('filterFrom').value;
             const toDate = document.getElementById('filterTo').value;
-            const severity = document.getElementById('filterSeverity').value;
 
             const filtered = allDamagedData.filter(item => {
                 let matchContainer = true;
@@ -412,6 +511,17 @@
                     const containerNum = (item.container_number || '').toLowerCase();
                     const last4Digits = containerNum.slice(-4);
                     matchContainer = containerNum.includes(searchText) || last4Digits.includes(searchText);
+                }
+
+                let matchLine = true;
+                if (shippingLineFilter) {
+                    const itemLine = (item.shipping_line || '').trim().toLowerCase();
+                    if (shippingLineFilter === 'other') {
+                        const standardLines = ['hmm', 'msc', 'cma cgm', 'evergreen', 'maersk', 'one'];
+                        matchLine = !standardLines.includes(itemLine);
+                    } else {
+                        matchLine = itemLine === shippingLineFilter;
+                    }
                 }
 
                 let matchSeverity = true;
@@ -424,7 +534,7 @@
                 if (fromDate && itemDateOnly < fromDate) matchDate = false;
                 if (toDate && itemDateOnly > toDate) matchDate = false;
 
-                return matchContainer && matchSeverity && matchDate;
+                return matchContainer && matchLine && matchSeverity && matchDate;
             });
 
             displayTableData(filtered);
@@ -432,21 +542,31 @@
 
         function resetFilter() {
             document.getElementById('filterContainer').value = '';
+            document.getElementById('filterShippingLine').value = '';
+            document.getElementById('filterSeverity').value = '';
             document.getElementById('filterFrom').value = '';
             document.getElementById('filterTo').value = '';
-            document.getElementById('filterSeverity').value = '';
             displayTableData(allDamagedData);
         }
 
-        // បើក Modal សម្រាប់កែប្រែ/ដោះដូរទិន្នន័យ
-        function openEditModal(item) {
+        // បើក Modal សម្រាប់កែប្រែ/ដោះដូរទិន្នន័យតាម ID
+        function openEditModal(id) {
+            const item = allDamagedData.find(d => d.id === id);
+            if (!item) {
+                alert('រកមិនឃើញទិន្នន័យសម្រាប់កែប្រែទេ!');
+                return;
+            }
+
             document.getElementById('edit_id').value = item.id;
-            document.getElementById('edit_container_number').value = item.container_number;
+            document.getElementById('edit_container_number').value = item.container_number || '';
+            document.getElementById('edit_container_size').value = item.container_size || "40'";
+            document.getElementById('edit_container_type').value = item.container_type || "DC";
+            document.getElementById('edit_shipping_line').value = item.shipping_line || '';
             document.getElementById('edit_inspection_date').value = item.inspection_date ? item.inspection_date.split('T')[0] : '';
-            document.getElementById('edit_damage_location').value = item.damage_location;
-            document.getElementById('edit_severity_level').value = item.severity_level;
-            document.getElementById('edit_inspector_name').value = item.inspector_name;
-            document.getElementById('edit_status').value = item.status;
+            document.getElementById('edit_damage_location').value = item.damage_location || '';
+            document.getElementById('edit_severity_level').value = item.severity_level || 'Minor';
+            document.getElementById('edit_inspector_name').value = item.inspector_name || '';
+            document.getElementById('edit_status').value = item.status || 'Pending Repair';
             document.getElementById('edit_description').value = item.description || '';
 
             const editModal = new bootstrap.Modal(document.getElementById('editContainerModal'));
@@ -459,6 +579,9 @@
             const id = document.getElementById('edit_id').value;
             const updatedData = {
                 container_number: document.getElementById('edit_container_number').value.trim(),
+                container_size: document.getElementById('edit_container_size').value,
+                container_type: document.getElementById('edit_container_type').value,
+                shipping_line: document.getElementById('edit_shipping_line').value.trim(),
                 inspection_date: document.getElementById('edit_inspection_date').value,
                 damage_location: document.getElementById('edit_damage_location').value.trim(),
                 severity_level: document.getElementById('edit_severity_level').value,
@@ -494,7 +617,7 @@
 
             const filterForm = historyElement.querySelector('#filterForm');
             const pdfBtn = historyElement.querySelector('.btn-pdf');
-            const actionCells = historyElement.querySelectorAll('th:nth-child(9), td:nth-child(9)');
+            const actionCells = historyElement.querySelectorAll('th:nth-child(11), td:nth-child(11)');
             
             if(filterForm) filterForm.style.display = 'none';
             if(pdfBtn) pdfBtn.style.display = 'none';
