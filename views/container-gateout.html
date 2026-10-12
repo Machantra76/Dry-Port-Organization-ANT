@@ -462,15 +462,12 @@
             }
         }
 
-        // បង្កើត Options ក្នុង Filter Dropdown ដោយស្វ័យប្រវត្តតាមទិន្នន័យจริง
         function populateFilterShippingLines(data) {
             const filterSelect = document.getElementById('filterShippingLine');
-            const currentSelected = filterSelect.value; // រក្សាទុកតម្លៃដែលកំពុងជ្រើសរើស (ប្រសិនបើមាន)
+            const currentSelected = filterSelect.value;
             
-            // សម្អាតចោលសល់ពីមុន រួចបន្ថែម Option -- ទាំងអស់ -- ឡើងវិញ
             filterSelect.innerHTML = '<option value="">-- ទាំងអស់ --</option>';
 
-            // ទាញយកឈ្មោះ Shipping Line ទាំងអស់ដោយមិនឱ្យជាន់គ្នា (Unique)
             const uniqueLines = [...new Set(data.map(item => (item.shipping_line || '').trim()).filter(line => line !== ''))];
             
             uniqueLines.sort().forEach(line => {
@@ -480,7 +477,6 @@
                 filterSelect.appendChild(option);
             });
 
-            // ផ្ដល់តម្លៃដើមវិញបើមាន
             filterSelect.value = currentSelected;
         }
 
@@ -494,7 +490,16 @@
             }
 
             data.forEach((item, index) => {
-                const formattedDate = item.gate_out_date ? new Date(item.gate_out_date).toLocaleString('km-KH') : '';
+                const formattedDate = item.gate_out_date ? new Date(item.gate_out_date).toLocaleString('km-KH', { 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit', 
+                    hour: '2-digit', 
+                    minute: '2-digit', 
+                    second: '2-digit',
+                    hour12: true 
+                }) : '';
+                
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${index + 1}</td>
