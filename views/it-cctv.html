@@ -25,6 +25,7 @@
 </head>
 <body class="bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased">
 
+    <!-- Header Section -->
     <header class="bg-cardBg border-b border-borderCol sticky top-0 z-50 px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-md">
         <div class="flex items-center space-x-3">
             <a href="/" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-borderCol px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2">
@@ -52,23 +53,39 @@
         </div>
     </header>
 
+    <!-- Main Content -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-6 space-y-6">
         
-        <!-- កន្លែងបង្ហាញវីដេអូកាមេរ៉ា -->
+        <!-- កន្លែងបង្ហាញវីដេអូកាមេរ៉ា និងមុខងារថតរូប (Snapshot) -->
         <div id="cameraContainer" class="hidden bg-cardBg border border-borderCol p-4 rounded-2xl shadow-sm">
             <div class="flex justify-between items-center mb-3">
                 <h3 class="font-semibold text-white text-base flex items-center gap-2">
-                    <i class="fa-solid fa-video text-emerald-400"></i> ការផ្សាយផ្ទាល់ពីកាមេរ៉ា (Camera Stream)
+                    <i class="fa-solid fa-video text-emerald-400"></i> ការផ្សាយផ្ទាល់ពីកាមេរ៉ា (Camera Live Stream)
                 </h3>
-                <button onclick="stopCamera()" class="text-slate-400 hover:text-rose-400 text-xs bg-slate-800 px-3 py-1.5 rounded-lg border border-borderCol transition">
-                    បិទកាមេរ៉ាវិញ
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="takeSnapshot()" class="bg-cyan-600 hover:bg-cyan-500 text-white text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 shadow">
+                        <i class="fa-solid fa-camera-retro"></i> ថតយករូបភាព
+                    </button>
+                    <button onclick="stopCamera()" class="text-slate-400 hover:text-rose-400 text-xs bg-slate-800 px-3 py-1.5 rounded-lg border border-borderCol transition">
+                        បិទកាមេរ៉ាវិញ
+                    </button>
+                </div>
             </div>
-            <div class="flex justify-center bg-slate-950 rounded-xl overflow-hidden p-2 border border-borderCol">
-                <video id="cameraStream" autoplay playsinline class="w-full max-w-2xl rounded-lg max-h-[400px] object-contain"></video>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                <div class="flex justify-center bg-slate-950 rounded-xl overflow-hidden p-2 border border-borderCol">
+                    <video id="cameraStream" autoplay playsinline class="w-full max-h-[300px] object-contain rounded-lg"></video>
+                </div>
+                <!-- កន្លែងបង្ហាញរូបភាពដែលបានថត (Snapshot Preview) -->
+                <div class="bg-slate-950 border border-borderCol rounded-xl p-3 flex flex-col items-center justify-center min-h-[200px]">
+                    <p class="text-xs text-slate-400 mb-2">លទ្ធផលរូបភាពថតបាន (Snapshot):</p>
+                    <canvas id="snapshotCanvas" class="hidden max-h-[220px] rounded-lg border border-slate-700 shadow-md mb-2"></canvas>
+                    <p id="noSnapshotText" class="text-xs text-slate-500 italic">មិនទាន់មានរូបភាពថតនៅឡើយទេ</p>
+                    <a id="downloadLink" style="display:none;" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg mt-2 transition" download="cctv-snapshot.png">ទាញយក្សរូបភាព (Download)</a>
+                </div>
             </div>
         </div>
 
+        <!-- Toast Notification -->
         <div id="toast" class="hidden fixed bottom-5 right-5 z-50 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-emerald-500">
             <i class="fa-solid fa-circle-check text-lg"></i>
             <div>
@@ -77,6 +94,7 @@
             </div>
         </div>
 
+        <!-- Statistics Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div class="bg-cardBg border border-borderCol p-5 rounded-2xl flex items-center justify-between">
                 <div>
@@ -100,6 +118,7 @@
             </div>
         </div>
 
+        <!-- Tables Section -->
         <div class="bg-cardBg border border-borderCol rounded-2xl p-4 shadow-sm space-y-6">
             <div>
                 <h3 class="font-semibold text-white text-base mb-3"><i class="fa-solid fa-video text-cyan-400 mr-2"></i> បញ្ជីកាមេរ៉ាសុវត្ថិភាព (CCTV Cameras)</h3>
@@ -140,6 +159,7 @@
         </div>
     </main>
 
+    <!-- Modal Form -->
     <div id="cctvModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-cardBg border border-borderCol w-full max-w-md rounded-2xl shadow-2xl overflow-hidden">
             <div class="px-6 py-4 border-b border-borderCol flex justify-between items-center">
@@ -186,11 +206,13 @@
         </div>
     </div>
 
+    <!-- JavaScript Scripts -->
     <script>
         window.onload = function() {
             fetchData();
         };
 
+        // បើកកាមេរ៉ា
         async function startCamera() {
             const container = document.getElementById('cameraContainer');
             const videoElement = document.getElementById('cameraStream');
@@ -206,6 +228,7 @@
             }
         }
 
+        // បិទកាមេរ៉ា
         function stopCamera() {
             const videoElement = document.getElementById('cameraStream');
             const container = document.getElementById('cameraContainer');
@@ -218,6 +241,37 @@
             container.classList.add('hidden');
         }
 
+        // មុខងារថតរូបភាពពីកាមេរ៉ា (Snapshot)
+        function takeSnapshot() {
+            const video = document.getElementById('cameraStream');
+            const canvas = document.getElementById('snapshotCanvas');
+            const noText = document.getElementById('noSnapshotText');
+            const downloadBtn = document.getElementById('downloadLink');
+
+            if (!video.srcObject) {
+                alert('សូមបើកកាមេរ៉ាសិន មុននឹងធ្វើការថតរូប!');
+                return;
+            }
+
+            canvas.width = video.videoWidth || 640;
+            canvas.height = video.videoHeight || 480;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // បង្ហាញ Canvas និងលាក់អក្សរខ្វះទិន្នន័យ
+            canvas.classList.remove('hidden');
+            noText.classList.add('hidden');
+
+            // បង្កើត Link សម្រាប់ទាញយកយករូបភាព
+            const dataURL = canvas.toDataURL('image/png');
+            downloadBtn.href = dataURL;
+            downloadBtn.style.display = 'inline-block';
+            
+            showToast('បានថតយករូបភាពពីកាមេរ៉ាជោគជ័យ!');
+        }
+
+        // ទាញយកទិន្នន័យពី Server API
         async function fetchData() {
             try {
                 const response = await fetch('/api/it-cctv');
@@ -270,6 +324,7 @@
             document.getElementById(id).classList.add('hidden');
         }
 
+        // បន្ថែមទិន្នន័យថ្មីចូល Database
         async function handleAddItem(e) {
             e.preventDefault();
             const category = document.getElementById('itemCategory').value;
@@ -297,6 +352,7 @@
             }
         }
 
+        // លុបទិន្នន័យ
         async function deleteItem(id) {
             if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
                 try {
@@ -311,6 +367,7 @@
             }
         }
 
+        // បង្ហាញ Toast Message
         function showToast(message) {
             const toast = document.getElementById('toast');
             document.getElementById('toastMessage').innerText = message;
