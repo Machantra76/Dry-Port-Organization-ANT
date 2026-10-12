@@ -117,11 +117,12 @@
             font-weight: 600;
             text-align: center;
             vertical-align: middle;
+            font-size: 13px;
         }
         .table tbody td {
             vertical-align: middle;
             text-align: center;
-            font-size: 14px;
+            font-size: 13px;
         }
     </style>
 </head>
@@ -256,7 +257,6 @@
                         <label class="form-label">Shipping Line:</label>
                         <select id="filterShippingLine" class="form-select">
                             <option value="">-- ទាំងអស់ --</option>
-                            <!-- Options នឹងត្រូវបានបង្កើតឡើងដោយស្វ័យប្រវត្តនៅទីនេះ -->
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -291,17 +291,17 @@
                     <table class="table table-hover align-middle">
                         <thead>
                             <tr>
-                                <th>ល.រ (No.)</th>
+                                <th>ល.រ</th>
                                 <th>លេខកុងតឺន័រ</th>
                                 <th>Size / Type</th>
                                 <th>Shipping Line</th>
                                 <th>ប្លុក (Block)</th>
-                                <th>ជួរ (Row)</th>
-                                <th>ជាន់ (Tier)</th>
-                                <th>ស្ថានភាព (Status)</th>
-                                <th>កាលបរិច្ឆេទ (Date)</th>
+                                <th>ជួរ / ជាន់</th>
+                                <th>ស្ថានភាព</th>
+                                <th>កាលបរិច្ឆេទ</th>
+                                <th>Day in Yard</th>
                                 <th>កំណត់ចំណាំ</th>
-                                <th class="text-center">សកម្មភាព (Actions)</th>
+                                <th class="text-center">សកម្មភាព</th>
                             </tr>
                         </thead>
                         <tbody id="yardTableBody">
@@ -442,7 +442,6 @@
             }
         }
 
-        // បង្កើត Options ក្នុង Filter Dropdown ដោយស្វ័យប្រវត្តតាមទិន្នន័យจริง
         function populateFilterShippingLines(data) {
             const filterSelect = document.getElementById('filterShippingLine');
             const currentSelected = filterSelect.value;
@@ -461,6 +460,20 @@
             filterSelect.value = currentSelected;
         }
 
+        // មុខងារគណនាចំនួនថ្ងៃស្ថិតក្នុងទីធ្លា (Day in Yard)
+        function calculateDayInYard(dateString) {
+            if (!dateString) return '-';
+            const updatedDate = new Date(dateString.split('T')[0]);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            updatedDate.setHours(0, 0, 0, 0);
+
+            const diffTime = today - updatedDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            return diffDays >= 0 ? `${diffDays + 1} ថ្ងៃ` : '0 ថ្ងៃ';
+        }
+
         function displayTableData(data) {
             const tbody = document.getElementById('yardTableBody');
             tbody.innerHTML = '';
@@ -476,6 +489,8 @@
                 else if (item.status === 'Dispatched') statusBadge = 'bg-secondary text-white';
                 else if (item.status === 'Moved') statusBadge = 'bg-warning text-dark';
 
+                const dayInYardText = calculateDayInYard(item.updated_date);
+
                 const row = `
                     <tr>
                         <td>${index + 1}</td>
@@ -483,10 +498,10 @@
                         <td><span class="badge bg-info text-dark">${item.container_size || "40'"} / ${item.container_type || "DC"}</span></td>
                         <td><span class="fw-semibold text-dark">${item.shipping_line || '-'}</span></td>
                         <td><span class="badge bg-dark">${item.block_code}</span></td>
-                        <td>${item.row_number}</td>
-                        <td>${item.tier_number}</td>
+                        <td>ជួរទី ${item.row_number} / ជាន់ទី ${item.tier_number}</td>
                         <td><span class="badge ${statusBadge}">${item.status}</span></td>
                         <td>${item.updated_date ? item.updated_date.split('T')[0] : ''}</td>
+                        <td><span class="badge bg-danger text-white">${dayInYardText}</span></td>
                         <td>${item.notes || '-'}</td>
                         <td>
                             <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1" style="font-size: 0.8rem;" onclick="openEditModal(${item.id})">
@@ -499,7 +514,6 @@
             });
         }
 
-        // មុខងារ Filter (ស្វែងរកតាម Container, Size, Shipping Line, Status និង Date From-To)
         document.getElementById('filterForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const searchText = document.getElementById('filterContainer').value.trim().toLowerCase();
