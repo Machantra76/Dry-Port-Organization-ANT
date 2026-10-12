@@ -331,7 +331,7 @@
                         </thead>
                         <tbody id="gateOutTableBody">
                             <tr>
-                                <td colspan="11" class="empty-text">កំពុងទាញយកទិន្នន័យ...</td>
+                                <td colspan="11" class="empty-text">កំពុងទាញយកទិន្នន័យ...[cite: 9]</td>
                             </tr>
                         </tbody>
                     </table>
@@ -491,7 +491,7 @@
                     <td>${item.bill_of_lading || '-'}</td>
                     <td>${item.released_by}</td>
                     <td class="text-center">
-                        <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1" style="font-size: 0.8rem;" onclick='openEditModal(${JSON.stringify(item)})'>
+                        <button type="button" class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1" style="font-size: 0.8rem;" onclick='openEditModal(${JSON.stringify(item)})'>
                             <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
                         </button>
                     </td>
@@ -520,7 +520,11 @@
             document.getElementById('edit_released_by').value = item.released_by || '';
             document.getElementById('edit_notes').value = item.notes || '';
 
-            const editModal = new bootstrap.Modal(document.getElementById('editGateOutModal'));
+            const modalElement = document.getElementById('editGateOutModal');
+            let editModal = bootstrap.Modal.getInstance(modalElement);
+            if (!editModal) {
+                editModal = new bootstrap.Modal(modalElement);
+            }
             editModal.show();
         }
 
@@ -550,7 +554,9 @@
                 const result = await response.json();
                 if(response.ok && result.success) {
                     alert('បានដោះដូរនិងកែប្រែព័ត៌មានដោយជោគជ័យ!');
-                    bootstrap.Modal.getInstance(document.getElementById('editGateOutModal')).hide();
+                    const modalElement = document.getElementById('editGateOutModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    if(modalInstance) modalInstance.hide();
                     fetchGateOutData();
                 } else {
                     alert('កំហុស៖ ' + (result.error || 'មិនអាចកែប្រែបានទេ'));
