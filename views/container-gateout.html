@@ -331,7 +331,7 @@
                         </thead>
                         <tbody id="gateOutTableBody">
                             <tr>
-                                <td colspan="11" class="empty-text">កំពុងទាញយកទិន្នន័យ...[cite: 9]</td>
+                                <td colspan="11" class="empty-text">កំពុងទាញយកទិន្នន័យ...[cite: 10]</td>
                             </tr>
                         </tbody>
                     </table>
@@ -491,7 +491,7 @@
                     <td>${item.bill_of_lading || '-'}</td>
                     <td>${item.released_by}</td>
                     <td class="text-center">
-                        <button type="button" class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1" style="font-size: 0.8rem;" onclick='openEditModal(${JSON.stringify(item)})'>
+                        <button type="button" class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1" style="font-size: 0.8rem;" onclick='openEditModal(${index})'>
                             <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
                         </button>
                     </td>
@@ -500,7 +500,10 @@
             });
         }
 
-        function openEditModal(item) {
+        function openEditModal(index) {
+            const item = allGateOutData[index];
+            if (!item) return;
+
             document.getElementById('edit_id').value = item.id;
             document.getElementById('edit_container_number').value = item.container_number || '';
             document.getElementById('edit_container_size').value = item.container_size || "40'";
