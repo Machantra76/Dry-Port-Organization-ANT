@@ -203,11 +203,14 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
+        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers) - បានបន្ថែម Size, Type, Shipping Line
         await client.query(`
             CREATE TABLE IF NOT EXISTS damaged_containers (
                 id SERIAL PRIMARY KEY,
                 container_number VARCHAR(100) NOT NULL,
+                container_size VARCHAR(20) DEFAULT '40''',
+                container_type VARCHAR(20) DEFAULT 'DC',
+                shipping_line VARCHAR(100),
                 inspection_date DATE NOT NULL,
                 damage_location VARCHAR(150) NOT NULL,
                 severity_level VARCHAR(50) NOT NULL,
@@ -216,6 +219,13 @@ async function initializeDatabase() {
                 status VARCHAR(50) DEFAULT 'Pending Repair',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+        `);
+
+        // 📌 បន្ថែម Migration Scripts សម្រាប់ធានាថា Table damaged_containers មាន Columns ថ្មីស្រាប់
+        await client.query(`
+            ALTER TABLE damaged_containers ADD COLUMN IF NOT EXISTS container_size VARCHAR(20) DEFAULT '40''';
+            ALTER TABLE damaged_containers ADD COLUMN IF NOT EXISTS container_type VARCHAR(20) DEFAULT 'DC';
+            ALTER TABLE damaged_containers ADD COLUMN IF NOT EXISTS shipping_line VARCHAR(100);
         `);
 
         // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
@@ -236,7 +246,6 @@ async function initializeDatabase() {
             );
         `);
 
-        // 📌 បន្ថែម Migration Scripts សម្រាប់ធានាថា Table container_yard_locations មាន Columns ថ្មីស្រាប់
         await client.query(`
             ALTER TABLE container_yard_locations ADD COLUMN IF NOT EXISTS container_size VARCHAR(20) DEFAULT '40''';
             ALTER TABLE container_yard_locations ADD COLUMN IF NOT EXISTS container_type VARCHAR(20) DEFAULT 'DC';
@@ -1207,10 +1216,10 @@ app.put('/api/fleet/transport-plans/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
+// API Routes: ការត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers) - បានកែសម្រួលគាំទ្រ Size, Type, Shipping Line
 // ==========================================
 app.get('/api/fleet/damaged-containers', async (req, res) => {
-    const { from, to, severity_level } = req.query;
+    const { from, to, severity_level, shipping_line } = req.query;
     try {
         let query = 'SELECT * FROM damaged_containers WHERE 1=1';
         let params = [];
@@ -1227,6 +1236,12 @@ app.get('/api/fleet/damaged-containers', async (req, res) => {
             params.push(severity_level);
             paramIndex += 1;
         }
+
+        if (shipping_line) {
+            query += ` AND shipping_line ILIKE $${paramIndex}`;
+            params.push(`%${shipping_line}%`);
+            paramIndex += 1;
+        }
         
         query += ' ORDER BY inspection_date DESC, id DESC';
         const result = await pool.query(query, params);
@@ -1237,14 +1252,21 @@ app.get('/api/fleet/damaged-containers', async (req, res) => {
 });
 
 app.post('/api/fleet/damaged-containers', async (req, res) => {
-    const { container_number, inspection_date, damage_location, severity_level, inspector_name, description, status } = req.body;
+    const { 
+        container_number, container_size, container_type, shipping_line, 
+        inspection_date, damage_location, severity_level, inspector_name, description, status 
+    } = req.body;
     try {
         const query = `
-            INSERT INTO damaged_containers (container_number, inspection_date, damage_location, severity_level, inspector_name, description, status) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+            INSERT INTO damaged_containers 
+            (container_number, container_size, container_type, shipping_line, inspection_date, damage_location, severity_level, inspector_name, description, status) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
         `;
         const result = await pool.query(query, [
             container_number, 
+            container_size || "40'", 
+            container_type || "DC", 
+            shipping_line || null, 
             inspection_date, 
             damage_location, 
             severity_level, 
@@ -1254,21 +1276,30 @@ app.post('/api/fleet/damaged-containers', async (req, res) => {
         ]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាកុងតឺន័រខូច' });
     }
 });
 
 app.put('/api/fleet/damaged-containers/:id', async (req, res) => {
     const { id } = req.params;
-    const { container_number, inspection_date, damage_location, severity_level, inspector_name, status, description } = req.body;
+    const { 
+        container_number, container_size, container_type, shipping_line, 
+        inspection_date, damage_location, severity_level, inspector_name, status, description 
+    } = req.body;
     try {
         const query = `
             UPDATE damaged_containers 
-            SET container_number = $1, inspection_date = $2, damage_location = $3, severity_level = $4, inspector_name = $5, status = $6, description = $7
-            WHERE id = $8 
+            SET container_number = $1, container_size = $2, container_type = $3, shipping_line = $4, 
+                inspection_date = $5, damage_location = $6, severity_level = $7, inspector_name = $8, status = $9, description = $10
+            WHERE id = $11 
             RETURNING *;
         `;
-        const result = await pool.query(query, [container_number, inspection_date, damage_location, severity_level, inspector_name, status, description, id]);
+        const values = [
+            container_number, container_size, container_type, shipping_line, 
+            inspection_date, damage_location, severity_level, inspector_name, status, description, id
+        ];
+        const result = await pool.query(query, values);
         
         if (result.rows.length === 0) {
             return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យកុងតឺន័រខូចនេះទេ' });
@@ -1282,7 +1313,7 @@ app.put('/api/fleet/damaged-containers/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations) - បានកែសម្រួលគាំទ្រ Size, Type, Shipping Line
+// API Routes: ការគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
 // ==========================================
 app.get('/api/fleet/container-yard', async (req, res) => {
     const { block_code, status, shipping_line } = req.query;
