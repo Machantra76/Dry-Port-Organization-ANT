@@ -279,13 +279,7 @@
                         <label class="form-label">Shipping Line:</label>
                         <select id="filterShippingLine" class="form-select">
                             <option value="">-- ទាំងអស់ --</option>
-                            <option value="HMM">HMM</option>
-                            <option value="MSC">MSC</option>
-                            <option value="CMA CGM">CMA CGM</option>
-                            <option value="Evergreen">Evergreen</option>
-                            <option value="Maersk">Maersk</option>
-                            <option value="ONE">ONE</option>
-                            <option value="Other">ផ្សេងៗ</option>
+                            <!-- Options នឹងត្រូវបានបង្កើតឡើងដោយស្វ័យប្រវត្តនៅទីនេះ -->
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -456,6 +450,7 @@
                 
                 if (Array.isArray(data)) {
                     allGateOutData = data;
+                    populateFilterShippingLines(allGateOutData);
                     displayData(allGateOutData);
                 } else {
                     allGateOutData = [];
@@ -465,6 +460,28 @@
                 console.error('Error fetching data:', err);
                 document.getElementById('gateOutTableBody').innerHTML = `<tr><td colspan="11" class="text-center text-danger py-3">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
             }
+        }
+
+        // បង្កើត Options ក្នុង Filter Dropdown ដោយស្វ័យប្រវត្តតាមទិន្នន័យจริง
+        function populateFilterShippingLines(data) {
+            const filterSelect = document.getElementById('filterShippingLine');
+            const currentSelected = filterSelect.value; // រក្សាទុកតម្លៃដែលកំពុងជ្រើសរើស (ប្រសិនបើមាន)
+            
+            // សម្អាតចោលសល់ពីមុន រួចបន្ថែម Option -- ទាំងអស់ -- ឡើងវិញ
+            filterSelect.innerHTML = '<option value="">-- ទាំងអស់ --</option>';
+
+            // ទាញយកឈ្មោះ Shipping Line ទាំងអស់ដោយមិនឱ្យជាន់គ្នា (Unique)
+            const uniqueLines = [...new Set(data.map(item => (item.shipping_line || '').trim()).filter(line => line !== ''))];
+            
+            uniqueLines.sort().forEach(line => {
+                const option = document.createElement('option');
+                option.value = line;
+                option.textContent = line;
+                filterSelect.appendChild(option);
+            });
+
+            // ផ្ដល់តម្លៃដើមវិញបើមាន
+            filterSelect.value = currentSelected;
         }
 
         function displayData(data) {
@@ -589,13 +606,7 @@
                 let matchLine = true;
                 if (shippingLineFilter) {
                     const itemLine = (item.shipping_line || '').trim().toLowerCase();
-                    const standardLines = ['hmm', 'msc', 'cma cgm', 'evergreen', 'maersk', 'one'];
-                    
-                    if (shippingLineFilter === 'other') {
-                        matchLine = itemLine !== '' && !standardLines.includes(itemLine);
-                    } else {
-                        matchLine = itemLine === shippingLineFilter;
-                    }
+                    matchLine = itemLine === shippingLineFilter;
                 }
 
                 let matchSize = true;
