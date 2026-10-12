@@ -1,9 +1,30 @@
 const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
+const Stream = require('node-rtsp-stream'); // [បន្ថែមថ្មី] សម្រាប់បម្លែង RTSP ទៅជា WebSocket
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// [បន្ថែមថ្មី] កំណត់ Stream សម្រាប់ IP Camera / CCTV របស់ឃ្លាំងពិតប្រាកដ
+// (សូមជំនួស URL ខាងក្រោមដោយ Link RTSP ពិតប្រាកដរបស់កាមេរ៉ា ឬ NVR ក្នុងឃ្លាំងរបស់អ្នក)
+// ឧទាហរណ៍ទម្រង់៖ rtsp://username:password@ip_address:554/stream1
+try {
+    const warehouseCCTVStream = new Stream({
+        name: 'Warehouse CCTV Live',
+        streamUrl: process.env.RTSP_STREAM_URL || 'rtsp://admin:12345@192.168.1.100:554/h264Preview_01_main',
+        wsPort: 9999, // Port សម្រាប់បញ្ជូនទិន្នន័យ WebSocket ទៅកាន់ Frontend
+        ffmpegOptions: {
+            '-rtsp_transport': 'tcp',
+            '-f': 'mpeg1video',
+            '-b:v': '800k',
+            '-r': 30
+        }
+    });
+    console.log('RTSP CCTV Streamer initialized on WebSocket port 9999.');
+} catch (err) {
+    console.error('Error initializing RTSP stream (Make sure FFmpeg is installed on server):', err);
+}
 
 // ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)
 const pool = new Pool({
@@ -1413,7 +1434,7 @@ app.put('/api/fleet/container-yard/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs) - [បន្ថែម Validation ផ្ទៀងផ្ទាត់ Yard Status]
+// API Routes: ការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)
 // ==========================================
 app.get('/api/fleet/container-repairs', async (req, res) => {
     const { status, container_number } = req.query;
@@ -1455,7 +1476,6 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 🔍 ពិនិត្យស្ថានភាពបច្ចុប្បន្នរបស់កុងតឺន័រនៅក្នុង Yard មុននឹងអនុញ្ញាតឱ្យជួសជុល
         const yardCheck = await client.query(
             `SELECT status FROM container_yard_locations WHERE container_number = $1`, 
             [container_number]
@@ -1463,17 +1483,15 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
 
         if (yardCheck.rows.length > 0) {
             const currentYardStatus = yardCheck.rows[0].status;
-            // ប្រសិនបើកុងតឺន័រចេញ (Gate-Out) ឬកំពុងជួសជុលរួចស្រេចហើយ មិនត្រូវឱ្យកត់ត្រាซ้ำទេ
             if (currentYardStatus === 'Gate-Out' || currentYardStatus === 'In Repair') {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
                     success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចយកមកជួសជុលបានទេ!` 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចយកមកជួសជុលได้ទេ!` 
                 });
             }
         }
 
-        // ១. រក្សាទុកទិន្នន័យការជួសជុល
         const query = `
             INSERT INTO container_repair_logs 
             (container_number, container_size, container_type, shipping_line, repair_date, block_code, row_number, tier_number, repair_type, cost, technician_name, status, notes) 
@@ -1495,7 +1513,6 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
             notes
         ]);
 
-        // ២. ធ្វើបច្ចុប្បន្នភាព Status ក្នុង container_yard_locations ស្វ័យប្រវត្ត
         const yardStatus = repairStatus === 'Completed' ? 'Stored' : 'In Repair';
         await client.query(`
             UPDATE container_yard_locations 
@@ -1546,7 +1563,6 @@ app.put('/api/fleet/container-repairs/:id', async (req, res) => {
             return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
         }
 
-        // ធ្វើបច្ចុប្បន្នភាព Status ក្នុង Yard ឡើងវិញពេលកែប្រែការជួសជុល
         const yardStatus = status === 'Completed' ? 'Stored' : 'In Repair';
         await client.query(`
             UPDATE container_yard_locations 
@@ -1566,7 +1582,7 @@ app.put('/api/fleet/container-repairs/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការចេញកុងតឺន័រ (Container Gate-Out) - [បន្ថែម Validation ផ្ទៀងផ្ទាត់ Yard Status]
+// API Routes: ការចេញកុងតឺន័រ (Container Gate-Out)
 // ==========================================
 app.get('/api/fleet/container-gate-out', async (req, res) => {
     const { from, to, container_number } = req.query;
@@ -1605,7 +1621,6 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 🔍 ពិនិត្យស្ថានភាពបច្ចុប្បន្នរបស់កុងតឺន័រនៅក្នុង Yard មុននឹងអនុញ្ញាតឱ្យ Gate-Out
         const yardCheck = await client.query(
             `SELECT status FROM container_yard_locations WHERE container_number = $1`, 
             [container_number]
@@ -1613,7 +1628,6 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
 
         if (yardCheck.rows.length > 0) {
             const currentYardStatus = yardCheck.rows[0].status;
-            // ប្រសិនបើកុងតឺន័រចេញរួចហើយ (Gate-Out) ឬកំពុងជួសជុល (In Repair) មិនត្រូវឱ្យបញ្ចេញซ้ำទេ
             if (currentYardStatus === 'Gate-Out' || currentYardStatus === 'In Repair') {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
@@ -1720,7 +1734,7 @@ app.post('/api/fleet/yard-operations', async (req, res) => {
         } = req.body;
 
         if (!container_number || !operation_type || !yard_location || !operation_date || !operator_name || !status) {
-            return res.status(400).json({ success: false, error: 'សូមបំព័ត៌មានដែលចាំបាច់ឱ្យបានគ្រប់គ្រាន់!' });
+            return res.status(400).json({ success: false, error: 'សូមបំពេញព័ត៌មានដែលចាំបាច់ឱ្យបានគ្រប់គ្រាន់!' });
         }
 
         const query = `
