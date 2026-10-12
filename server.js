@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 16]
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
@@ -203,7 +203,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers) - បានបន្ថែម Size, Type, Shipping Line
+        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
         await client.query(`
             CREATE TABLE IF NOT EXISTS damaged_containers (
                 id SERIAL PRIMARY KEY,
@@ -221,7 +221,6 @@ async function initializeDatabase() {
             );
         `);
 
-        // 📌 បន្ថែម Migration Scripts សម្រាប់ធានាថា Table damaged_containers មាន Columns ថ្មីស្រាប់
         await client.query(`
             ALTER TABLE damaged_containers ADD COLUMN IF NOT EXISTS container_size VARCHAR(20) DEFAULT '40''';
             ALTER TABLE damaged_containers ADD COLUMN IF NOT EXISTS container_type VARCHAR(20) DEFAULT 'DC';
@@ -279,11 +278,14 @@ async function initializeDatabase() {
             ALTER TABLE container_repair_logs ADD COLUMN IF NOT EXISTS shipping_line VARCHAR(100);
         `);
 
-        // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out)
+        // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out) - បានបន្ថែម Size, Type, Shipping Line
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_gate_out (
                 id SERIAL PRIMARY KEY,
                 container_number VARCHAR(100) NOT NULL,
+                container_size VARCHAR(20) DEFAULT '40''',
+                container_type VARCHAR(20) DEFAULT 'DC',
+                shipping_line VARCHAR(100),
                 gate_out_date TIMESTAMP NOT NULL,
                 truck_plate_number VARCHAR(50) NOT NULL,
                 driver_name VARCHAR(150) NOT NULL,
@@ -293,6 +295,13 @@ async function initializeDatabase() {
                 notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+        `);
+
+        // 📌 បន្ថែម Migration Scripts សម្រាប់ធានាថា Table container_gate_out មាន Columns ថ្មីស្រាប់
+        await client.query(`
+            ALTER TABLE container_gate_out ADD COLUMN IF NOT EXISTS container_size VARCHAR(20) DEFAULT '40''';
+            ALTER TABLE container_gate_out ADD COLUMN IF NOT EXISTS container_type VARCHAR(20) DEFAULT 'DC';
+            ALTER TABLE container_gate_out ADD COLUMN IF NOT EXISTS shipping_line VARCHAR(100);
         `);
 
         // ១៨. តារាងប្រតិបត្តិការទីលាន (Yard Operations)
@@ -1216,7 +1225,7 @@ app.put('/api/fleet/transport-plans/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers) - បានកែសម្រួលគាំទ្រ Size, Type, Shipping Line
+// API Routes: ការត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
 // ==========================================
 app.get('/api/fleet/damaged-containers', async (req, res) => {
     const { from, to, severity_level, shipping_line } = req.query;
@@ -1503,7 +1512,7 @@ app.put('/api/fleet/container-repairs/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការចេញកុងតឺន័រ (Container Gate-Out)
+// API Routes: ការចេញកុងតឺន័រ (Container Gate-Out) - បានកែសម្រួលទទួល Size, Type, Shipping Line
 // ==========================================
 app.get('/api/fleet/container-gate-out', async (req, res) => {
     const { from, to, container_number } = req.query;
@@ -1533,18 +1542,25 @@ app.get('/api/fleet/container-gate-out', async (req, res) => {
 });
 
 app.post('/api/fleet/container-gate-out', async (req, res) => {
-    const { container_number, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes } = req.body;
+    const { 
+        container_number, container_size, container_type, shipping_line, 
+        gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes 
+    } = req.body;
     try {
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
 
             const query = `
-                INSERT INTO container_gate_out (container_number, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes) 
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;
+                INSERT INTO container_gate_out 
+                (container_number, container_size, container_type, shipping_line, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *;
             `;
             const result = await client.query(query, [
                 container_number, 
+                container_size || "40'", 
+                container_type || "DC", 
+                shipping_line || null, 
                 gate_out_date || new Date(), 
                 truck_plate_number, 
                 driver_name, 
@@ -1576,15 +1592,25 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
 
 app.put('/api/fleet/container-gate-out/:id', async (req, res) => {
     const { id } = req.params;
-    const { container_number, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes } = req.body;
+    const { 
+        container_number, container_size, container_type, shipping_line, 
+        gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes 
+    } = req.body;
     try {
         const query = `
             UPDATE container_gate_out 
-            SET container_number = $1, gate_out_date = $2, truck_plate_number = $3, driver_name = $4, destination = $5, bill_of_lading = $6, released_by = $7, notes = $8
-            WHERE id = $9 
+            SET container_number = $1, container_size = $2, container_type = $3, shipping_line = $4, 
+                gate_out_date = $5, truck_plate_number = $6, driver_name = $7, destination = $8, 
+                bill_of_lading = $9, released_by = $10, notes = $11
+            WHERE id = $12 
             RETURNING *;
         `;
-        const result = await pool.query(query, [container_number, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes, id]);
+        const values = [
+            container_number, container_size, container_type, shipping_line, 
+            gate_out_date, truck_plate_number, driver_name, destination, 
+            bill_of_lading, released_by, notes, id
+        ];
+        const result = await pool.query(query, values);
         
         if (result.rows.length === 0) {
             return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យការចេញកុងតឺន័រនេះទេ' });
