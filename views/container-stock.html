@@ -415,7 +415,7 @@
                     data.forEach(item => {
                         const opt = document.createElement('option');
                         opt.value = item.container_number;
-                        opt.textContent = `${item.container_number} (${item.shipping_line || 'N/A'} - Block: ${item.block_code})`;
+                        opt.textContent = `${item.container_number} (${item.shipping_line || 'N/A'} - Status: ${item.status})`;
                         selectEl.appendChild(opt);
                     });
                 }
@@ -425,11 +425,19 @@
             loadContainerRepairs();
         });
 
-        // ពេលជ្រើសរើសលេខកុងតឺន័រ វានឹងទាញ Size, Type, Shipping Line និង Block មកបំពេញអូតូ
+        // ពេលជ្រើសរើសលេខកុងតឺន័រ ពិនិត្យ Status និងបំពេញអូតូ
         function onYardContainerSelected() {
             const selectedNo = document.getElementById('repairContainerSelect').value;
             const found = yardContainersList.find(i => i.container_number === selectedNo);
+            
             if (found) {
+                // 🛑 លក្ខខណ្ឌផ្ទៀងផ្ទាត់៖ បើកុងតឺន័រស្ថិតក្នុងស្ថានភាព Gate-Out ឬ In Repair រួចហើយ មិនត្រូវឱ្យយកមកជួសជុលទេ
+                if (found.status === 'Gate-Out' || found.status === 'In Repair') {
+                    alert(`មិនអាចជ្រើសរើសបានទេ! កុងតឺន័រ ${found.container_number} មានស្ថានភាព "${found.status}" រួចហើយ។`);
+                    document.getElementById('repairContainerSelect').value = ''; // Reset វិញ
+                    return;
+                }
+
                 const sizeEl = document.querySelector('#addRepairForm select[name="container_size"]');
                 if(sizeEl) sizeEl.value = found.container_size || "40'";
 
