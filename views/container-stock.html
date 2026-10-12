@@ -203,9 +203,12 @@
                 <div class="modal-body p-4">
                     <form id="addRepairForm">
                         <div class="row g-3">
+                            <!-- Container No. Select from Yard -->
                             <div class="col-md-4">
                                 <label class="form-label fw-semibold">លេខកុងតឺន័រ (Container No.) *</label>
-                                <input type="text" name="container_number" class="form-control" required placeholder="ឧ. TGHU1234567">
+                                <select name="container_number" id="repairContainerSelect" class="form-select" required onchange="onYardContainerSelected()">
+                                    <option value="">-- ជ្រើសរើសកុងតឺន័រពីក្នុងទីធ្លា --</option>
+                                </select>
                             </div>
                             <!-- Container Size -->
                             <div class="col-md-4">
@@ -396,8 +399,63 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let allRepairData = [];
+        let yardContainersList = [];
 
         document.getElementById('currentDate').valueAsDate = new Date();
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // ទាញយកទិន្នន័យកុងតឺន័រពី Yard មកដាក់ក្នុង Dropdown
+            try {
+                const response = await fetch('/api/fleet/container-yard');
+                const data = await response.json();
+                if (Array.isArray(data)) {
+                    yardContainersList = data;
+                    const selectEl = document.getElementById('repairContainerSelect');
+                    selectEl.innerHTML = '<option value="">-- ជ្រើសរើសកុងតឺន័រពីក្នុងទីធ្លា --</option>';
+                    data.forEach(item => {
+                        const opt = document.createElement('option');
+                        opt.value = item.container_number;
+                        opt.textContent = `${item.container_number} (${item.shipping_line || 'N/A'} - Block: ${item.block_code})`;
+                        selectEl.appendChild(opt);
+                    });
+                }
+            } catch (err) {
+                console.error('Error fetching yard containers for repair:', err);
+            }
+            loadContainerRepairs();
+        });
+
+        // ពេលជ្រើសរើសលេខកុងតឺន័រ វានឹងទាញ Size, Type, Shipping Line និង Block មកបំពេញអូតូ
+        function onYardContainerSelected() {
+            const selectedNo = document.getElementById('repairContainerSelect').value;
+            const found = yardContainersList.find(i => i.container_number === selectedNo);
+            if (found) {
+                const sizeEl = document.querySelector('#addRepairForm select[name="container_size"]');
+                if(sizeEl) sizeEl.value = found.container_size || "40'";
+
+                const typeEl = document.querySelector('#addRepairForm select[name="container_type"]');
+                if(typeEl) typeEl.value = found.container_type || "DC";
+
+                const lineInput = document.getElementById('shippingLineCustomInput');
+                const lineSelect = document.getElementById('shippingLineSelect');
+                if(lineInput && lineSelect) {
+                    lineInput.classList.remove('d-none');
+                    lineInput.removeAttribute('disabled');
+                    lineInput.value = found.shipping_line || '';
+                    lineSelect.classList.add('d-none');
+                    lineSelect.setAttribute('disabled', 'true');
+                }
+
+                const blockEl = document.querySelector('#addRepairForm input[name="block_code"]');
+                if(blockEl) blockEl.value = found.block_code || '';
+
+                const rowEl = document.querySelector('#addRepairForm input[name="row_number"]');
+                if(rowEl) rowEl.value = found.row_number || 1;
+
+                const tierEl = document.querySelector('#addRepairForm input[name="tier_number"]');
+                if(tierEl) tierEl.value = found.tier_number || 1;
+            }
+        }
 
         // ប្តូររវាង Select Shipping Line និង Custom Input
         function toggleCustomShippingLine() {
@@ -526,7 +584,6 @@
             displayTable(allRepairData);
         }
 
-        // មុខងារបើក Modal កែប្រែ / ដោះដូរ ដោយស្វែងរកទិន្នន័យតាម ID
         function openEditModal(id) {
             const item = allRepairData.find(d => d.id === id);
             if (!item) {
@@ -553,7 +610,6 @@
             editModal.show();
         }
 
-        // បញ្ជូនទិន្នន័យកែប្រែទៅ Server (PUT API)
         document.getElementById('editRepairForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const id = document.getElementById('edit_id').value;
@@ -593,7 +649,6 @@
             }
         });
 
-        // កត់ត្រាថ្មី (POST)
         document.getElementById('addRepairForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const formData = new FormData(this);
@@ -619,7 +674,6 @@
             }
         });
 
-        // មុខងារ Save PDF (From Date to Date)
         function exportPDF() {
             const { jsPDF } = window.jspdf;
             const actionCols = document.querySelectorAll('.action-col');
@@ -653,8 +707,6 @@
                 alert('មានបញ្ហាក្នុងការទាញយក PDF');
             });
         }
-
-        loadContainerRepairs();
     </script>
 </body>
 </html>
