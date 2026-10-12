@@ -331,7 +331,7 @@
                         </thead>
                         <tbody id="gateOutTableBody">
                             <tr>
-                                <td colspan="11" class="empty-text">កំពុងទាញយកទិន្នន័យ...[cite: 10]</td>
+                                <td colspan="11" class="empty-text">កំពុងទាញយកទិន្នន័យ...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -589,9 +589,10 @@
                 let matchLine = true;
                 if (shippingLineFilter) {
                     const itemLine = (item.shipping_line || '').trim().toLowerCase();
+                    const standardLines = ['hmm', 'msc', 'cma cgm', 'evergreen', 'maersk', 'one'];
+                    
                     if (shippingLineFilter === 'other') {
-                        const standardLines = ['hmm', 'msc', 'cma cgm', 'evergreen', 'maersk', 'one'];
-                        matchLine = !standardLines.includes(itemLine);
+                        matchLine = itemLine !== '' && !standardLines.includes(itemLine);
                     } else {
                         matchLine = itemLine === shippingLineFilter;
                     }
