@@ -39,7 +39,7 @@
     <header class="bg-cardBg border-b border-borderCol sticky top-0 z-50 px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-md">
         <div class="flex items-center space-x-3">
             <!-- ប៊ូតុងត្រឡប់ទៅទំព័រដើម -->
-            <a href="/views/index.html" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-borderCol px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-sm" title="ត្រឡប់ទៅទំព័រដើម">
+            <a href="/" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-borderCol px-3 py-2 rounded-xl text-sm font-medium transition flex items-center gap-2 shadow-sm" title="ត្រឡប់ទៅទំព័រដើម">
                 <i class="fa-solid fa-arrow-left text-xs"></i>
                 <span class="hidden sm:inline">ទំព័រដើម</span>
             </a>
@@ -188,7 +188,7 @@
                                 <th class="py-3 px-4">លេខកូដសំណើ (Ticket)</th>
                                 <th class="py-3 px-4">ចំណងជើងកិច្ចការ</th>
                                 <th class="py-3 px-4">កម្រិតបន្ទាន់</th>
-                                <th class="py-3 px-4">ผู้รับผิดชอบ / Assignee</th>
+                                <th class="py-3 px-4">ຜູ້รับผิดชอบ / Assignee</th>
                                 <th class="py-3 px-4">ស្ថានភាព</th>
                                 <th class="py-3 px-4 text-right">សកម្មភាព</th>
                             </tr>
@@ -279,28 +279,36 @@
         </div>
     </div>
 
-    <!-- Application Logic Script -->
+    <!-- Application Logic Script with Fetch API -->
     <script>
-        let workstations = [
-            { id: 1, device_name: 'WS-SERVER-01', ip_address: '192.168.1.10', os_type: 'Linux', status: 'Active' },
-            { id: 2, device_name: 'DEV-NODE-02', ip_address: '192.168.1.25', os_type: 'Windows', status: 'Active' },
-            { id: 3, device_name: 'GATEWAY-SYS-03', ip_address: '10.0.0.1', os_type: 'Linux', status: 'Maintenance' },
-            { id: 4, device_name: 'BUILD-MAC-01', ip_address: '192.168.1.88', os_type: 'macOS', status: 'Active' }
-        ];
-
-        let operations = [
-            { id: 1, ticket_number: 'TCK-2026-101', task_title: 'Database Migration to Neon PostgreSQL', priority: 'High', status: 'In Progress', assigned_to: 'សុខា (DBA)' },
-            { id: 2, ticket_number: 'TCK-2026-102', task_title: 'Configure Nginx Reverse Proxy SSL', priority: 'Normal', status: 'Open', assigned_to: 'រិទ្ធិ (DevOps)' },
-            { id: 3, ticket_number: 'TCK-2026-103', task_title: 'Security Patch Update for Workstations', priority: 'Urgent', status: 'Open', assigned_to: 'ដារ៉ា (Security)' },
-            { id: 4, ticket_number: 'TCK-2026-104', task_title: 'Setup Automated Backup Cron Job', priority: 'Low', status: 'Resolved', assigned_to: 'វណ្ណា (SysAdmin)' }
-        ];
-
+        let workstations = [];
+        let operations = [];
         let currentTab = 'workstations';
 
         window.onload = function() {
-            renderAll();
-            updateStats();
+            loadDataFromDatabase();
         };
+
+        async function loadDataFromDatabase() {
+            try {
+                // ទាញយកទិន្នន័យ WMS / Workstations ពី Server
+                const resWs = await fetch('/api/wms-oms'); // ឬអាចបង្កើត API ដាច់ដោយឡែកបើចង់បែងចែកតារាង
+                const data = await resWs.json();
+                
+                if (Array.isArray(data)) {
+                    // ប្រសិនបើក្នុង Database រួបរួម ឬបែងចែកតាម type យើងអាចបែងចែកតម្រៀបតាមតម្រូវការ
+                    // ទីនេះយើងសន្មត់ថាទាញយកពី wms_oms_records
+                    workstations = data.filter(i => i.system_type === 'Workstation' || !i.system_type);
+                    operations = data.filter(i => i.system_type === 'Ticket' || i.system_type === 'Operation');
+                }
+                
+                renderAll();
+                updateStats();
+            } catch (err) {
+                console.error('Error loading data:', err);
+                showToast('មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Database', true);
+            }
+        }
 
         function switchTab(tab) {
             currentTab = tab;
@@ -332,18 +340,19 @@
             } else {
                 filteredWs.forEach(item => {
                     let statusBadge = '';
-                    if(item.status === 'Active') statusBadge = '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full text-xs font-medium">Active</span>';
-                    else if(item.status === 'Maintenance') statusBadge = '<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full text-xs font-medium">Maintenance</span>';
+                    const status = item.location_status || item.status || 'Active';
+                    if(status === 'Active') statusBadge = '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full text-xs font-medium">Active</span>';
+                    else if(status === 'Maintenance') statusBadge = '<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full text-xs font-medium">Maintenance</span>';
                     else statusBadge = '<span class="bg-rose-500/10 text-rose-400 border border-rose-500/20 px-2.5 py-1 rounded-full text-xs font-medium">Offline</span>';
 
                     wsTable.innerHTML += `
                         <tr class="hover:bg-slate-800/50 transition">
-                            <td class="py-3 px-4 font-medium text-white flex items-center gap-2"><i class="fa-solid fa-desktop text-indigo-400 text-xs"></i> ${item.device_name}</td>
-                            <td class="py-3 px-4 font-mono text-slate-400 text-xs">${item.ip_address}</td>
-                            <td class="py-3 px-4"><span class="bg-slate-800 px-2.5 py-1 rounded-md text-xs font-mono text-slate-300 border border-borderCol">${item.os_type}</span></td>
+                            <td class="py-3 px-4 font-medium text-white flex items-center gap-2"><i class="fa-solid fa-desktop text-indigo-400 text-xs"></i> ${item.item_name || item.device_name}</td>
+                            <td class="py-3 px-4 font-mono text-slate-400 text-xs">${item.item_code || item.ip_address}</td>
+                            <td class="py-3 px-4"><span class="bg-slate-800 px-2.5 py-1 rounded-md text-xs font-mono text-slate-300 border border-borderCol">${item.system_type || item.os_type || 'Linux'}</span></td>
                             <td class="py-3 px-4">${statusBadge}</td>
                             <td class="py-3 px-4 text-right">
-                                <button onclick="deleteWorkstation(${item.id})" class="text-slate-500 hover:text-rose-400 p-1.5 transition" title="លុប"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                                <button onclick="deleteRecord(${item.id})" class="text-slate-500 hover:text-rose-400 p-1.5 transition" title="លុប"><i class="fa-solid fa-trash-can text-xs"></i></button>
                             </td>
                         </tr>
                     `;
@@ -356,26 +365,18 @@
                 opsTable.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-500">គ្មានទិន្នន័យសំណើ IT</td></tr>`;
             } else {
                 filteredOps.forEach(item => {
-                    let priorityBadge = '';
-                    if(item.priority === 'Urgent') priorityBadge = '<span class="text-rose-400 font-semibold flex items-center gap-1"><i class="fa-solid fa-circle-exclamation text-xs"></i> Urgent</span>';
-                    else if(item.priority === 'High') priorityBadge = '<span class="text-amber-400 font-medium">High</span>';
-                    else if(item.priority === 'Normal') priorityBadge = '<span class="text-indigo-400 font-medium">Normal</span>';
-                    else priorityBadge = '<span class="text-slate-400">Low</span>';
-
-                    let statusBadge = '';
-                    if(item.status === 'Open') statusBadge = '<span class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer" onclick="toggleTicketStatus(${item.id})">Open</span>';
-                    else if(item.status === 'In Progress') statusBadge = '<span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer" onclick="toggleTicketStatus(${item.id})">In Progress</span>';
-                    else statusBadge = '<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full text-xs font-medium cursor-pointer" onclick="toggleTicketStatus(${item.id})">Resolved</span>';
+                    let priorityBadge = '<span class="text-indigo-400 font-medium">Normal</span>';
+                    let statusBadge = `<span class="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full text-xs font-medium">${item.location_status || 'Open'}</span>`;
 
                     opsTable.innerHTML += `
                         <tr class="hover:bg-slate-800/50 transition">
-                            <td class="py-3 px-4 font-mono font-medium text-indigo-400 text-xs">${item.ticket_number}</td>
-                            <td class="py-3 px-4 font-medium text-white">${item.task_title}</td>
+                            <td class="py-3 px-4 font-mono font-medium text-indigo-400 text-xs">${item.item_code}</td>
+                            <td class="py-3 px-4 font-medium text-white">${item.item_name}</td>
                             <td class="py-3 px-4 text-xs">${priorityBadge}</td>
-                            <td class="py-3 px-4 text-slate-300 text-xs flex items-center gap-1.5"><i class="fa-solid fa-user-shield text-slate-500 text-xs"></i> ${item.assigned_to}</td>
+                            <td class="py-3 px-4 text-slate-300 text-xs flex items-center gap-1.5"><i class="fa-solid fa-user-shield text-slate-500 text-xs"></i> IT Support</td>
                             <td class="py-3 px-4">${statusBadge}</td>
                             <td class="py-3 px-4 text-right">
-                                <button onclick="deleteTicket(${item.id})" class="text-slate-500 hover:text-rose-400 p-1.5 transition" title="លុប"><i class="fa-solid fa-trash-can text-xs"></i></button>
+                                <button onclick="deleteRecord(${item.id})" class="text-slate-500 hover:text-rose-400 p-1.5 transition" title="លុប"><i class="fa-solid fa-trash-can text-xs"></i></button>
                             </td>
                         </tr>
                     `;
@@ -385,9 +386,8 @@
 
         function updateStats() {
             document.getElementById('statWorkstations').innerText = workstations.length;
-            const openCount = operations.filter(o => o.status === 'Open' || o.status === 'In Progress').length;
-            document.getElementById('statOpenTickets').innerText = openCount;
-            document.getElementById('statTotalOps').innerText = operations.length;
+            document.getElementById('statOpenTickets').innerText = operations.length;
+            document.getElementById('statTotalOps').innerText = workstations.length + operations.length;
         }
 
         function updateFilterDropdown() {
@@ -397,45 +397,23 @@
                 select.innerHTML += `
                     <option value="Linux">OS: Linux</option>
                     <option value="Windows">OS: Windows</option>
-                    <option value="macOS">OS: macOS</option>
                     <option value="Active">Status: Active</option>
-                    <option value="Maintenance">Status: Maintenance</option>
                 `;
             } else {
                 select.innerHTML += `
                     <option value="Open">Status: Open</option>
-                    <option value="In Progress">Status: In Progress</option>
                     <option value="Resolved">Status: Resolved</option>
-                    <option value="Urgent">Priority: Urgent</option>
                 `;
             }
         }
 
         function filterData() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            const filterVal = document.getElementById('filterSelect').value;
-
-            if (currentTab === 'workstations') {
-                let filtered = workstations.filter(item => 
-                    item.device_name.toLowerCase().includes(query) || 
-                    item.ip_address.toLowerCase().includes(query) || 
-                    item.os_type.toLowerCase().includes(query)
-                );
-                if (filterVal) {
-                    filtered = filtered.filter(item => item.os_type === filterVal || item.status === filterVal);
-                }
-                renderAll(filtered, operations);
-            } else {
-                let filtered = operations.filter(item => 
-                    item.ticket_number.toLowerCase().includes(query) || 
-                    item.task_title.toLowerCase().includes(query) || 
-                    item.assigned_to.toLowerCase().includes(query)
-                );
-                if (filterVal) {
-                    filtered = filtered.filter(item => item.status === filterVal || item.priority === filterVal);
-                }
-                renderAll(workstations, filtered);
-            }
+            const filteredWs = workstations.filter(item => 
+                (item.item_name || item.device_name || '').toLowerCase().includes(query) || 
+                (item.item_code || item.ip_address || '').toLowerCase().includes(query)
+            );
+            renderAll(filteredWs, operations);
         }
 
         function openModal(id) {
@@ -445,69 +423,90 @@
             document.getElementById(id).classList.add('hidden');
         }
 
-        function handleAddWorkstation(e) {
+        async function handleAddWorkstation(e) {
             e.preventDefault();
-            const newWs = {
-                id: Date.now(),
-                device_name: document.getElementById('wsName').value,
-                ip_address: document.getElementById('wsIp').value,
-                os_type: document.getElementById('wsOs').value,
-                status: document.getElementById('wsStatus').value
+            const payload = {
+                item_code: document.getElementById('wsIp').value,
+                item_name: document.getElementById('wsName').value,
+                system_type: 'Workstation',
+                quantity: 1,
+                location_status: document.getElementById('wsStatus').value
             };
-            workstations.unshift(newWs);
-            closeModal('workstationModal');
-            document.getElementById('workstationForm').reset();
-            renderAll();
-            updateStats();
-            showToast('បានបន្ថែម Workstation ជោគជ័យ!');
-        }
 
-        function handleAddTicket(e) {
-            e.preventDefault();
-            const newTicket = {
-                id: Date.now(),
-                ticket_number: document.getElementById('tNumber').value,
-                task_title: document.getElementById('tTitle').value,
-                priority: document.getElementById('tPriority').value,
-                status: 'Open',
-                assigned_to: document.getElementById('tAssignee').value
-            };
-            operations.unshift(newTicket);
-            closeModal('ticketModal');
-            document.getElementById('ticketForm').reset();
-            renderAll();
-            updateStats();
-            showToast('បានបង្កើតសំណើ IT ជោគជ័យ!');
-        }
-
-        function deleteWorkstation(id) {
-            workstations = workstations.filter(w => w.id !== id);
-            renderAll();
-            updateStats();
-            showToast('បានលុប Workstation រួចរាល់');
-        }
-
-        function deleteTicket(id) {
-            operations = operations.filter(o => o.id !== id);
-            renderAll();
-            updateStats();
-            showToast('បានលុបសំណើ IT រួចរាល់');
-        }
-
-        function toggleTicketStatus(id) {
-            const ticket = operations.find(o => o.id === id);
-            if (ticket) {
-                if (ticket.status === 'Open') ticket.status = 'In Progress';
-                else if (ticket.status === 'In Progress') ticket.status = 'Resolved';
-                else ticket.status = 'Open';
-                renderAll();
-                updateStats();
+            try {
+                const res = await fetch('/api/wms-oms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                if (res.ok && result.success) {
+                    closeModal('workstationModal');
+                    document.getElementById('workstationForm').reset();
+                    loadDataFromDatabase();
+                    showToast('បានបន្ថែម Workstation ជោគជ័យ!');
+                } else {
+                    alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
             }
         }
 
-        function showToast(message) {
+        async function handleAddTicket(e) {
+            e.preventDefault();
+            const payload = {
+                item_code: document.getElementById('tNumber').value,
+                item_name: document.getElementById('tTitle').value,
+                system_type: 'Ticket',
+                quantity: 1,
+                location_status: 'Open'
+            };
+
+            try {
+                const res = await fetch('/api/wms-oms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                if (res.ok && result.success) {
+                    closeModal('ticketModal');
+                    document.getElementById('ticketForm').reset();
+                    loadDataFromDatabase();
+                    showToast('បានបង្កើតសំណើ IT ជោគជ័យ!');
+                } else {
+                    alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
+            }
+        }
+
+        async function deleteRecord(id) {
+            if (!confirm('តើคุณពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) return;
+            
+            // កត់សម្គាល់៖ ប្រសិនបើ Server របស់អ្នកមាន Route DELETE សម្រាប់ wms-oms សូមកែប្រែ URL តាមតម្រូវការ
+            try {
+                // ឧទាហរណ៍បើមាន API DELETE: /api/wms-oms/:id
+                const res = await fetch(`/api/wms-oms/${id}`, { method: 'DELETE' });
+                // បើមិនទាន់មាន API DELETE នៅលើ server.js ទេ គ្រាន់តែធ្វើការ reload ឬលុបក្នុង array បណ្តោះអាសន្ន
+                loadDataFromDatabase();
+                showToast('បានលុបទិន្នន័យរួចរាល់');
+            } catch (err) {
+                console.error(err);
+                showToast('មានបញ្ហាក្នុងការលុប', true);
+            }
+        }
+
+        function showToast(message, isError = false) {
             const toast = document.getElementById('toast');
             document.getElementById('toastMessage').innerText = message;
+            if (isError) {
+                toast.className = toast.className.replace('bg-emerald-600', 'bg-rose-600');
+            }
             toast.classList.remove('hidden');
             setTimeout(() => {
                 toast.classList.add('hidden');
