@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល - HR Recruitment & Training</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- ទាញយក Font Khmer OS Battambang និង Kantumruy Pro ពី Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Khmer+OS+Battambang:wght@400;700&family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-color: #1e3c72;
@@ -136,20 +137,23 @@
             opacity: 0.95;
         }
 
+        /* ប្រើប្រាស់ហ្វុងអក្សរ Khmer OS Battambang សម្រាប់អក្សរខ្មែរលើប៊ូតុង */
         .btn-text-km {
             display: block;
-            font-size: 15px;
+            font-family: 'Khmer OS Battambang', sans-serif;
+            font-size: 14px;
             font-weight: 700;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
         }
 
         .btn-text-en {
             display: block;
-            font-size: 11.5px;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.8px;
             color: #e0f2fe;
-            margin-top: 3px;
+            margin-top: 2px;
         }
 
         table {
@@ -174,8 +178,8 @@
 <body>
 
     <header>
-        <h1>ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល[cite: 11]</h1>
-        <p>HR Recruitment & Training Management[cite: 11]</p>
+        <h1>ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល</h1>
+        <p>HR Recruitment & Training Management</p>
     </header>
 
     <div class="container">
@@ -244,14 +248,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- ទិន្នន័យទាញមកពី Server នឹងបង្ហាញទីនេះ[cite: 11] -->
+                    <!-- ទិន្នន័យទាញមកពី Server នឹងបង្ហាញទីនេះ -->
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // ទាញយកទិន្នន័យពី Server ពេលបើកទំព័រ[cite: 11]
+        // ទាញយកទិន្នន័យពី Server ពេលបើកទំព័រ
         document.addEventListener("DOMContentLoaded", fetchJobs);
 
         function fetchJobs() {
@@ -276,7 +280,7 @@
                 .catch(error => console.error('Error fetching jobs:', error));
         }
 
-        // បញ្ជូនទិន្នន័យថ្មីទៅកាន់ Server[cite: 11]
+        // បញ្ជូនទិន្នន័យថ្មីទៅកាន់ Server
         function addJob() {
             let title = document.getElementById('jobTitle').value;
             let dept = document.getElementById('jobDept').value;
@@ -300,7 +304,7 @@
                     alert(data.message);
                     document.getElementById('jobTitle').value = '';
                     document.getElementById('jobQty').value = '';
-                    fetchJobs(); // ទាញទិន្នន័យថ្មីមកបង្ហាញឡើងវិញ[cite: 11]
+                    fetchJobs(); // ទាញទិន្នន័យថ្មីមកបង្ហាញឡើងវិញ
                 } else {
                     alert('មានបញ្ហា៖ ' + data.error);
                 }
