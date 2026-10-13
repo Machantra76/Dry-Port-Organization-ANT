@@ -33,14 +33,26 @@
         .badge-in { background: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
         .footer-note { margin-top: 25px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 
-        /* កែប្រែទម្រង់ពេលព្រីន PDF ឱ្យមានរបៀបរៀបរយស្អាត និងលាក់ចំណងជើងមិនចាំបាច់ */
+        /* ការកំណត់ពេលព្រីន PDF : លាក់ Form និងប៊ូតុងមិនចាំបាច់ទាំងស្រុង */
         @media print {
             @page { size: A4 landscape; margin: 15mm; }
-            .back-btn, .section-box:first-of-type, .filter-section, .footer-note, h1, .eng-sub { display: none !important; }
             body { background: white; padding: 0; color: #000; font-family: 'Kantumruy Pro', sans-serif !important; }
             .container { box-shadow: none; padding: 0; max-width: 100%; width: 100%; border: none; }
+            
+            /* លាក់ផ្នែក Form ចុះឈ្មោះ, ប៊ូតុង, ប្រអប់ Filter, និងចំណងជើងទំព័រដើម */
+            .back-btn, 
+            #addEmployeeSection, 
+            .filter-section, 
+            .footer-note, 
+            h1, 
+            .eng-sub,
+            #tableOriginalTitle { 
+                display: none !important; 
+            }
+            
             .section-box { background: white !important; border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; }
             
+            /* បង្ហាញចំណងជើងស្អាតពេល Print PDF */
             .print-header-title {
                 display: block !important;
                 text-align: center;
@@ -66,8 +78,8 @@
         <h1>វត្តមាន ម៉ោងចេញ/ចូល</h1>
         <div class="eng-sub">Staff Attendance Check-in / Check-out System</div>
         
-        <!-- ១. Form សម្រាប់ចុះឈ្មោះបុគ្គលិកថ្មី -->
-        <div class="section-box">
+        <!-- ១. Form សម្រាប់ចុះឈ្មោះបុគ្គលិកថ្មី (ដាក់ id="addEmployeeSection" ដើម្បីងាយលាក់ពេល Print) -->
+        <div class="section-box" id="addEmployeeSection">
             <h3>ចុះឈ្មោះបុគ្គលិកថ្មី (Add Employee)</h3>
             <form id="employeeForm">
                 <div class="form-row">
@@ -96,7 +108,7 @@
 
         <!-- ២. តារាងបង្ហាញប្រវត្តិកត់ត្រាម៉ោងចេញ/ចូល -->
         <div class="section-box">
-            <h3>ប្រវត្តិកត់ត្រាម៉ោង ចេញ/ចូល ប្រចាំថ្ងៃ (Attendance Logs)</h3>
+            <h3 id="tableOriginalTitle">ប្រវត្តិកត់ត្រាម៉ោង ចេញ/ចូល ប្រចាំថ្ងៃ (Attendance Logs)</h3>
             
             <!-- Filter & Search Controls -->
             <div class="filter-section">
