@@ -139,12 +139,61 @@
         
         .footer-note { margin-top: 25px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 
+        /* កូដសម្របសម្រួលពេល Print PDF ចេញមកស្អាតមិនរញ៉េរញ៉ៃ */
         @media print {
-            .back-btn, .section-box:first-of-type, .footer-note, .print-action-bar, .action-col { display: none !important; }
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; padding: 0; border: none; max-width: 100%; }
-            table { border: 1px solid #000; font-size: 11px; }
-            th { background: #000 !important; color: white !important; }
+            body { 
+                background: white; 
+                padding: 0; 
+                color: #000;
+            }
+            .container { 
+                box-shadow: none; 
+                padding: 0; 
+                border: none; 
+                max-width: 100%; 
+            }
+            /* លាក់ Form បញ្ចូលទិន្នន័យ ប៊ូតុង និង Back Button ទាំងអស់ */
+            .back-btn, 
+            .section-box:nth-child(3), 
+            .print-action-bar, 
+            .action-col, 
+            th.action-col, 
+            td.action-col, 
+            form, 
+            .footer-note { 
+                display: none !important; 
+            }
+            .section-box {
+                background: white !important;
+                border: none !important;
+                box-shadow: none !important;
+                margin-top: 0 !important;
+                padding: 0 !important;
+            }
+            table { 
+                width: 100% !important;
+                border-collapse: collapse !important; 
+                border: 1px solid #000 !important; 
+                font-size: 11px !important; 
+                margin-top: 10px !important;
+            }
+            th { 
+                background: #1e3c72 !important; 
+                color: white !important; 
+                border: 1px solid #000 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            td { 
+                border: 1px solid #ddd !important; 
+                padding: 8px 4px !important;
+            }
+            .badge-net, .badge-debt {
+                background: none !important;
+                color: #000 !important;
+                font-weight: bold;
+                padding: 0 !important;
+            }
         }
     </style>
 </head>
@@ -259,17 +308,15 @@
         function calculateNet() {
             const base = parseFloat(document.getElementById('base_salary').value) || 0;
             const allow = parseFloat(document.getElementById('allowance').value) || 0;
-            const deduct = parseFloat(document.getElementById('deduction').value) || 0; // ប្រាក់កាត់សងជំពាក់
+            const deduct = parseFloat(document.getElementById('deduction').value) || 0; 
             
             const prevDebt = parseFloat(document.getElementById('previous_debt').value) || 0;
             const newDebt = parseFloat(document.getElementById('new_debt').value) || 0;
             
-            // ១. គណនាប្រាក់ជំពាក់សល់ = (ជំពាក់ចាស់ + ជំពាក់ថ្មី) - ប្រាក់កាត់សង
             let totalRemainingDebt = (prevDebt + newDebt) - deduct;
             if (totalRemainingDebt < 0) totalRemainingDebt = 0;
             document.getElementById('remaining_debt_preview').value = '$' + totalRemainingDebt.toFixed(2);
 
-            // ២. គណនាប្រាក់ខែទទួលបានសុទ្ធ = (ប្រាក់ខែគោល + ប្រាក់បន្ថែម) - ប្រាក់កាត់សង
             const net = (base + allow) - deduct;
             document.getElementById('net_salary_preview').value = '$' + net.toFixed(2);
         }
@@ -328,7 +375,6 @@
                     const baseSalary = parseFloat(item.base_salary || 0);
                     const allowance = parseFloat(item.allowance || 0);
 
-                    // គណនាប្រាក់ជំពាក់សល់ និងសុទ្ធសម្រាប់បង្ហាញក្នុងតារាង
                     let remainingDebt = (prevDebt + newDebt) - deduct;
                     if (remainingDebt < 0) remainingDebt = 0;
 
@@ -386,7 +432,6 @@
             const allow = parseFloat(document.getElementById('allowance').value) || 0;
             const deduct = parseFloat(document.getElementById('deduction').value) || 0;
             
-            // គណនា Net Salary មុនបញ្ជូនចូល Server
             const netSalary = (base + allow) - deduct;
 
             const payload = {
