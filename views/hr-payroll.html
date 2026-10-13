@@ -19,7 +19,7 @@
             color: #334155; 
         }
         .container { 
-            max-width: 1150px; 
+            max-width: 1250px; 
             margin: 0 auto; 
             background: white; 
             padding: 40px; 
@@ -108,7 +108,6 @@
             box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); 
         }
 
-        /* ប៊ូតុង Print PDF ស្តង់ដារថ្មី លេចធ្លោ និងស្អាតបាត */
         .btn-print-pdf { 
             background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%); 
             color: white; 
@@ -133,22 +132,21 @@
         }
 
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 10px; overflow: hidden; border: 1px solid #cbd5e1; }
-        th, td { padding: 13px 15px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 13.5px; }
-        th { background: var(--primary-color); color: white; font-weight: 600; text-align: center; }
-        td { text-align: center; }
+        th, td { padding: 12px 10px; text-align: center; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
+        th { background: var(--primary-color); color: white; font-weight: 600; }
         td:nth-child(3) { text-align: left; }
         tr:hover { background: #f1f5f9; }
 
-        .badge-net { background: #d1fae5; color: #065f46; padding: 5px 10px; border-radius: 6px; font-size: 13px; font-weight: 700; }
-        .badge-debt { background: #fee2e2; color: #991b1b; padding: 5px 10px; border-radius: 6px; font-size: 13px; font-weight: 700; }
+        .badge-net { background: #d1fae5; color: #065f46; padding: 5px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+        .badge-debt { background: #fee2e2; color: #991b1b; padding: 5px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
         
         .footer-note { margin-top: 25px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 
         @media print {
             .back-btn, .section-box:first-of-type, .footer-note, .print-action-bar { display: none !important; }
             body { background: white; padding: 0; }
-            .container { box-shadow: none; padding: 0; border: none; }
-            table { border: 1px solid #000; }
+            .container { box-shadow: none; padding: 0; border: none; max-width: 100%; }
+            table { border: 1px solid #000; font-size: 11px; }
             th { background: #000 !important; color: white !important; }
         }
     </style>
@@ -196,8 +194,6 @@
                         <small id="absentInfo" style="color: #64748b; display: block; margin-top: 4px;"></small>
                     </div>
                 </div>
-
-                <!-- ផ្នែកបន្ថែម៖ ប្រាក់ជំពាក់ចាស់ ប្រាក់ជំពាក់ថ្មី និងប្រាក់ជំពាក់នៅសល់ -->
                 <div class="form-row">
                     <div>
                         <label>ប្រាក់ជំពាក់ចាស់ ($ Previous Debt):</label>
@@ -240,6 +236,8 @@
                         <th>ប្រាក់ខែគោល</th>
                         <th>បន្ថែម</th>
                         <th>កាត់</th>
+                        <th>ជំពាក់ចាស់</th>
+                        <th>ជំពាក់ថ្មី</th>
                         <th>ជំពាក់សល់</th>
                         <th>ប្រាក់ខែទទួលបានសុទ្ធ (Net Salary)</th>
                     </tr>
@@ -251,7 +249,7 @@
         </div>
 
         <div class="footer-note">
-            <p><strong>ចំណាំ៖</strong> ប្រព័ន្ធទាញទិន្នន័យអវត្តមានពីការស្កែនមេដៃមកគណនាកាត់ប្រាក់ខែដោយស្វ័យប្រវត្ត និងគណនាប្រាក់ជំពាក់ (ជំពាក់ចាស់ + ជំពាក់ថ្មី)។</p>
+            <p><strong>ចំណាំ៖</strong> ប្រព័ន្ធទាញទិន្នន័យអវត្តមានពីការស្កែនមេដៃមកគណនាកាត់ប្រាក់ខែដោយស្វ័យប្រវត្ត និងគណនាប្រាក់ជំពាក់សរុប។</p>
         </div>
     </div>
 
@@ -259,7 +257,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
-        // មុខងារគណនាសុទ្ធ និងប្រាក់ជំពាក់នៅសល់ស្វ័យប្រវត្តក្នុង Form
         function calculateNet() {
             const base = parseFloat(document.getElementById('base_salary').value) || 0;
             const allow = parseFloat(document.getElementById('allowance').value) || 0;
@@ -268,16 +265,13 @@
             const prevDebt = parseFloat(document.getElementById('previous_debt').value) || 0;
             const newDebt = parseFloat(document.getElementById('new_debt').value) || 0;
             
-            // គណនាប្រាក់ជំពាក់សរុបនៅសល់ (ជំពាក់ចាស់ + ជំពាក់ថ្មី)
             const totalRemainingDebt = prevDebt + newDebt;
             document.getElementById('remaining_debt_preview').value = '$' + totalRemainingDebt.toFixed(2);
 
-            // គណនាប្រាក់ខែទទួលបានសុទ្ធ (ប្រាក់ខែគោល + ប្រាក់បន្ថែម - ប្រាក់កាត់ - ប្រាក់ជំពាក់ថ្មី/ទូទាត់)
             const net = (base + allow) - deduct - newDebt;
             document.getElementById('net_salary_preview').value = '$' + net.toFixed(2);
         }
 
-        // មុខងារឆែកថ្ងៃអវត្តមានពី Server ស្កែនមេដៃ មកគណនាកាត់ប្រាក់ខែ
         async function checkAttendanceAndDeduction() {
             const empCode = document.getElementById('employee_code').value;
             const payMonth = document.getElementById('pay_month').value;
@@ -316,12 +310,15 @@
                 tbody.innerHTML = '';
                 
                 if (!data || data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យប្រាក់បៀវត្សរ៍នៅឡើយទេ</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យប្រាក់បៀវត្សរ៍នៅឡើយទេ</td></tr>';
                     return;
                 }
 
                 data.forEach(item => {
-                    const remainingDebt = (parseFloat(item.previous_debt || 0) + parseFloat(item.new_debt || 0));
+                    const prevDebt = parseFloat(item.previous_debt || 0);
+                    const newDebt = parseFloat(item.new_debt || 0);
+                    const remainingDebt = prevDebt + newDebt;
+
                     const row = `<tr>
                         <td><strong>${item.pay_month}</strong></td>
                         <td>${item.employee_code}</td>
@@ -329,6 +326,8 @@
                         <td>$${parseFloat(item.base_salary || 0).toFixed(2)}</td>
                         <td>$${parseFloat(item.allowance || 0).toFixed(2)}</td>
                         <td>$${parseFloat(item.deduction || 0).toFixed(2)}</td>
+                        <td>$${prevDebt.toFixed(2)}</td>
+                        <td>$${newDebt.toFixed(2)}</td>
                         <td><span class="badge-debt">$${remainingDebt.toFixed(2)}</span></td>
                         <td><span class="badge-net">$${parseFloat(item.net_salary || 0).toFixed(2)}</span></td>
                     </tr>`;
