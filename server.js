@@ -686,11 +686,12 @@ app.post('/api/payroll', async (req, res) => {
     try {
         const bSalary = parseFloat(base_salary) || 0;
         const allow = parseFloat(allowance) || 0;
-        const deduct = parseFloat(deduction) || 0;
+        const deduct = parseFloat(deduction) || 0; // ប្រាក់កាត់សងជំពាក់
         const pDebt = parseFloat(previous_debt) || 0;
         const nDebt = parseFloat(new_debt) || 0;
         
-        const net_salary = (bSalary + allow) - deduct - nDebt;
+        // គណនា Net Salary = (ប្រាក់ខែគោល + ប្រាក់បន្ថែម) - ប្រាក់កាត់សង
+        const net_salary = (bSalary + allow) - deduct;
 
         const query = `
             INSERT INTO payroll_records (employee_code, full_name, base_salary, allowance, deduction, previous_debt, new_debt, net_salary, pay_month) 
@@ -710,11 +711,12 @@ app.put('/api/payroll/:id', async (req, res) => {
     try {
         const bSalary = parseFloat(base_salary) || 0;
         const allow = parseFloat(allowance) || 0;
-        const deduct = parseFloat(deduction) || 0;
+        const deduct = parseFloat(deduction) || 0; // ប្រាក់កាត់សងជំពាក់
         const pDebt = parseFloat(previous_debt) || 0;
         const nDebt = parseFloat(new_debt) || 0;
         
-        const net_salary = (bSalary + allow) - deduct - nDebt;
+        // គណនា Net Salary = (ប្រាក់ខែគោល + ប្រាក់បន្ថែម) - ប្រាក់កាត់សង
+        const net_salary = (bSalary + allow) - deduct;
 
         const query = `
             UPDATE payroll_records 
