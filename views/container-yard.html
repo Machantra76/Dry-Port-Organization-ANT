@@ -14,115 +14,146 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
+        :root {
+            --primary-color: #0f172a;
+            --accent-color: #2563eb;
+            --success-color: #059669;
+            --bg-body: #f1f5f9;
+        }
         body {
             font-family: 'Battambang', sans-serif;
-            background-color: #f8f9fa;
-            color: #333;
+            background-color: var(--bg-body);
+            color: #1e293b;
         }
         .container-box {
             background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+            padding: 35px;
             margin-top: 30px;
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            border: 1px solid #e2e8f0;
         }
         .btn-back {
-            background-color: #1e3a8a;
+            background-color: #334155;
             color: #fff;
-            border-radius: 8px;
-            padding: 8px 16px;
+            border-radius: 10px;
+            padding: 9px 18px;
             text-decoration: none;
             font-size: 14px;
             display: inline-flex;
             align-items: center;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease-in-out;
+            font-weight: 500;
         }
         .btn-back:hover {
-            background-color: #1e40af;
+            background-color: #1e293b;
             color: #fff;
+            transform: translateY(-1px);
         }
         .section-title {
-            color: #1e3a8a;
+            color: var(--primary-color);
             font-weight: 700;
-            font-size: 24px;
+            font-size: 26px;
+            letter-spacing: -0.5px;
         }
         .section-subtitle {
             color: #64748b;
             font-size: 13px;
-            margin-bottom: 25px;
+            font-weight: 500;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .form-label {
             font-weight: 600;
-            font-size: 14px;
-            color: #1e293b;
+            font-size: 13.5px;
+            color: #334155;
+            margin-bottom: 6px;
         }
         .form-control, .form-select {
-            border-radius: 8px;
-            padding: 10px 15px;
-            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 11px 16px;
+            border: 1.5px solid #cbd5e1;
             font-family: 'Battambang', sans-serif;
+            font-size: 14px;
+            background-color: #f8fafc;
+            transition: all 0.2s;
         }
         .form-control:focus, .form-select:focus {
-            box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15);
-            border-color: #1e3a8a;
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+            border-color: var(--accent-color);
+            background-color: #fff;
         }
         .card-inner {
             border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 20px;
-            background-color: #fff;
-            margin-bottom: 25px;
+            border-radius: 14px;
+            padding: 24px;
+            background-color: #ffffff;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
         }
         .card-inner-title {
             font-size: 16px;
             font-weight: 700;
-            color: #1e3a8a;
-            margin-bottom: 15px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
             border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 8px;
+            padding-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         .btn-submit {
-            background-color: #10b981;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
             border: none;
             color: white;
             font-weight: 700;
-            padding: 12px;
-            border-radius: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
             width: 100%;
-            transition: all 0.3s;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
         }
         .btn-submit:hover {
-            background-color: #059669;
+            background: linear-gradient(135deg, #047857 0%, #059669 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
+            color: white;
         }
         .btn-pdf {
             background-color: #dc2626;
             color: white;
             border: none;
             font-weight: 600;
-            padding: 6px 14px;
-            border-radius: 6px;
+            padding: 8px 16px;
+            border-radius: 8px;
             font-size: 0.85rem;
+            transition: all 0.2s;
         }
         .btn-pdf:hover {
             background-color: #b91c1c;
             color: white;
+            transform: translateY(-1px);
         }
         .table thead th {
-            background-color: #1e3a8a;
+            background-color: var(--primary-color);
             color: white;
             font-weight: 600;
             text-align: center;
             vertical-align: middle;
-            font-size: 13px;
+            font-size: 13.5px;
+            padding: 12px 8px;
         }
         .table tbody td {
             vertical-align: middle;
             text-align: center;
-            font-size: 13px;
+            font-size: 13.5px;
+            padding: 12px 8px;
+            color: #334155;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #f1f5f9;
         }
     </style>
 </head>
@@ -132,40 +163,38 @@
         <!-- Back Button -->
         <div class="pt-4">
             <a href="/" class="btn-back">
-                <i class="fas fa-arrow-left me-2"></i> ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)
+                <i class="fas fa-arrow-left me-2"></i> ត្រឡប់ទៅ Dashboard វិញ
             </a>
         </div>
 
         <div class="container-box">
             <!-- Header Title -->
             <div class="mb-4">
-                <h2 class="section-title">ការគ្រប់គ្រងទីតាំងកុងតឺន័រក្នុងទីធ្លា</h2>
+                <h2 class="section-title"><i class="fas fa-warehouse text-primary me-2"></i>ការគ្រប់គ្រងទីតាំងកុងតឺន័រក្នុងទីធ្លា</h2>
                 <div class="section-subtitle">CONTAINER YARD LOCATION MANAGEMENT & MAPPING SYSTEM</div>
             </div>
 
             <!-- Form កត់ត្រាទីតាំងកុងតឺន័រថ្មី -->
             <div class="card-inner">
                 <div class="card-inner-title">
-                    <span><i class="fas fa-map-marker-alt me-2"></i> កត់ត្រាទីតាំងកុងតឺន័រថ្មី (Assign New Yard Location)</span>
+                    <span><i class="fas fa-map-marked-alt text-primary me-2"></i> កត់ត្រាទីតាំងកុងតឺន័រថ្មី (Assign New Yard Location)</span>
                 </div>
                 <form id="yardForm">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label">លេខកុងតឺន័រ (Container Number):</label>
+                            <label class="form-label">លេខកុងតឺន័រ (Container Number) *</label>
                             <input type="text" class="form-control" name="container_number" required placeholder="ឧ. TGHU1234567">
                         </div>
-                        <!-- Container Size -->
                         <div class="col-md-4">
-                            <label class="form-label">ទំហំកុងតឺន័រ (Size):</label>
+                            <label class="form-label">ទំហំកុងតឺន័រ (Size) *</label>
                             <select name="container_size" class="form-select" required>
                                 <option value="20'">20 Feet</option>
                                 <option value="40'" selected>40 Feet</option>
                                 <option value="45'">45 Feet</option>
                             </select>
                         </div>
-                        <!-- Container Type -->
                         <div class="col-md-4">
-                            <label class="form-label">ប្រភេទ (Type):</label>
+                            <label class="form-label">ប្រភេទ (Type) *</label>
                             <select name="container_type" class="form-select" required>
                                 <option value="DC" selected>Dry Van (DC)</option>
                                 <option value="HC">High Cube (HC)</option>
@@ -174,11 +203,10 @@
                                 <option value="RF">Reefer (RF)</option>
                             </select>
                         </div>
-                        <!-- Shipping Line -->
                         <div class="col-md-6">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label class="form-label mb-0">Shipping Line:</label>
-                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 12px;" onclick="toggleCustomShippingLine()">
+                                <label class="form-label mb-0">Shipping Line *</label>
+                                <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 11px; border-radius: 6px;" onclick="toggleCustomShippingLine()">
                                     <i class="fas fa-plus me-1"></i> បន្ថែមផ្សេងទៀត
                                 </button>
                             </div>
@@ -193,23 +221,23 @@
                             <input type="text" name="shipping_line" id="shippingLineCustomInput" class="form-control mt-2 d-none" placeholder="បញ្ចូលឈ្មោះ Shipping Line..." disabled>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">ប្លុកទីតាំង (Block Code):</label>
+                            <label class="form-label">ប្លុកទីតាំង (Block Code) *</label>
                             <input type="text" class="form-control" name="block_code" required placeholder="ឧ. Block A, Block B">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">លេខជួរ (Row Number):</label>
+                            <label class="form-label">លេខជួរ (Row Number) *</label>
                             <input type="number" class="form-control" name="row_number" required value="1" min="1">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">លេខជាន់ / កំពស់ (Tier Number):</label>
+                            <label class="form-label">លេខជាន់ / កំពស់ (Tier Number) *</label>
                             <input type="number" class="form-control" name="tier_number" required value="1" min="1">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">កាលបរិច្ឆេទធ្វើបច្ចុប្បន្នភាព (Updated Date):</label>
+                            <label class="form-label">កាលបរិច្ឆេទធ្វើបច្ចុប្បន្នភាព *</label>
                             <input type="date" class="form-control" name="updated_date" required>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">ស្ថានភាព (Status):</label>
+                            <label class="form-label">ស្ថានភាព (Status)</label>
                             <select class="form-select" name="status">
                                 <option value="Stored">កំពុងរក្សាទុក (Stored)</option>
                                 <option value="Dispatched">បានបញ្ចេញដឹកជញ្ជូន (Dispatched)</option>
@@ -217,7 +245,7 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">កំណត់ចំណាំ (Notes):</label>
+                            <label class="form-label">កំណត់ចំណាំ (Notes)</label>
                             <input type="text" class="form-control" name="notes" placeholder="ព័ត៌មានបន្ថែម...">
                         </div>
                         <div class="col-12 mt-4">
@@ -232,16 +260,16 @@
             <!-- តារាងបង្ហាញ និងតម្រៀបទីតាំង (Filter & Table Section) -->
             <div class="card-inner mt-4" id="historySection">
                 <div class="card-inner-title">
-                    <span><i class="fas fa-th-list me-2"></i> បញ្ជីទីតាំងកុងតឺន័រក្នុងទីធ្លា (Yard Inventory & Mapping)</span>
+                    <span><i class="fas fa-list-alt text-primary me-2"></i> បញ្ជីទីតាំងកុងតឺន័រក្នុងទីធ្លា (Yard Inventory & Mapping)</span>
                     <button type="button" class="btn-pdf" onclick="exportHistoryToPDF()">
                         <i class="fas fa-file-pdf me-1"></i> Download PDF
                     </button>
                 </div>
                 
                 <!-- Search Filter Form -->
-                <form id="filterForm" class="row g-3 mb-4">
+                <form id="filterForm" class="row g-3 mb-4 bg-light p-3 rounded-3 border">
                     <div class="col-md-3">
-                        <label class="form-label">លេខកុងតឺន័រ (Container No.):</label>
+                        <label class="form-label">លេខកុងតឺន័រ:</label>
                         <input type="text" id="filterContainer" class="form-control" placeholder="ឧ. 4567 ឬ TGHU1234567">
                     </div>
                     <div class="col-md-2">
@@ -260,7 +288,7 @@
                         </select>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">ស្ថានភាព (Status):</label>
+                        <label class="form-label">ស្ថានភាព:</label>
                         <select id="filterStatus" class="form-select">
                             <option value="">ទាំងអស់</option>
                             <option value="Stored">រក្សាទុក</option>
@@ -268,7 +296,6 @@
                             <option value="Moved">ប្តូរទីតាំង</option>
                         </select>
                     </div>
-                    <!-- From Date - To Date -->
                     <div class="col-md-3">
                         <label class="form-label">ចាប់ពីថ្ងៃទី - ដល់ថ្ងៃទី:</label>
                         <div class="input-group">
@@ -276,11 +303,11 @@
                             <input type="date" id="dateTo" class="form-control form-control-sm">
                         </div>
                     </div>
-                    <div class="col-12 text-end mt-2">
-                        <button type="submit" class="btn btn-primary px-4 py-2" style="border-radius: 8px;">
+                    <div class="col-12 text-end mt-3">
+                        <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold shadow-sm" style="border-radius: 8px; background-color: #2563eb;">
                             <i class="fas fa-search me-1"></i> ស្វែងរកទិន្នន័យ
                         </button>
-                        <button type="button" class="btn btn-secondary px-3 py-2 ms-2" onclick="resetFilter()" style="border-radius: 8px;">
+                        <button type="button" class="btn btn-outline-secondary px-3 py-2 ms-2 fw-semibold" onclick="resetFilter()" style="border-radius: 8px;">
                             កំណត់ឡើងវិញ
                         </button>
                     </div>
@@ -288,10 +315,10 @@
 
                 <!-- Table Data Display -->
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover align-middle mb-0">
                         <thead>
                             <tr>
-                                <th>ល.រ</th>
+                                <th class="rounded-start">ល.រ</th>
                                 <th>លេខកុងតឺន័រ</th>
                                 <th>Size / Type</th>
                                 <th>Shipping Line</th>
@@ -301,7 +328,7 @@
                                 <th>កាលបរិច្ឆេទ</th>
                                 <th>Day in Yard</th>
                                 <th>កំណត់ចំណាំ</th>
-                                <th class="text-center">សកម្មភាព</th>
+                                <th class="text-center rounded-end">សកម្មភាព</th>
                             </tr>
                         </thead>
                         <tbody id="yardTableBody">
@@ -317,21 +344,21 @@
     <!-- Modal សម្រាប់ដោះដូរ / កែប្រែទីតាំងកុងតឺន័រ (Edit Modal) -->
     <div class="modal fade" id="editYardModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title"><i class="fas fa-exchange-alt me-2"></i>ដោះដូរ / កែប្រែទីតាំងកុងតឺន័រក្នុងទីធ្លា</h5>
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header bg-primary text-white px-4 py-3">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-exchange-alt me-2"></i>ដោះដូរ / កែប្រែទីតាំងកុងតឺន័រក្នុងទីធ្លា</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-4 bg-light">
                     <form id="editYardForm">
                         <input type="hidden" id="edit_id">
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label">លេខកុងតឺន័រ:</label>
+                                <label class="form-label">លេខកុងតឺន័រ *</label>
                                 <input type="text" class="form-control" id="edit_container_number" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">ទំហំ (Size):</label>
+                                <label class="form-label">ទំហំ (Size)</label>
                                 <select class="form-select" id="edit_container_size">
                                     <option value="20'">20 Feet</option>
                                     <option value="40'">40 Feet</option>
@@ -339,7 +366,7 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">ប្រភេទ (Type):</label>
+                                <label class="form-label">ប្រភេទ (Type)</label>
                                 <select class="form-select" id="edit_container_type">
                                     <option value="DC">Dry Van (DC)</option>
                                     <option value="HC">High Cube (HC)</option>
@@ -349,27 +376,27 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Shipping Line:</label>
+                                <label class="form-label">Shipping Line *</label>
                                 <input type="text" class="form-control" id="edit_shipping_line" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">ប្លុកទីតាំង (Block Code):</label>
+                                <label class="form-label">ប្លុកទីតាំង (Block Code) *</label>
                                 <input type="text" class="form-control" id="edit_block_code" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">លេខជួរ (Row):</label>
+                                <label class="form-label">លេខជួរ (Row) *</label>
                                 <input type="number" class="form-control" id="edit_row_number" required min="1">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">លេខជាន់ (Tier):</label>
+                                <label class="form-label">លេខជាន់ (Tier) *</label>
                                 <input type="number" class="form-control" id="edit_tier_number" required min="1">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">កាលបរិច្ឆេទ (Updated Date):</label>
+                                <label class="form-label">កាលបរិច្ឆេទ *</label>
                                 <input type="date" class="form-control" id="edit_updated_date" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">ស្ថានភាព (Status):</label>
+                                <label class="form-label">ស្ថានភាព (Status)</label>
                                 <select class="form-select" id="edit_status">
                                     <option value="Stored">កំពុងរក្សាទុក (Stored)</option>
                                     <option value="Dispatched">បានបញ្ចេញដឹកជញ្ជូន (Dispatched)</option>
@@ -377,12 +404,13 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">កំណត់ចំណាំ (Notes):</label>
+                                <label class="form-label">កំណត់ចំណាំ (Notes)</label>
                                 <input type="text" class="form-control" id="edit_notes">
                             </div>
-                            <div class="col-12 mt-4">
-                                <button type="submit" class="btn btn-success w-100 fw-bold py-2" style="border-radius: 8px;">
-                                    <i class="fas fa-save me-2"></i>រក្សាទុកការផ្លាស់ប្តូរ (Save Changes)
+                            <div class="col-12 mt-4 text-end">
+                                <button type="button" class="btn btn-secondary px-4 py-2 me-2" data-bs-dismiss="modal" style="border-radius: 8px;">បោះបង់</button>
+                                <button type="submit" class="btn btn-success px-4 py-2 fw-bold shadow-sm" style="border-radius: 8px;">
+                                    <i class="fas fa-save me-2"></i>រក្សាទុកការផ្លាស់ប្តូរ
                                 </button>
                             </div>
                         </div>
@@ -460,7 +488,6 @@
             filterSelect.value = currentSelected;
         }
 
-        // មុខងារគណនាចំនួនថ្ងៃស្ថិតក្នុងទីធ្លា (Day in Yard)
         function calculateDayInYard(dateString) {
             if (!dateString) return '-';
             const updatedDate = new Date(dateString.split('T')[0]);
@@ -504,7 +531,7 @@
                         <td><span class="badge bg-danger text-white">${dayInYardText}</span></td>
                         <td>${item.notes || '-'}</td>
                         <td>
-                            <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1" style="font-size: 0.8rem;" onclick="openEditModal(${item.id})">
+                            <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1 shadow-sm" style="font-size: 0.8rem; border-radius: 6px;" onclick="openEditModal(${item.id})">
                                 <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
                             </button>
                         </td>
