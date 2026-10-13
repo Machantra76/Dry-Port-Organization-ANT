@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍ - Payroll Processing & Benefits</title>
+    <title> </title> <!-- ទុកទទេដើម្បីកុំឱ្យ Browser យកឈ្មោះ Tab ទៅបង្ហាញពេល Print -->
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -124,13 +124,13 @@
         
         .footer-note { margin-top: 25px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 
-        /* ការកំណត់ពេលព្រីន PDF : លាក់ចំណងជើងមិនចាំបាច់ទាំងស្រុង */
+        /* ការកំណត់ពេលព្រីន PDF */
         @media print {
             @page { size: A4 landscape; margin: 10mm; }
             body { background: white; padding: 0; color: #000; font-family: 'Kantumruy Pro', sans-serif !important; }
             .container { box-shadow: none; padding: 0; border: none; max-width: 100%; width: 100%; }
             
-            /* លាក់ Form ខាងលើ, ប៊ូតុង, ប្រអប់ Filter និងចំណងជើងដើមទាំងស្រុងមិនឱ្យចេញពេល Print */
+            /* លាក់ Form ខាងលើ, ប៊ូតុង, ប្រអប់ Filter និងចំណងជើងដើមទាំងស្រុង */
             .back-btn, 
             #formSectionBox, 
             .print-action-bar, 
@@ -147,14 +147,25 @@
             
             .section-box { background: white !important; border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; }
             
-            /* បង្ហាញតែចំណងជើងសាខាដែលបានជ្រើសរើសស្អាតពេល Print */
+            /* បង្ហាញចំណងជើងស្អាតនៅផ្នែកខាងលើពេល Print PDF */
             .print-header-title {
                 display: block !important;
-                font-size: 20px;
-                font-weight: bold;
-                color: #1e3c72;
-                margin-bottom: 15px;
                 text-align: center;
+                margin-bottom: 20px;
+            }
+            .print-header-title h2 {
+                color: #1e3c72;
+                font-size: 22px;
+                font-weight: 700;
+                margin: 0;
+            }
+            .print-header-title p {
+                color: #64748b;
+                font-size: 13px;
+                text-transform: uppercase;
+                margin: 5px 0 0 0;
+                font-weight: 600;
+                letter-spacing: 0.5px;
             }
 
             table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; font-size: 12px !important; margin-top: 10px !important; }
@@ -265,7 +276,10 @@
             </div>
 
             <!-- ចំណងជើងបង្ហាញពេលព្រីន PDF ចេញមកស្អាត -->
-            <div class="print-header-title" id="printBranchTitle">របាយការណ៍ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍ (Payroll Report)</div>
+            <div class="print-header-title" id="printBranchTitle">
+                <h2 id="printMainTitle">ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍</h2>
+                <p>Payroll Processing & Benefits Management - សាខា ANT DRY PORT</p>
+            </div>
 
             <table>
                 <thead>
@@ -355,11 +369,12 @@
                 payrollDataList = await response.json();
                 
                 const selectedBranch = document.getElementById('filterBranch').value;
-                const printTitle = document.getElementById('printBranchTitle');
+                const printTitleP = document.querySelector('#printBranchTitle p');
+                
                 if(selectedBranch === 'ALL') {
-                    printTitle.innerText = 'របាយការណ៍ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍ - គ្រប់សាខាទាំងអស់ (All Branches)';
+                    printTitleP.innerText = 'Payroll Processing & Benefits Management - គ្រប់សាខាទាំងអស់ (All Branches)';
                 } else {
-                    printTitle.innerText = `របាយការណ៍ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍ - សាខា ${selectedBranch}`;
+                    printTitleP.innerText = `Payroll Processing & Benefits Management - សាខា ${selectedBranch}`;
                 }
 
                 const tbody = document.getElementById('payrollTableBody');
