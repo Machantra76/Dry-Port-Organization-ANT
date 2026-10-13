@@ -387,6 +387,18 @@ async function initializeDatabase() {
             );
         `);
 
+        // ២៣. តារាងមុខតំណែងការងារ (Job Vacancies) [បន្ថែមថ្មីសម្រាប់ HR Management]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS job_vacancies (
+                id SERIAL PRIMARY KEY,
+                title VARCHAR(150) NOT NULL,
+                dept VARCHAR(100) NOT NULL,
+                qty INT NOT NULL DEFAULT 1,
+                status VARCHAR(50) DEFAULT 'កំពុងស្វែងរក',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
         await client.query('COMMIT');
         console.log('Database tables initialized successfully.');
     } catch (err) {
@@ -490,6 +502,35 @@ app.get('/views/wms-oms.html', (req, res) => {
 
 app.get('/views/it-cctv.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'it-cctv.html'));
+});
+
+// ==========================================
+// API Routes: Job Vacancies (HR Management) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/jobs', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM job_vacancies ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching jobs:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/jobs', async (req, res) => {
+    const { title, dept, qty, status } = req.body;
+    try {
+        const query = `
+            INSERT INTO job_vacancies (title, dept, qty, status)
+            VALUES ($1, $2, $3, $4) RETURNING *;
+        `;
+        const values = [title, dept, parseInt(qty) || 1, status || 'កំពុងស្វែងរក'];
+        const result = await pool.query(query, values);
+        res.json({ success: true, message: 'បានរក្សាទុកតំណែងការងារដោយជោគជ័យ!', data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving job vacancy:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
 });
 
 // ==========================================
@@ -639,7 +680,6 @@ app.post('/api/inventory', async (req, res) => {
     }
 });
 
-// បន្ថែម API route សម្រាប់កែប្រែ (PUT) ទ្រព្យសម្បត្តិ និងស្តុក (Inventory)
 app.put('/api/inventory/:id', async (req, res) => {
     const { id } = req.params;
     const { item_code, item_name, category, quantity, unit, status, holder_or_location } = req.body;
