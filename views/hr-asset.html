@@ -45,7 +45,10 @@
             .footer-note, 
             h1, 
             .eng-sub,
-            #tableOriginalTitle { 
+            #tableOriginalTitle,
+            .action-col,
+            th.action-col,
+            td.action-col { 
                 display: none !important; 
             }
             
@@ -76,10 +79,11 @@
         <h1>ទ្រព្យសម្បត្តិ និងស្តុក</h1>
         <div class="eng-sub">Asset, Stock & Inventory Management</div>
         
-        <!-- ១. Form សម្រាប់បន្ថែមសម្ភារៈ ឬទ្រព្យសម្បត្តិថ្មី -->
+        <!-- ១. Form សម្រាប់បន្ថែម ឬកែប្រែសម្ភារៈ/ទ្រព្យសម្បត្តិ -->
         <div class="section-box" id="addAssetSection">
-            <h3>បន្ថែមសម្ភារៈ ឬទ្រព្យសម្បត្តិថ្មី (Add New Asset / Stock Item)</h3>
+            <h3 id="formTitleText">បន្ថែមសម្ភារៈ ឬទ្រព្យសម្បត្តិថ្មី (Add New Asset / Stock Item)</h3>
             <form id="inventoryForm">
+                <input type="hidden" id="edit_id">
                 <div class="form-row">
                     <div>
                         <label>លេខកូដសម្ភារៈ (Item Code):</label>
@@ -126,7 +130,7 @@
                         <input type="text" id="holder_or_location" placeholder="ឧ. ផ្នែករដ្ឋបាល / បុគ្គលិក សុខ សុភា">
                     </div>
                 </div>
-                <button type="submit" class="submit-btn">រក្សាទុកសម្ភារៈ (Save Item)</button>
+                <button type="submit" id="saveBtn" class="submit-btn">រក្សាទុកសម្ភារៈ (Save Item)</button>
             </form>
         </div>
 
@@ -171,6 +175,7 @@
                         <th>បរិមាណ (Qty)</th>
                         <th>ស្ថានភាព (Status)</th>
                         <th>អ្នកកាន់កាប់/ទីតាំង (Holder/Location)</th>
+                        <th class="action-col">សកម្មភាព (Action)</th>
                     </tr>
                 </thead>
                 <tbody id="inventoryTableBody">
@@ -188,6 +193,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
+        let inventoryDataList = [];
+
         async function loadInventory() {
             const search = document.getElementById('searchInput').value;
             const category = document.getElementById('categoryFilter').value;
@@ -198,17 +205,17 @@
 
             try {
                 const response = await fetch(url);
-                const data = await response.json();
+                inventoryDataList = await response.json();
                 
                 const tbody = document.getElementById('inventoryTableBody');
                 tbody.innerHTML = '';
                 
-                if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យសម្ភារៈ ឬស្តុកនៅឡើយទេ</td></tr>';
+                if (inventoryDataList.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យសម្ភារៈ ឬស្តុកនៅឡើយទេ</td></tr>';
                     return;
                 }
 
-                data.forEach(item => {
+                inventoryDataList.forEach(item => {
                     const row = `<tr>
                         <td><strong>${item.item_code}</strong></td>
                         <td>${item.item_name}</td>
@@ -216,6 +223,11 @@
                         <td>${item.quantity} ${item.unit}</td>
                         <td><span class="badge-status">${item.status}</span></td>
                         <td>${item.holder_or_location || '-'}</td>
+                        <td class="action-col">
+                            <button onclick="editInventory(${item.id})" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Kantumruy Pro';">
+                                <i class="fa-solid fa-pen-to-square"></i> កែប្រែ
+                            </button>
+                        </td>
                     </tr>`;
                     tbody.innerHTML += row;
                 });
@@ -224,9 +236,29 @@
             }
         }
 
+        function editInventory(id) {
+            const item = inventoryDataList.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('edit_id').value = item.id;
+            document.getElementById('item_code').value = item.item_code;
+            document.getElementById('item_name').value = item.item_name;
+            document.getElementById('category').value = item.category;
+            document.getElementById('quantity').value = item.quantity;
+            document.getElementById('unit').value = item.unit;
+            document.getElementById('status').value = item.status;
+            document.getElementById('holder_or_location').value = item.holder_or_location || '';
+
+            document.getElementById('formTitleText').innerText = 'កែប្រែព័ត៌មានសម្ភារៈ ឬទ្រព្យសម្បត្តិ (Edit Asset / Stock Item)';
+            document.getElementById('saveBtn').innerText = 'កែប្រែទិន្នន័យ (Update Item)';
+            document.getElementById('saveBtn').style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         document.getElementById('inventoryForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            const editId = document.getElementById('edit_id').value;
             const item_code = document.getElementById('item_code').value;
             const item_name = document.getElementById('item_name').value;
             const category = document.getElementById('category').value;
@@ -235,17 +267,25 @@
             const status = document.getElementById('status').value;
             const holder_or_location = document.getElementById('holder_or_location').value;
 
+            // សម្គាល់៖ បើក្នុង server.js របស់អ្នកមិនទាន់មាន PUT route សម្រាប់ inventory អ្នកអាចបង្កើតបន្ថែម ឬប្រើ POST ជំនួសតាមតម្រូវការ
+            const url = editId ? `/api/inventory/${editId}` : '/api/inventory';
+            const method = editId ? 'PUT' : 'POST';
+
             try {
-                const response = await fetch('/api/inventory', {
-                    method: 'POST',
+                const response = await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ item_code, item_name, category, quantity, unit, status, holder_or_location })
                 });
 
                 const result = await response.json();
                 if (response.ok) {
-                    alert('បានរក្សាទុកសម្ភារៈដោយជោគជ័យ!');
+                    alert(editId ? 'បានកែប្រែព័ត៌មានដោយជោគជ័យ!' : 'បានរក្សាទុកសម្ភារៈដោយជោគជ័យ!');
                     document.getElementById('inventoryForm').reset();
+                    document.getElementById('edit_id').value = '';
+                    document.getElementById('formTitleText').innerText = 'បន្ថែមសម្ភារៈ ឬទ្រព្យសម្បត្តិថ្មី (Add New Asset / Stock Item)';
+                    document.getElementById('saveBtn').innerText = 'រក្សាទុកសម្ភារៈ (Save Item)';
+                    document.getElementById('saveBtn').style.background = '#10b981';
                     loadInventory();
                 } else {
                     alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
