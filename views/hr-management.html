@@ -120,7 +120,7 @@
             background: linear-gradient(135deg, #0072ff, #00c6ff);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 8px;
             cursor: pointer;
             width: 100%;
@@ -140,17 +140,16 @@
             display: block;
             font-size: 15px;
             font-weight: 700;
-            line-height: 1.4;
+            letter-spacing: 0.3px;
         }
 
         .btn-text-en {
             display: block;
-            font-size: 11px;
+            font-size: 11.5px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
             color: #e0f2fe;
-            margin-top: 2px;
-            line-height: 1.2;
+            margin-top: 3px;
         }
 
         table {
@@ -175,8 +174,8 @@
 <body>
 
     <header>
-        <h1>ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល</h1>
-        <p>HR Recruitment & Training Management</p>
+        <h1>ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល[cite: 11]</h1>
+        <p>HR Recruitment & Training Management[cite: 11]</p>
     </header>
 
     <div class="container">
@@ -204,7 +203,7 @@
                     <input type="number" id="jobQty" placeholder="ឧ. ២">
                 </div>
                 <button type="button" class="btn-submit" onclick="addJob()">
-                    <span class="btn-text-km">រក្សាទុកតំណែងការងារ</span>
+                    <span class="btn-text-km">💾 រក្សាទុកតំណែងការងារ</span>
                     <span class="btn-text-en">Save Job Vacancy</span>
                 </button>
             </div>
@@ -225,7 +224,7 @@
                     <input type="text" id="trainStatus" value="គ្រោងទុក (Scheduled)" readonly style="background-color: #f8fafc;">
                 </div>
                 <button type="button" class="btn-submit" onclick="addTraining()">
-                    <span class="btn-text-km">កត់ត្រាការបណ្តុះបណ្តាល</span>
+                    <span class="btn-text-km">✨ កត់ត្រាការបណ្តុះបណ្តាល</span>
                     <span class="btn-text-en">Record Training Schedule</span>
                 </button>
             </div>
@@ -245,14 +244,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- ទិន្នន័យទាញមកពី Server នឹងបង្ហាញទីនេះ -->
+                    <!-- ទិន្នន័យទាញមកពី Server នឹងបង្ហាញទីនេះ[cite: 11] -->
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // ទាញយកទិន្នន័យពី Server ពេលបើកទំព័រ
+        // ទាញយកទិន្នន័យពី Server ពេលបើកទំព័រ[cite: 11]
         document.addEventListener("DOMContentLoaded", fetchJobs);
 
         function fetchJobs() {
@@ -277,7 +276,7 @@
                 .catch(error => console.error('Error fetching jobs:', error));
         }
 
-        // បញ្ជូនទិន្នន័យថ្មីទៅកាន់ Server
+        // បញ្ជូនទិន្នន័យថ្មីទៅកាន់ Server[cite: 11]
         function addJob() {
             let title = document.getElementById('jobTitle').value;
             let dept = document.getElementById('jobDept').value;
@@ -301,7 +300,7 @@
                     alert(data.message);
                     document.getElementById('jobTitle').value = '';
                     document.getElementById('jobQty').value = '';
-                    fetchJobs(); // ទាញទិន្នន័យថ្មីមកបង្ហាញឡើងវិញ
+                    fetchJobs(); // ទាញទិន្នន័យថ្មីមកបង្ហាញឡើងវិញ[cite: 11]
                 } else {
                     alert('មានបញ្ហា៖ ' + data.error);
                 }
