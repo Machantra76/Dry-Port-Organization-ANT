@@ -33,12 +33,29 @@
         .badge-in { background: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
         .footer-note { margin-top: 25px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 
-        /* Hide filter and buttons during printing */
+        /* កែប្រែទម្រង់ពេលព្រីន PDF ឱ្យមានរបៀបរៀបរយស្អាត និងលាក់ចំណងជើងមិនចាំបាច់ */
         @media print {
-            .back-btn, .section-box:first-of-type, .filter-section, .footer-note { display: none; }
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; padding: 0; }
+            @page { size: A4 landscape; margin: 15mm; }
+            .back-btn, .section-box:first-of-type, .filter-section, .footer-note, h1, .eng-sub { display: none !important; }
+            body { background: white; padding: 0; color: #000; font-family: 'Kantumruy Pro', sans-serif !important; }
+            .container { box-shadow: none; padding: 0; max-width: 100%; width: 100%; border: none; }
+            .section-box { background: white !important; border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; }
+            
+            .print-header-title {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 20px;
+                color: #1e3c72;
+                font-size: 20px;
+                font-weight: bold;
+            }
+
+            table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; font-size: 12px !important; margin-top: 10px !important; }
+            th { background: #1e3c72 !important; color: white !important; border: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            td { border: 1px solid #ddd !important; padding: 8px !important; }
+            .badge-in { background: none !important; color: #000 !important; padding: 0 !important; font-weight: normal; }
         }
+        .print-header-title { display: none; }
     </style>
 </head>
 <body>
@@ -95,11 +112,18 @@
                     <label style="font-size: 12px; color: #64748b;">ស្វែងរក (Search):</label>
                     <input type="text" id="searchInput" placeholder="ឈ្មោះ ឬ កូដបុគ្គលិក...">
                 </div>
-                <div style="display: flex; gap: 5px;">
-                    <button onclick="loadAttendanceLogs()" style="background: #2563eb; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; height: 41px;">ស្វែងរក</button>
-                    <button onclick="printAttendance()" style="background: #0ea5e9; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; height: 41px;" title="Print ឬ Save ជា PDF">🖨️ PDF</button>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="loadAttendanceLogs()" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; font-family: 'Kantumruy Pro', sans-serif; height: 42px; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-magnifying-glass"></i> ស្វែងរក
+                    </button>
+                    <button onclick="printAttendance()" style="background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; font-family: 'Kantumruy Pro', sans-serif; height: 42px;" title="Print ឬ Save ជា PDF">
+                        <i class="fa-solid fa-print"></i> PDF
+                    </button>
                 </div>
             </div>
+
+            <!-- ចំណងជើងបង្ហាញពេលព្រីន PDF -->
+            <div class="print-header-title">ប្រវត្តិកត់ត្រាម៉ោង ចេញ/ចូល ប្រចាំថ្ងៃ (Attendance Logs Report)</div>
 
             <table>
                 <thead>
@@ -123,8 +147,10 @@
         </div>
     </div>
 
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <script>
-        // មុខងារទាញយកប្រវត្តិកត់ត្រាវត្តមាន (មាន Filter & Search)
         async function loadAttendanceLogs() {
             const from = document.getElementById('fromDate').value;
             const to = document.getElementById('toDate').value;
@@ -142,7 +168,7 @@
                 tbody.innerHTML = '';
                 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b;">មិនទាន់មានទិន្នន័យស្កេនវត្តមាននៅឡើយទេ</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យស្កេនវត្តមាននៅឡើយទេ</td></tr>';
                     return;
                 }
 
@@ -166,7 +192,6 @@
             }
         }
 
-        // មុខងារបន្ថែមបុគ្គលិកថ្មី
         document.getElementById('employeeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -195,12 +220,10 @@
             }
         });
 
-        // មុខងារ Print / Save PDF
         function printAttendance() {
             window.print();
         }
 
-        // โหลดข้อมูลตอนเปิดหน้าเว็บ และ Refresh อัตโนมัติทุกๆ 5 วินาที
         loadAttendanceLogs();
         setInterval(loadAttendanceLogs, 5000);
     </script>
