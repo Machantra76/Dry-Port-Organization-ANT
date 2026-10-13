@@ -131,7 +131,7 @@
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 10px; overflow: hidden; border: 1px solid #cbd5e1; }
         th, td { padding: 12px 8px; text-align: center; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
         th { background: var(--primary-color); color: white; font-weight: 600; }
-        td:nth-child(3) { text-align: left; }
+        td:nth-child(4) { text-align: left; }
         tr:hover { background: #f1f5f9; }
 
         .badge-net { background: #d1fae5; color: #065f46; padding: 5px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
@@ -139,61 +139,15 @@
         
         .footer-note { margin-top: 25px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 
-        /* កូដសម្របសម្រួលពេល Print PDF ចេញមកស្អាតមិនរញ៉េរញ៉ៃ */
         @media print {
-            body { 
-                background: white; 
-                padding: 0; 
-                color: #000;
-            }
-            .container { 
-                box-shadow: none; 
-                padding: 0; 
-                border: none; 
-                max-width: 100%; 
-            }
-            /* លាក់ Form បញ្ចូលទិន្នន័យ ប៊ូតុង និង Back Button ទាំងអស់ */
-            .back-btn, 
-            .section-box:nth-child(3), 
-            .print-action-bar, 
-            .action-col, 
-            th.action-col, 
-            td.action-col, 
-            form, 
-            .footer-note { 
-                display: none !important; 
-            }
-            .section-box {
-                background: white !important;
-                border: none !important;
-                box-shadow: none !important;
-                margin-top: 0 !important;
-                padding: 0 !important;
-            }
-            table { 
-                width: 100% !important;
-                border-collapse: collapse !important; 
-                border: 1px solid #000 !important; 
-                font-size: 11px !important; 
-                margin-top: 10px !important;
-            }
-            th { 
-                background: #1e3c72 !important; 
-                color: white !important; 
-                border: 1px solid #000 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            td { 
-                border: 1px solid #ddd !important; 
-                padding: 8px 4px !important;
-            }
-            .badge-net, .badge-debt {
-                background: none !important;
-                color: #000 !important;
-                font-weight: bold;
-                padding: 0 !important;
-            }
+            body { background: white; padding: 0; color: #000; }
+            .container { box-shadow: none; padding: 0; border: none; max-width: 100%; }
+            .back-btn, .section-box:nth-child(3), .print-action-bar, .action-col, th.action-col, td.action-col, form, .footer-note, #filterBranchWrapper { display: none !important; }
+            .section-box { background: white !important; border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; }
+            table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; font-size: 11px !important; margin-top: 10px !important; }
+            th { background: #1e3c72 !important; color: white !important; border: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            td { border: 1px solid #ddd !important; padding: 8px 4px !important; }
+            .badge-net, .badge-debt { background: none !important; color: #000 !important; font-weight: bold; padding: 0 !important; }
         }
     </style>
 </head>
@@ -212,6 +166,19 @@
                 <input type="hidden" id="edit_id">
                 <div class="form-row">
                     <div>
+                        <label>សាខា / ទីតាំង (Branch):</label>
+                        <select id="branch" required>
+                            <option value="ANT DRY PORT">ANT DRY PORT</option>
+                            <option value="BWH">BWH</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label>ខែឆ្នាំប្រាក់បៀវត្សរ៍ (Pay Month):</label>
+                        <input type="month" id="pay_month" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div>
                         <label>លេខកូដបុគ្គលិក (Employee Code):</label>
                         <input type="text" id="employee_code" required placeholder="ឧ. 1001">
                     </div>
@@ -222,33 +189,32 @@
                 </div>
                 <div class="form-row">
                     <div>
-                        <label>ខែឆ្នាំប្រាក់បៀវត្សរ៍ (Pay Month):</label>
-                        <input type="month" id="pay_month" required>
-                    </div>
-                    <div>
                         <label>ប្រាក់ខែគោល ($ Base Salary):</label>
                         <input type="number" id="base_salary" required step="0.01" placeholder="ឧ. 300" oninput="calculateNet()">
                     </div>
-                </div>
-                <div class="form-row">
                     <div>
                         <label>ប្រាក់អត្ថប្រយោជន៍បន្ថែម ($ Allowance):</label>
                         <input type="number" id="allowance" step="0.01" value="0" placeholder="ឧ. 0" oninput="calculateNet()">
                     </div>
+                </div>
+                <div class="form-row">
                     <div>
-                        <label>ប្រាក់ត្រូវកាត់ ($ Deduction / កាត់សងជំពាក់):</label>
+                        <label>ប្រាក់ត្រូវកាត់ ($ Deduction):</label>
                         <input type="number" id="deduction" step="0.01" value="0" placeholder="ឧ. 10" oninput="calculateNet()">
                         <small id="absentInfo" style="color: #64748b; display: block; margin-top: 4px;"></small>
                     </div>
-                </div>
-                <div class="form-row">
                     <div>
                         <label>ប្រាក់ជំពាក់ចាស់ ($ Previous Debt):</label>
                         <input type="number" id="previous_debt" step="0.01" value="0" placeholder="ឧ. 10" oninput="calculateNet()">
                     </div>
+                </div>
+                <div class="form-row">
                     <div>
                         <label>ប្រាក់ជំពាក់ថ្មី ($ New Debt / Advance):</label>
                         <input type="number" id="new_debt" step="0.01" value="0" placeholder="ឧ. 5" oninput="calculateNet()">
+                    </div>
+                    <div>
+                        <!-- ទុកទំនេរកន្លែងតម្រឹមស្អាត -->
                     </div>
                 </div>
                 <div class="form-row">
@@ -269,14 +235,27 @@
         <!-- ២. តារាងបង្ហាញបញ្ជីប្រាក់ខែ -->
         <div class="section-box">
             <h3>📋 របាយការណ៍ប្រាក់បៀវត្សរ៍បុគ្គលិក (Payroll Summary Report)</h3>
-            <div class="print-action-bar" style="text-align: right; margin-bottom: 15px;">
-                <button onclick="window.print()" class="btn-print-pdf">
-                    <i class="fa-solid fa-print"></i> បោះពុម្ពរបាយការណ៍ (Print PDF)
-                </button>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;" id="filterBranchWrapper">
+                <div>
+                    <label style="display: inline-block; margin-right: 10px; font-weight: bold;">ជ្រើសរើសសាខាមើល៖</label>
+                    <select id="filterBranch" onchange="loadPayroll()" style="padding: 8px; border-radius: 8px; width: 220px; display: inline-block;">
+                        <option value="ALL">បង្ហាញទាំងអស់ (All Branches)</option>
+                        <option value="ANT DRY PORT">ANT DRY PORT</option>
+                        <option value="BWH">BWH</option>
+                    </select>
+                </div>
+                <div class="print-action-bar">
+                    <button onclick="window.print()" class="btn-print-pdf">
+                        <i class="fa-solid fa-print"></i> បោះពុម្ពរបាយការណ៍ (Print PDF)
+                    </button>
+                </div>
             </div>
+
             <table>
                 <thead>
                     <tr>
+                        <th>សាខា (Branch)</th>
                         <th>ខែ (Month)</th>
                         <th>កូដ (PIN)</th>
                         <th>ឈ្មោះបុគ្គលិក (Full Name)</th>
@@ -360,15 +339,21 @@
                 const response = await fetch('/api/payroll');
                 payrollDataList = await response.json();
                 
+                const selectedBranch = document.getElementById('filterBranch').value;
                 const tbody = document.getElementById('payrollTableBody');
                 tbody.innerHTML = '';
                 
-                if (!payrollDataList || payrollDataList.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="11" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យប្រាក់បៀវត្សរ៍នៅឡើយទេ</td></tr>';
+                const filteredList = payrollDataList.filter(item => {
+                    if (selectedBranch === 'ALL') return true;
+                    return item.branch === selectedBranch;
+                });
+
+                if (!filteredList || filteredList.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យប្រាក់បៀវត្សរ៍សម្រាប់សាខានេះនៅឡើយទេ</td></tr>';
                     return;
                 }
 
-                payrollDataList.forEach(item => {
+                filteredList.forEach(item => {
                     const prevDebt = parseFloat(item.previous_debt || 0);
                     const newDebt = parseFloat(item.new_debt || 0);
                     const deduct = parseFloat(item.deduction || 0);
@@ -381,6 +366,7 @@
                     const netSalary = (baseSalary + allowance) - deduct;
 
                     const row = `<tr>
+                        <td><strong>${item.branch || 'ANT DRY PORT'}</strong></td>
                         <td><strong>${item.pay_month}</strong></td>
                         <td>${item.employee_code}</td>
                         <td>${item.full_name}</td>
@@ -409,6 +395,7 @@
             if (!item) return;
 
             document.getElementById('edit_id').value = item.id;
+            document.getElementById('branch').value = item.branch || 'ANT DRY PORT';
             document.getElementById('employee_code').value = item.employee_code;
             document.getElementById('full_name').value = item.full_name;
             document.getElementById('pay_month').value = item.pay_month;
@@ -435,6 +422,7 @@
             const netSalary = (base + allow) - deduct;
 
             const payload = {
+                branch: document.getElementById('branch').value,
                 employee_code: document.getElementById('employee_code').value,
                 full_name: document.getElementById('full_name').value,
                 base_salary: base,
