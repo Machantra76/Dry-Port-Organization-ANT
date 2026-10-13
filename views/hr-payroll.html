@@ -79,6 +79,13 @@
         }
         input:focus, select:focus { border-color: #2563eb; outline: none; }
         
+        /* ពង្រីកទំហំ Date (ខែឆ្នាំ) ឱ្យធំបន្តិច */
+        input[type="month"], select#branch, select#filterBranch {
+            font-size: 16px;
+            font-weight: 600;
+            padding: 12px 16px;
+        }
+
         button.submit-btn { 
             background: linear-gradient(135deg, #059669 0%, #10b981 100%); 
             color: white; 
@@ -117,13 +124,13 @@
         
         .footer-note { margin-top: 25px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 
-        /* ការកំណត់ពេលព្រីន PDF : លាក់ Form ខាងលើចោលទាំងស្រុង និងបង្ហាញតែតារាង */
+        /* ការកំណត់ពេលព្រីន PDF : លាក់ចំណងជើងមិនចាំបាច់ទាំងស្រុង */
         @media print {
             @page { size: A4 landscape; margin: 10mm; }
             body { background: white; padding: 0; color: #000; font-family: 'Kantumruy Pro', sans-serif !important; }
             .container { box-shadow: none; padding: 0; border: none; max-width: 100%; width: 100%; }
             
-            /* លាក់ប្រអប់ Form ទី ១ និងប៊ូតុងផ្សេងៗមិនឱ្យចេញពេល Print */
+            /* លាក់ Form ខាងលើ, ប៊ូតុង, ប្រអប់ Filter និងចំណងជើងដើមទាំងស្រុងមិនឱ្យចេញពេល Print */
             .back-btn, 
             #formSectionBox, 
             .print-action-bar, 
@@ -131,24 +138,28 @@
             th.action-col, 
             td.action-col, 
             .footer-note, 
-            #filterBranchWrapper { 
+            #filterBranchWrapper,
+            h1,
+            .eng-sub,
+            #reportTitleHeader { 
                 display: none !important; 
             }
             
             .section-box { background: white !important; border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; }
             
+            /* បង្ហាញតែចំណងជើងសាខាដែលបានជ្រើសរើសស្អាតពេល Print */
             .print-header-title {
                 display: block !important;
-                font-size: 18px;
+                font-size: 20px;
                 font-weight: bold;
                 color: #1e3c72;
                 margin-bottom: 15px;
                 text-align: center;
             }
 
-            table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; font-size: 11px !important; margin-top: 10px !important; }
+            table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; font-size: 12px !important; margin-top: 10px !important; }
             th { background: #1e3c72 !important; color: white !important; border: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            td { border: 1px solid #ddd !important; padding: 6px 4px !important; }
+            td { border: 1px solid #ddd !important; padding: 8px 4px !important; }
             .badge-net, .badge-debt { background: none !important; color: #000 !important; font-weight: bold; padding: 0 !important; }
         }
         .print-header-title { display: none; }
@@ -162,7 +173,7 @@
         <h1>ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍</h1>
         <div class="eng-sub">Payroll Processing & Benefits Management</div>
         
-        <!-- ១. Form គណនា កត់ត្រា និងកែប្រែប្រាក់ខែ (ដាក់ id="formSectionBox" ដើម្បីងាយលាក់ពេល Print) -->
+        <!-- ១. Form គណនា កត់ត្រា និងកែប្រែប្រាក់ខែ -->
         <div class="section-box" id="formSectionBox">
             <h3>🧮 គណនាកត់ត្រា ឬកែប្រែប្រាក់បៀវត្សរ៍</h3>
             <form id="payrollForm">
@@ -235,12 +246,12 @@
 
         <!-- ២. តារាងបង្ហាញបញ្ជីប្រាក់ខែ -->
         <div class="section-box">
-            <h3>📋 របាយការណ៍ប្រាក់បៀវត្សរ៍បុគ្គលិក</h3>
+            <h3 id="reportTitleHeader">📋 របាយការណ៍ប្រាក់បៀវត្សរ៍បុគ្គលិក</h3>
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;" id="filterBranchWrapper">
                 <div>
                     <label style="display: inline-block; margin-right: 10px; font-weight: bold;">ជ្រើសរើសសាខាមើល៖</label>
-                    <select id="filterBranch" onchange="loadPayroll()" style="padding: 8px; border-radius: 8px; width: 220px; display: inline-block;">
+                    <select id="filterBranch" onchange="loadPayroll()" style="padding: 10px 14px; border-radius: 8px; width: 220px; display: inline-block;">
                         <option value="ALL">បង្ហាញទាំងអស់ (All Branches)</option>
                         <option value="ANT DRY PORT">ANT DRY PORT</option>
                         <option value="BHW">BHW</option>
