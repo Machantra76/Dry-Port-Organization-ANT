@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីให้อានហ្វាលក្នុង views បានយ៉ាងរលូន
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីให้อានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 12]
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
@@ -61,7 +61,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records - បន្ថែមប្រាក់ជំពាក់ចាស់ និងថ្មី)
+        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records - បន្ថែមប្រាក់ជំពាក់ចាស់ និងថ្មី)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS payroll_records (
                 id SERIAL PRIMARY KEY,
@@ -83,7 +83,7 @@ async function initializeDatabase() {
             ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS new_debt NUMERIC(10, 2) NOT NULL DEFAULT 0;
         `);
 
-        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)
+        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS revenues (
                 id SERIAL PRIMARY KEY,
@@ -96,7 +96,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable)
+        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS accounts_receivable (
                 id SERIAL PRIMARY KEY,
@@ -110,7 +110,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៧. តារាងចំណាយ (Expenses)
+        // ៧. តារាងចំណាយ (Expenses)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS expenses (
                 id SERIAL PRIMARY KEY,
@@ -123,7 +123,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៨. តារាងគ្រប់គ្រងរថយន្ត (Fleet Vehicles)
+        // ៨. តារាងគ្រប់គ្រងរថយន្ត (Fleet Vehicles)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS fleet_vehicles (
                 id SERIAL PRIMARY KEY,
@@ -136,7 +136,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៩. តារាងគ្រប់គ្រងអ្នកបើកបរ (Drivers)
+        // ៩. តារាងគ្រប់គ្រងអ្នកបើកបរ (Drivers)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS drivers (
                 id SERIAL PRIMARY KEY,
@@ -149,7 +149,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១០. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches)
+        // ១០. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS transport_dispatches (
                 id SERIAL PRIMARY KEY,
@@ -164,7 +164,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១១. តារាងគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)
+        // ១១. តារាងគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS fuel_logs (
                 id SERIAL PRIMARY KEY,
@@ -179,7 +179,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs)
+        // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS maintenance_logs (
                 id SERIAL PRIMARY KEY,
@@ -194,7 +194,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៣. តារាងរៀបចំផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)
+        // ១៣. តារាងរៀបចំផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS transport_plans (
                 id SERIAL PRIMARY KEY,
@@ -210,7 +210,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
+        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS damaged_containers (
                 id SERIAL PRIMARY KEY,
@@ -234,7 +234,7 @@ async function initializeDatabase() {
             ALTER TABLE damaged_containers ADD COLUMN IF NOT EXISTS shipping_line VARCHAR(100);
         `);
 
-        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
+        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_yard_locations (
                 id SERIAL PRIMARY KEY,
@@ -258,7 +258,7 @@ async function initializeDatabase() {
             ALTER TABLE container_yard_locations ADD COLUMN IF NOT EXISTS shipping_line VARCHAR(100);
         `);
 
-        // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)
+        // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_repair_logs (
                 id SERIAL PRIMARY KEY,
@@ -285,7 +285,7 @@ async function initializeDatabase() {
             ALTER TABLE container_repair_logs ADD COLUMN IF NOT EXISTS shipping_line VARCHAR(100);
         `);
 
-        // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out)
+        // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_gate_out (
                 id SERIAL PRIMARY KEY,
@@ -310,7 +310,7 @@ async function initializeDatabase() {
             ALTER TABLE container_gate_out ADD COLUMN IF NOT EXISTS shipping_line VARCHAR(100);
         `);
 
-        // ១៨. តារាងប្រតិបត្តិការទីលាន (Yard Operations)
+        // ១៨. តារាងប្រតិបត្តិការទីលាន (Yard Operations)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS yard_operations (
                 id SERIAL PRIMARY KEY,
@@ -326,7 +326,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៩. តារាងកត់ត្រាការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out)
+        // ១៩. តារាងកត់ត្រាការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS cargo_gate_logs (
                 id SERIAL PRIMARY KEY,
@@ -343,7 +343,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២០. តារាងគ្រប់គ្រងក្រុមសន្តិសុខ (Security Logs)
+        // ២០. តារាងគ្រប់គ្រងក្រុមសន្តិសុខ (Security Logs)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS security_logs (
                 id SERIAL PRIMARY KEY,
@@ -358,7 +358,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២១. តារាងប្រព័ន្ធ WMS / OMS (Warehouse & Order Management Systems)
+        // ២១. តារាងប្រព័ន្ធ WMS / OMS (Warehouse & Order Management Systems)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS wms_oms_records (
                 id SERIAL PRIMARY KEY,
@@ -371,7 +371,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២២. តារាងគ្រប់គ្រង CCTV និង Network (IT Infrastructure)
+        // ២២. តារាងគ្រប់គ្រង CCTV និង Network (IT Infrastructure)[cite: 12]
         await client.query(`
             CREATE TABLE IF NOT EXISTS it_cctv_networks (
                 id SERIAL PRIMARY KEY,
@@ -638,7 +638,7 @@ app.post('/api/inventory', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll) - កែសម្រួលទទួលប្រាក់ជំពាក់ចាស់និងថ្មី
+// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll) - រួមទាំងមុខងារ Add, Update និង Calculate Debt
 // ==========================================
 app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => {
     const { employee_code, pay_month } = req.params;
@@ -690,7 +690,6 @@ app.post('/api/payroll', async (req, res) => {
         const pDebt = parseFloat(previous_debt) || 0;
         const nDebt = parseFloat(new_debt) || 0;
         
-        // គណនាប្រាក់ខែទទួលបានសុទ្ធ (ប្រាក់ខែគោល + ប្រាក់បន្ថែម - ប្រាក់កាត់ - ប្រាក់ជំពាក់ថ្មី)
         const net_salary = (bSalary + allow) - deduct - nDebt;
 
         const query = `
@@ -702,6 +701,39 @@ app.post('/api/payroll', async (req, res) => {
     } catch (err) {
         console.error('Error saving payroll:', err);
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាប្រាក់បៀវត្សរ៍' });
+    }
+});
+
+app.put('/api/payroll/:id', async (req, res) => {
+    const { id } = req.params;
+    const { employee_code, full_name, base_salary, allowance, deduction, previous_debt, new_debt, pay_month } = req.body;
+    try {
+        const bSalary = parseFloat(base_salary) || 0;
+        const allow = parseFloat(allowance) || 0;
+        const deduct = parseFloat(deduction) || 0;
+        const pDebt = parseFloat(previous_debt) || 0;
+        const nDebt = parseFloat(new_debt) || 0;
+        
+        const net_salary = (bSalary + allow) - deduct - nDebt;
+
+        const query = `
+            UPDATE payroll_records 
+            SET employee_code = $1, full_name = $2, base_salary = $3, allowance = $4, 
+                deduction = $5, previous_debt = $6, new_debt = $7, net_salary = $8, pay_month = $9
+            WHERE id = $10 
+            RETURNING *;
+        `;
+        const values = [employee_code, full_name, bSalary, allow, deduct, pDebt, nDebt, net_salary, pay_month, id];
+        const result = await pool.query(query, values);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យប្រាក់បៀវត្សរ៍នេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating payroll:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យប្រាក់បៀវត្សរ៍' });
     }
 });
 
@@ -1623,7 +1655,7 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
                     success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out បានទេ!` 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out ได้ទេ!` 
                 });
             }
         }
