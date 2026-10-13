@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> </title> <!-- ទុកទទេដើម្បីកុំឱ្យ Browser យកឈ្មោះ Tab ទៅបង្ហាញពេល Print -->
+    <title> </title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -48,55 +48,90 @@
         
         .section-box { 
             margin-top: 30px; 
-            padding: 28px; 
+            padding: 32px; 
             background: #f8fafc; 
-            border-radius: 12px; 
+            border-radius: 14px; 
             border: 1px solid #e2e8f0; 
         }
         .section-box h3 { 
             margin-top: 0; 
             color: var(--primary-color); 
-            font-size: 17px; 
+            font-size: 18px; 
             font-weight: 700;
             border-bottom: 2px solid #cbd5e1; 
-            padding-bottom: 10px; 
+            padding-bottom: 12px; 
+            margin-bottom: 25px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
         
-        form { display: grid; gap: 18px; margin-top: 20px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        label { font-weight: 600; font-size: 13.5px; color: #1e293b; margin-bottom: 6px; display: block; }
+        /* រៀបចំ Grid Form ឱ្យមានរបៀប និងដកឃ្លាស្អាត */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px 24px;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        label { 
+            font-weight: 600; 
+            font-size: 13.5px; 
+            color: #1e293b; 
+            margin-bottom: 8px; 
+        }
         input, select { 
             width: 100%; 
-            padding: 11px 16px; 
+            padding: 12px 16px; 
             border: 1.5px solid #cbd5e1; 
             border-radius: 10px; 
             font-family: 'Kantumruy Pro', sans-serif; 
             font-size: 14px; 
             background: white; 
+            box-sizing: border-box;
+            transition: border-color 0.2s;
         }
-        input:focus, select:focus { border-color: #2563eb; outline: none; }
+        input:focus, select:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         
-        /* ពង្រីកទំហំ Date (ខែឆ្នាំ) ឱ្យធំបន្តិច */
         input[type="month"], select#branch, select#filterBranch {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
+        }
+
+        .preview-box {
+            background: #f1f5f9;
+            border: 1.5px dashed #94a3b8;
+            border-radius: 10px;
             padding: 12px 16px;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .submit-btn-wrapper {
+            grid-column: span 2;
+            margin-top: 10px;
         }
 
         button.submit-btn { 
             background: linear-gradient(135deg, #059669 0%, #10b981 100%); 
             color: white; 
             border: none; 
-            padding: 13px 20px; 
+            padding: 14px 24px; 
             border-radius: 10px; 
             cursor: pointer; 
             font-weight: 700; 
             font-family: 'Kantumruy Pro', sans-serif; 
             font-size: 15px; 
+            width: 100%;
+            transition: opacity 0.2s;
         }
+        button.submit-btn:hover { opacity: 0.95; }
 
         .btn-print-pdf { 
             background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%); 
@@ -124,50 +159,15 @@
         
         .footer-note { margin-top: 25px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 
-        /* ការកំណត់ពេលព្រីន PDF */
         @media print {
             @page { size: A4 landscape; margin: 10mm; }
             body { background: white; padding: 0; color: #000; font-family: 'Kantumruy Pro', sans-serif !important; }
             .container { box-shadow: none; padding: 0; border: none; max-width: 100%; width: 100%; }
-            
-            /* លាក់ Form ខាងលើ, ប៊ូតុង, ប្រអប់ Filter និងចំណងជើងដើមទាំងស្រុង */
-            .back-btn, 
-            #formSectionBox, 
-            .print-action-bar, 
-            .action-col, 
-            th.action-col, 
-            td.action-col, 
-            .footer-note, 
-            #filterBranchWrapper,
-            h1,
-            .eng-sub,
-            #reportTitleHeader { 
-                display: none !important; 
-            }
-            
+            .back-btn, #formSectionBox, .print-action-bar, .action-col, th.action-col, td.action-col, .footer-note, #filterBranchWrapper, h1, .eng-sub, #reportTitleHeader { display: none !important; }
             .section-box { background: white !important; border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; }
-            
-            /* បង្ហាញចំណងជើងស្អាតនៅផ្នែកខាងលើពេល Print PDF */
-            .print-header-title {
-                display: block !important;
-                text-align: center;
-                margin-bottom: 20px;
-            }
-            .print-header-title h2 {
-                color: #1e3c72;
-                font-size: 22px;
-                font-weight: 700;
-                margin: 0;
-            }
-            .print-header-title p {
-                color: #64748b;
-                font-size: 13px;
-                text-transform: uppercase;
-                margin: 5px 0 0 0;
-                font-weight: 600;
-                letter-spacing: 0.5px;
-            }
-
+            .print-header-title { display: block !important; text-align: center; margin-bottom: 20px; }
+            .print-header-title h2 { color: #1e3c72; font-size: 22px; font-weight: 700; margin: 0; }
+            .print-header-title p { color: #64748b; font-size: 13px; text-transform: uppercase; margin: 5px 0 0 0; font-weight: 600; letter-spacing: 0.5px; }
             table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; font-size: 12px !important; margin-top: 10px !important; }
             th { background: #1e3c72 !important; color: white !important; border: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             td { border: 1px solid #ddd !important; padding: 8px 4px !important; }
@@ -181,77 +181,79 @@
     <div class="container">
         <a href="/" class="back-btn">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
         
-        <h1>ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍</h1>
-        <div class="eng-sub">Payroll Processing & Benefits Management</div>
+        <h1>ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍[cite: 13]</h1>
+        <div class="eng-sub">Payroll Processing & Benefits Management[cite: 13]</div>
         
         <!-- ១. Form គណនា កត់ត្រា និងកែប្រែប្រាក់ខែ -->
         <div class="section-box" id="formSectionBox">
             <h3>🧮 គណនាកត់ត្រា ឬកែប្រែប្រាក់បៀវត្សរ៍</h3>
             <form id="payrollForm">
                 <input type="hidden" id="edit_id">
-                <div class="form-row">
-                    <div>
+                
+                <div class="form-grid">
+                    <div class="form-group">
                         <label>សាខា / ទីតាំង (Branch):</label>
                         <select id="branch" required>
                             <option value="ANT DRY PORT">ANT DRY PORT</option>
                             <option value="BHW">BHW</option>
                         </select>
                     </div>
-                    <div>
+                    
+                    <div class="form-group">
                         <label>ខែឆ្នាំប្រាក់បៀវត្សរ៍ (Pay Month):</label>
                         <input type="month" id="pay_month" required>
                     </div>
-                </div>
-                <div class="form-row">
-                    <div>
+
+                    <div class="form-group">
                         <label>លេខកូដបុគ្គលិក (Employee Code):</label>
                         <input type="text" id="employee_code" required placeholder="ឧ. 1001">
                     </div>
-                    <div>
+
+                    <div class="form-group">
                         <label>ឈ្មោះពេញ (Full Name):</label>
                         <input type="text" id="full_name" required placeholder="ឧ. សុខ សុភា">
                     </div>
-                </div>
-                <div class="form-row">
-                    <div>
+
+                    <div class="form-group">
                         <label>ប្រាក់ខែគោល ($ Base Salary):</label>
                         <input type="number" id="base_salary" required step="0.01" placeholder="ឧ. 300" oninput="calculateNet()">
                     </div>
-                    <div>
+
+                    <div class="form-group">
                         <label>ប្រាក់អត្ថប្រយោជន៍បន្ថែម ($ Allowance):</label>
                         <input type="number" id="allowance" step="0.01" value="0" placeholder="ឧ. 0" oninput="calculateNet()">
                     </div>
-                </div>
-                <div class="form-row">
-                    <div>
+
+                    <div class="form-group">
                         <label>ប្រាក់ត្រូវកាត់ ($ Deduction):</label>
                         <input type="number" id="deduction" step="0.01" value="0" placeholder="ឧ. 10" oninput="calculateNet()">
                         <small id="absentInfo" style="color: #64748b; display: block; margin-top: 4px;"></small>
                     </div>
-                    <div>
+
+                    <div class="form-group">
                         <label>ប្រាក់ជំពាក់ចាស់ ($ Previous Debt):</label>
                         <input type="number" id="previous_debt" step="0.01" value="0" placeholder="ឧ. 10" oninput="calculateNet()">
                     </div>
-                </div>
-                <div class="form-row">
-                    <div>
+
+                    <div class="form-group">
                         <label>ប្រាក់ជំពាក់ថ្មី ($ New Debt / Advance):</label>
                         <input type="number" id="new_debt" step="0.01" value="0" placeholder="ឧ. 5" oninput="calculateNet()">
                     </div>
-                    <div></div>
-                </div>
-                <div class="form-row">
-                    <div>
-                        <label>ប្រាក់ជំពាក់នៅសល់សរុប ($ Remaining Debt):</label>
-                        <input type="text" id="remaining_debt_preview" readonly style="background: #e2e8f0; font-weight: bold; color: #991b1b;" value="$0.00">
-                    </div>
-                    <div>
-                        <label>ប្រាក់ខែទទួលបានសុទ្ធ ($ Net Salary):</label>
-                        <input type="text" id="net_salary_preview" readonly style="background: #e2e8f0; font-weight: bold; color: #065f46;" value="$0.00">
-                    </div>
-                </div>
 
-                <button type="submit" id="saveBtn" class="submit-btn" style="margin-top: 10px;">រក្សាទុកទិន្នន័យប្រាក់ខែ (Save Payroll)</button>
+                    <div class="form-group">
+                        <label>ប្រាក់ជំពាក់នៅសល់សរុប ($ Remaining Debt):</label>
+                        <input type="text" id="remaining_debt_preview" class="preview-box" readonly style="color: #991b1b;" value="$0.00">
+                    </div>
+
+                    <div class="form-group full-width">
+                        <label>ប្រាក់ខែទទួលបានសុទ្ធ ($ Net Salary):</label>
+                        <input type="text" id="net_salary_preview" class="preview-box" readonly style="color: #065f46; font-size: 18px;" value="$0.00">
+                    </div>
+
+                    <div class="submit-btn-wrapper">
+                        <button type="submit" id="saveBtn" class="submit-btn">រក្សាទុកទិន្នន័យប្រាក់ខែ (Save Payroll)</button>
+                    </div>
+                </div>
             </form>
         </div>
 
@@ -275,7 +277,6 @@
                 </div>
             </div>
 
-            <!-- ចំណងជើងបង្ហាញពេលព្រីន PDF ចេញមកស្អាត -->
             <div class="print-header-title" id="printBranchTitle">
                 <h2 id="printMainTitle">ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍</h2>
                 <p>Payroll Processing & Benefits Management - សាខា ANT DRY PORT</p>
@@ -299,17 +300,16 @@
                     </tr>
                 </thead>
                 <tbody id="payrollTableBody">
-                    <!-- ទិន្នន័យនឹងទាញមកបង្ហាញទីនេះ -->
+                    <tr><td colspan="12" style="text-align: center; color: #64748b; padding: 20px;">កំពុងទាញយកទិន្នន័យ...</td></tr>
                 </tbody>
             </table>
         </div>
 
         <div class="footer-note">
-            <p><strong>ចំណាំ៖</strong> ប្រព័ន្ធទាញទិន្នន័យអវត្តមានពីការស្កែនមេដៃមកគណនាកាត់ប្រាក់ខែដោយស្វ័យប្រវត្ត និងគណនាប្រាក់ជំពាក់សរុប។</p>
+            <p><strong>ចំណាំ៖</strong> ប្រព័ន្ធទាញទិន្នន័យអវត្តមានពីការស្កែនមេដៃមកគណនាកាត់ប្រាក់ខែដោយស្វ័យប្រវត្ត និងគណនាប្រាក់ជំពាក់សរុប។[cite: 13]</p>
         </div>
     </div>
 
-    <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
