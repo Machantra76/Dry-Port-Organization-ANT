@@ -178,28 +178,28 @@
                     </div>
                     <div>
                         <label>ប្រាក់ខែគោល ($ Base Salary):</label>
-                        <input type="number" id="base_salary" required step="0.01" placeholder="ឧ. 500" oninput="calculateNet()">
+                        <input type="number" id="base_salary" required step="0.01" placeholder="ឧ. 300" oninput="calculateNet()">
                     </div>
                 </div>
                 <div class="form-row">
                     <div>
                         <label>ប្រាក់អត្ថប្រយោជន៍បន្ថែម ($ Allowance):</label>
-                        <input type="number" id="allowance" step="0.01" value="0" placeholder="ឧ. 50" oninput="calculateNet()">
+                        <input type="number" id="allowance" step="0.01" value="0" placeholder="ឧ. 0" oninput="calculateNet()">
                     </div>
                     <div>
-                        <label>ប្រាក់ត្រូវកាត់ ($ Deduction):</label>
-                        <input type="number" id="deduction" step="0.01" value="0" placeholder="ស្វ័យប្រវត្ត ឬ កែសម្រួល" oninput="calculateNet()">
+                        <label>ប្រាក់ត្រូវកាត់ ($ Deduction / កាត់សងជំពាក់):</label>
+                        <input type="number" id="deduction" step="0.01" value="0" placeholder="ឧ. 10" oninput="calculateNet()">
                         <small id="absentInfo" style="color: #64748b; display: block; margin-top: 4px;"></small>
                     </div>
                 </div>
                 <div class="form-row">
                     <div>
                         <label>ប្រាក់ជំពាក់ចាស់ ($ Previous Debt):</label>
-                        <input type="number" id="previous_debt" step="0.01" value="0" placeholder="ឧ. 20" oninput="calculateNet()">
+                        <input type="number" id="previous_debt" step="0.01" value="0" placeholder="ឧ. 10" oninput="calculateNet()">
                     </div>
                     <div>
                         <label>ប្រាក់ជំពាក់ថ្មី ($ New Debt / Advance):</label>
-                        <input type="number" id="new_debt" step="0.01" value="0" placeholder="ឧ. 30" oninput="calculateNet()">
+                        <input type="number" id="new_debt" step="0.01" value="0" placeholder="ឧ. 5" oninput="calculateNet()">
                     </div>
                 </div>
                 <div class="form-row">
@@ -259,15 +259,18 @@
         function calculateNet() {
             const base = parseFloat(document.getElementById('base_salary').value) || 0;
             const allow = parseFloat(document.getElementById('allowance').value) || 0;
-            const deduct = parseFloat(document.getElementById('deduction').value) || 0;
+            const deduct = parseFloat(document.getElementById('deduction').value) || 0; // ប្រាក់កាត់សងជំពាក់
             
             const prevDebt = parseFloat(document.getElementById('previous_debt').value) || 0;
             const newDebt = parseFloat(document.getElementById('new_debt').value) || 0;
             
-            const totalRemainingDebt = prevDebt + newDebt;
+            // ១. គណនាប្រាក់ជំពាក់សល់ = (ជំពាក់ចាស់ + ជំពាក់ថ្មី) - ប្រាក់កាត់សង
+            let totalRemainingDebt = (prevDebt + newDebt) - deduct;
+            if (totalRemainingDebt < 0) totalRemainingDebt = 0;
             document.getElementById('remaining_debt_preview').value = '$' + totalRemainingDebt.toFixed(2);
 
-            const net = (base + allow) - deduct - newDebt;
+            // ២. គណនាប្រាក់ខែទទួលបានសុទ្ធ = (ប្រាក់ខែគោល + ប្រាក់បន្ថែម) - ប្រាក់កាត់សង
+            const net = (base + allow) - deduct;
             document.getElementById('net_salary_preview').value = '$' + net.toFixed(2);
         }
 
@@ -276,7 +279,7 @@
             const payMonth = document.getElementById('pay_month').value;
             const editId = document.getElementById('edit_id').value;
 
-            if (editId) return; // បើកំពុងកែប្រែ មិនបាច់ auto ទាញអវត្តមានកាត់ทับទេ
+            if (editId) return;
 
             if (empCode && payMonth) {
                 try {
@@ -321,19 +324,27 @@
                 payrollDataList.forEach(item => {
                     const prevDebt = parseFloat(item.previous_debt || 0);
                     const newDebt = parseFloat(item.new_debt || 0);
-                    const remainingDebt = prevDebt + newDebt;
+                    const deduct = parseFloat(item.deduction || 0);
+                    const baseSalary = parseFloat(item.base_salary || 0);
+                    const allowance = parseFloat(item.allowance || 0);
+
+                    // គណនាប្រាក់ជំពាក់សល់ និងសុទ្ធសម្រាប់បង្ហាញក្នុងតារាង
+                    let remainingDebt = (prevDebt + newDebt) - deduct;
+                    if (remainingDebt < 0) remainingDebt = 0;
+
+                    const netSalary = (baseSalary + allowance) - deduct;
 
                     const row = `<tr>
                         <td><strong>${item.pay_month}</strong></td>
                         <td>${item.employee_code}</td>
                         <td>${item.full_name}</td>
-                        <td>$${parseFloat(item.base_salary || 0).toFixed(2)}</td>
-                        <td>$${parseFloat(item.allowance || 0).toFixed(2)}</td>
-                        <td>$${parseFloat(item.deduction || 0).toFixed(2)}</td>
+                        <td>$${baseSalary.toFixed(2)}</td>
+                        <td>$${allowance.toFixed(2)}</td>
+                        <td>$${deduct.toFixed(2)}</td>
                         <td>$${prevDebt.toFixed(2)}</td>
                         <td>$${newDebt.toFixed(2)}</td>
                         <td><span class="badge-debt">$${remainingDebt.toFixed(2)}</span></td>
-                        <td><span class="badge-net">$${parseFloat(item.net_salary || 0).toFixed(2)}</span></td>
+                        <td><span class="badge-net">$${netSalary.toFixed(2)}</span></td>
                         <td class="action-col">
                             <button onclick="editPayroll(${item.id})" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Kantumruy Pro';">
                                 <i class="fa-solid fa-pen-to-square"></i> កែប្រែ
@@ -371,14 +382,22 @@
             e.preventDefault();
             
             const editId = document.getElementById('edit_id').value;
+            const base = parseFloat(document.getElementById('base_salary').value) || 0;
+            const allow = parseFloat(document.getElementById('allowance').value) || 0;
+            const deduct = parseFloat(document.getElementById('deduction').value) || 0;
+            
+            // គណនា Net Salary មុនបញ្ជូនចូល Server
+            const netSalary = (base + allow) - deduct;
+
             const payload = {
                 employee_code: document.getElementById('employee_code').value,
                 full_name: document.getElementById('full_name').value,
-                base_salary: document.getElementById('base_salary').value,
-                allowance: document.getElementById('allowance').value,
-                deduction: document.getElementById('deduction').value,
+                base_salary: base,
+                allowance: allow,
+                deduction: deduct,
                 previous_debt: document.getElementById('previous_debt').value,
                 new_debt: document.getElementById('new_debt').value,
+                net_salary: netSalary,
                 pay_month: document.getElementById('pay_month').value
             };
 
