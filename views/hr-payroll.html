@@ -24,7 +24,7 @@
             background: white; 
             padding: 40px; 
             border-radius: 16px; 
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05), 0 8px 10px -6px rgba(0,0,0,0.05); 
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); 
             border: 1px solid #e2e8f0; 
         }
         .back-btn { 
@@ -41,11 +41,8 @@
             font-weight: 500;
             transition: all 0.2s; 
         }
-        .back-btn:hover { 
-            background: #1e293b; 
-            color: white;
-            transform: translateY(-1px);
-        }
+        .back-btn:hover { background: #1e293b; color: white; }
+        
         h1 { color: var(--primary-color); margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
         .eng-sub { color: #64748b; font-size: 13px; text-transform: uppercase; margin-top: 6px; font-weight: 600; letter-spacing: 0.5px; }
         
@@ -55,7 +52,6 @@
             background: #f8fafc; 
             border-radius: 12px; 
             border: 1px solid #e2e8f0; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02); 
         }
         .section-box h3 { 
             margin-top: 0; 
@@ -79,15 +75,9 @@
             border-radius: 10px; 
             font-family: 'Kantumruy Pro', sans-serif; 
             font-size: 14px; 
-            box-sizing: border-box; 
             background: white; 
-            transition: all 0.2s; 
         }
-        input:focus, select:focus { 
-            border-color: #2563eb; 
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); 
-            outline: none; 
-        }
+        input:focus, select:focus { border-color: #2563eb; outline: none; }
         
         button.submit-btn { 
             background: linear-gradient(135deg, #059669 0%, #10b981 100%); 
@@ -99,12 +89,6 @@
             font-weight: 700; 
             font-family: 'Kantumruy Pro', sans-serif; 
             font-size: 15px; 
-            transition: all 0.2s; 
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); 
-        }
-        button.submit-btn:hover { 
-            transform: translateY(-1px);
-            box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3); 
         }
 
         .btn-print-pdf { 
@@ -120,12 +104,6 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2);
-            transition: all 0.2s; 
-        }
-        .btn-print-pdf:hover { 
-            transform: translateY(-1px);
-            color: white;
         }
 
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 10px; overflow: hidden; border: 1px solid #cbd5e1; }
@@ -139,16 +117,41 @@
         
         .footer-note { margin-top: 25px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 
+        /* ការកំណត់ពេលព្រីន PDF : លាក់ Form ខាងលើចោលទាំងស្រុង និងបង្ហាញតែតារាង */
         @media print {
-            body { background: white; padding: 0; color: #000; }
-            .container { box-shadow: none; padding: 0; border: none; max-width: 100%; }
-            .back-btn, .section-box:nth-child(3), .print-action-bar, .action-col, th.action-col, td.action-col, form, .footer-note, #filterBranchWrapper { display: none !important; }
+            @page { size: A4 landscape; margin: 10mm; }
+            body { background: white; padding: 0; color: #000; font-family: 'Kantumruy Pro', sans-serif !important; }
+            .container { box-shadow: none; padding: 0; border: none; max-width: 100%; width: 100%; }
+            
+            /* លាក់ប្រអប់ Form ទី ១ និងប៊ូតុងផ្សេងៗមិនឱ្យចេញពេល Print */
+            .back-btn, 
+            #formSectionBox, 
+            .print-action-bar, 
+            .action-col, 
+            th.action-col, 
+            td.action-col, 
+            .footer-note, 
+            #filterBranchWrapper { 
+                display: none !important; 
+            }
+            
             .section-box { background: white !important; border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; }
+            
+            .print-header-title {
+                display: block !important;
+                font-size: 18px;
+                font-weight: bold;
+                color: #1e3c72;
+                margin-bottom: 15px;
+                text-align: center;
+            }
+
             table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; font-size: 11px !important; margin-top: 10px !important; }
             th { background: #1e3c72 !important; color: white !important; border: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            td { border: 1px solid #ddd !important; padding: 8px 4px !important; }
+            td { border: 1px solid #ddd !important; padding: 6px 4px !important; }
             .badge-net, .badge-debt { background: none !important; color: #000 !important; font-weight: bold; padding: 0 !important; }
         }
+        .print-header-title { display: none; }
     </style>
 </head>
 <body>
@@ -159,9 +162,9 @@
         <h1>ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍</h1>
         <div class="eng-sub">Payroll Processing & Benefits Management</div>
         
-        <!-- ១. Form គណនា កត់ត្រា និងកែប្រែប្រាក់ខែ -->
-        <div class="section-box">
-            <h3>🧮 គណនា កត់ត្រា ឬកែប្រែប្រាក់បៀវត្សរ៍ (Calculate & Process Payroll)</h3>
+        <!-- ១. Form គណនា កត់ត្រា និងកែប្រែប្រាក់ខែ (ដាក់ id="formSectionBox" ដើម្បីងាយលាក់ពេល Print) -->
+        <div class="section-box" id="formSectionBox">
+            <h3>🧮 គណនាកត់ត្រា ឬកែប្រែប្រាក់បៀវត្សរ៍</h3>
             <form id="payrollForm">
                 <input type="hidden" id="edit_id">
                 <div class="form-row">
@@ -169,7 +172,7 @@
                         <label>សាខា / ទីតាំង (Branch):</label>
                         <select id="branch" required>
                             <option value="ANT DRY PORT">ANT DRY PORT</option>
-                            <option value="BWH">BWH</option>
+                            <option value="BHW">BHW</option>
                         </select>
                     </div>
                     <div>
@@ -213,9 +216,7 @@
                         <label>ប្រាក់ជំពាក់ថ្មី ($ New Debt / Advance):</label>
                         <input type="number" id="new_debt" step="0.01" value="0" placeholder="ឧ. 5" oninput="calculateNet()">
                     </div>
-                    <div>
-                        <!-- ទុកទំនេរកន្លែងតម្រឹមស្អាត -->
-                    </div>
+                    <div></div>
                 </div>
                 <div class="form-row">
                     <div>
@@ -234,7 +235,7 @@
 
         <!-- ២. តារាងបង្ហាញបញ្ជីប្រាក់ខែ -->
         <div class="section-box">
-            <h3>📋 របាយការណ៍ប្រាក់បៀវត្សរ៍បុគ្គលិក (Payroll Summary Report)</h3>
+            <h3>📋 របាយការណ៍ប្រាក់បៀវត្សរ៍បុគ្គលិក</h3>
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;" id="filterBranchWrapper">
                 <div>
@@ -242,7 +243,7 @@
                     <select id="filterBranch" onchange="loadPayroll()" style="padding: 8px; border-radius: 8px; width: 220px; display: inline-block;">
                         <option value="ALL">បង្ហាញទាំងអស់ (All Branches)</option>
                         <option value="ANT DRY PORT">ANT DRY PORT</option>
-                        <option value="BWH">BWH</option>
+                        <option value="BHW">BHW</option>
                     </select>
                 </div>
                 <div class="print-action-bar">
@@ -251,6 +252,9 @@
                     </button>
                 </div>
             </div>
+
+            <!-- ចំណងជើងបង្ហាញពេលព្រីន PDF ចេញមកស្អាត -->
+            <div class="print-header-title" id="printBranchTitle">របាយការណ៍ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍ (Payroll Report)</div>
 
             <table>
                 <thead>
@@ -340,6 +344,13 @@
                 payrollDataList = await response.json();
                 
                 const selectedBranch = document.getElementById('filterBranch').value;
+                const printTitle = document.getElementById('printBranchTitle');
+                if(selectedBranch === 'ALL') {
+                    printTitle.innerText = 'របាយការណ៍ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍ - គ្រប់សាខាទាំងអស់ (All Branches)';
+                } else {
+                    printTitle.innerText = `របាយការណ៍ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍ - សាខា ${selectedBranch}`;
+                }
+
                 const tbody = document.getElementById('payrollTableBody');
                 tbody.innerHTML = '';
                 
