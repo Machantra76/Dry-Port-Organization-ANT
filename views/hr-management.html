@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល - HR Recruitment & Training</title>
-    <!-- ទាញយក Font Khmer OS Battambang និង Kantumruy Pro ពី Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Khmer+OS+Battambang:wght@400;700&family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -137,7 +136,6 @@
             opacity: 0.95;
         }
 
-        /* ប្រើប្រាស់ហ្វុងអក្សរ Khmer OS Battambang សម្រាប់អក្សរខ្មែរលើប៊ូតុង */
         .btn-text-km {
             display: block;
             font-family: 'Khmer OS Battambang', sans-serif;
@@ -178,8 +176,8 @@
 <body>
 
     <header>
-        <h1>ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល</h1>
-        <p>HR Recruitment & Training Management</p>
+        <h1>ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល[cite: 11]</h1>
+        <p>HR Recruitment & Training Management[cite: 11]</p>
     </header>
 
     <div class="container">
@@ -196,10 +194,10 @@
                 <div class="form-group">
                     <label>ផ្នែក (Department)</label>
                     <select id="jobDept">
-                        <option>ធនធានមនុស្ស & រដ្ឋបាល</option>
-                        <option>គណនេយ្យ & ហិរញ្ញវត្ថុ</option>
-                        <option>ផ្នែកដឹកជញ្ជូន</option>
-                        <option>ផ្នែកគ្រប់គ្រងកុងតឺន័រ</option>
+                        <option value="ធនធានមនុស្ស & រដ្ឋបាល">ធនធានមនុស្ស & រដ្ឋបាល</option>
+                        <option value="គណនេយ្យ & ហិរញ្ញវត្ថុ">គណនេយ្យ & ហិរញ្ញវត្ថុ</option>
+                        <option value="ផ្នែកដឹកជញ្ជូន">ផ្នែកដឹកជញ្ជូន</option>
+                        <option value="ផ្នែកគ្រប់គ្រងកុងតឺន័រ">ផ្នែកគ្រប់គ្រងកុងតឺន័រ</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -248,22 +246,29 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- ទិន្នន័យទាញមកពី Server នឹងបង្ហាញទីនេះ -->
+                    <!-- ទិន្នន័យទាញមកពី Server នឹងបង្ហាញទីនេះ[cite: 11] -->
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // ទាញយកទិន្នន័យពី Server ពេលបើកទំព័រ
         document.addEventListener("DOMContentLoaded", fetchJobs);
 
         function fetchJobs() {
             fetch('/api/jobs')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.json();
+                })
                 .then(jobs => {
                     let tableBody = document.getElementById('jobTable').getElementsByTagName('tbody')[0];
                     tableBody.innerHTML = '';
+
+                    if (!jobs || jobs.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748b;">មិនទាន់មានទិន្នន័យតំណែងការងារនៅឡើយទេ</td></tr>';
+                        return;
+                    }
 
                     jobs.forEach((job, index) => {
                         let colorStyle = job.status === "កំពុងស្វែងរក" ? "color: #2563eb;" : "color: #16a34a;";
@@ -273,14 +278,17 @@
                             <td>${job.title}</td>
                             <td>${job.dept}</td>
                             <td>${job.qty}</td>
-                            <td><span style="${colorStyle} font-weight: 600;">${job.status}</span></td>
+                            <td><span style="${colorStyle} font-weight: 600;">${job.status || 'កំពុងស្វែងរក'}</span></td>
                         `;
                     });
                 })
-                .catch(error => console.error('Error fetching jobs:', error));
+                .catch(error => {
+                    console.error('Error fetching jobs:', error);
+                    let tableBody = document.getElementById('jobTable').getElementsByTagName('tbody')[0];
+                    tableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #dc2626;">មិនអាចទាញយកទិន្នន័យពី Server បានទេ (សូមពិនិត្យមើល API route ក្នុង server.js)</td></tr>';
+                });
         }
 
-        // បញ្ជូនទិន្នន័យថ្មីទៅកាន់ Server
         function addJob() {
             let title = document.getElementById('jobTitle').value;
             let dept = document.getElementById('jobDept').value;
@@ -296,20 +304,23 @@
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ title, dept, qty })
+                body: JSON.stringify({ title, dept, qty, status: 'កំពុងស្វែងរក' })
             })
             .then(response => response.json())
             .then(data => {
-                if(data.success) {
-                    alert(data.message);
+                if(data.success || data.data) {
+                    alert('បានរក្សាទុកតំណែងការងារដោយជោគជ័យ!');
                     document.getElementById('jobTitle').value = '';
                     document.getElementById('jobQty').value = '';
-                    fetchJobs(); // ទាញទិន្នន័យថ្មីមកបង្ហាញឡើងវិញ
+                    fetchJobs(); 
                 } else {
-                    alert('មានបញ្ហា៖ ' + data.error);
+                    alert('មានបញ្ហា៖ ' + (data.error || 'មិនអាចរក្សាទុកបានទេ'));
                 }
             })
-            .catch(error => console.error('Error saving job:', error));
+            .catch(error => {
+                console.error('Error saving job:', error);
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+            });
         }
 
         function addTraining() {
