@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ការគ្រប់គ្រងការជួសជុល និងស្តុកកុងតឺន័រ (Container M&R & Yard Stock)</title>
+    <title>การគ្រប់គ្រងការជួសជុល និងស្តុកកុងតឺន័រ (Container M&R & Yard Stock)</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome CSS -->
@@ -31,7 +31,6 @@
             border: none;
             border-radius: 12px;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            transition: transform 0.2s;
         }
         .table th {
             font-weight: 600;
@@ -40,6 +39,7 @@
             border-bottom: 2px solid #e2e8f0;
             text-align: center;
             vertical-align: middle;
+            font-size: 13px;
         }
         .table td {
             vertical-align: middle;
@@ -57,7 +57,8 @@
         .form-control, .form-select {
             border-radius: 8px;
             border: 1px solid #cbd5e1;
-            padding: 0.6rem 1rem;
+            padding: 0.55rem 0.9rem;
+            font-size: 14px;
         }
         .form-control:focus, .form-select:focus {
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
@@ -80,13 +81,17 @@
             background-color: #b91c1c;
             color: white;
         }
+        /* Style សម្រាប់ពេល Print PDF ឱ្យមានរបៀបរៀបរយ */
+        @media print {
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body>
 
     <div class="container-fluid py-4 px-4">
         <!-- Header Section -->
-        <div class="row mb-4 align-items-center">
+        <div class="row mb-4 align-items-center no-print">
             <div class="col-md-7">
                 <h2 class="fw-bold text-dark mb-1">
                     <i class="fas fa-warehouse text-primary me-2"></i>ការគ្រប់គ្រងការជួសជុល និងស្តុកកុងតឺន័រ
@@ -102,12 +107,12 @@
         </div>
 
         <!-- Filter & Search Section -->
-        <div class="card mb-4" id="reportSection">
+        <div class="card mb-4 no-print">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-bold text-primary mb-0"><i class="fas fa-filter me-2"></i>តម្រៀប និងស្វែងរកទិន្នន័យស្តុកកុងតឺន័រ</h5>
                     <button class="btn btn-pdf btn-sm" onclick="exportPDF()">
-                        <i class="fas fa-file-pdf me-1"></i> Save PDF (From - To)
+                        <i class="fas fa-file-pdf me-1"></i> ទាញយក PDF របាយការណ៍
                     </button>
                 </div>
                 <div class="row g-3">
@@ -123,7 +128,6 @@
                             <option value="Completed">បានរួចរាល់</option>
                         </select>
                     </div>
-                    <!-- Filter Shipping Line -->
                     <div class="col-md-3">
                         <label class="form-label fw-semibold small text-muted brand-font">Shipping Line</label>
                         <select id="filterShippingLine" class="form-select" onchange="filterAndDisplayData()">
@@ -137,7 +141,6 @@
                             <option value="Other">ផ្សេងៗ</option>
                         </select>
                     </div>
-                    <!-- Filter Date From - To -->
                     <div class="col-md-3">
                         <label class="form-label fw-semibold small text-muted brand-font">ចាប់ពីថ្ងៃទី - ដល់ថ្ងៃទី</label>
                         <div class="input-group">
@@ -157,8 +160,13 @@
             </div>
         </div>
 
-        <!-- Table Data Section -->
-        <div class="card">
+        <!-- Table Data Section (Area to Export PDF) -->
+        <div class="card" id="pdfArea">
+            <div class="card-header bg-white py-3 border-0 d-none pdf-header-show">
+                <h4 class="fw-bold text-primary mb-1">របាយការណ៍ការជួសជុល និងស្តុកកុងតឺន័រ</h4>
+                <p class="text-muted small mb-0"> Container Repair & Yard Stock Report - Generated on <span id="reportDate"></span></p>
+                <hr>
+            </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -192,111 +200,114 @@
         </div>
     </div>
 
-    <!-- Modal បន្ថែមការជួសជុល និងស្តុកថ្មី -->
+    <!-- Modal បន្ថែមការជួសជុល និងស្តុកថ្មី (បានจัดរៀបចំអក្សរ និងពណ៌ឱ្យមានរបៀបរៀបរយ) -->
     <div class="modal fade" id="addRepairModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content border-0 shadow-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                 <div class="modal-header bg-primary text-white px-4 py-3">
                     <h5 class="modal-title brand-font"><i class="fas fa-tools me-2"></i>កត់ត្រាការជួសជុល និងស្តុកកុងតឺន័រ</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-4">
+                <div class="modal-body p-4 bg-light">
                     <form id="addRepairForm">
-                        <div class="row g-3">
-                            <!-- Container No. Select from Yard -->
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">លេខកុងតឺន័រ (Container No.) *</label>
-                                <select name="container_number" id="repairContainerSelect" class="form-select" required onchange="onYardContainerSelected()">
-                                    <option value="">-- ជ្រើសរើសកុងតឺន័រពីក្នុងទីធ្លា --</option>
-                                </select>
-                            </div>
-                            <!-- Container Size -->
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">ទំហំកុងតឺន័រ (Size) *</label>
-                                <select name="container_size" class="form-select" required>
-                                    <option value="20'">20 Feet</option>
-                                    <option value="40'" selected>40 Feet</option>
-                                    <option value="45'">45 Feet</option>
-                                </select>
-                            </div>
-                            <!-- Container Type -->
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">ប្រភេទ (Type) *</label>
-                                <select name="container_type" class="form-select" required>
-                                    <option value="DC" selected>Dry Van (DC)</option>
-                                    <option value="HC">High Cube (HC)</option>
-                                    <option value="OT">Open Top (OT)</option>
-                                    <option value="FR">Flat Rack (FR)</option>
-                                    <option value="RF">Reefer (RF)</option>
-                                </select>
-                            </div>
-
-                            <!-- Shipping Line & Dynamic Button -->
-                            <div class="col-md-6">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <label class="form-label fw-semibold mb-0">Shipping Line *</label>
-                                    <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 12px;" onclick="toggleCustomShippingLine()">
-                                        <i class="fas fa-plus me-1"></i> បន្ថែម/ជ្រើសរើសផ្សេងទៀត
-                                    </button>
+                        <div class="card p-3 mb-3 border">
+                            <h6 class="text-primary fw-bold mb-3"><i class="fas fa-info-circle me-1"></i> ព័ត៌មានកុងតឺន័រមូលដ្ឋាន</h6>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small text-secondary">លេខកុងតឺន័រ (Container No.) *</label>
+                                    <select name="container_number" id="repairContainerSelect" class="form-select" required onchange="onYardContainerSelected()">
+                                        <option value="">-- ជ្រើសរើសពីក្នុងទីធ្លា --</option>
+                                    </select>
                                 </div>
-                                <select name="shipping_line" id="shippingLineSelect" class="form-select" required>
-                                    <option value="HMM">HMM</option>
-                                    <option value="MSC">MSC</option>
-                                    <option value="CMA CGM">CMA CGM</option>
-                                    <option value="Evergreen">Evergreen</option>
-                                    <option value="Maersk">Maersk</option>
-                                    <option value="ONE">ONE</option>
-                                </select>
-                                <input type="text" name="shipping_line" id="shippingLineCustomInput" class="form-control mt-2 d-none" placeholder="បញ្ចូលឈ្មោះ Shipping Line ផ្សេងទៀត..." disabled>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">កាលបរិច្ឆេទជួសជុល *</label>
-                                <input type="date" name="repair_date" class="form-control" required id="currentDate">
-                            </div>
-                            
-                            <div class="col-12"><hr class="my-1 text-muted"></div>
-                            <h6 class="text-primary fw-bold mb-0"><i class="fas fa-boxes me-1"></i> ព័ត៌មានទីតាំងស្តុក (Yard Stock Info)</h6>
-                            
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">ប្លុកស្តុក (Block Code)</label>
-                                <input type="text" name="block_code" class="form-control" placeholder="ឧ. A-01">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">ជួរ (Row)</label>
-                                <input type="number" name="row_number" class="form-control" value="1">
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">ជាន់ (Tier)</label>
-                                <input type="number" name="tier_number" class="form-control" value="1">
-                            </div>
-
-                            <div class="col-12"><hr class="my-1 text-muted"></div>
-                            
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">ប្រភេទការជួសជុល *</label>
-                                <input type="text" name="repair_type" class="form-control" required placeholder="ឧ. ប្តូរជញ្ជាំង, បិទប៊ូឡុង...">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">ថ្លៃចំណាយ ($) *</label>
-                                <input type="number" step="0.01" name="cost" class="form-control" required placeholder="0.00">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">ឈ្មោះជាងបច្ចេកទេស *</label>
-                                <input type="text" name="technician_name" class="form-control" required placeholder="ឈ្មោះក្រុមជាង">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">ស្ថានភាព</label>
-                                <select name="status" class="form-select">
-                                    <option value="In Progress">កំពុងជួសជុល</option>
-                                    <option value="Completed">បានរួចរាល់</option>
-                                </select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label fw-semibold">កំណត់សម្គាល់</label>
-                                <textarea name="notes" class="form-control" rows="2" placeholder="ព័ត៌មានលម្អិតបន្ថែម..."></textarea>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small text-secondary">ទំហំ (Size) *</label>
+                                    <select name="container_size" class="form-select" required>
+                                        <option value="20'">20 Feet</option>
+                                        <option value="40'" selected>40 Feet</option>
+                                        <option value="45'">45 Feet</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small text-secondary">ប្រភេទ (Type) *</label>
+                                    <select name="container_type" class="form-select" required>
+                                        <option value="DC" selected>Dry Van (DC)</option>
+                                        <option value="HC">High Cube (HC)</option>
+                                        <option value="OT">Open Top (OT)</option>
+                                        <option value="FR">Flat Rack (FR)</option>
+                                        <option value="RF">Reefer (RF)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <label class="form-label fw-semibold small text-secondary mb-0">Shipping Line *</label>
+                                        <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 11px;" onclick="toggleCustomShippingLine()">
+                                            <i class="fas fa-plus me-1"></i> ផ្សេងទៀត
+                                        </button>
+                                    </div>
+                                    <select name="shipping_line" id="shippingLineSelect" class="form-select" required>
+                                        <option value="HMM">HMM</option>
+                                        <option value="MSC">MSC</option>
+                                        <option value="CMA CGM">CMA CGM</option>
+                                        <option value="Evergreen">Evergreen</option>
+                                        <option value="Maersk">Maersk</option>
+                                        <option value="ONE">ONE</option>
+                                    </select>
+                                    <input type="text" name="shipping_line" id="shippingLineCustomInput" class="form-control mt-2 d-none" placeholder="បញ្ចូលឈ្មោះ Shipping Line..." disabled>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">កាលបរិច្ឆេទជួសជុល *</label>
+                                    <input type="date" name="repair_date" class="form-control" required id="currentDate">
+                                </div>
                             </div>
                         </div>
+
+                        <div class="card p-3 mb-3 border">
+                            <h6 class="text-primary fw-bold mb-3"><i class="fas fa-boxes me-1"></i> ព័ត៌មានទីតាំងស្តុក (Yard Stock Info)</h6>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small text-secondary">ប្លុកស្តុក (Block Code)</label>
+                                    <input type="text" name="block_code" class="form-control" placeholder="ឧ. A-01">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small text-secondary">ជួរ (Row)</label>
+                                    <input type="number" name="row_number" class="form-control" value="1">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold small text-secondary">ជាន់ (Tier)</label>
+                                    <input type="number" name="tier_number" class="form-control" value="1">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card p-3 border">
+                            <h6 class="text-primary fw-bold mb-3"><i class="fas fa-wrench me-1"></i> ព័ត៌មានការជួសជុល និងចំណាយ</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">ប្រភេទការជួសជុល *</label>
+                                    <input type="text" name="repair_type" class="form-control" required placeholder="ឧ. ប្តូរជញ្ជាំង, បិទប៊ូឡុង...">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">ថ្លៃចំណាយ ($) *</label>
+                                    <input type="number" step="0.01" name="cost" class="form-control" required placeholder="0.00">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">ឈ្មោះជាងបច្ចេកទេស *</label>
+                                    <input type="text" name="technician_name" class="form-control" required placeholder="ឈ្មោះក្រុមជាង">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small text-secondary">ស្ថានភាព</label>
+                                    <select name="status" class="form-select">
+                                        <option value="In Progress">កំពុងជួសជុល</option>
+                                        <option value="Completed">បានរួចរាល់</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold small text-secondary">កំណត់សម្គាល់</label>
+                                    <textarea name="notes" class="form-control" rows="2" placeholder="ព័ត៌មានលម្អិតបន្ថែម..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="text-end mt-4">
                             <button type="button" class="btn btn-light border px-4" data-bs-dismiss="modal">បោះបង់</button>
                             <button type="submit" class="btn btn-primary px-4 shadow-sm">រក្សាទុកទិន្នន័យ</button>
@@ -310,21 +321,21 @@
     <!-- Modal កែប្រែ / ដោះដូរ (Edit Modal) -->
     <div class="modal fade" id="editRepairModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content border-0 shadow-lg">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                 <div class="modal-header bg-warning text-dark px-4 py-3">
                     <h5 class="modal-title brand-font fw-bold"><i class="fas fa-exchange-alt me-2"></i>ដោះដូរ / កែប្រែព័ត៌មានការជួសជុលកុងតឺន័រ</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-4">
+                <div class="modal-body p-4 bg-light">
                     <form id="editRepairForm">
                         <input type="hidden" id="edit_id">
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold">លេខកុងតឺន័រ *</label>
+                                <label class="form-label fw-semibold small text-secondary">លេខកុងតឺន័រ *</label>
                                 <input type="text" id="edit_container_number" name="container_number" class="form-control" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold">ទំហំ (Size)</label>
+                                <label class="form-label fw-semibold small text-secondary">ទំហំ (Size)</label>
                                 <select id="edit_container_size" name="container_size" class="form-select">
                                     <option value="20'">20 Feet</option>
                                     <option value="40'">40 Feet</option>
@@ -332,7 +343,7 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold">ប្រភេទ (Type)</label>
+                                <label class="form-label fw-semibold small text-secondary">ប្រភេទ (Type)</label>
                                 <select id="edit_container_type" name="container_type" class="form-select">
                                     <option value="DC">Dry Van (DC)</option>
                                     <option value="HC">High Cube (HC)</option>
@@ -342,46 +353,46 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Shipping Line</label>
+                                <label class="form-label fw-semibold small text-secondary">Shipping Line</label>
                                 <input type="text" id="edit_shipping_line" name="shipping_line" class="form-control" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">កាលបរិច្ឆេទជួសជុល *</label>
+                                <label class="form-label fw-semibold small text-secondary">កាលបរិច្ឆេទជួសជុល *</label>
                                 <input type="date" id="edit_repair_date" name="repair_date" class="form-control" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold">ប្លុកស្តុក</label>
+                                <label class="form-label fw-semibold small text-secondary">ប្លុកស្តុក</label>
                                 <input type="text" id="edit_block_code" name="block_code" class="form-control">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold">ជួរ (Row)</label>
+                                <label class="form-label fw-semibold small text-secondary">ជួរ (Row)</label>
                                 <input type="number" id="edit_row_number" name="row_number" class="form-control">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold">ជាន់ (Tier)</label>
+                                <label class="form-label fw-semibold small text-secondary">ជាន់ (Tier)</label>
                                 <input type="number" id="edit_tier_number" name="tier_number" class="form-control">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">ប្រភេទការជួសជុល *</label>
+                                <label class="form-label fw-semibold small text-secondary">ប្រភេទការជួសជុល *</label>
                                 <input type="text" id="edit_repair_type" name="repair_type" class="form-control" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">ថ្លៃចំណាយ ($) *</label>
+                                <label class="form-label fw-semibold small text-secondary">ថ្លៃចំណាយ ($) *</label>
                                 <input type="number" step="0.01" id="edit_cost" name="cost" class="form-control" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">ឈ្មោះជាង *</label>
+                                <label class="form-label fw-semibold small text-secondary">ឈ្មោះជាង *</label>
                                 <input type="text" id="edit_technician_name" name="technician_name" class="form-control" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">ស្ថានភាព</label>
+                                <label class="form-label fw-semibold small text-secondary">ស្ថានភាព</label>
                                 <select id="edit_status" name="status" class="form-select">
                                     <option value="In Progress">កំពុងជួសជុល</option>
                                     <option value="Completed">បានរួចរាល់</option>
                                 </select>
                             </div>
                             <div class="col-12">
-                                <label class="form-label fw-semibold">កំណត់សម្គាល់</label>
+                                <label class="form-label fw-semibold small text-secondary">កំណត់សម្គាល់</label>
                                 <textarea id="edit_notes" name="notes" class="form-control" rows="2"></textarea>
                             </div>
                         </div>
@@ -404,7 +415,6 @@
         document.getElementById('currentDate').valueAsDate = new Date();
 
         document.addEventListener('DOMContentLoaded', async () => {
-            // ទាញយកទិន្នន័យកុងតឺន័រពី Yard មកដាក់ក្នុង Dropdown
             try {
                 const response = await fetch('/api/fleet/container-yard');
                 const data = await response.json();
@@ -425,16 +435,14 @@
             loadContainerRepairs();
         });
 
-        // ពេលជ្រើសរើសលេខកុងតឺន័រ ពិនិត្យ Status និងបំពេញអូតូ
         function onYardContainerSelected() {
             const selectedNo = document.getElementById('repairContainerSelect').value;
             const found = yardContainersList.find(i => i.container_number === selectedNo);
             
             if (found) {
-                // 🛑 លក្ខខណ្ឌផ្ទៀងផ្ទាត់៖ បើកុងតឺន័រស្ថិតក្នុងស្ថានភាព Gate-Out ឬ In Repair រួចហើយ មិនត្រូវឱ្យយកមកជួសជុលទេ
                 if (found.status === 'Gate-Out' || found.status === 'In Repair') {
                     alert(`មិនអាចជ្រើសរើសបានទេ! កុងតឺន័រ ${found.container_number} មានស្ថានភាព "${found.status}" រួចហើយ។`);
-                    document.getElementById('repairContainerSelect').value = ''; // Reset វិញ
+                    document.getElementById('repairContainerSelect').value = '';
                     return;
                 }
 
@@ -465,7 +473,6 @@
             }
         }
 
-        // ប្តូររវាង Select Shipping Line និង Custom Input
         function toggleCustomShippingLine() {
             const selectEl = document.getElementById('shippingLineSelect');
             const inputEl = document.getElementById('shippingLineCustomInput');
@@ -682,13 +689,23 @@
             }
         });
 
+        // មុខងារ Export PDF ដែលបានកែសម្រួលថ្មីឱ្យចេញជារបាយការណ៍ស្អាត និងលាក់ប៊ូតុងរ៉ូញ៉េរ៉ូញ៉ៃ
         function exportPDF() {
             const { jsPDF } = window.jspdf;
             const actionCols = document.querySelectorAll('.action-col');
-            actionCols.forEach(col => col.style.display = 'none');
+            const pdfHeader = document.querySelector('.pdf-header-show');
+            
+            // កំណត់ថ្ងៃទីសម្រាប់របាយការណ៍
+            document.getElementById('reportDate').innerText = new Date().toLocaleDateString('km-KH');
 
-            html2canvas(document.querySelector('.container-fluid'), { scale: 2 }).then(canvas => {
+            // លាក់កলামសកម្មភាព និងបង្ហាញក្បាលទំព័រ PDF
+            actionCols.forEach(col => col.style.display = 'none');
+            pdfHeader.classList.remove('d-none');
+
+            html2canvas(document.getElementById('pdfArea'), { scale: 2, useCORS: true }).then(canvas => {
+                // បង្ហាញត្រឡប់មកដូចเดิมក្រោយពេលថតរួច
                 actionCols.forEach(col => col.style.display = '');
+                pdfHeader.classList.add('d-none');
 
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
@@ -712,6 +729,7 @@
             }).catch(err => {
                 console.error('PDF Export Error:', err);
                 actionCols.forEach(col => col.style.display = '');
+                pdfHeader.classList.add('d-none');
                 alert('មានបញ្ហាក្នុងការទាញយក PDF');
             });
         }
