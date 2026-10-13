@@ -61,7 +61,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)
+        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records - បន្ថែមប្រាក់ជំពាក់ចាស់ និងថ្មី)
         await client.query(`
             CREATE TABLE IF NOT EXISTS payroll_records (
                 id SERIAL PRIMARY KEY,
@@ -70,10 +70,17 @@ async function initializeDatabase() {
                 base_salary NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 allowance NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 deduction NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                previous_debt NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                new_debt NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 net_salary NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 pay_month VARCHAR(50) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+        `);
+
+        await client.query(`
+            ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS previous_debt NUMERIC(10, 2) NOT NULL DEFAULT 0;
+            ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS new_debt NUMERIC(10, 2) NOT NULL DEFAULT 0;
         `);
 
         // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)
@@ -631,7 +638,7 @@ app.post('/api/inventory', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)
+// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll) - កែសម្រួលទទួលប្រាក់ជំពាក់ចាស់និងថ្មី
 // ==========================================
 app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => {
     const { employee_code, pay_month } = req.params;
@@ -675,20 +682,25 @@ app.get('/api/payroll', async (req, res) => {
 });
 
 app.post('/api/payroll', async (req, res) => {
-    const { employee_code, full_name, base_salary, allowance, deduction, pay_month } = req.body;
+    const { employee_code, full_name, base_salary, allowance, deduction, previous_debt, new_debt, pay_month } = req.body;
     try {
         const bSalary = parseFloat(base_salary) || 0;
         const allow = parseFloat(allowance) || 0;
         const deduct = parseFloat(deduction) || 0;
-        const net_salary = (bSalary + allow) - deduct;
+        const pDebt = parseFloat(previous_debt) || 0;
+        const nDebt = parseFloat(new_debt) || 0;
+        
+        // គណនាប្រាក់ខែទទួលបានសុទ្ធ (ប្រាក់ខែគោល + ប្រាក់បន្ថែម - ប្រាក់កាត់ - ប្រាក់ជំពាក់ថ្មី)
+        const net_salary = (bSalary + allow) - deduct - nDebt;
 
         const query = `
-            INSERT INTO payroll_records (employee_code, full_name, base_salary, allowance, deduction, net_salary, pay_month) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+            INSERT INTO payroll_records (employee_code, full_name, base_salary, allowance, deduction, previous_debt, new_debt, net_salary, pay_month) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
         `;
-        const result = await pool.query(query, [employee_code, full_name, bSalary, allow, deduct, net_salary, pay_month]);
+        const result = await pool.query(query, [employee_code, full_name, bSalary, allow, deduct, pDebt, nDebt, net_salary, pay_month]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error saving payroll:', err);
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាប្រាក់បៀវត្សរ៍' });
     }
 });
@@ -1413,7 +1425,7 @@ app.put('/api/fleet/container-yard/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs) - [បន្ថែម Validation ផ្ទៀងផ្ទាត់ Yard Status]
+// API Routes: ការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)
 // ==========================================
 app.get('/api/fleet/container-repairs', async (req, res) => {
     const { status, container_number } = req.query;
@@ -1455,7 +1467,6 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 🔍 ពិនិត្យស្ថានភាពបច្ចុប្បន្នរបស់កុងតឺន័រនៅក្នុង Yard មុននឹងអនុញ្ញាតឱ្យជួសជុល
         const yardCheck = await client.query(
             `SELECT status FROM container_yard_locations WHERE container_number = $1`, 
             [container_number]
@@ -1463,7 +1474,6 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
 
         if (yardCheck.rows.length > 0) {
             const currentYardStatus = yardCheck.rows[0].status;
-            // ប្រសិនបើកុងតឺន័រចេញ (Gate-Out) ឬកំពុងជួសជុលរួចស្រេចហើយ មិនត្រូវឱ្យកត់ត្រាซ้ำទេ
             if (currentYardStatus === 'Gate-Out' || currentYardStatus === 'In Repair') {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
@@ -1473,7 +1483,6 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
             }
         }
 
-        // ១. រក្សាទុកទិន្នន័យការជួសជុល
         const query = `
             INSERT INTO container_repair_logs 
             (container_number, container_size, container_type, shipping_line, repair_date, block_code, row_number, tier_number, repair_type, cost, technician_name, status, notes) 
@@ -1495,7 +1504,6 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
             notes
         ]);
 
-        // ២. ធ្វើបច្ចុប្បន្នភាព Status ក្នុង container_yard_locations ស្វ័យប្រវត្ត
         const yardStatus = repairStatus === 'Completed' ? 'Stored' : 'In Repair';
         await client.query(`
             UPDATE container_yard_locations 
@@ -1546,7 +1554,6 @@ app.put('/api/fleet/container-repairs/:id', async (req, res) => {
             return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
         }
 
-        // ធ្វើបច្ចុប្បន្នភាព Status ក្នុង Yard ឡើងវិញពេលកែប្រែការជួសជុល
         const yardStatus = status === 'Completed' ? 'Stored' : 'In Repair';
         await client.query(`
             UPDATE container_yard_locations 
@@ -1566,7 +1573,7 @@ app.put('/api/fleet/container-repairs/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការចេញកុងតឺន័រ (Container Gate-Out) - [បន្ថែម Validation ផ្ទៀងផ្ទាត់ Yard Status]
+// API Routes: ការចេញកុងតឺន័រ (Container Gate-Out)
 // ==========================================
 app.get('/api/fleet/container-gate-out', async (req, res) => {
     const { from, to, container_number } = req.query;
@@ -1605,7 +1612,6 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 🔍 ពិនិត្យស្ថានភាពបច្ចុប្បន្នរបស់កុងតឺន័រនៅក្នុង Yard មុននឹងអនុញ្ញាតឱ្យ Gate-Out
         const yardCheck = await client.query(
             `SELECT status FROM container_yard_locations WHERE container_number = $1`, 
             [container_number]
@@ -1613,7 +1619,6 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
 
         if (yardCheck.rows.length > 0) {
             const currentYardStatus = yardCheck.rows[0].status;
-            // ប្រសិនបើកុងតឺន័រចេញរួចហើយ (Gate-Out) ឬកំពុងជួសជុល (In Repair) មិនត្រូវឱ្យបញ្ចេញซ้ำទេ
             if (currentYardStatus === 'Gate-Out' || currentYardStatus === 'In Repair') {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
@@ -1720,7 +1725,7 @@ app.post('/api/fleet/yard-operations', async (req, res) => {
         } = req.body;
 
         if (!container_number || !operation_type || !yard_location || !operation_date || !operator_name || !status) {
-            return res.status(400).json({ success: false, error: 'សូមបំព័ត៌មានដែលចាំបាច់ឱ្យបានគ្រប់គ្រាន់!' });
+            return res.status(400).json({ success: false, error: 'សូមបំពេញព័ត៌មានដែលចាំបាច់ឱ្យបានគ្រប់គ្រាន់!' });
         }
 
         const query = `
