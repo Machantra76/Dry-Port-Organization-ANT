@@ -33,11 +33,39 @@
         .badge-status { background: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; }
         .footer-note { margin-top: 25px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 
+        /* ការកំណត់ពេលព្រីន PDF : លាក់ Form និងប៊ូតុងមិនចាំបាច់ទាំងស្រុង */
         @media print {
-            .back-btn, .section-box:first-of-type, .filter-section, .footer-note { display: none; }
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; padding: 0; }
+            @page { size: A4 landscape; margin: 15mm; }
+            body { background: white; padding: 0; color: #000; font-family: 'Kantumruy Pro', sans-serif !important; }
+            .container { box-shadow: none; padding: 0; max-width: 100%; width: 100%; border: none; }
+            
+            .back-btn, 
+            #addAssetSection, 
+            .filter-section, 
+            .footer-note, 
+            h1, 
+            .eng-sub,
+            #tableOriginalTitle { 
+                display: none !important; 
+            }
+            
+            .section-box { background: white !important; border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; }
+            
+            .print-header-title {
+                display: block !important;
+                text-align: center;
+                margin-bottom: 20px;
+                color: #1e3c72;
+                font-size: 20px;
+                font-weight: bold;
+            }
+
+            table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; font-size: 12px !important; margin-top: 10px !important; }
+            th { background: #1e3c72 !important; color: white !important; border: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            td { border: 1px solid #ddd !important; padding: 8px !important; }
+            .badge-status { background: none !important; color: #000 !important; padding: 0 !important; font-weight: normal; }
         }
+        .print-header-title { display: none; }
     </style>
 </head>
 <body>
@@ -49,7 +77,7 @@
         <div class="eng-sub">Asset, Stock & Inventory Management</div>
         
         <!-- ១. Form សម្រាប់បន្ថែមសម្ភារៈ ឬទ្រព្យសម្បត្តិថ្មី -->
-        <div class="section-box">
+        <div class="section-box" id="addAssetSection">
             <h3>បន្ថែមសម្ភារៈ ឬទ្រព្យសម្បត្តិថ្មី (Add New Asset / Stock Item)</h3>
             <form id="inventoryForm">
                 <div class="form-row">
@@ -104,7 +132,7 @@
 
         <!-- ២. តារាងបង្ហាញបញ្ជីទ្រព្យសម្បត្តិ និងស្តុក -->
         <div class="section-box">
-            <h3>បញ្ជីសារពើភណ្ឌ និងស្តុកប្រចាំថ្ងៃ (Asset & Inventory List)</h3>
+            <h3 id="tableOriginalTitle">បញ្ជីសារពើភណ្ឌ និងស្តុកប្រចាំថ្ងៃ (Asset & Inventory List)</h3>
             
             <div class="filter-section">
                 <div>
@@ -121,11 +149,18 @@
                         <option value="Tools & Equipment">ឧបករណ៍ជាង/ប្រតិបត្តិការ</option>
                     </select>
                 </div>
-                <div style="display: flex; gap: 5px;">
-                    <button onclick="loadInventory()" style="background: #2563eb; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; height: 41px;">ស្វែងរក</button>
-                    <button onclick="window.print()" style="background: #0ea5e9; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; height: 41px;" title="Print ឬ Save ជា PDF">🖨️ PDF</button>
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="loadInventory()" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; border: none; padding: 10px 18px; border-radius: 6px; cursor: pointer; font-weight: 600; font-family: 'Kantumruy Pro', sans-serif; height: 42px; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fa-solid fa-magnifying-glass"></i> ស្វែងរក
+                    </button>
+                    <button onclick="window.print()" style="background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%); color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: 600; font-family: 'Kantumruy Pro', sans-serif; height: 42px;" title="Print ឬ Save ជា PDF">
+                        <i class="fa-solid fa-print"></i> PDF
+                    </button>
                 </div>
             </div>
+
+            <!-- ចំណងជើងបង្ហាញពេលព្រីន PDF -->
+            <div class="print-header-title">បញ្ជីសារពើភណ្ឌ និងស្តុកប្រចាំថ្ងៃ (Asset & Inventory Report)</div>
 
             <table>
                 <thead>
@@ -149,6 +184,9 @@
         </div>
     </div>
 
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <script>
         async function loadInventory() {
             const search = document.getElementById('searchInput').value;
@@ -166,7 +204,7 @@
                 tbody.innerHTML = '';
                 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b;">មិនទាន់មានទិន្នន័យសម្ភារៈ ឬស្តុកនៅឡើយទេ</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យសម្ភារៈ ឬស្តុកនៅឡើយទេ</td></tr>';
                     return;
                 }
 
