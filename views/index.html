@@ -179,6 +179,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 24px;
+            align-items: stretch; /* ធ្វើឱ្យប្រអប់កាតទាំងអស់មានកំពស់ស្មើគ្នា */
         }
 
         .card {
@@ -190,6 +191,7 @@
             flex-direction: column;
             overflow: hidden;
             box-shadow: 0 6px 20px rgba(0, 198, 255, 0.25);
+            height: 100%;
         }
 
         .card::before {
@@ -213,6 +215,7 @@
             padding: 20px 20px 10px 20px;
             border-bottom: 1px solid var(--border-color);
             background-color: #fafbfc;
+            text-align: center; /* ចំណងជើងកាតនៅចំកណ្តាល */
         }
 
         .card-header h3 {
@@ -232,20 +235,29 @@
         .card-body {
             padding: 15px 20px 20px 20px;
             flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .role-list {
             list-style: none;
             padding: 0;
             margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
 
         .role-item {
-            display: block;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center; /* ให้อក្សរនៅចំកណ្តាលប្រអប់ទាំងផ្តេក និងបញ្ឈរ */
+            text-align: center;   /* ให้อក្សរនៅចំកណ្តាលប្រអប់ */
             background: #f8fafc;
             border: 1px solid var(--border-color);
-            padding: 10px 14px;
-            margin-bottom: 8px;
+            padding: 12px 14px;
             border-radius: 8px;
             text-decoration: none;
             transition: all 0.2s ease;
@@ -255,7 +267,7 @@
             background: linear-gradient(135deg, #00c6ff, #0072ff);
             color: #ffffff;
             border-color: transparent;
-            transform: translateX(4px);
+            transform: translateY(-2px);
         }
 
         .role-item:hover .role-km, 
