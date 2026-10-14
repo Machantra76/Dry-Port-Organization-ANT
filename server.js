@@ -443,7 +443,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៧. តារាងការគ្រប់គ្រងឯកសារគយ (Customs Document Management) [បន្ថែមថ្មី]
+        // ២៧. តារាងការគ្រប់គ្រងឯកសារគយ (Customs Document Management)
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_documents (
                 id SERIAL PRIMARY KEY,
@@ -581,7 +581,7 @@ app.get('/views/document-management.html', (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការគ្រប់គ្រងឯកសារគយ (Customs Document Management) [បន្ថែមថ្មី]
+// API Routes: ការគ្រប់គ្រងឯកសារគយ (Customs Document Management)
 // ==========================================
 app.get('/api/customs-documents', async (req, res) => {
     try {
