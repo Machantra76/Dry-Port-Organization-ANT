@@ -825,38 +825,35 @@ app.post('/api/bwh-records', async (req, res) => {
 
 app.put('/api/bwh-records/:id', async (req, res) => {
     const { id } = req.params;
-    const { container_number, cargo_name, owner_name, movement_type, days_in_bonded, customs_status } = req.body;
+    const { container_number, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status } = req.body;
+    
     try {
+        // ១. ทำការ Update ព័ត៌មានក្នុងតារាង bwh-records
         const query = `
             UPDATE bonded_warehouse_records 
-            SET container_number = $1, cargo_name = $2, owner_name = $3, movement_type = $4, days_in_bonded = $5, customs_status = $6
-            WHERE id = $7 RETURNING *;
+            SET container_number = $1, cargo_name = $2, owner_name = $3, movement_type = $4, record_date = $5, days_in_bonded = $6, customs_status = $7
+            WHERE id = $8 RETURNING *;
         `;
-        const values = [container_number, cargo_name, owner_name, movement_type, parseInt(days_in_bonded) || 0, customs_status, id];
+        const values = [container_number, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status, id];
         const result = await pool.query(query, values);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យ BWH នេះទេ។' });
+        }
+
+        // ២. ពិនិត្យមើលស្ថានភាពគយ៖ ប្រសិនបើបានបង់ពន្ធរួច (មានពាក្យ "បានបង់ពន្ធរួច" ឬ "Paid" ឬ "Released")
+        const statusLower = (customs_status || '').toLowerCase();
+        if (statusLower.includes('បានបង់ពន្ធរួច') || statusLower.includes('paid') || statusLower.includes('released')) {
+            // ធ្វើការលុបទិន្នន័យនេះออกจากតារាងស្តុកទំនិញមិនទាន់បង់ពន្ធដោយស្វ័យប្រវត្ត
+            await pool.query('DELETE FROM duty_unpaid_inventory WHERE bonded_record_id = $1', [id]);
         }
 
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error updating BWH record:', err);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ success: false, error: err.message });
     }
 });
-
-app.delete('/api/bwh-records/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        await pool.query('DELETE FROM bonded_warehouse_records WHERE id = $1', [id]);
-        res.json({ success: true, message: 'Deleted successfully' });
-    } catch (err) {
-        console.error('Error deleting BWH record:', err);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
 // ==========================================
 // API Routes: ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory) [ADDED NEW]
 // ==========================================
