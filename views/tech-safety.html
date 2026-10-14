@@ -75,7 +75,7 @@
 
         <!-- Title Section -->
         <div class="mb-4">
-            <h2 class="header-title">គ្រប់គ្រងក្រុមសន្តិសុខ[cite: 13]</h2>
+            <h2 class="header-title">គ្រប់គ្រងក្រុមសន្តិសុខ</h2>
             <div class="header-subtitle">SECURITY GUARD TEAM, FORM & MANAGEMENT SYSTEM</div>
         </div>
 
@@ -166,12 +166,10 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // ទិន្នន័យក្នុងតារាងមានកំណត់ ID នីមួយៗច្បាស់លាស់
         let guardsData = [
             { id: 1, name: "សុខ ចាន់", location: "ទ្វារមេ (Main Gate)", phone: "012 345 678", shift: "វេនព្រឹក (06:00 - 14:00)" }
         ];
 
-        // មុខងារបង្ហាញទិន្នន័យក្នុងតារាង
         function renderTable(data = guardsData) {
             let tbody = document.getElementById('tableBody');
             tbody.innerHTML = '';
@@ -199,7 +197,6 @@
             });
         }
 
-        // មុខងារ Form Submit (រក្សាទុក ឬ កែប្រែទិន្នន័យ)
         document.getElementById('securityForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -210,11 +207,9 @@
             let editId = document.getElementById('editId').value;
 
             if (editId === "") {
-                // បន្ថែមថ្មី (បង្កើត ID ថ្មីដោយផ្អែកលើកាលបរិច្ឆេទ currentTime)
                 let newId = Date.now();
                 guardsData.push({ id: newId, name, location, phone, shift });
             } else {
-                // កែប្រែទិន្នន័យដែលមានស្រាប់តាមរយៈ ID
                 let index = guardsData.findIndex(g => g.id == editId);
                 if (index !== -1) {
                     guardsData[index] = { id: Number(editId), name, location, phone, shift };
@@ -224,10 +219,9 @@
             }
 
             this.reset();
-            filterTable(); // ធ្វើបច្ចុប្បន្នភាពតារាងស្របតាមការ Filter បច្ចុប្បន្ន
+            filterTable();
         });
 
-        // មុខងារលុបទិន្នន័យតាម ID
         function deleteGuard(id) {
             if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?")) {
                 guardsData = guardsData.filter(g => g.id !== id);
@@ -235,7 +229,6 @@
             }
         }
 
-        // មុខងារកែប្រែទិន្នន័យតាម ID (ទាញទិន្នន័យដាក់ចូល Form វិញ)
         function editGuard(id) {
             let guard = guardsData.find(g => g.id === id);
             if (!guard) return;
@@ -250,7 +243,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // មុខងារស្វែងរក (Search Filter)
         function filterTable() {
             let filter = document.getElementById('searchInput').value.toLowerCase();
             let filteredData = guardsData.filter(guard => 
@@ -263,7 +255,6 @@
 
         document.getElementById('searchInput').addEventListener('keyup', filterTable);
 
-        // ទាញយកបង្ហាញតារាងដំបូងពេលបើកទំព័រ
         renderTable();
     </script>
 </body>
