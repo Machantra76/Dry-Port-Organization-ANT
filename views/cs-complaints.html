@@ -144,8 +144,10 @@
             <input type="hidden" id="editId" value="">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">ឈ្មោះអតិថិជន ឬភាគីពាក់ព័ន្ធ (Complainant Name):</label>
-                    <input type="text" class="form-control" id="complainant_name" placeholder="ឧ. លោក នាក់ សុខា / ក្រុមហ៊ុន..." required>
+                    <label class="form-label">ជ្រើសរើសឈ្មោះអតិថិជន (Complainant Name):</label>
+                    <select class="form-select" id="complainant_name" required>
+                        <option value="">-- ជ្រើសរើសអតិថិជន --</option>
+                    </select>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">លេខទូរស័ព្ទទំនាក់ទំនង (Phone Number):</label>
@@ -247,10 +249,45 @@
 
 <script>
     let disputeDataList = [];
+    let customerList = [];
 
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('dispute_date').value = new Date().toISOString().split('T')[0];
+        loadCustomerDropdown(); // ទាញយកឈ្មោះអតិថិជនមកដាក់ក្នុង Dropdown
         loadDisputes();
+    });
+
+    // មុខងារទាញឈ្មោះអតិថិជនពី API ទំនាក់ទំនងអតិថិជន
+    async function loadCustomerDropdown() {
+        try {
+            const response = await fetch('/api/customer-relations');
+            customerList = await response.json();
+            const select = document.getElementById('complainant_name');
+            select.innerHTML = '<option value="">-- ជ្រើសរើសអតិថិជន --</option>';
+
+            if (Array.isArray(customerList)) {
+                customerList.forEach(cus => {
+                    const option = document.createElement('option');
+                    option.value = cus.customer_name;
+                    option.textContent = `${cus.customer_name} (${cus.phone})`;
+                    select.appendChild(option);
+                });
+            }
+        } catch (err) {
+            console.error('Error loading customer dropdown:', err);
+        }
+    }
+
+    // មុខងារបំពេញលេខទូរស័ព្ទដោយស្វ័យប្រវត្តពេលជ្រើសរើសអតិថិជន
+    document.getElementById('complainant_name').addEventListener('change', function() {
+        const selectedName = this.value;
+        const found = customerList.find(c => c.customer_name === selectedName);
+        const phoneInput = document.getElementById('phone');
+        if (found) {
+            phoneInput.value = found.phone || '';
+        } else {
+            phoneInput.value = '';
+        }
     });
 
     async function loadDisputes() {
@@ -336,6 +373,7 @@
                 document.getElementById('editId').value = '';
                 document.getElementById('dispute_date').value = new Date().toISOString().split('T')[0];
                 document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ`;
+                loadCustomerDropdown();
                 loadDisputes();
             } else {
                 alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
