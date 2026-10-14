@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH) - ANT Dry Port</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #1e3c72;
+            --secondary-color: #2a5298;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+        }
+
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        header h1 { margin: 0; font-size: 20px; }
+        header p { margin: 4px 0 0 0; font-size: 12px; color: #dbeafe; }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 6px 12px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .btn-back:hover { background: white; color: var(--primary-color); }
+
+        .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
+
+        .action-bar {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; flex-wrap: wrap;
+        }
+
+        .search-box input {
+            padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; width: 300px; font-family: 'Kantumruy Pro', sans-serif; outline: none;
+        }
+
+        .btn-primary {
+            background: var(--primary-color); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-pdf {
+            background: #ef4444; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+        }
+
+        .card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color); }
+        .table-responsive { overflow-x: auto; }
+
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+        th { background-color: #f8fafc; color: var(--primary-color); font-weight: 700; }
+
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
+        .badge-active { background-color: #d1fae5; color: #065f46; }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-card {
+            background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto;
+        }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; color: #334155; }
+        .form-control, .form-select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-family: 'Kantumruy Pro', sans-serif; outline: none; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH)</h1>
+            <p>Relationship with Bonded Warehouse Records - ANT Dry Port</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <a href="/" class="btn-back"><i class="fa-solid fa-house"></i> ទៅកាន់ទំព័រដើម</a>
+            <a href="/views/bwh-inout.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> ឃ្លាំងពន្ធដារ (BWH)</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="action-bar no-print">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="ស្វែងរកលេខលិខិត ឬលេខកុងតឺន័រ..." onkeyup="filterTable()">
+            </div>
+            <div>
+                <button class="btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> ទាញយក PDF</button>
+                <button class="btn-primary" onclick="openModal()"><i class="fa-solid fa-plus"></i> បញ្ចូលលិខិតអនុញ្ញាតថ្មី</button>
+            </div>
+        </div>
+
+        <div class="card" id="pdfContent">
+            <div style="padding: 15px 20px; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: none;" id="pdfHeaderTitle">
+                <h3 style="margin: 0; color: var(--primary-color); font-size: 16px;">របាយការណ៍លិខិតអនុញ្ញាត និងឯកសារគយ (Customs Permit Report)</h3>
+            </div>
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ល.រ</th>
+                            <th>លេខលិខិតអនុញ្ញាត</th>
+                            <th>លេខកុងតឺន័រ</th>
+                            <th>ឈ្មោះទំនិញ</th>
+                            <th>ក្រុមហ៊ុន / ម្ចាស់ទំនិញ</th>
+                            <th>ប្រភេទលិខិតអនុញ្ញាត</th>
+                            <th>កាលបរិច្ឆេទចេញ</th>
+                            <th>មន្ត្រីទទួលបន្ទុក</th>
+                            <th>ស្ថានភាព</th>
+                            <th style="text-align: center;" class="no-print">សកម្មភាព</th>
+                        </tr>
+                    </thead>
+                    <tbody id="permitTableBody">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="permitModal" class="modal-overlay">
+        <div class="modal-card">
+            <h2><i class="fa-solid fa-file-shield me-2"></i> បញ្ចូលលិខិតអនុញ្ញាតគយថ្មី</h2>
+            <form id="permitForm" onsubmit="savePermit(event)">
+                <div class="form-group">
+                    <label>ទាញយកទិន្នន័យពី ឃ្លាំងពន្ធដារ (Link from BWH):</label>
+                    <select id="bwhSelect" class="form-select" onchange="selectBwhRecord()" required>
+                        <option value="">-- ជ្រើសរើសកុងតឺន័រពី BWH --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>លេខលិខិតអនុញ្ញាតគយ (Customs Permit No.):</label>
+                    <input type="text" id="permitNumber" class="form-control" placeholder="ឧ. PER-2026-001" required>
+                </div>
+                <div class="form-group">
+                    <label>លេខកុងតឺន័រ:</label>
+                    <input type="text" id="containerNo" class="form-control" readonly required>
+                </div>
+                <div class="form-group">
+                    <label>ឈ្មោះទំនិញ:</label>
+                    <input type="text" id="cargoName" class="form-control" readonly required>
+                </div>
+                <div class="form-group">
+                    <label>ក្រុមហ៊ុន / ម្ចាស់ទំនិញ:</label>
+                    <input type="text" id="companyName" class="form-control" readonly required>
+                </div>
+                <div class="form-group">
+                    <label>ប្រភេទលិខិតអនុញ្ញាត (Permit Type):</label>
+                    <select id="permitType" class="form-select">
+                        <option value="លិខិតអនុញ្ញាតទំនិញចូលឃ្លាំង (BWH Entry Permit)">លិខិតអនុញ្ញាតទំនិញចូលឃ្លាំង (BWH Entry Permit)</option>
+                        <option value="លិខិតអនុញ្ញាតបង់ពន្ធនិងထုတ်ទំនិញ (Duty Paid & Release)">លិខិតអនុញ្ញាតបង់ពន្ធនិងထုတ်ទំនិញ (Duty Paid & Release)</option>
+                        <option value="លិខិតផ្ទេរទំនិញចេញក្រៅឃ្លាំង (Transfer Permit)">លិខិតផ្ទេរទំនិញចេញក្រៅឃ្លាំង (Transfer Permit)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>កាលបរិច្ឆេទចេញលិខិត (Issue Date):</label>
+                    <input type="date" id="issueDate" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>មន្ត្រីគយទទួលបន្ទុក (Customs Officer):</label>
+                    <input type="text" id="officerName" class="form-control" placeholder="ឈ្មោះមន្ត្រីគយ" required>
+                </div>
+                <div class="form-group">
+                    <label>កំណត់សម្គាល់ (Notes):</label>
+                    <textarea id="notes" class="form-control" rows="2" placeholder="ព័ត៌មានបន្ថែម..."></textarea>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-primary" style="background: #cbd5e1; color: #334155;" onclick="closeModal()">បោះបង់</button>
+                    <button type="submit" class="btn-primary">រក្សាទុក</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let permitData = [];
+        let bwhRecords = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPermits();
+            loadBwhDropdown();
+            document.getElementById('issueDate').value = new Date().toISOString().slice(0, 10);
+        });
+
+        async function loadPermits() {
+            try {
+                const res = await fetch('/api/customs-permits');
+                permitData = await res.json();
+                renderTable(permitData);
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        async function loadBwhDropdown() {
+            try {
+                const res = await fetch('/api/bwh-records');
+                bwhRecords = await res.json();
+                const select = document.getElementById('bwhSelect');
+                select.innerHTML = '<option value="">-- ជ្រើសរើសកុងតឺន័រពី BWH --</option>';
+                bwhRecords.forEach(item => {
+                    select.innerHTML += `<option value="${item.id}">${item.container_number} - ${item.cargo_name} (${item.owner_name})</option>`;
+                });
+            } catch (err) {
