@@ -28,22 +28,145 @@
         header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
-            padding: 30px 20px;
+            padding: 25px 20px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0, 198, 255, 0.4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        header .header-title {
+            text-align: left;
         }
 
         header h1 {
             margin: 0;
-            font-size: 28px;
+            font-size: 24px;
             font-weight: 700;
         }
 
         header p {
-            margin: 8px 0 0 0;
-            font-size: 15px;
+            margin: 5px 0 0 0;
+            font-size: 13px;
             color: #dbeafe;
             letter-spacing: 0.5px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+        }
+
+        /* Login Modal / Container Styles */
+        #loginOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .login-card h2 {
+            color: var(--primary-color);
+            margin-bottom: 5px;
+            font-size: 22px;
+        }
+
+        .login-card p {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 5px;
+            color: #334155;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-weight: 600;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: opacity 0.3s;
+        }
+
+        .login-btn:hover {
+            opacity: 0.9;
+        }
+
+        .credentials-hint {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #64748b;
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: left;
+            border: 1px dashed #cbd5e1;
         }
 
         .container {
@@ -58,7 +181,6 @@
             gap: 24px;
         }
 
-        /* បែបផែនកាត និងពណ៌រត់ប្រដេញគ្នាមានពន្លឺភ្លឺចែងចាំងដូចពេជ្រ (Diamond Shimmer & Gradient Flow) */
         .card {
             background: var(--card-bg);
             border-radius: 12px;
@@ -70,7 +192,6 @@
             box-shadow: 0 6px 20px rgba(0, 198, 255, 0.25);
         }
 
-        /* បន្ថែមបន្ទាត់ពណ៌រត់ប្រដេញគ្នាផ្នែកខាងលើកាត */
         .card::before {
             content: '';
             position: absolute;
@@ -84,12 +205,8 @@
         }
 
         @keyframes diamondShimmer {
-            0% {
-                background-position: 0% 50%;
-            }
-            100% {
-                background-position: 100% 50%;
-            }
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
         }
 
         .card:hover {
@@ -168,30 +285,69 @@
             margin-top: 2px;
             text-transform: uppercase;
         }
-
-        .loading {
-            text-align: center;
-            font-size: 18px;
-            color: var(--text-sub);
-            grid-column: 1 / -1;
-            padding: 50px;
-        }
     </style>
 </head>
 <body>
 
+    <!-- Login Overlay / Modal -->
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2>ចូលប្រព័ន្ធ (Login)</h2>
+            <p>ANT Dry Port Management Dashboard</p>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>ឈ្មោះគណនី (Username):</label>
+                    <input type="text" id="username" class="form-control" required placeholder="ឧ. admin ឬ hr_user">
+                </div>
+                <div class="form-group">
+                    <label>ពាក្យសម្ងាត់ (Password):</label>
+                    <input type="password" id="password" class="form-control" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="login-btn">ចូលប្រើប្រាស់</button>
+            </form>
+            <div class="credentials-hint">
+                <strong>គំរូគណនីសម្រាប់សាកល្បង៖</strong><br>
+                - Admin (មើលគ្រប់ផ្នែក): <code>admin</code> / <code>123456</code><br>
+                - ធនធានមនុស្ស: <code>hr_user</code> / <code>123456</code><br>
+                - គណនេយ្យ: <code>acc_user</code> / <code>123456</code><br>
+                - ដឹកជញ្ជូន: <code>transport_user</code> / <code>123456</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Layout -->
     <header>
-        <h1>រចនាសម្ព័ន្ធស្ថាប័នផែស្ងួត អេអិនធី</h1>
-        <p>DRY PORT ORGANIZATION CHART & WORKFLOW DASHBOARD ANT</p>
+        <div class="header-title">
+            <h1>រចនាសម្ព័ន្ធស្ថាប័នផែស្ងួត អេអិនធី</h1>
+            <p>DRY PORT ORGANIZATION CHART & WORKFLOW DASHBOARD ANT</p>
+        </div>
+        <div class="user-info" id="userInfoDisplay" style="display: none;">
+            <span id="welcomeText">សូមស្វាគមន៍: Admin</span>
+            <button class="logout-btn" onclick="handleLogout()">ចាកចេញ (Logout)</button>
+        </div>
     </header>
 
     <div class="container">
         <div id="dashboard" class="grid-container">
-            <div class="loading">កំពុងទាញយកទិន្នន័យ... (Loading data...)</div>
+            <!-- Content will be rendered dynamically via JS -->
         </div>
     </div>
 
     <script>
+        // កំណត់គណនី និងសិទ្ធិ (Users & Roles Mapping)
+        // departmentId ត្រូវគ្នាជាមួយ id របស់ department ខាងក្រោម
+        const usersDB = {
+            "admin": { name: "អភិបាលប្រព័ន្ធ (System Admin)", role: "ADMIN", deptId: "ALL" },
+            "hr_user": { name: "មន្ត្រីធនធានមនុស្ស", role: "STAFF", deptId: "HR_ADMIN" },
+            "acc_user": { name: "មន្ត្រីគណនេយ្យ", role: "STAFF", deptId: "ACC_FIN" },
+            "transport_user": { name: "មន្ត្រីដឹកជញ្ជូន", role: "STAFF", deptId: "TRANSPORT" },
+            "container_user": { name: "មន្ត្រីកុងតឺន័រ", role: "STAFF", deptId: "CONTAINER_MGT" },
+            "tech_user": { name: "មន្ត្រីទីលាន", role: "STAFF", deptId: "TECH_STUFFING" },
+            "it_user": { name: "មន្ត្រី IT", role: "STAFF", deptId: "IT_SYSTEMS" },
+            "cs_user": { name: "មន្ត្រីសេវាកម្មអតិថិជន", role: "STAFF", deptId: "CUSTOMER_SVC" },
+            "doc_user": { name: "មន្ត្រីឯកសារគយ", role: "STAFF", deptId: "FACILITIES" }
+        };
+
         const englishTitles = {
             "HR_ADMIN": "HR & Administration Department",
             "ACC_FIN": "Accounting & Finance Department",
@@ -241,121 +397,162 @@
             "អ្នកកាន់ឯកសារ": { en: "Document Controller / Handler", url: "/views/doc-handler.html" }
         };
 
-        const data = {
-            "dry_port_project": {
-                "departments": [
-                    {
-                        "id": "HR_ADMIN",
-                        "name": "ធនធានមនុស្ស & រដ្ឋបាល",
-                        "roles": [
-                            "វត្តមាន ចេញ/ចូល",
-                            "ទ្រព្យសម្បត្តិ/ស្តុក និងការគ្រប់គ្រង សារពើភណ្ឌ",
-                            "ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល",
-                            "ប្រាក់បៀវត្សរ៍ - ដំណើរការប្រាក់ខែ & អត្ថប្រយោជន៍"
-                        ]
-                    },
-                    {
-                        "id": "ACC_FIN",
-                        "name": "គណនេយ្យ & ហិរញ្ញវត្ថុ",
-                        "roles": [
-                            "គណនេយ្យប្រាក់ចំណូល",
-                            "គណនេយ្យទទួល",
-                            "របាយការណ៍ហិរញ្ញវត្ថុ",
-                            "ការគ្រប់គ្រងថវិកា / ចំណាយ"
-                        ]
-                    },
-                    {
-                        "id": "TRANSPORT",
-                        "name": "ផ្នែកដឹកជញ្ជូន",
-                        "roles": [
-                            "ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន",
-                            "ការគ្រប់គ្រងអ្នកបើកបរ",
-                            "ការគ្រប់គ្រងប្រេងឥន្ធនៈ / ការថែទាំ",
-                            "ការរៀបចំផែនការដឹកជញ្ជូនទំនិញ"
-                        ]
-                    },
-                    {
-                        "id": "CONTAINER_MGT",
-                        "name": "ផ្នែកគ្រប់គ្រងកុងតឺន័រ",
-                        "roles": [
-                            "ការត្រួតពិនិត្យកុងតឺន័រខូច",
-                            "ការគ្រប់គ្រងទីតាំងកុងតឺន័រ",
-                            "ការថែទាំ និងជួសជុល",
-                            "ការចេញកុងតឺន័រវិញ"
-                        ]
-                    },
-                    {
-                        "id": "TECH_STUFFING",
-                        "name": "ផ្នែកត្រួតពិនិត្យទីលានកុងតឺន័រ",
-                        "roles": [
-                            "ប្រតិបត្តិការនៅទីលាន",
-                            "ការចូល / ចេញទំនិញ",
-                            "ក្រុមសន្តិសុខ"
-                        ]
-                    },
-                    {
-                        "id": "IT_SYSTEMS",
-                        "name": "ផ្នែកព័ត៌មានវិទ្យា & ប្រព័ន្ធ",
-                        "roles": [
-                            "ប្រព័ន្ធ WMS / OMS",
-                            "ប្រព័ន្ធ CCTV & បណ្តាញ",
-                            "ការគ្រប់គ្រងទិន្នន័យ"
-                        ]
-                    },
-                    {
-                        "id": "CUSTOMER_SVC",
-                        "name": "ផ្នែកសេវាកម្មអតិថិជន",
-                        "roles": [
-                            "ទំនាក់ទំនងជាមួយអតិថិជន",
-                            "ការដោះស្រាយបញ្ហា / ការតវ៉ា",
-                            "ជំនួយការផ្នែកស្វែងរកប្រភព"
-                        ]
-                    },
-                    {
-                        "id": "FACILITIES",
-                        "name": "ប្រធានផ្នែកសម្ភារឯកសារ",
-                        "roles": [
-                            "ការគ្រប់គ្រងឯកសារ",
-                            "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ",
-                            "អ្នកកាន់ឯកសារ"
-                        ]
-                    }
+        const departments = [
+            {
+                "id": "HR_ADMIN",
+                "name": "ធនធានមនុស្ស & រដ្ឋបាល",
+                "roles": [
+                    "វត្តមាន ចេញ/ចូល",
+                    "ទ្រព្យសម្បត្តិ/ស្តុក និងការគ្រប់គ្រង សារពើភណ្ឌ",
+                    "ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល",
+                    "ប្រាក់បៀវត្សរ៍ - ដំណើរការប្រាក់ខែ & អត្ថប្រយោជន៍"
+                ]
+            },
+            {
+                "id": "ACC_FIN",
+                "name": "គណនេយ្យ & ហិរញ្ញវត្ថុ",
+                "roles": [
+                    "គណនេយ្យប្រាក់ចំណូល",
+                    "គណនេយ្យទទួល",
+                    "របាយការណ៍ហិរញ្ញវត្ថុ",
+                    "ការគ្រប់គ្រងថវិកា / ចំណាយ"
+                ]
+            },
+            {
+                "id": "TRANSPORT",
+                "name": "ផ្នែកដឹកជញ្ជូន",
+                "roles": [
+                    "ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន",
+                    "ការគ្រប់គ្រងអ្នកបើកបរ",
+                    "ការគ្រប់គ្រងប្រេងឥន្ធនៈ / ការថែទាំ",
+                    "ការរៀបចំផែនការដឹកជញ្ជូនទំនិញ"
+                ]
+            },
+            {
+                "id": "CONTAINER_MGT",
+                "name": "ផ្នែកគ្រប់គ្រងកុងតឺន័រ",
+                "roles": [
+                    "ការត្រួតពិនិត្យកុងតឺន័រខូច",
+                    "ការគ្រប់គ្រងទីតាំងកុងតឺន័រ",
+                    "ការថែទាំ និងជួសជុល",
+                    "ការចេញកុងតឺន័រវិញ"
+                ]
+            },
+            {
+                "id": "TECH_STUFFING",
+                "name": "ផ្នែកត្រួតពិនិត្យទីលានកុងតឺន័រ",
+                "roles": [
+                    "ប្រតិបត្តិការនៅទីលាន",
+                    "ការចូល / ចេញទំនិញ",
+                    "ក្រុមសន្តិសុខ"
+                ]
+            },
+            {
+                "id": "IT_SYSTEMS",
+                "name": "ផ្នែកព័ត៌មានវិទ្យា & ប្រព័ន្ធ",
+                "roles": [
+                    "ប្រព័ន្ធ WMS / OMS",
+                    "ប្រព័ន្ធ CCTV & បណ្តាញ",
+                    "ការគ្រប់គ្រងទិន្នន័យ"
+                ]
+            },
+            {
+                "id": "CUSTOMER_SVC",
+                "name": "ផ្នែកសេវាកម្មអតិថិជន",
+                "roles": [
+                    "ទំនាក់ទំនងជាមួយអតិថិជន",
+                    "ការដោះស្រាយបញ្ហា / ការតវ៉ា",
+                    "ជំនួយការផ្នែកស្វែងរកប្រភព"
+                ]
+            },
+            {
+                "id": "FACILITIES",
+                "name": "ប្រធានផ្នែកសម្ភារឯកសារ",
+                "roles": [
+                    "ការគ្រប់គ្រងឯកសារ",
+                    "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ",
+                    "អ្នកកាន់ឯកសារ"
                 ]
             }
-        };
+        ];
 
-        const departments = data.dry_port_project.departments;
-        const dashboardContainer = document.getElementById('dashboard');
-        dashboardContainer.innerHTML = '';
-
-        departments.forEach(dept => {
-            let engName = englishTitles[dept.id] || "Department";
-            
-            let rolesHtml = dept.roles.map(role => {
-                let info = roleDetails[role] || { en: "Workflow Item", url: "#" };
-                return `
-                    <li>
-                        <a href="${info.url}" class="role-item">
-                            <span class="role-km">${role}</span>
-                            <span class="role-en">${info.en}</span>
-                        </a>
-                    </li>
-                `;
-            }).join('');
-            
-            let card = `
-                <div class="card">
-                    <div class="card-header">
-                        <h3>${dept.name}</h3>
-                        <div class="eng-title">${engName}</div>
-                    </div>
-                    <div class="card-body">
-                        <ul class="role-list">${rolesHtml}</ul>
-                    </div>
-                </div>
-            `;
-            dashboardContainer.innerHTML += card;
+        // ពិនិត្យមើលការ Login ពេលបើកទំព័រ
+        window.addEventListener('DOMContentLoaded', () => {
+            const loggedUser = localStorage.getItem('ant_logged_user');
+            if (loggedUser && usersDB[loggedUser]) {
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('userInfoDisplay').style.display = 'flex';
+                document.getElementById('welcomeText').innerText = `សូមស្វាគមន៍: ${usersDB[loggedUser].name}`;
+                renderDashboard(loggedUser);
+            }
         });
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+
+            if (usersDB[user] && pass === "123456") {
+                localStorage.setItem('ant_logged_user', user);
+                document.getElementById('loginOverlay').style.display = 'none';
+                document.getElementById('userInfoDisplay').style.display = 'flex';
+                document.getElementById('welcomeText').innerText = `សូមស្វាគមន៍: ${usersDB[user].name}`;
+                renderDashboard(user);
+            } else {
+                alert('ឈ្មោះគណនី ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ! (សូមសាកល្បង admin ឬ hr_user / 123456)');
+            }
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('ant_logged_user');
+            location.reload();
+        }
+
+        function renderDashboard(username) {
+            const currentUser = usersDB[username];
+            const dashboardContainer = document.getElementById('dashboard');
+            dashboardContainer.innerHTML = '';
+
+            // តម្រងផ្នែកតាម Role របស់ User
+            let filteredDepts = departments;
+            if (currentUser.role !== "ADMIN") {
+                filteredDepts = departments.filter(dept => dept.id === currentUser.deptId);
+            }
+
+            if (filteredDepts.length === 0) {
+                dashboardContainer.innerHTML = `<div class="loading" style="grid-column: 1/-1; text-align:center; padding: 40px; color:#64748b;">ពុំមានសិទ្ធិចូលមើលផ្នែកណាមួយទេ!</div>`;
+                return;
+            }
+
+            filteredDepts.forEach(dept => {
+                let engName = englishTitles[dept.id] || "Department";
+                
+                let rolesHtml = dept.roles.map(role => {
+                    let info = roleDetails[role] || { en: "Workflow Item", url: "#" };
+                    return `
+                        <li>
+                            <a href="${info.url}" class="role-item">
+                                <span class="role-km">${role}</span>
+                                <span class="role-en">${info.en}</span>
+                            </a>
+                        </li>
+                    `;
+                }).join('');
+                
+                let card = `
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>${dept.name}</h3>
+                            <div class="eng-title">${engName}</div>
+                        </div>
+                        <div class="card-body">
+                            <ul class="role-list">${rolesHtml}</ul>
+                        </div>
+                    </div>
+                `;
+                dashboardContainer.innerHTML += card;
+            });
+        }
     </script>
 
 </body>
