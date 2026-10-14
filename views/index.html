@@ -294,7 +294,7 @@
 
     <!-- Popup Login / Register -->
     <div id="authModal" class="modal-overlay">
-        <!-- Form Login (មានតែទម្រង់ Login សុទ្ធ) -->
+        <!-- Form Login -->
         <div id="loginCard" class="auth-card">
             <h2>ចូលប្រព័ន្ធ (Login)</h2>
             <p>ANT Dry Port Management Dashboard</p>
@@ -311,7 +311,7 @@
             </form>
         </div>
 
-        <!-- Form បង្កើត User ថ្មី (ប្រើសម្រាប់តែ Admin ពេលចុចប៊ូតុង + បង្កើត User) -->
+        <!-- Form បង្កើត User ថ្មី (សម្រាប់ Admin) -->
         <div id="registerCard" class="auth-card" style="display: none;">
             <h2>បង្កើត User ថ្មី (Create User)</h2>
             <p>ចុះឈ្មោះអ្នកប្រើប្រាស់ និងកំណត់សិទ្ធិ (Role)</p>
@@ -346,6 +346,7 @@
                         <option value="IT_SYSTEMS">ផ្នែកព័ត៌មានវិទ្យា & ប្រព័ន្ធ</option>
                         <option value="CUSTOMER_SVC">ផ្នែកសេវាកម្មអតិថិជន</option>
                         <option value="FACILITIES">ប្រធានផ្នែកសម្ភារឯកសារ</option>
+                        <option value="BONDED_WH">ផ្នែកឃ្លាំងទំនិញពន្ធដារ (BWH)</option>
                     </select>
                 </div>
                 <button type="submit" class="btn-submit" style="background: #10b981;">រក្សាទុក User ថ្មី</button>
@@ -382,7 +383,8 @@
             "TECH_STUFFING": "Technical & Stuffing/Unstuffing Department",
             "IT_SYSTEMS": "IT & Systems Department",
             "CUSTOMER_SVC": "Customer Service Department",
-            "FACILITIES": "Documentation & General Management"
+            "FACILITIES": "Documentation & General Management",
+            "BONDED_WH": "Bonded Warehouse (BWH) Department"
         };
 
         const roleDetails = {
@@ -420,7 +422,12 @@
 
             "ការគ្រប់គ្រងឯកសារ": { en: "Document Management", url: "/views/doc-management.html" },
             "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ": { en: "Customs System Data Entry Management", url: "/views/doc-customs.html" },
-            "អ្នកកាន់ឯកសារ": { en: "Document Controller / Handler", url: "/views/doc-handler.html" }
+            "អ្នកកាន់ឯកសារ": { en: "Document Controller / Handler", url: "/views/doc-handler.html" },
+
+            /* បន្ថែមមុខងារថ្មីសម្រាប់ Bonded Warehouse (BWH) */
+            "ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)": { en: "Bonded Warehouse Cargo In/Out Control", url: "/views/bwh-inout.html" },
+            "ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ": { en: "Duty-Unpaid Inventory Monitoring", url: "/views/bwh-inventory.html" },
+            "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ": { en: "Customs Permit & Document Control (BWH)", url: "/views/bwh-customs.html" }
         };
 
         const departments = [
@@ -431,7 +438,9 @@
             { id: "TECH_STUFFING", name: "ផ្នែកត្រួតពិនិត្យទីលានកុងតឺន័រ", roles: ["ប្រតិបត្តិការនៅទីលាន", "ការចូល / ចេញទំនិញ", "ក្រុមសន្តិសុខ"] },
             { id: "IT_SYSTEMS", name: "ផ្នែកព័ត៌មានវិទ្យា & ប្រព័ន្ធ", roles: ["ប្រព័ន្ធ WMS / OMS", "ប្រព័ន្ធ CCTV & បណ្តាញ", "ការគ្រប់គ្រងទិន្នន័យ"] },
             { id: "CUSTOMER_SVC", name: "ផ្នែកសេវាកម្មអតិថិជន", roles: ["ទំនាក់ទំនងជាមួយអតិថិជន", "ការដោះស្រាយបញ្ហា / ការតវ៉ា", "ជំនួយការផ្នែកស្វែងរកប្រភព"] },
-            { id: "FACILITIES", name: "ប្រធានផ្នែកសម្ភារឯកសារ", roles: ["ការគ្រប់គ្រងឯកសារ", "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ", "អ្នកកាន់ឯកសារ"] }
+            { id: "FACILITIES", name: "ប្រធានផ្នែកសម្ភារឯកសារ", roles: ["ការគ្រប់គ្រងឯកសារ", "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ", "អ្នកកាន់ឯកសារ"] },
+            /* បន្ថែមផ្នែក Bonded Warehouse (BWH) ចូលក្នុងបញ្ជីស្ថាប័ន */
+            { id: "BONDED_WH", name: "ផ្នែកឃ្លាំងទំនិញពន្ធដារ (BWH)", roles: ["ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)", "ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ", "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ"] }
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
