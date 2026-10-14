@@ -325,7 +325,7 @@
                     data.forEach(item => {
                         const option = document.createElement('option');
                         option.value = item.container_number;
-                        option.textContent = `${item.container_number} (${item.block_code} - ជួរទី ${item.row_number})`;
+                        option.textContent = `${item.container_number} (${item.block_code} - ជួរទី ${item.row_number}) [${item.status || 'Stored'}]`;
                         containerSelect.appendChild(option);
                     });
                 }
@@ -341,9 +341,14 @@
             const yardLocationInput = document.getElementById('yard_location');
 
             if (found) {
-                if (found.status === 'Get Out' || found.status === 'In pairing') {
-                    alert(`ប្រុងប្រយ័ត្ន! កុងតឺន័រ ${selectedContainerNo} នេះមានស្ថានភាព "${found.status}"!`);
+                const currentStatus = (found.status || '').trim().toLowerCase();
+                console.log("Container Status:", found.status); // ពិនិត្យមើលតម្លៃ Status ក្នុង Console
+
+                // ដាក់លក្ខខណ្ឌឆែកស្ថានភាព Get Out ឬ In pairing
+                if (currentStatus === 'get out' || currentStatus === 'in pairing') {
+                    alert(`⚠️ ប្រុងប្រយ័ត្ន! កុងតឺន័រ ${selectedContainerNo} នេះមានស្ថានភាព "${found.status}"!`);
                 }
+
                 yardLocationInput.value = `${found.block_code} - ជួរទី ${found.row_number} - ជាន់ទី ${found.tier_number}`;
             } else {
                 yardLocationInput.value = '';
@@ -432,10 +437,13 @@
             const selectedContainerNo = document.getElementById('container_number').value.trim();
             const foundContainer = containerYardData.find(item => item.container_number === selectedContainerNo);
 
-            if (foundContainer && (foundContainer.status === 'Get Out' || foundContainer.status === 'In pairing')) {
-                const confirmSave = confirm(`កុងតឺន័រនេះមានស្ថានភាព "${foundContainer.status}"។ តើអ្នកពិតជាចង់រក្សាទុកប្រតិបត្តិការនេះមែនទេ?`);
-                if (!confirmSave) {
-                    return; 
+            if (foundContainer) {
+                const currentStatus = (foundContainer.status || '').trim().toLowerCase();
+                if (currentStatus === 'get out' || currentStatus === 'in pairing') {
+                    const confirmSave = confirm(`⚠️ កុងតឺន័រនេះមានស្ថានភាព "${foundContainer.status}"។ តើអ្នកពិតជាចង់រក្សាទុកប្រតិបត្តិការនេះមែនទេ?`);
+                    if (!confirmSave) {
+                        return; 
+                    }
                 }
             }
 
