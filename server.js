@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីให้อានហ្វាលក្នុង views បានយ៉ាងរលូន
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីให้อានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 4]
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
@@ -413,7 +413,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៥. តារាងការដោះស្រាយបញ្ហា / ការតវ៉ា (Dispute & Complaint Resolution) [បន្ថែមថ្មី]
+        // ២៥. តារាងការដោះស្រាយបញ្ហា / ការតវ៉ា (Dispute & Complaint Resolution)
         await client.query(`
             CREATE TABLE IF NOT EXISTS dispute_resolutions (
                 id SERIAL PRIMARY KEY,
@@ -422,6 +422,21 @@ async function initializeDatabase() {
                 dispute_type VARCHAR(100) NOT NULL,
                 severity_level VARCHAR(50) DEFAULT 'Medium',
                 dispute_date DATE NOT NULL,
+                status VARCHAR(50) DEFAULT 'Pending',
+                description TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ២៦. តារាងស្វែងរកប្រភព និងការគាំទ្រទូទៅ (Sourcing & General Support) [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS sourcing_support (
+                id SERIAL PRIMARY KEY,
+                request_title VARCHAR(150) NOT NULL,
+                requester_name VARCHAR(150) NOT NULL,
+                category VARCHAR(100) NOT NULL,
+                priority_level VARCHAR(50) DEFAULT 'Medium',
+                request_date DATE NOT NULL,
                 status VARCHAR(50) DEFAULT 'Pending',
                 description TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -541,8 +556,75 @@ app.get('/views/dispute-resolution.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'dispute-resolution.html'));
 });
 
+app.get('/views/sourcing-support.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'sourcing-support.html'));
+});
+
 // ==========================================
-// API Routes: ការដោះស្រាយបញ្ហា / ការតវ៉ា (Dispute & Complaint Resolution) [បន្ថែមថ្មី]
+// API Routes: ស្វែងរកប្រភព និងការគាំទ្រទូទៅ (Sourcing & General Support) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/sourcing-support', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM sourcing_support ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching sourcing support records:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/sourcing-support', async (req, res) => {
+    const { request_title, requester_name, category, priority_level, request_date, status, description } = req.body;
+    try {
+        const query = `
+            INSERT INTO sourcing_support (request_title, requester_name, category, priority_level, request_date, status, description)
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+        `;
+        const values = [request_title, requester_name, category, priority_level || 'Medium', request_date, status || 'Pending', description];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving sourcing support record:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.put('/api/sourcing-support/:id', async (req, res) => {
+    const { id } = req.params;
+    const { request_title, requester_name, category, priority_level, request_date, status, description } = req.body;
+    try {
+        const query = `
+            UPDATE sourcing_support 
+            SET request_title = $1, requester_name = $2, category = $3, priority_level = $4, request_date = $5, status = $6, description = $7
+            WHERE id = $8 RETURNING *;
+        `;
+        const values = [request_title, requester_name, category, priority_level, request_date, status, description, id];
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating sourcing support record:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.delete('/api/sourcing-support/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM sourcing_support WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting sourcing support record:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// ==========================================
+// API Routes: ការដោះស្រាយបញ្ហា / ការតវ៉ា (Dispute & Complaint Resolution)
 // ==========================================
 app.get('/api/dispute-resolutions', async (req, res) => {
     try {
@@ -589,7 +671,7 @@ app.put('/api/dispute-resolutions/:id', async (req, res) => {
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error updating dispute resolution:', err);
-        res.status(500).json({ success: false, error: 'Server error' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -652,7 +734,7 @@ app.put('/api/customer-relations/:id', async (req, res) => {
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error updating customer relation:', err);
-        res.status(500).json({ success: false, error: 'Server error' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -2126,7 +2208,7 @@ app.put('/api/fleet/security-logs/:id', async (req, res) => {
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error updating security log:', err);
-        res.status(500).json({ success: false, error: 'Server error' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
