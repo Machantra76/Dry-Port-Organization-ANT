@@ -462,7 +462,7 @@ async function initializeDatabase() {
         `);
 
         // ៣០. តារាងគ្រប់គ្រងឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse Records - BWH)
-        await client.query(`
+      await client.query(`
             CREATE TABLE IF NOT EXISTS bonded_warehouse_records (
                 id SERIAL PRIMARY KEY,
                 container_number VARCHAR(100) NOT NULL,
@@ -474,6 +474,11 @@ async function initializeDatabase() {
                 customs_status VARCHAR(150) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+        `);
+        
+        // បន្ថែមពាក្យបញ្ជា ALTER នេះដើម្បីធានាថា Database ចាស់ក៏ត្រូវបានកែសម្រួលរួចស្រេចដែរ
+        await client.query(`
+            ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS days_in_bonded INT DEFAULT 0;
         `);
 
         // ៣១. តារាងត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory Monitoring) [ADDED NEW]
