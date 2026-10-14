@@ -180,7 +180,6 @@
                 <form id="yardForm">
                     <input type="hidden" id="editId" value="">
                     <div class="row g-3">
-                        <!-- កែសម្រួលឱ្យ Container No. ទាញចេញពី Container Yard មកជា Dropdown -->
                         <div class="col-md-3">
                             <label for="container_number" class="form-label">លេខកូដកុងតឺន័រ (Container No.):</label>
                             <select class="form-select" id="container_number" required>
@@ -196,7 +195,6 @@
                                 <option value="Loading">ផ្ទុកឡើងរថយន្ត (Loading)</option>
                             </select>
                         </div>
-                        <!-- ទីតាំងក្នុងទីលាន (Yard Location) ដែលនឹងត្រូវបំពេញស្វ័យប្រវត្តិតាម Container No. បានជ្រើសរើស -->
                         <div class="col-md-3">
                             <label for="yard_location" class="form-label">ទីតាំងក្នុងទីលាន (Yard Location):</label>
                             <input type="text" class="form-control" id="yard_location" required placeholder="ឧ. Block A-05-3">
@@ -298,11 +296,11 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let allYardData = []; 
-        let containerYardData = []; // រក្សាទុកទិន្នន័យពី Container Yard
+        let containerYardData = []; 
 
         document.addEventListener('DOMContentLoaded', () => {
             setDefaultDateTime();
-            fetchContainerYardData(); // ទាញយកទិន្នន័យកុងតឺន័រពីប្រព័ន្ធគ្រប់គ្រងទីតាំង
+            fetchContainerYardData();
             fetchYardData();
         });
 
@@ -315,7 +313,6 @@
             }
         }
 
-        // មុខងារទាញយកទិន្នន័យពី Container Yard API
         async function fetchContainerYardData() {
             try {
                 const response = await fetch('/api/fleet/container-yard');
@@ -337,14 +334,16 @@
             }
         }
 
-        // ព្រឹត្តិការណ៍ពេលជ្រើសរើស Container Number ឱ្យវាទាញ Yard Location មកបំពេញស្វ័យប្រវត្តិ
+        // ព្រឹត្តិការណ៍ពេលជ្រើសរើស Container Number ឱ្យវាទាញ Yard Location និងឆែកស្ថានភាព Get Out ឬ In pairing
         document.getElementById('container_number').addEventListener('change', function() {
             const selectedContainerNo = this.value;
             const found = containerYardData.find(item => item.container_number === selectedContainerNo);
             const yardLocationInput = document.getElementById('yard_location');
 
             if (found) {
-                // បង្កើតទម្រង់ទីតាំងក្នុងទីលាន (Block, Row, Tier) ឧ. Block A - Row 1 - Tier 1
+                if (found.status === 'Get Out' || found.status === 'In pairing') {
+                    alert(`ប្រុងប្រយ័ត្ន! កុងតឺន័រ ${selectedContainerNo} នេះមានស្ថានភាព "${found.status}"!`);
+                }
                 yardLocationInput.value = `${found.block_code} - ជួរទី ${found.row_number} - ជាន់ទី ${found.tier_number}`;
             } else {
                 yardLocationInput.value = '';
@@ -430,9 +429,19 @@
         document.getElementById('yardForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
+            const selectedContainerNo = document.getElementById('container_number').value.trim();
+            const foundContainer = containerYardData.find(item => item.container_number === selectedContainerNo);
+
+            if (foundContainer && (foundContainer.status === 'Get Out' || foundContainer.status === 'In pairing')) {
+                const confirmSave = confirm(`កុងតឺន័រនេះមានស្ថានភាព "${foundContainer.status}"។ តើអ្នកពិតជាចង់រក្សាទុកប្រតិបត្តិការនេះមែនទេ?`);
+                if (!confirmSave) {
+                    return; 
+                }
+            }
+
             const editId = document.getElementById('editId').value;
             const formData = {
-                container_number: document.getElementById('container_number').value.trim(),
+                container_number: selectedContainerNo,
                 operation_type: document.getElementById('operation_type').value,
                 yard_location: document.getElementById('yard_location').value.trim(),
                 operation_date: document.getElementById('operation_date').value,
