@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory) - ANT Dry Port</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #1e3c72;
+            --secondary-color: #2a5298;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --border-color: #e2e8f0;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 20px;
+        }
+
+        header p {
+            margin: 4px 0 0 0;
+            font-size: 12px;
+            color: #dbeafe;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 6px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-box input {
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            width: 300px;
+            font-family: 'Kantumruy Pro', sans-serif;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-pdf {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-pending {
+            background-color: #fef3c7;
+            color: #d97706;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-card {
+            background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 500px;
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; }
+        .form-control, .form-select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-family: 'Kantumruy Pro', sans-serif;}
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1>ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory)</h1>
+            <p>Relationship with Bonded Warehouse Records - ANT Dry Port</p>
+        </div>
+        <div>
+            <a href="/views/bwh-inout.html" class="btn-back"><i class="fa-solid fa-arrow-left me-1"></i> ទៅកាន់ឃ្លាំងពន្ធដារ (BWH)</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="action-bar no-print">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="ស្វែងរកលេខកុងតឺន័រ ឬឈ្មោះទំនិញ..." onkeyup="filterTable()">
+            </div>
+            <div>
+                <button class="btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> ទាញយក PDF</button>
+                <button class="btn-primary" onclick="openModal()"><i class="fa-solid fa-plus"></i> បញ្ចូលស្តុកថ្មី</button>
+            </div>
+        </div>
+
+        <div class="card" id="pdfContent">
+            <div style="padding: 15px 20px; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: none;" id="pdfHeaderTitle">
+                <h3 style="margin: 0; color: var(--primary-color); font-size: 16px;">របាយការណ៍ស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory Report)</h3>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ល.រ</th>
+                        <th>លេខកុងតឺន័រ</th>
+                        <th>ឈ្មោះទំនិញ</th>
+                        <th>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន</th>
+                        <th>កាលបរិច្ឆេទចូល</th>
+                        <th>បរិមាណស្តុក</th>
+                        <th>ទីតាំងក្នុងឃ្លាំង</th>
+                        <th>ស្ថានភាពពន្ធ</th>
+                        <th style="text-align: center;" class="no-print">សកម្មភាព</th>
+                    </tr>
+                </thead>
+                <tbody id="inventoryTableBody">
+                    <!-- Loaded dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="inventoryModal" class="modal-overlay">
+        <div class="modal-card">
+            <h2><i class="fa-solid fa-warehouse me-2"></i> បញ្ចូលទំនិញមិនទាន់បង់ពន្ធ</h2>
+            <form id="inventoryForm" onsubmit="saveInventory(event)">
+                <div class="form-group">
+                    <label>ទាញយកទិន្នន័យពី ឃ្លាំងពន្ធដារ (Link from BWH):</label>
+                    <select id="bwhSelect" class="form-select" onchange="selectBwhRecord()" required>
+                        <option value="">-- ជ្រើសរើសកុងតឺន័រពី BWH --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>លេខកុងតឺន័រ:</label>
+                    <input type="text" id="containerNo" class="form-control" readonly required>
+                </div>
+                <div class="form-group">
+                    <label>ឈ្មោះទំនិញ:</label>
+                    <input type="text" id="cargoName" class="form-control" readonly required>
+                </div>
+                <div class="form-group">
+                    <label>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន:</label>
+                    <input type="text" id="ownerName" class="form-control" readonly required>
+                </div>
+                <div class="form-group">
+                    <label>បរិមាណ (Quantity & Unit):</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="qty" class="form-control" placeholder="ចំនួន" value="1" required>
+                        <select id="unit" class="form-select" style="width: 130px;">
+                            <option value="Pallets">Pallets</option>
+                            <option value="Cartons">Cartons</option>
+                            <option value="CBM">CBM</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>ទីតាំងឃ្លាំង (Warehouse Location):</label>
+                    <input type="text" id="location" class="form-control" placeholder="ឧ. Zone A - Rack 03" required>
+                </div>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+                    <button type="button" class="btn-primary" style="background: #cbd5e1; color: #334155;" onclick="closeModal()">បោះបង់</button>
+                    <button type="submit" class="btn-primary">រក្សាទុក</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let inventoryData = [];
+        let bwhRecords = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInventory();
+            loadBwhDropdown();
+        });
+
+        async function loadInventory() {
+            try {
+                const res = await fetch('/api/duty-unpaid-inventory');
+                inventoryData = await res.json();
+                renderTable(inventoryData);
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        async function loadBwhDropdown() {
+            try {
+                const res = await fetch('/api/bwh-records');
+                bwhRecords = await res.json();
+                const select = document.getElementById('bwhSelect');
+                select.innerHTML = '<option value="">-- ជ្រើសរើសកុងតឺន័រពី BWH --</option>';
+                bwhRecords.forEach(item => {
+                    select.innerHTML += `<option value="${item.id}">${item.container_number} - ${item.cargo_name} (${item.owner_name})</option>`;
+                });
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        function selectBwhRecord() {
+            const id = document.getElementById('bwhSelect').value;
+            const selected = bwhRecords.find(item => item.id == id);
+            if (selected) {
+                document.getElementById('containerNo').value = selected.container_number;
+                document.getElementById('cargoName').value = selected.cargo_name;
+                document.getElementById('ownerName').value = selected.owner_name;
+            } else {
+                document.getElementById('containerNo').value = '';
+                document.getElementById('cargoName').value = '';
+                document.getElementById('ownerName').value = '';
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('inventoryTableBody');
+            tbody.innerHTML = '';
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យស្តុកទំនិញមិនទាន់បង់ពន្ធឡើយ</td></tr>`;
+                return;
+            }
+            data.forEach((item, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${item.container_number}</strong></td>
+                        <td>${item.cargo_name}</td>
+                        <td>${item.owner_name}</td>
+                        <td>${item.entry_date ? item.entry_date.slice(0, 10) : ''}</td>
+                        <td><strong>${item.quantity}</strong> ${item.unit}</td>
+                        <td>${item.warehouse_location}</td>
+                        <td><span class="badge badge-pending">${item.tax_status}</span></td>
+                        <td style="text-align: center;" class="no-print">
+                            <button class="btn-primary" style="padding: 5px 10px; font-size: 11px; background: #ef4444;" onclick="deleteItem(${item.id})"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function saveInventory(e) {
+            e.preventDefault();
+            const payload = {
+                bonded_record_id: document.getElementById('bwhSelect').value,
+                container_number: document.getElementById('containerNo').value,
+                cargo_name: document.getElementById('cargoName').value,
+                owner_name: document.getElementById('ownerName').value,
+                quantity: document.getElementById('qty').value,
+                unit: document.getElementById('unit').value,
+                warehouse_location: document.getElementById('location').value,
+                entry_date: new Date().toISOString().slice(0, 10),
+                tax_status: 'Pending Duty Payment'
+            };
+
+            try {
+                const res = await fetch('/api/duty-unpaid-inventory', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert('បានរក្សាទុកស្តុកទំនិញមិនទាន់បង់ពន្ធដោយជោគជ័យ!');
+                    closeModal();
+                    loadInventory();
+                } else {
+                    alert('មានបញ្ហា៖ ' + result.error);
+                }
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        async function deleteItem(id) {
+            if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
+                await fetch(`/api/duty-unpaid-inventory/${id}`, { method: 'DELETE' });
+                loadInventory();
+            }
+        }
+
+        function openModal() { document.getElementById('inventoryModal').style.display = 'flex'; }
+        function closeModal() { document.getElementById('inventoryModal').style.display = 'none'; document.getElementById('inventoryForm').reset(); }
+
+        function exportToPDF() {
+            const element = document.getElementById('pdfContent');
+            const title = document.getElementById('pdfHeaderTitle');
+            title.style.display = 'block';
+            html2pdf().from(element).set({
+                margin: 5,
+                filename: 'Duty_Unpaid_Inventory_Report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            }).save().then(() => { title.style.display = 'none'; });
+        }
+
+        function filterTable() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = inventoryData.filter(i => i.container_number.toLowerCase().includes(query) || i.cargo_name.toLowerCase().includes(query));
+            renderTable(filtered);
+        }
+    </script>
+</body>
+</html>
