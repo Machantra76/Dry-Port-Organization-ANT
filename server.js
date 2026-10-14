@@ -510,6 +510,24 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH) [ADDED]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS customs_permit_records (
+                id SERIAL PRIMARY KEY,
+                permit_number VARCHAR(100) UNIQUE NOT NULL,
+                bonded_record_id INT REFERENCES bonded_warehouse_records(id) ON DELETE CASCADE,
+                container_number VARCHAR(100) NOT NULL,
+                cargo_description VARCHAR(255) NOT NULL,
+                company_name VARCHAR(255) NOT NULL,
+                permit_type VARCHAR(100) NOT NULL, -- ឧ. លិខិតអនុញ្ញាតទំនិញចូល, លិខិតបង់ពន្ធរួច, លិខិតផ្ទេរឃ្លាំង
+                issue_date DATE NOT NULL,
+                expiry_date DATE,
+                status VARCHAR(100) DEFAULT 'Active',
+                officer_name VARCHAR(150) NOT NULL,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
 
         // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត (ប្រសិនបើទិន្នន័យទទេ)
         const checkUser = await client.query('SELECT COUNT(*) FROM system_users');
@@ -573,6 +591,63 @@ app.post('/api/auth/register', async (req, res) => {
     } catch (err) {
         console.error('Register error:', err);
         res.status(400).json({ success: false, error: 'ឈ្មោះគណនី (Username) នេះមានរួចហើយ ឬមានបញ្ហា!' });
+    }
+});
+// ==========================================
+// API Routes: Customs Permit & Document Control (BWH)
+// ==========================================
+app.get('/api/customs-permits', async (req, res) => {
+    try {
+        const query = `
+            SELECT cpr.*, bwr.movement_type, bwr.customs_status as bwh_status 
+            FROM customs_permit_records cpr
+            LEFT JOIN bonded_warehouse_records bwr ON cpr.bonded_record_id = bwr.id
+            ORDER BY cpr.id DESC;
+        `;
+        const result = await pool.query(query);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching customs permits:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/customs-permits', async (req, res) => {
+    const { permit_number, bonded_record_id, container_number, cargo_description, company_name, permit_type, issue_date, expiry_date, status, officer_name, notes } = req.body;
+    try {
+        const query = `
+            INSERT INTO customs_permit_records (permit_number, bonded_record_id, container_number, cargo_description, company_name, permit_type, issue_date, expiry_date, status, officer_name, notes)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *;
+        `;
+        const values = [
+            permit_number,
+            bonded_record_id || null,
+            container_number,
+            cargo_description,
+            company_name,
+            permit_type,
+            issue_date,
+            expiry_date || null,
+            status || 'Active',
+            officer_name,
+            notes || null
+        ];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving customs permit:', err);
+        res.status(500).json({ error: 'Server error (លេខលិខិតអនុញ្ញាតអាចមានរួចហើយ)' });
+    }
+});
+
+app.delete('/api/customs-permits/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM customs_permit_records WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting customs permit:', err);
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -703,6 +778,9 @@ app.get('/views/bwh-inout.html', (req, res) => {
 // HTML Route សម្រាប់ទំព័រត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ [ADDED NEW]
 app.get('/views/duty-unpaid-inventory.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'duty-unpaid-inventory.html'));
+});
+app.get('/views/customs-permit-control.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'customs-permit-control.html'));
 });
 
 // ==========================================
