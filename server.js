@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមដើម្បីให้อានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 4]
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 4]
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
@@ -459,7 +459,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management) [បន្ថែមថ្មី]
+        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management)
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_system_data (
                 id SERIAL PRIMARY KEY,
@@ -471,6 +471,21 @@ async function initializeDatabase() {
                 operator_name VARCHAR(150) NOT NULL,
                 reference_number VARCHAR(100),
                 customs_office VARCHAR(150),
+                remarks TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ២៩. តារាងអ្នកកាន់ឯកសារគយ (Document Controller / Handler) [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS document_handlers (
+                id SERIAL PRIMARY KEY,
+                handler_name VARCHAR(150) NOT NULL,
+                handler_code VARCHAR(100) NOT NULL,
+                handler_role VARCHAR(150) NOT NULL,
+                assigned_doc_ref VARCHAR(100) NOT NULL,
+                assignment_date DATE NOT NULL,
+                handler_status VARCHAR(50) DEFAULT 'Active',
                 remarks TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
@@ -601,8 +616,75 @@ app.get('/views/customs-system-data.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'customs-system-data.html'));
 });
 
+app.get('/views/document-handlers.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'document-handlers.html'));
+});
+
 // ==========================================
-// API Routes: ការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Entry Management) [បន្ថែមថ្មី]
+// API Routes: អ្នកកាន់ឯកសារគយ (Document Controller / Handler) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/document-handlers', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM document_handlers ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching document handlers:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/document-handlers', async (req, res) => {
+    const { handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status, remarks } = req.body;
+    try {
+        const query = `
+            INSERT INTO document_handlers (handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status, remarks)
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+        `;
+        const values = [handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status || 'Active', remarks];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving document handler:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.put('/api/document-handlers/:id', async (req, res) => {
+    const { id } = req.params;
+    const { handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status, remarks } = req.body;
+    try {
+        const query = `
+            UPDATE document_handlers 
+            SET handler_name = $1, handler_code = $2, handler_role = $3, assigned_doc_ref = $4, assignment_date = $5, handler_status = $6, remarks = $7
+            WHERE id = $8 RETURNING *;
+        `;
+        const values = [handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status, remarks, id];
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating document handler:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.delete('/api/document-handlers/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM document_handlers WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting document handler:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// ==========================================
+// API Routes: ការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Entry Management)
 // ==========================================
 app.get('/api/customs-system-data', async (req, res) => {
     try {
