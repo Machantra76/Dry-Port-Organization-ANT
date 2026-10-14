@@ -334,7 +334,7 @@
             }
         }
 
-        // ព្រឹត្តិការណ៍ពេលជ្រើសរើស Container Number ឱ្យវាទាញ Yard Location និងឆែកស្ថានភាព Get Out ឬ In pairing
+        // ព្រឹត្តិការណ៍ពេលជ្រើសរើស Container Number ឱ្យវាទាញ Yard Location និងឆែកស្ថានភាព Gate-Out / Get Out / In pairing
         document.getElementById('container_number').addEventListener('change', function() {
             const selectedContainerNo = this.value;
             const found = containerYardData.find(item => item.container_number === selectedContainerNo);
@@ -342,10 +342,10 @@
 
             if (found) {
                 const currentStatus = (found.status || '').trim().toLowerCase();
-                console.log("Container Status:", found.status); // ពិនិត្យមើលតម្លៃ Status ក្នុង Console
+                console.log("Container Status:", found.status);
 
-                // ដាក់លក្ខខណ្ឌឆែកស្ថានភាព Get Out ឬ In pairing
-                if (currentStatus === 'get out' || currentStatus === 'in pairing') {
+                // ឆែកលក្ខខណ្ឌ Gate-Out, Get Out ឬ In pairing
+                if (currentStatus === 'gate-out' || currentStatus === 'get out' || currentStatus === 'in pairing') {
                     alert(`⚠️ ប្រុងប្រយ័ត្ន! កុងតឺន័រ ${selectedContainerNo} នេះមានស្ថានភាព "${found.status}"!`);
                 }
 
@@ -439,7 +439,7 @@
 
             if (foundContainer) {
                 const currentStatus = (foundContainer.status || '').trim().toLowerCase();
-                if (currentStatus === 'get out' || currentStatus === 'in pairing') {
+                if (currentStatus === 'gate-out' || currentStatus === 'get out' || currentStatus === 'in pairing') {
                     const confirmSave = confirm(`⚠️ កុងតឺន័រនេះមានស្ថានភាព "${foundContainer.status}"។ តើអ្នកពិតជាចង់រក្សាទុកប្រតិបត្តិការនេះមែនទេ?`);
                     if (!confirmSave) {
                         return; 
