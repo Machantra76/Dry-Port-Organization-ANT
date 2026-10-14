@@ -99,9 +99,11 @@
             border: none;
             color: white;
             font-weight: 500;
-            padding: 8px 20px;
+            padding: 10px 20px;
             border-radius: 6px;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
+            width: 100%; /* ពង្រីកប៊ូតុងរក្សាទុកឱ្យវែងពេញ */
+            transition: background-color 0.2s;
         }
         .btn-submit:hover {
             background-color: #0f766e;
@@ -219,13 +221,18 @@
                             <textarea class="form-control" id="notes" rows="2" placeholder="ព័ត៌មានលម្អិតបន្ថែម..."></textarea>
                         </div>
                     </div>
-                    <div class="mt-3 d-flex gap-2">
-                        <button type="submit" class="btn-submit" id="saveBtn">
-                            <i class="fa-solid fa-floppy-disk me-1"></i> រក្សាទុកប្រតិបត្តិការ (Save Operation)
-                        </button>
-                        <button type="button" class="btn btn-secondary d-none" id="cancelEditBtn" onclick="resetForm()">
-                            បោះបង់ (Cancel)
-                        </button>
+                    <!-- จัดระเบียบปุ่มกดให้เรียบร้อยและขยายปุ่มบันทึกให้ยาว -->
+                    <div class="mt-4 row g-2">
+                        <div class="col-md-9">
+                            <button type="submit" class="btn-submit" id="saveBtn">
+                                <i class="fa-solid fa-floppy-disk me-1"></i> រក្សាទុកប្រតិបត្តិការ (Save Operation)
+                            </button>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-secondary w-100 d-none py-2" id="cancelEditBtn" onclick="resetForm()">
+                                <i class="fa-solid fa-xmark me-1"></i> បោះបង់ (Cancel)
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -273,12 +280,12 @@
                                 <th>កាលបរិច្ឆេទ (Date)</th>
                                 <th>អ្នកបញ្ជាគ្រឿងចក្រ</th>
                                 <th>ស្ថានភាព</th>
-                                <th class="text-center">សកម្មភាព (Actions)</th>
+                                <th class="text-center action-col">សកម្មភាព (Actions)</th>
                             </tr>
                         </thead>
                         <tbody id="yardTableBody">
                             <tr>
-                                <td colspan="8" class="empty-text">កំពុងទាញយកទិន្នន័យ...</td>
+                                <td colspan="8" class="empty-text">កំពុងទាញយកទិន្នន័យ...[cite: 7]</td>
                             </tr>
                         </tbody>
                     </table>
@@ -344,7 +351,7 @@
                     <td>${formattedDate}</td>
                     <td>${item.operator_name}</td>
                     <td><span class="badge ${item.status === 'Completed' ? 'bg-success' : 'bg-warning text-dark'}">${item.status}</span></td>
-                    <td class="text-center">
+                    <td class="text-center action-col">
                         <button class="btn btn-sm btn-outline-primary me-1" onclick="editYard(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button class="btn btn-sm btn-outline-danger" onclick="deleteYard(${item.id})" title="លុប"><i class="fa-solid fa-trash"></i></button>
                     </td>
@@ -441,6 +448,10 @@
 
             document.getElementById('formTitle').innerText = 'កែប្រែព័ត៌មានប្រតិបត្តិការទីលាន (Edit Yard Operation)';
             document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-1"></i> កែប្រែទិន្នន័យ (Update)`;
+            
+            // ពង្រីកប៊ូតុង Save/Update និងបង្ហាញប៊ូតុង Cancel ឱ្យមានរបៀបរៀបរយ
+            const saveBtnContainer = document.getElementById('saveBtn').parentElement;
+            saveBtnContainer.className = "col-md-8";
             document.getElementById('cancelEditBtn').classList.remove('d-none');
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -451,6 +462,10 @@
             document.getElementById('editId').value = '';
             document.getElementById('formTitle').innerText = 'កត់ត្រាប្រតិបត្តិការទីលានថ្មី (Record New Yard Operation)';
             document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-1"></i> រក្សាទុកប្រតិបត្តិការ (Save Operation)`;
+            
+            // កែសម្រួលទំហំប៊ូតុងពេល Reset វិញ
+            const saveBtnContainer = document.getElementById('saveBtn').parentElement;
+            saveBtnContainer.className = "col-md-9";
             document.getElementById('cancelEditBtn').classList.add('d-none');
             setDefaultDateTime();
         }
@@ -479,7 +494,8 @@
             const { jsPDF } = window.jspdf;
             const element = document.getElementById('printableArea');
 
-            const hiddenElements = element.querySelectorAll('button, a.btn-back, th:last-child, td:last-child');
+            // កែសម្រួលកូដផ្នែកនេះឱ្យលាក់រាល់ Element ទាំងឡាយណាដែលពាក់ព័ន្ធនឹងប៊ូតុង និងកោលនសកម្មភាពក្នុងตารางឱ្យបានស្អាត
+            const hiddenElements = element.querySelectorAll('button, a.btn-back, .action-col');
             hiddenElements.forEach(el => el.style.display = 'none');
 
             html2canvas(element, { scale: 2 }).then(canvas => {
