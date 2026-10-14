@@ -184,6 +184,12 @@
             color: #991b1b;
         }
 
+        .badge-days {
+            background-color: #e0f2fe;
+            color: #0369a1;
+            font-weight: 700;
+        }
+
         .btn-action {
             padding: 6px 10px;
             border-radius: 6px;
@@ -321,7 +327,8 @@
                             <th>ឈ្មោះទំនិញ (Cargo Name)</th>
                             <th>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន (Owner)</th>
                             <th>ប្រភេទ (Type)</th>
-                            <th>កាលបរិច្ឆេទ (Date)</th>
+                            <th>កាលបរិច្ឆេទចូល (Date)</th>
+                            <th>ចំនួនថ្ងៃក្នុងឃ្លាំង (Days in Bonded)</th>
                             <th>ស្ថានភាពគយ (Customs Status)</th>
                             <th style="text-align: center;">សកម្មភាព (Action)</th>
                         </tr>
@@ -376,11 +383,9 @@
     </div>
 
     <script>
-        // Default sample data for BWH In/Out
         let bwhData = JSON.parse(localStorage.getItem('ant_bwh_records')) || [
-            { id: 1, container: "MSKU 9823412", cargo: "គ្រឿងបន្លាស់រថយន្ត", owner: "Toyota Cambodia Co., Ltd.", type: "IN", date: "2026-10-12 09:30", status: "មិនទាន់បង់ពន្ធ (Duty Unpaid)" },
-            { id: 2, container: "CMAU 4512789", cargo: "សម្ភារៈតុបតែងផ្ទះ", owner: "Home Deco Enterprise", type: "OUT", date: "2026-10-13 14:15", status: "បានបង់ពន្ធរួច (Duty Paid / Released)" },
-            { id: 3, container: "TGBU 6712390", cargo: "ផលិតផលកសិកម្មកែច្នៃ", owner: "Agri Trade SP Co.", type: "IN", date: "2026-10-14 10:00", status: "រង់ចាំការត្រួតពិនិត្យ (Pending Inspection)" }
+            { id: 1, container: "MSKU 9823412", cargo: "គ្រឿងបន្លាស់រថយន្ត", owner: "Toyota Cambodia Co., Ltd.", type: "IN", date: "2026-10-01 09:30", status: "មិនទាន់បង់ពន្ធ (Duty Unpaid)" },
+            { id: 2, container: "CMAU 4512789", cargo: "សម្ភារៈតុបតែងផ្ទះ", owner: "Home Deco Enterprise", type: "OUT", date: "2026-10-05 14:15", status: "បានបង់ពន្ធរួច (Duty Paid / Released)" }
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -391,18 +396,28 @@
             renderTable(bwhData);
         });
 
+        // មុខងារគណនាចំនួនថ្ងៃស្វ័យប្រវត្តពីថ្ងៃចូលដល់ថ្ងៃបច្ចុប្បន្ន
+        function calculateDaysInBonded(dateStr) {
+            const entryDate = new Date(dateStr);
+            const today = new Date();
+            const diffTime = today - entryDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays >= 0 ? diffDays : 0;
+        }
+
         function renderTable(data) {
             const tbody = document.getElementById('bwhTableBody');
             tbody.innerHTML = '';
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យទំនិញក្នុងប្រព័ន្ធឡើយ</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យទំនិញក្នុងប្រព័ន្ធឡើយ</td></tr>`;
                 return;
             }
 
             data.forEach((item, index) => {
                 let badgeClass = item.type === 'IN' ? 'badge-in' : 'badge-out';
                 let typeText = item.type === 'IN' ? 'ចូល (IN)' : 'ចេញ (OUT)';
+                let daysInBonded = calculateDaysInBonded(item.date);
 
                 let row = `
                     <tr>
@@ -412,6 +427,7 @@
                         <td>${item.owner}</td>
                         <td><span class="badge ${badgeClass}">${typeText}</span></td>
                         <td>${item.date}</td>
+                        <td><span class="badge badge-days"><i class="fa-solid fa-clock me-1"></i> ${daysInBonded} ថ្ងៃ</span></td>
                         <td>${item.status}</td>
                         <td style="text-align: center;">
                             <button class="btn-action btn-edit" onclick="editRecord(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
@@ -448,7 +464,6 @@
             const dateStr = now.toISOString().slice(0, 10) + ' ' + now.toTimeString().slice(0, 5);
 
             if (id) {
-                // កែប្រែទិន្នន័យដែលមានស្រាប់
                 let item = bwhData.find(d => d.id == id);
                 if (item) {
                     item.container = container;
@@ -459,7 +474,6 @@
                 }
                 alert('បានកែប្រែទិន្នន័យដោយជោគជ័យ!');
             } else {
-                // បន្ថែមទិន្នន័យថ្មី
                 const newRecord = {
                     id: Date.now(),
                     container: container,
@@ -470,7 +484,7 @@
                     status: status
                 };
                 bwhData.unshift(newRecord);
-                alert('បានកត់ត្រាទិន្នន័យទំនិញចូល-ចេញ ឃ្លាំងពន្ធដារដោយជោគជ័យ!');
+                alert('បានកត់ត្រាទំនិញចូលឃ្លាំងពន្ធដារដោយជោគជ័យ!');
             }
 
             localStorage.setItem('ant_bwh_records', JSON.stringify(bwhData));
@@ -494,7 +508,7 @@
         }
 
         function deleteRecord(id) {
-            if (confirm('តើคุณពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
+            if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
                 bwhData = bwhData.filter(d => d.id != id);
                 localStorage.setItem('ant_bwh_records', JSON.stringify(bwhData));
                 renderTable(bwhData);
