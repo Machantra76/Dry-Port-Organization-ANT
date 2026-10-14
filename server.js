@@ -461,7 +461,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣០. តារាងគ្រប់គ្រងឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse Records - BWH) [ADDED]
+        // ៣០. តារាងគ្រប់គ្រងឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse Records - BWH) [ADDED days_in_bonded]
         await client.query(`
             CREATE TABLE IF NOT EXISTS bonded_warehouse_records (
                 id SERIAL PRIMARY KEY,
@@ -470,6 +470,7 @@ async function initializeDatabase() {
                 owner_name VARCHAR(255) NOT NULL,
                 movement_type VARCHAR(50) NOT NULL,
                 record_date TIMESTAMP NOT NULL,
+                days_in_bonded INT DEFAULT 0,
                 customs_status VARCHAR(150) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
@@ -678,7 +679,7 @@ app.get('/views/bwh-inout.html', (req, res) => {
 });
 
 // ==========================================
-// API Routes: ឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse - BWH In/Out) [ADDED]
+// API Routes: ឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse - BWH In/Out) [UPDATED]
 // ==========================================
 app.get('/api/bwh-records', async (req, res) => {
     try {
@@ -691,13 +692,13 @@ app.get('/api/bwh-records', async (req, res) => {
 });
 
 app.post('/api/bwh-records', async (req, res) => {
-    const { container_number, cargo_name, owner_name, movement_type, record_date, customs_status } = req.body;
+    const { container_number, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status } = req.body;
     try {
         const query = `
-            INSERT INTO bonded_warehouse_records (container_number, cargo_name, owner_name, movement_type, record_date, customs_status)
-            VALUES ($1, $2, $3, $4, $5, $6) RETURNING *;
+            INSERT INTO bonded_warehouse_records (container_number, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
         `;
-        const values = [container_number, cargo_name, owner_name, movement_type, record_date || new Date(), customs_status];
+        const values = [container_number, cargo_name, owner_name, movement_type, record_date || new Date(), parseInt(days_in_bonded) || 0, customs_status];
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
@@ -708,14 +709,14 @@ app.post('/api/bwh-records', async (req, res) => {
 
 app.put('/api/bwh-records/:id', async (req, res) => {
     const { id } = req.params;
-    const { container_number, cargo_name, owner_name, movement_type, customs_status } = req.body;
+    const { container_number, cargo_name, owner_name, movement_type, days_in_bonded, customs_status } = req.body;
     try {
         const query = `
             UPDATE bonded_warehouse_records 
-            SET container_number = $1, cargo_name = $2, owner_name = $3, movement_type = $4, customs_status = $5
-            WHERE id = $6 RETURNING *;
+            SET container_number = $1, cargo_name = $2, owner_name = $3, movement_type = $4, days_in_bonded = $5, customs_status = $6
+            WHERE id = $7 RETURNING *;
         `;
-        const values = [container_number, cargo_name, owner_name, movement_type, customs_status, id];
+        const values = [container_number, cargo_name, owner_name, movement_type, parseInt(days_in_bonded) || 0, customs_status, id];
         const result = await pool.query(query, values);
 
         if (result.rows.length === 0) {
