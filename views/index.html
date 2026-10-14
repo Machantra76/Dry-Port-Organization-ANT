@@ -164,7 +164,7 @@
             margin-top: 15px;
             display: block;
             font-size: 13px;
-            color: var(--secondary-color);
+            color: #ef4444;
             text-decoration: underline;
             cursor: pointer;
         }
@@ -277,14 +277,14 @@
 
         .role-km {
             display: block;
-            font-size: 16px; /* ទំហំអក្សរខ្មែរធំច្បាស់ស្អាតសម្រាប់ Staff */
+            font-size: 16px;
             font-weight: 600;
             color: var(--text-main);
         }
 
         .role-en {
             display: block;
-            font-size: 14px; /* ទំហំអក្សរអង់គ្លេសធំល្មមមើលស្រួល */
+            font-size: 14px;
             color: #64748b;
             margin-top: 4px;
         }
@@ -294,7 +294,7 @@
 
     <!-- Popup Login / Register -->
     <div id="authModal" class="modal-overlay">
-        <!-- Form Login (បង្ហាញដំបូងពេលចូលប្រព័ន្ធ) -->
+        <!-- Form Login (មានតែទម្រង់ Login សុទ្ធ) -->
         <div id="loginCard" class="auth-card">
             <h2>ចូលប្រព័ន្ធ (Login)</h2>
             <p>ANT Dry Port Management Dashboard</p>
@@ -309,10 +309,9 @@
                 </div>
                 <button type="submit" class="btn-submit">ចូលប្រើប្រាស់</button>
             </form>
-            <span class="toggle-link" onclick="switchForm('register')">+ បង្កើត ឬចុះឈ្មោះ User ថ្មី (Register)</span>
         </div>
 
-        <!-- Form ចុះឈ្មោះ User ថ្មី (Register / Add User) - លាក់ទុកជាមុន -->
+        <!-- Form បង្កើត User ថ្មី (ប្រើសម្រាប់តែ Admin ពេលចុចប៊ូតុង + បង្កើត User) -->
         <div id="registerCard" class="auth-card" style="display: none;">
             <h2>បង្កើត User ថ្មី (Create User)</h2>
             <p>ចុះឈ្មោះអ្នកប្រើប្រាស់ និងកំណត់សិទ្ធិ (Role)</p>
@@ -351,7 +350,7 @@
                 </div>
                 <button type="submit" class="btn-submit" style="background: #10b981;">រក្សាទុក User ថ្មី</button>
             </form>
-            <span class="toggle-link" onclick="switchForm('login')">← ត្រឡប់ទៅទំព័រ Login វិញ</span>
+            <span class="toggle-link" onclick="closeRegisterModal()">បិទផ្ទាំងនេះវិញ</span>
         </div>
     </div>
 
@@ -449,16 +448,6 @@
             }
         });
 
-        function switchForm(type) {
-            if (type === 'register') {
-                document.getElementById('loginCard').style.display = 'none';
-                document.getElementById('registerCard').style.display = 'block';
-            } else {
-                document.getElementById('registerCard').style.display = 'none';
-                document.getElementById('loginCard').style.display = 'block';
-            }
-        }
-
         function toggleDeptSelect(role) {
             document.getElementById('deptGroup').style.display = role === 'ADMIN' ? 'none' : 'block';
         }
@@ -506,8 +495,8 @@
 
                 const result = await response.json();
                 if (response.ok && result.success) {
-                    alert('បានបង្កើត User ថ្មីដោយជោគជ័យ! សូមធ្វើការ Login');
-                    switchForm('login');
+                    alert('បានបង្កើត User ថ្មីដោយជោគជ័យ!');
+                    closeRegisterModal();
                     document.getElementById('registerForm').reset();
                 } else {
                     alert('បរាជ័យ៖ ' + (result.error || 'ឈ្មោះគណនីនេះមានរួចហើយ!'));
@@ -519,7 +508,14 @@
 
         function openCreateUserModal() {
             document.getElementById('authModal').style.display = 'flex';
-            switchForm('register');
+            document.getElementById('loginCard').style.display = 'none';
+            document.getElementById('registerCard').style.display = 'block';
+        }
+
+        function closeRegisterModal() {
+            document.getElementById('authModal').style.display = 'none';
+            document.getElementById('registerCard').style.display = 'none';
+            document.getElementById('loginCard').style.display = 'block';
         }
 
         function handleLogout() {
