@@ -443,7 +443,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៧. តារាងការគ្រប់គ្រងឯកសារគយ (Customs Document Management) [បន្ថែមថ្មី]
+        // ២៧. តារាងការគ្រប់គ្រងឯកសារគយ (Customs Document Management)
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_documents (
                 id SERIAL PRIMARY KEY,
@@ -455,6 +455,23 @@ async function initializeDatabase() {
                 officer_name VARCHAR(150) NOT NULL,
                 reference_no VARCHAR(100),
                 notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management) [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS customs_system_data (
+                id SERIAL PRIMARY KEY,
+                sys_code VARCHAR(100) UNIQUE NOT NULL,
+                company_name VARCHAR(150) NOT NULL,
+                transaction_type VARCHAR(150) NOT NULL,
+                entry_date DATE NOT NULL,
+                system_status VARCHAR(50) DEFAULT 'Pending',
+                operator_name VARCHAR(150) NOT NULL,
+                reference_number VARCHAR(100),
+                customs_office VARCHAR(150),
+                remarks TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -580,8 +597,75 @@ app.get('/views/document-management.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'document-management.html'));
 });
 
+app.get('/views/customs-system-data.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'customs-system-data.html'));
+});
+
 // ==========================================
-// API Routes: ការគ្រប់គ្រងឯកសារគយ (Customs Document Management) [បន្ថែមថ្មី]
+// API Routes: ការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Entry Management) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/customs-system-data', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM customs_system_data ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching customs system data:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/customs-system-data', async (req, res) => {
+    const { sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks } = req.body;
+    try {
+        const query = `
+            INSERT INTO customs_system_data (sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
+        `;
+        const values = [sys_code, company_name, transaction_type, entry_date, system_status || 'Pending', operator_name, reference_number, customs_office, remarks];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving customs system data:', err);
+        res.status(500).json({ error: 'Server error (លេខកូដប្រព័ន្ធអាចមានរួចហើយ)' });
+    }
+});
+
+app.put('/api/customs-system-data/:id', async (req, res) => {
+    const { id } = req.params;
+    const { sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks } = req.body;
+    try {
+        const query = `
+            UPDATE customs_system_data 
+            SET sys_code = $1, company_name = $2, transaction_type = $3, entry_date = $4, system_status = $5, operator_name = $6, reference_number = $7, customs_office = $8, remarks = $9
+            WHERE id = $10 RETURNING *;
+        `;
+        const values = [sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, id];
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating customs system data:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.delete('/api/customs-system-data/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM customs_system_data WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting customs system data:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// ==========================================
+// API Routes: ការគ្រប់គ្រងឯកសារគយ (Customs Document Management)
 // ==========================================
 app.get('/api/customs-documents', async (req, res) => {
     try {
