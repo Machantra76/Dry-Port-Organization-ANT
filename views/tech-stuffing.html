@@ -171,8 +171,8 @@
         <h1 class="page-title">ប្រតិបត្តិការនៅទីលាន / Yard Operations</h1>
         <div class="page-subtitle">YARD OPERATIONS & CONTAINER PLACEMENT MANAGEMENT</div>
 
-        <!-- Section: Record New Yard Operation -->
-        <div class="section-card">
+        <!-- Section: Record New Yard Operation (បន្ថែម class pdf-hidden ដើម្បីលាក់ពេល Export PDF) -->
+        <div class="section-card pdf-hidden">
             <div class="section-header">
                 <span id="formTitle">កត់ត្រាប្រតិបត្តិការទីលានថ្មី (Record New Yard Operation)</span>
             </div>
@@ -244,8 +244,8 @@
                 </button>
             </div>
             <div class="section-body">
-                <!-- Search Filter Form -->
-                <form id="filterForm" class="row g-3 mb-4">
+                <!-- Search Filter Form (ซ่อนตอน Export PDF ด้วย) -->
+                <form id="filterForm" class="row g-3 mb-4 pdf-hidden">
                     <div class="col-md-3">
                         <label for="filterContainer" class="form-label">លេខកុងតឺន័រ (ពេញ ឬ ៤លេខចុងក្រោយ):</label>
                         <input type="text" class="form-control" id="filterContainer" placeholder="ឧ. 4567 ឬ TGHU1234567">
@@ -282,7 +282,7 @@
                         </thead>
                         <tbody id="yardTableBody">
                             <tr>
-                                <td colspan="8" class="empty-text">កំពុងទាញយកទិន្នន័យ...</td>
+                                <td colspan="8" class="empty-text">កំពុងទាញយកទិន្នន័យ...[cite: 7]</td>
                             </tr>
                         </tbody>
                     </table>
@@ -324,7 +324,7 @@
                 }
             } catch (err) {
                 console.error('Error fetching data:', err);
-                document.getElementById('yardTableBody').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-3">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+                document.getElementById('yardTableBody').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-3">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server[cite: 7]</td></tr>`;
             }
         }
 
@@ -483,7 +483,8 @@
             const { jsPDF } = window.jspdf;
             const element = document.getElementById('printableArea');
 
-            const hiddenElements = element.querySelectorAll('button, a.btn-back, .action-col');
+            // លាក់រាល់ Element ទាំងឡាយណាដែលមាន class pdf-hidden, ប៊ូតុង, a.btn-back, និង .action-col ពេល Export PDF
+            const hiddenElements = element.querySelectorAll('button, a.btn-back, .action-col, .pdf-hidden');
             hiddenElements.forEach(el => el.style.display = 'none');
 
             html2canvas(element, { scale: 2 }).then(canvas => {
