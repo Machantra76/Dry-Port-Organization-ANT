@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ការដោះស្រាយបញ្ហា / ការតវ៉ា (Dispute & Complaint Resolution)</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Kantumruy Pro -->
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+        }
+        .main-container {
+            max-width: 1300px;
+            margin: 30px auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        .btn-back {
+            background-color: #1e3a8a;
+            color: white;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 8px 16px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-back:hover {
+            background-color: #1e40af;
+            color: white;
+        }
+        .page-title {
+            color: #1e3a8a;
+            font-weight: 700;
+            margin-top: 20px;
+            font-size: 1.75rem;
+        }
+        .page-subtitle {
+            color: #6c757d;
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .section-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 30px;
+            background-color: #ffffff;
+        }
+        .section-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #1e3a8a;
+            margin-bottom: 20px;
+        }
+        .form-label {
+            font-weight: 500;
+            font-size: 0.9rem;
+            color: #495057;
+        }
+        .form-control, .form-select {
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            font-family: 'Kantumruy Pro', sans-serif;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #1e3a8a;
+            box-shadow: 0 0 0 0.2rem rgba(30, 58, 138, 0.15);
+        }
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 20px;
+            border-radius: 8px;
+            width: 100%;
+            font-size: 1rem;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+            transition: all 0.2s;
+        }
+        .btn-primary-custom:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(239, 68, 68, 0.35);
+        }
+        .table-custom-header {
+            background-color: #1e3a8a !important;
+            color: white !important;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 0.9rem;
+        }
+        .table tbody td {
+            vertical-align: middle;
+            font-size: 0.88rem;
+            text-align: center;
+        }
+        .filter-action-bar {
+            background-color: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            .main-container { box-shadow: none; padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <!-- ប៊ូតុងត្រឡប់ក្រោយ -->
+    <a href="/" class="btn-back no-print">
+        <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)
+    </a>
+
+    <!-- ចំណងជើងទំព័រ -->
+    <h2 class="page-title">ការដោះស្រាយបញ្ហា / ការតវ៉ា</h2>
+    <p class="page-subtitle">DISPUTE & COMPLAINT RESOLUTION SYSTEM</p>
+
+    <!-- Form កត់ត្រាព័ត៌មានបណ្តឹង ឬការតវ៉ាថ្មី -->
+    <div class="section-card no-print">
+        <div class="section-card-title"><i class="fa-solid fa-triangle-exclamation me-2"></i> កត់ត្រាទំនាស់ ឬបណ្តឹងតវ៉ាថ្មី (Record New Dispute / Complaint)</div>
+        <form id="disputeForm">
+            <input type="hidden" id="editId" value="">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">ឈ្មោះអតិថិជន ឬភាគីពាក់ព័ន្ធ (Complainant Name):</label>
+                    <input type="text" class="form-control" id="complainant_name" placeholder="ឧ. លោក នាក់ សុខា / ក្រុមហ៊ុន..." required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">លេខទូរស័ព្ទទំនាក់ទំនង (Phone Number):</label>
+                    <input type="text" class="form-control" id="phone" placeholder="ឧ. 012 345 678" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">ប្រភេទទំនាស់/ការតវ៉ា (Dispute Type):</label>
+                    <select class="form-select" id="dispute_type" required>
+                        <option value="Billing Dispute">បញ្ហាតម្លៃ / ការគិតប្រាក់ (Billing)</option>
+                        <option value="Cargo Damage">ទំនិញខូចខាត / បាត់បង់ (Cargo Damage)</option>
+                        <option value="Delay Issue">បញ្ហាကြန့်យឺតយ៉ាវ (Delay)</option>
+                        <option value="Service Complaint">បណ្តឹងសេវាកម្មផ្សេងៗ (Service)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">កម្រិតធ្ងន់ធ្ងរ (Severity Level):</label>
+                    <select class="form-select" id="severity_level" required>
+                        <option value="Low">កម្រិតស្រាល (Low)</option>
+                        <option value="Medium" selected>កម្រិតមធ្យម (Medium)</option>
+                        <option value="High">កម្រិតធ្ងន់ធ្ងរ (High)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">កាលបរិច្ឆេទទទួលបណ្តឹង (Dispute Date):</label>
+                    <input type="date" class="form-control" id="dispute_date" required>
+                </div>
+                <div class="col-md-12">
+                    <label class="form-label">ស្ថានភាពដោះស្រាយ (Resolution Status):</label>
+                    <select class="form-select" id="status">
+                        <option value="Pending">កំពុងរង់ចាំដោះស្រាយ (Pending)</option>
+                        <option value="In Progress">កំពុងដោះស្រាយ (In Progress)</option>
+                        <option value="Resolved">បានដោះស្រាយរួចរាល់ (Resolved)</option>
+                        <option value="Closed">បានបិទបញ្ចប់ (Closed)</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <label class="form-label">รายละเอียด / ដំណោះស្រាយ (Description & Resolution Details):</label>
+                    <textarea class="form-control" id="description" rows="3" placeholder="ព័ត៌មានលម្អិតពីបញ្ហា និងទិសដៅដោះស្រាយ..." required></textarea>
+                </div>
+                <div class="col-12 mt-4">
+                    <button type="submit" class="btn btn-primary-custom" id="saveBtn">
+                        <i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ -->
+    <div class="section-card">
+        <div class="section-card-title mb-3"><i class="fa-solid fa-table-list me-2"></i> តារាងតាមដានការដោះស្រាយបញ្ហា និងការតវ៉ា (Dispute Records List)</div>
+
+        <!-- ផ្នែកស្វែងរក (Search & Filter) -->
+        <div class="filter-action-bar no-print">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">ស្វែងរកតាមឈ្មោះ ឬលេខទូរស័ព្ទ:</label>
+                    <input type="text" class="form-control" id="searchInput" placeholder="វាយស្វែងរក...">
+                </div>
+                <div class="col-md-4 d-flex gap-2">
+                    <button class="btn btn-outline-secondary" onclick="document.getElementById('searchInput').value=''; loadDisputes();">
+                        <i class="fa-solid fa-rotate-right me-1"></i> កំណត់ឡើងវិញ
+                    </button>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button class="btn btn-secondary" onclick="window.print()">
+                        <i class="fa-solid fa-print me-1"></i> បោះពុម្ព PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- តារាងបង្ហាញទិន្នន័យ -->
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th class="table-custom-header">ល.រ (No.)</th>
+                        <th class="table-custom-header">ភាគីប្តឹងតវ៉ា</th>
+                        <th class="table-custom-header">លេខទូរស័ព្ទ</th>
+                        <th class="table-custom-header">ប្រភេទទំនាស់</th>
+                        <th class="table-custom-header">កម្រិត</th>
+                        <th class="table-custom-header">កាលបរិច្ឆេទ</th>
+                        <th class="table-custom-header">ខ្លឹមសារ & ដំណោះស្រាយ</th>
+                        <th class="table-custom-header">ស្ថានភាព</th>
+                        <th class="table-custom-header no-print">សកម្មភាព</th>
+                    </tr>
+                </thead>
+                <tbody id="disputeTableBody">
+                    <tr><td colspan="9" class="text-center text-muted py-4">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap 5 JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    let disputeDataList = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('dispute_date').value = new Date().toISOString().split('T')[0];
+        loadDisputes();
+    });
+
+    async function loadDisputes() {
+        try {
+            const response = await fetch('/api/dispute-resolutions');
+            disputeDataList = await response.json();
+            renderTable(disputeDataList);
+        } catch (err) {
+            console.error('Error loading disputes:', err);
+            document.getElementById('disputeTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+        }
+    }
+
+    function renderTable(data) {
+        const tbody = document.getElementById('disputeTableBody');
+        tbody.innerHTML = '';
+
+        if (!Array.isArray(data) || data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">ពុំមានទិន្នន័យបណ្តឹងតវ៉ាទេ</td></tr>`;
+            return;
+        }
+
+        data.forEach((item, index) => {
+            let statusBadge = 'bg-secondary';
+            if (item.status === 'Resolved') statusBadge = 'bg-success';
+            else if (item.status === 'In Progress') statusBadge = 'bg-primary';
+            else if (item.status === 'Pending') statusBadge = 'bg-warning text-dark';
+            else if (item.status === 'Closed') statusBadge = 'bg-dark';
+
+            let severityBadge = 'bg-secondary';
+            if (item.severity_level === 'High') severityBadge = 'bg-danger';
+            else if (item.severity_level === 'Medium') severityBadge = 'bg-warning text-dark';
+            else if (item.severity_level === 'Low') severityBadge = 'bg-info text-dark';
+
+            const row = `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td class="fw-bold text-danger">${item.complainant_name}</td>
+                    <td>${item.phone}</td>
+                    <td><span class="badge bg-secondary">${item.dispute_type}</span></td>
+                    <td><span class="badge ${severityBadge}">${item.severity_level}</span></td>
+                    <td>${item.dispute_date ? item.dispute_date.split('T')[0] : '-'}</td>
+                    <td class="text-start">${item.description || '-'}</td>
+                    <td><span class="badge ${statusBadge}">${item.status}</span></td>
+                    <td class="no-print">
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editDispute(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteDispute(${item.id})" title="លុប"><i class="fa-solid fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    }
+
+    document.getElementById('disputeForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const editId = document.getElementById('editId').value;
+        const payload = {
+            complainant_name: document.getElementById('complainant_name').value,
+            phone: document.getElementById('phone').value,
+            dispute_type: document.getElementById('dispute_type').value,
+            severity_level: document.getElementById('severity_level').value,
+            dispute_date: document.getElementById('dispute_date').value,
+            status: document.getElementById('status').value,
+            description: document.getElementById('description').value
+        };
+
+        try {
+            const url = editId ? `/api/dispute-resolutions/${editId}` : '/api/dispute-resolutions';
+            const method = editId ? 'PUT' : 'POST';
+
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+            if (response.ok && result.success) {
+                alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានរក្សាទុកទិន្នន័យដោយជោគជ័យ!');
+                document.getElementById('disputeForm').reset();
+                document.getElementById('editId').value = '';
+                document.getElementById('dispute_date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ`;
+                loadDisputes();
+            } else {
+                alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
+            }
+        } catch (err) {
+            console.error('Error submitting form:', err);
+            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+        }
+    });
+
+    function editDispute(id) {
+        const item = disputeDataList.find(d => d.id === id);
+        if (!item) return;
+
+        document.getElementById('editId').value = item.id;
+        document.getElementById('complainant_name').value = item.complainant_name;
+        document.getElementById('phone').value = item.phone;
+        document.getElementById('dispute_type').value = item.dispute_type;
+        document.getElementById('severity_level').value = item.severity_level;
+        document.getElementById('dispute_date').value = item.dispute_date ? item.dispute_date.split('T')[0] : '';
+        document.getElementById('status').value = item.status;
+        document.getElementById('description').value = item.description;
+
+        document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យ`;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function deleteDispute(id) {
+        if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?")) {
+            try {
+                const response = await fetch(`/api/dispute-resolutions/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    alert('បានលុបដោយជោគជ័យ!');
+                    loadDisputes();
+                } else {
+                    alert('មិនអាចលុបបានទេ!');
+                }
+            } catch (err) {
+                console.error('Error deleting dispute record:', err);
+            }
+        }
+    }
+
+    document.getElementById('searchInput').addEventListener('keyup', function() {
+        const keyword = this.value.toLowerCase();
+        const filtered = disputeDataList.filter(item => 
+            (item.complainant_name && item.complainant_name.toLowerCase().includes(keyword)) || 
+            (item.phone && item.phone.toLowerCase().includes(keyword))
+        );
+        renderTable(filtered);
+    });
+</script>
+
+</body>
+</html>
