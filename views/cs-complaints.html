@@ -139,7 +139,7 @@
 
     <!-- Form កត់ត្រាព័ត៌មានបណ្តឹង ឬការតវ៉ាថ្មី -->
     <div class="section-card no-print">
-        <div class="section-card-title"><i class="fa-solid fa-triangle-exclamation me-2"></i> កត់ត្រាទំនាស់ ឬបណ្តឹងតវ៉ាថ្មី (Record New Dispute / Complaint)[cite: 12, 13]</div>
+        <div class="section-card-title"><i class="fa-solid fa-triangle-exclamation me-2"></i> កត់ត្រាទំនាស់ ឬបណ្តឹងតវ៉ាថ្មី (Record New Dispute / Complaint)</div>
         <form id="disputeForm">
             <input type="hidden" id="editId" value="">
             <div class="row g-3">
@@ -198,7 +198,7 @@
 
     <!-- តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ -->
     <div class="section-card">
-        <div class="section-card-title mb-3"><i class="fa-solid fa-table-list me-2"></i> តារាងតាមដានការដោះស្រាយបញ្ហា និងការតវ៉ា (Dispute Records List)[cite: 12, 13]</div>
+        <div class="section-card-title mb-3"><i class="fa-solid fa-table-list me-2"></i> តារាងតាមដានការដោះស្រាយបញ្ហា និងការតវ៉ា (Dispute Records List)</div>
 
         <!-- ផ្នែកស្វែងរក (Search & Filter) -->
         <div class="filter-action-bar no-print">
@@ -237,7 +237,7 @@
                     </tr>
                 </thead>
                 <tbody id="disputeTableBody">
-                    <tr><td colspan="9" class="text-center text-muted py-4">កំពុងទាញយកទិន្នន័យ...[cite: 7]</td></tr>
+                    <tr><td colspan="9" class="text-center text-muted py-4">កំពុងទាញយកទិន្នន័យ...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -295,7 +295,7 @@
             renderTable(disputeDataList);
         } catch (err) {
             console.error('Error loading disputes:', err);
-            document.getElementById('disputeTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server[cite: 7]</td></tr>`;
+            document.getElementById('disputeTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
         }
     }
 
