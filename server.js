@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 4, 8]
+app.use('/views', express.static(path.join(__dirname, 'views')));
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
@@ -77,12 +77,6 @@ async function initializeDatabase() {
                 pay_month VARCHAR(50) NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `);
-
-        await client.query(`
-            ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS branch VARCHAR(50) NOT NULL DEFAULT 'ANT DRY PORT';
-            ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS previous_debt NUMERIC(10, 2) NOT NULL DEFAULT 0;
-            ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS new_debt NUMERIC(10, 2) NOT NULL DEFAULT 0;
         `);
 
         // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)
@@ -230,12 +224,6 @@ async function initializeDatabase() {
             );
         `);
 
-        await client.query(`
-            ALTER TABLE damaged_containers ADD COLUMN IF NOT EXISTS container_size VARCHAR(20) DEFAULT '40''';
-            ALTER TABLE damaged_containers ADD COLUMN IF NOT EXISTS container_type VARCHAR(20) DEFAULT 'DC';
-            ALTER TABLE damaged_containers ADD COLUMN IF NOT EXISTS shipping_line VARCHAR(100);
-        `);
-
         // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_yard_locations (
@@ -252,12 +240,6 @@ async function initializeDatabase() {
                 notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `);
-
-        await client.query(`
-            ALTER TABLE container_yard_locations ADD COLUMN IF NOT EXISTS container_size VARCHAR(20) DEFAULT '40''';
-            ALTER TABLE container_yard_locations ADD COLUMN IF NOT EXISTS container_type VARCHAR(20) DEFAULT 'DC';
-            ALTER TABLE container_yard_locations ADD COLUMN IF NOT EXISTS shipping_line VARCHAR(100);
         `);
 
         // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)
@@ -281,12 +263,6 @@ async function initializeDatabase() {
             );
         `);
 
-        await client.query(`
-            ALTER TABLE container_repair_logs ADD COLUMN IF NOT EXISTS container_size VARCHAR(20) DEFAULT '40''';
-            ALTER TABLE container_repair_logs ADD COLUMN IF NOT EXISTS container_type VARCHAR(20) DEFAULT 'DC';
-            ALTER TABLE container_repair_logs ADD COLUMN IF NOT EXISTS shipping_line VARCHAR(100);
-        `);
-
         // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out)
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_gate_out (
@@ -304,12 +280,6 @@ async function initializeDatabase() {
                 notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
-        `);
-
-        await client.query(`
-            ALTER TABLE container_gate_out ADD COLUMN IF NOT EXISTS container_size VARCHAR(20) DEFAULT '40''';
-            ALTER TABLE container_gate_out ADD COLUMN IF NOT EXISTS container_type VARCHAR(20) DEFAULT 'DC';
-            ALTER TABLE container_gate_out ADD COLUMN IF NOT EXISTS shipping_line VARCHAR(100);
         `);
 
         // ១៨. តារាងប្រតិបត្តិការទីលាន (Yard Operations)
@@ -491,6 +461,36 @@ async function initializeDatabase() {
             );
         `);
 
+        // ៣០. តារាងអ្នកប្រើប្រាស់ប្រព័ន្ធ (System Users & Roles)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS system_users (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(100) UNIQUE NOT NULL,
+                password VARCHAR(100) NOT NULL,
+                full_name VARCHAR(150) NOT NULL,
+                role VARCHAR(50) NOT NULL DEFAULT 'STAFF',
+                dept_id VARCHAR(100) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត (ប្រសិនបើទօន្នន័យទទេ)
+        const checkUser = await client.query('SELECT COUNT(*) FROM system_users');
+        if (parseInt(checkUser.rows[0].count) === 0) {
+            await client.query(`
+                INSERT INTO system_users (username, password, full_name, role, dept_id) VALUES
+                ('admin', '123456', 'អភិបាលប្រព័ន្ធ (System Admin)', 'ADMIN', 'ALL'),
+                ('hr_user', '123456', 'មន្ត្រីធនធានមនុស្ស', 'STAFF', 'HR_ADMIN'),
+                ('acc_user', '123456', 'មន្ត្រីគណនេយ្យ', 'STAFF', 'ACC_FIN'),
+                ('transport_user', '123456', 'មន្ត្រីដឹកជញ្ជូន', 'STAFF', 'TRANSPORT'),
+                ('container_user', '123456', 'មន្ត្រីកុងតឺន័រ', 'STAFF', 'CONTAINER_MGT'),
+                ('tech_user', '123456', 'មន្ត្រីទីលាន', 'STAFF', 'TECH_STUFFING'),
+                ('it_user', '123456', 'មន្ត្រី IT', 'STAFF', 'IT_SYSTEMS'),
+                ('cs_user', '123456', 'មន្ត្រីសេវាកម្មអតិថិជន', 'STAFF', 'CUSTOMER_SVC'),
+                ('doc_user', '123456', 'មន្ត្រីឯកសារគយ', 'STAFF', 'FACILITIES');
+            `);
+        }
+
         await client.query('COMMIT');
         console.log('Database tables initialized successfully.');
     } catch (err) {
@@ -500,6 +500,23 @@ async function initializeDatabase() {
         client.release();
     }
 }
+
+// ==========================================
+// API Route: Authentication (Login)
+// ==========================================
+app.post('/api/auth/login', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const result = await pool.query('SELECT * FROM system_users WHERE username = $1 AND password = $2', [username, password]);
+        if (result.rows.length === 0) {
+            return res.status(401).json({ success: false, error: 'ឈ្មោះគណនី ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ!' });
+        }
+        res.json({ success: true, user: result.rows[0] });
+    } catch (err) {
+        console.error('Login error:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
 
 // ==========================================
 // HTML Routes សម្រាប់បើកទំព័រ Views ផ្សេងៗ
@@ -2216,7 +2233,7 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
                     success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out បានទេ!` 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out ได้ទេ!` 
                 });
             }
         }
@@ -2291,7 +2308,7 @@ app.put('/api/fleet/container-gate-out/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រតិបត្តិការទីលាន (Yard Operations) [បន្ថែមពេញលេញ GET, POST, PUT, DELETE]
+// API Routes: ប្រតិបត្តិការទីលាន (Yard Operations)
 // ==========================================
 app.get('/api/fleet/yard-operations', async (req, res) => {
     try {
