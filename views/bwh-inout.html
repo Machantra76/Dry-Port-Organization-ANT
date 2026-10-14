@@ -329,7 +329,7 @@
             <p>Bonded Warehouse Cargo In/Out Control Dashboard - ANT Dry Port</p>
         </div>
         <div class="user-info">
-            <a href="/" class="btn-back"><i class="fa-solid fa-arrow-left me-1"></i> ត្រឡប់ក្រោយ</a>
+            <a href="/views/duty-unpaid-inventory.html" class="btn-back"><i class="fa-solid fa-warehouse me-1"></i> ទៅកាន់ស្តុកមិនទាន់បង់ពន្ធ</a>
             <span id="welcomeUser"><i class="fa-solid fa-user me-1"></i> មន្ត្រីឃ្លាំងពន្ធដារ</span>
         </div>
     </header>
@@ -347,7 +347,7 @@
             </div>
         </div>
 
-        <!-- Data Table Card (ផ្នែកដែលត្រូវ Print PDF) -->
+        <!-- Data Table Card -->
         <div class="card" id="pdfContent">
             <div style="padding: 15px 20px; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: none;" id="pdfHeaderTitle">
                 <h3 style="margin: 0; color: var(--primary-color); font-size: 16px;">របាយការណ៍ឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse Report)</h3>
@@ -417,20 +417,29 @@
     </div>
 
     <script>
-        let bwhData = JSON.parse(localStorage.getItem('ant_bwh_records')) || [
-            { id: 1, container: "MSKU 9823412", cargo: "គ្រឿងបន្លាស់រថយន្ត", owner: "Toyota Cambodia Co., Ltd.", type: "IN", date: "2026-10-01 09:30", status: "មិនទាន់បង់ពន្ធ (Duty Unpaid)" },
-            { id: 2, container: "CMAU 4512789", cargo: "សម្ភារៈតុបតែងផ្ទះ", owner: "Home Deco Enterprise", type: "OUT", date: "2026-10-05 14:15", status: "បានបង់ពន្ធរួច (Duty Paid / Released)" }
-        ];
+        let bwhData = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             const user = JSON.parse(localStorage.getItem('ant_logged_user_info'));
             if (user) {
                 document.getElementById('welcomeUser').innerHTML = `<i class="fa-solid fa-user me-1"></i> ${user.full_name} (${user.role})`;
             }
-            renderTable(bwhData);
+            fetchBwhData(); // ទាញយកទិន្នន័យពី PostgreSQL Database ផ្ទាល់
         });
 
+        // មុខងារទាញយកទិន្នន័យពី Database
+        async function fetchBwhData() {
+            try {
+                const res = await fetch('/api/bwh-records');
+                bwhData = await res.json();
+                renderTable(bwhData);
+            } catch (err) {
+                console.error('Error fetching BWH records:', err);
+            }
+        }
+
         function calculateDaysInBonded(dateStr) {
+            if (!dateStr) return 0;
             const entryDate = new Date(dateStr);
             const today = new Date();
             const diffTime = today - entryDate;
@@ -442,26 +451,28 @@
             const tbody = document.getElementById('bwhTableBody');
             tbody.innerHTML = '';
 
-            if (data.length === 0) {
+            if (!data || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យទំនិញក្នុងប្រព័ន្ធឡើយ</td></tr>`;
                 return;
             }
 
             data.forEach((item, index) => {
-                let badgeClass = item.type === 'IN' ? 'badge-in' : 'badge-out';
-                let typeText = item.type === 'IN' ? 'ចូល (IN)' : 'ចេញ (OUT)';
-                let daysInBonded = calculateDaysInBonded(item.date);
+                const movementType = item.movement_type || item.type || 'IN';
+                let badgeClass = movementType === 'IN' ? 'badge-in' : 'badge-out';
+                let typeText = movementType === 'IN' ? 'ចូល (IN)' : 'ចេញ (OUT)';
+                let recordDate = item.record_date || item.date || new Date().toISOString();
+                let daysInBonded = calculateDaysInBonded(recordDate);
 
                 let row = `
                     <tr>
                         <td>${index + 1}</td>
-                        <td><strong>${item.container}</strong></td>
-                        <td>${item.cargo}</td>
-                        <td>${item.owner}</td>
+                        <td><strong>${item.container_number || item.container}</strong></td>
+                        <td>${item.cargo_name || item.cargo}</td>
+                        <td>${item.owner_name || item.owner}</td>
                         <td><span class="badge ${badgeClass}">${typeText}</span></td>
-                        <td>${item.date}</td>
+                        <td>${recordDate.replace('T', ' ').slice(0, 16)}</td>
                         <td><span class="badge badge-days"><i class="fa-solid fa-clock me-1"></i> ${daysInBonded} ថ្ងៃ</span></td>
-                        <td>${item.status}</td>
+                        <td>${item.customs_status || item.status}</td>
                         <td style="text-align: center;" class="no-print">
                             <button class="btn-action btn-edit" onclick="editRecord(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
                             <button class="btn-action btn-delete" onclick="deleteRecord(${item.id})" title="លុប"><i class="fa-solid fa-trash"></i></button>
@@ -472,26 +483,86 @@
             });
         }
 
-        // មុខងារទាញយកឯកសារជា PDF ให้ออกមកពេញលេញល្អ
-        function exportToPDF() {
-            const element = document.getElementById('pdfContent');
-            const pdfTitle = document.getElementById('pdfHeaderTitle');
+        // មុខងាររក្សាទុកទិន្នន័យចូល PostgreSQL Database
+        async function saveRecord(e) {
+            e.preventDefault();
             
-            // បង្ហាញចំណងជើងពេល Export PDF
-            pdfTitle.style.display = 'block';
+            const id = document.getElementById('recordId').value;
+            const container_number = document.getElementById('containerNo').value.trim().toUpperCase();
+            const cargo_name = document.getElementById('cargoName').value.trim();
+            const owner_name = document.getElementById('cargoOwner').value.trim();
+            const movement_type = document.getElementById('movementType').value;
+            const customs_status = document.getElementById('customsStatus').value;
 
-            const options = {
-                margin:       5,
-                filename:     'Bonded_Warehouse_Report.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            const payload = {
+                container_number,
+                cargo_name,
+                owner_name,
+                movement_type,
+                record_date: new Date().toISOString(),
+                days_in_bonded: 0,
+                customs_status
             };
-            
-            html2pdf().from(element).set(options).save().then(() => {
-                // លាក់ចំណងជើងដើមវិញក្រោយ Export រួច
-                pdfTitle.style.display = 'none';
-            });
+
+            try {
+                let url = '/api/bwh-records';
+                let method = 'POST';
+
+                if (id) {
+                    url = `/api/bwh-records/${id}`;
+                    method = 'PUT';
+                }
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json();
+                if (result.success) {
+                    alert(id ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានកត់ត្រាទំនិញចូលឃ្លាំងពន្ធដារដោយជោគជ័យ!');
+                    closeModal();
+                    fetchBwhData();
+                } else {
+                    alert('មានបញ្ហា៖ ' + result.error);
+                }
+            } catch (err) {
+                console.error('Error saving record:', err);
+                alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ Server!');
+            }
+        }
+
+        function editRecord(id) {
+            const item = bwhData.find(d => d.id == id);
+            if (!item) return;
+
+            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square me-2"></i> កែប្រែព័ត៌មានទំនិញ ឃ្លាំងពន្ធដារ`;
+            document.getElementById('recordId').value = item.id;
+            document.getElementById('containerNo').value = item.container_number || item.container;
+            document.getElementById('cargoName').value = item.cargo_name || item.cargo;
+            document.getElementById('cargoOwner').value = item.owner_name || item.owner;
+            document.getElementById('movementType').value = item.movement_type || item.type;
+            document.getElementById('customsStatus').value = item.customs_status || item.status;
+
+            document.getElementById('bwhModal').style.display = 'flex';
+        }
+
+        async function deleteRecord(id) {
+            if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
+                try {
+                    const res = await fetch(`/api/bwh-records/${id}`, { method: 'DELETE' });
+                    const result = await res.json();
+                    if (result.success) {
+                        alert('បានលុបទិន្នន័យដោយជោគជ័យ!');
+                        fetchBwhData();
+                    } else {
+                        alert('មានបញ្ហា៖ ' + result.error);
+                    }
+                } catch (err) {
+                    console.error('Error deleting record:', err);
+                }
+            }
         }
 
         function openModal() {
@@ -505,79 +576,32 @@
             document.getElementById('bwhModal').style.display = 'none';
         }
 
-        function saveRecord(e) {
-            e.preventDefault();
+        function exportToPDF() {
+            const element = document.getElementById('pdfContent');
+            const pdfTitle = document.getElementById('pdfHeaderTitle');
+            pdfTitle.style.display = 'block';
+
+            const options = {
+                margin:       5,
+                filename:     'Bonded_Warehouse_Report.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
             
-            const id = document.getElementById('recordId').value;
-            const container = document.getElementById('containerNo').value.trim().toUpperCase();
-            const cargo = document.getElementById('cargoName').value.trim();
-            const owner = document.getElementById('cargoOwner').value.trim();
-            const type = document.getElementById('movementType').value;
-            const status = document.getElementById('customsStatus').value;
-
-            const now = new Date();
-            const dateStr = now.toISOString().slice(0, 10) + ' ' + now.toTimeString().slice(0, 5);
-
-            if (id) {
-                let item = bwhData.find(d => d.id == id);
-                if (item) {
-                    item.container = container;
-                    item.cargo = cargo;
-                    item.owner = owner;
-                    item.type = type;
-                    item.status = status;
-                }
-                alert('បានកែប្រែទិន្នន័យដោយជោគជ័យ!');
-            } else {
-                const newRecord = {
-                    id: Date.now(),
-                    container: container,
-                    cargo: cargo,
-                    owner: owner,
-                    type: type,
-                    date: dateStr,
-                    status: status
-                };
-                bwhData.unshift(newRecord);
-                alert('បានកត់ត្រាទំនិញចូលឃ្លាំងពន្ធដារដោយជោគជ័យ!');
-            }
-
-            localStorage.setItem('ant_bwh_records', JSON.stringify(bwhData));
-            renderTable(bwhData);
-            closeModal();
-        }
-
-        function editRecord(id) {
-            const item = bwhData.find(d => d.id == id);
-            if (!item) return;
-
-            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square me-2"></i> កែប្រែព័ត៌មានទំនិញ ឃ្លាំងពន្ធដារ`;
-            document.getElementById('recordId').value = item.id;
-            document.getElementById('containerNo').value = item.container;
-            document.getElementById('cargoName').value = item.cargo;
-            document.getElementById('cargoOwner').value = item.owner;
-            document.getElementById('movementType').value = item.type;
-            document.getElementById('customsStatus').value = item.status;
-
-            document.getElementById('bwhModal').style.display = 'flex';
-        }
-
-        function deleteRecord(id) {
-            if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
-                bwhData = bwhData.filter(d => d.id != id);
-                localStorage.setItem('ant_bwh_records', JSON.stringify(bwhData));
-                renderTable(bwhData);
-                alert('បានលុបទិន្នន័យដោយជោគជ័យ!');
-            }
+            html2pdf().from(element).set(options).save().then(() => {
+                pdfTitle.style.display = 'none';
+            });
         }
 
         function filterTable() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = bwhData.filter(item => 
-                item.container.toLowerCase().includes(query) ||
-                item.cargo.toLowerCase().includes(query) ||
-                item.owner.toLowerCase().includes(query)
-            );
+            const filtered = bwhData.filter(item => {
+                const container = (item.container_number || item.container || '').toLowerCase();
+                const cargo = (item.cargo_name || item.cargo || '').toLowerCase();
+                const owner = (item.owner_name || item.owner || '').toLowerCase();
+                return container.includes(query) || cargo.includes(query) || owner.includes(query);
+            });
             renderTable(filtered);
         }
     </script>
