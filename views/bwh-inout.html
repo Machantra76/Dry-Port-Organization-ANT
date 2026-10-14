@@ -470,25 +470,35 @@
         }
 
         // មុខងារទាញយកឯកសារជា PDF
-        function exportToPDF() {
-            const element = document.getElementById('pdfContent');
-            const options = {
-                margin:       10,
-                filename:     'Bonded_Warehouse_Report.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
-            };
-            
-            // លាក់ប៊ូតុងពេលកំពុង Print / Export PDF
-            const actionElements = document.querySelectorAll('.no-print, .action-bar');
-            actionElements.forEach(el => el.style.display = 'none');
+      // មុខងារទាញយកឯកសារជា PDF ให้อອກមកពេញលេញល្អ
+function exportToPDF() {
+    const element = document.getElementById('pdfContent');
+    
+    // បង្កើនទំហំ width បណ្ដោះអាសន្នពេល Print ដើម្បីកុំឱ្យធ្លាក់ខ្សែកាបបន្ទាត់
+    element.style.width = '1200px';
 
-            html2pdf().from(element).set(options).save().then(() => {
-                // បង្ហាញឡើងវិញក្រោយ Export រួច
-                actionElements.forEach(el => el.style.display = 'flex');
-            });
-        }
+    const options = {
+        margin:       [5, 5, 5, 5], // រឹមតូច সাល្មម
+        filename:     'Bonded_Warehouse_Report.pdf',
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { 
+            scale: 2,           // ធ្វើឱ្យអក្សរច្បាស់ល្អ មិនμπ៉ុស្តិ៍
+            useCORS: true, 
+            letterRendering: true 
+        },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } // ទម្រង់ក្រដាសផ្ដេក (Landscape) ធំទូលាយ
+    };
+    
+    // លាក់ប៊ូតុង និង Search Bar ពេលកំពុង Export PDF
+    const actionElements = document.querySelectorAll('.no-print, .action-bar');
+    actionElements.forEach(el => el.style.display = 'none');
+
+    html2pdf().from(element).set(options).save().then(() => {
+        // បង្ហាញឡើងវិញធម្មតាក្រោយ Export រួច
+        actionElements.forEach(el => el.style.display = 'flex');
+        element.style.width = '100%'; // ទម្លាក់ទំហំមកធម្មតាវិញ
+    });
+}
 
         function openModal() {
             document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-boxes-stacked me-2"></i> បញ្ជីកត់ត្រាទំនិញ ឃ្លាំងពន្ធដារ (BWH)`;
