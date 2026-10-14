@@ -428,7 +428,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៦. តារាងស្វែងរកប្រភព និងការគាំទ្រទូទៅ (Sourcing & General Support) [បន្ថែមថ្មី]
+        // ២៦. តារាងស្វែងរកប្រភព និងការគាំទ្រទូទៅ (Sourcing & General Support)
         await client.query(`
             CREATE TABLE IF NOT EXISTS sourcing_support (
                 id SERIAL PRIMARY KEY,
@@ -439,6 +439,22 @@ async function initializeDatabase() {
                 request_date DATE NOT NULL,
                 status VARCHAR(50) DEFAULT 'Pending',
                 description TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ២៧. តារាងការគ្រប់គ្រងឯកសារគយ (Customs Document Management) [បន្ថែមថ្មី]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS customs_documents (
+                id SERIAL PRIMARY KEY,
+                document_number VARCHAR(100) UNIQUE NOT NULL,
+                company_name VARCHAR(150) NOT NULL,
+                document_type VARCHAR(100) NOT NULL,
+                document_date DATE NOT NULL,
+                status VARCHAR(50) DEFAULT 'Pending',
+                officer_name VARCHAR(150) NOT NULL,
+                reference_no VARCHAR(100),
+                notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
@@ -560,8 +576,75 @@ app.get('/views/sourcing-support.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'sourcing-support.html'));
 });
 
+app.get('/views/document-management.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'document-management.html'));
+});
+
 // ==========================================
-// API Routes: ស្វែងរកប្រភព និងការគាំទ្រទូទៅ (Sourcing & General Support) [បន្ថែមថ្មី]
+// API Routes: ការគ្រប់គ្រងឯកសារគយ (Customs Document Management) [បន្ថែមថ្មី]
+// ==========================================
+app.get('/api/customs-documents', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM customs_documents ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching customs documents:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/customs-documents', async (req, res) => {
+    const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
+    try {
+        const query = `
+            INSERT INTO customs_documents (document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;
+        `;
+        const values = [document_number, company_name, document_type, document_date, status || 'Pending', officer_name, reference_no, notes];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving customs document:', err);
+        res.status(500).json({ error: 'Server error (លេខឯកសារអាចមានរួចហើយ)' });
+    }
+});
+
+app.put('/api/customs-documents/:id', async (req, res) => {
+    const { id } = req.params;
+    const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
+    try {
+        const query = `
+            UPDATE customs_documents 
+            SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8
+            WHERE id = $9 RETURNING *;
+        `;
+        const values = [document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, id];
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating customs document:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.delete('/api/customs-documents/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM customs_documents WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting customs document:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// ==========================================
+// API Routes: ស្វែងរកប្រភព និងការគាំទ្រទូទៅ (Sourcing & General Support)
 // ==========================================
 app.get('/api/sourcing-support', async (req, res) => {
     try {
