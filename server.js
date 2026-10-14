@@ -461,12 +461,11 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣០. តារាងគ្រប់គ្រងឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse Records - BWH) [Updated with vehicle_vin]
-        await client.query(`
+        // ៣០. តារាងគ្រប់គ្រងឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse Records - BWH)
+      await client.query(`
             CREATE TABLE IF NOT EXISTS bonded_warehouse_records (
                 id SERIAL PRIMARY KEY,
                 container_number VARCHAR(100) NOT NULL,
-                vehicle_vin VARCHAR(100),
                 cargo_name VARCHAR(255) NOT NULL,
                 owner_name VARCHAR(255) NOT NULL,
                 movement_type VARCHAR(50) NOT NULL,
@@ -477,9 +476,9 @@ async function initializeDatabase() {
             );
         `);
         
+        // បន្ថែមពាក្យបញ្ជា ALTER នេះដើម្បីធានាថា Database ចាស់ក៏ត្រូវបានកែសម្រួលរួចស្រេចដែរ
         await client.query(`
             ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS days_in_bonded INT DEFAULT 0;
-            ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);
         `);
 
         // ៣១. តារាងត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory Monitoring) [ADDED NEW]
@@ -511,8 +510,7 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-
-        // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH)
+        // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH) [ADDED]
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_permit_records (
                 id SERIAL PRIMARY KEY,
@@ -521,7 +519,7 @@ async function initializeDatabase() {
                 container_number VARCHAR(100) NOT NULL,
                 cargo_description VARCHAR(255) NOT NULL,
                 company_name VARCHAR(255) NOT NULL,
-                permit_type VARCHAR(100) NOT NULL,
+                permit_type VARCHAR(100) NOT NULL, -- ឧ. លិខិតអនុញ្ញាតទំនិញចូល, លិខិតបង់ពន្ធរួច, លិខិតផ្ទេរឃ្លាំង
                 issue_date DATE NOT NULL,
                 expiry_date DATE,
                 status VARCHAR(100) DEFAULT 'Active',
@@ -595,7 +593,6 @@ app.post('/api/auth/register', async (req, res) => {
         res.status(400).json({ success: false, error: 'ឈ្មោះគណនី (Username) នេះមានរួចហើយ ឬមានបញ្ហា!' });
     }
 });
-
 // ==========================================
 // API Routes: Customs Permit & Document Control (BWH)
 // ==========================================
@@ -773,14 +770,15 @@ app.get('/views/document-handlers.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'document-handlers.html'));
 });
 
+// HTML Route សម្រាប់ទំព័រ Bonded Warehouse (BWH In/Out)
 app.get('/views/bwh-inout.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'bwh-inout.html'));
 });
 
+// HTML Route សម្រាប់ទំព័រត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ [ADDED NEW]
 app.get('/views/duty-unpaid-inventory.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'duty-unpaid-inventory.html'));
 });
-
 app.get('/views/customs-permit-control.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'customs-permit-control.html'));
 });
@@ -799,17 +797,17 @@ app.get('/api/bwh-records', async (req, res) => {
 });
 
 app.post('/api/bwh-records', async (req, res) => {
-    const { container_number, vehicle_vin, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status } = req.body;
+    const { container_number, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status } = req.body;
     try {
+        // កំណត់យកកាលបរិច្ឆេទបច្ចុប្បន្នជា Date format ត្រឹមត្រូវ ប្រសិនបើ record_date មិនមាន
         const formattedDate = record_date ? new Date(record_date) : new Date();
 
         const query = `
-            INSERT INTO bonded_warehouse_records (container_number, vehicle_vin, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;
+            INSERT INTO bonded_warehouse_records (container_number, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
         `;
         const values = [
-            container_number || 'N/A', 
-            vehicle_vin || null,
+            container_number, 
             cargo_name, 
             owner_name, 
             movement_type, 
@@ -827,23 +825,26 @@ app.post('/api/bwh-records', async (req, res) => {
 
 app.put('/api/bwh-records/:id', async (req, res) => {
     const { id } = req.params;
-    const { container_number, vehicle_vin, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status } = req.body;
+    const { container_number, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status } = req.body;
     
     try {
+        // ១. ทำការ Update ព័ត៌មានក្នុងតារាង bwh-records
         const query = `
             UPDATE bonded_warehouse_records 
-            SET container_number = $1, vehicle_vin = $2, cargo_name = $3, owner_name = $4, movement_type = $5, record_date = $6, days_in_bonded = $7, customs_status = $8
-            WHERE id = $9 RETURNING *;
+            SET container_number = $1, cargo_name = $2, owner_name = $3, movement_type = $4, record_date = $5, days_in_bonded = $6, customs_status = $7
+            WHERE id = $8 RETURNING *;
         `;
-        const values = [container_number || 'N/A', vehicle_vin || null, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status, id];
+        const values = [container_number, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status, id];
         const result = await pool.query(query, values);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យ BWH នេះទេ។' });
         }
 
+        // ២. ពិនិត្យមើលស្ថានភាពគយ៖ ប្រសិនបើបានបង់ពន្ធរួច (មានពាក្យ "បានបង់ពន្ធរួច" ឬ "Paid" ឬ "Released")
         const statusLower = (customs_status || '').toLowerCase();
         if (statusLower.includes('បានបង់ពន្ធរួច') || statusLower.includes('paid') || statusLower.includes('released')) {
+            // ធ្វើការលុបទិន្នន័យនេះออกจากតារាងស្តុកទំនិញមិនទាន់បង់ពន្ធដោយស្វ័យប្រវត្ត
             await pool.query('DELETE FROM duty_unpaid_inventory WHERE bonded_record_id = $1', [id]);
         }
 
@@ -853,9 +854,8 @@ app.put('/api/bwh-records/:id', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
-
 // ==========================================
-// API Routes: ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory)
+// API Routes: ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory) [ADDED NEW]
 // ==========================================
 app.get('/api/duty-unpaid-inventory', async (req, res) => {
     try {
@@ -2506,7 +2506,7 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
                     success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out ได้ទេ!` 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out បានទេ!` 
                 });
             }
         }
