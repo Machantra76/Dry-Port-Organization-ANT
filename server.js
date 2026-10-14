@@ -61,7 +61,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records - បន្ថែម branch, ប្រាក់ជំពាក់ចាស់ និងថ្មី)[cite: 7, 10]
+        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)[cite: 7, 10]
         await client.query(`
             CREATE TABLE IF NOT EXISTS payroll_records (
                 id SERIAL PRIMARY KEY,
@@ -387,7 +387,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៣. តារាងមុខតំណែងការងារ (Job Vacancies) [បន្ថែមថ្មីសម្រាប់ HR Management]
+        // ២៣. តារាងមុខតំណែងការងារ (Job Vacancies)
         await client.query(`
             CREATE TABLE IF NOT EXISTS job_vacancies (
                 id SERIAL PRIMARY KEY,
@@ -505,7 +505,7 @@ app.get('/views/it-cctv.html', (req, res) => {
 });
 
 // ==========================================
-// API Routes: Job Vacancies (HR Management) [បន្ថែមថ្មី]
+// API Routes: Job Vacancies (HR Management)
 // ==========================================
 app.get('/api/jobs', async (req, res) => {
     try {
@@ -705,7 +705,7 @@ app.put('/api/inventory/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll) - រួមបញ្ចូល Branch[cite: 10]
+// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)[cite: 10]
 // ==========================================
 app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => {
     const { employee_code, pay_month } = req.params;
@@ -1577,7 +1577,7 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
                     success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចយកមកជួសជុលได้ទេ!` 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចយកមកជួសជុលបានទេ!` 
                 });
             }
         }
@@ -1722,7 +1722,7 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
                     success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out ได้ទេ!` 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out បានទេ!` 
                 });
             }
         }
@@ -1939,6 +1939,42 @@ app.post('/api/fleet/security-logs', async (req, res) => {
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error saving security log:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// បន្ថែម Endpoint PUT (កែប្រែ) និង DELETE (លុប) សម្រាប់ Security Logs
+app.put('/api/fleet/security-logs/:id', async (req, res) => {
+    const { id } = req.params;
+    const { guard_name, shift_time, post_location, log_date, event_type, status, notes } = req.body;
+    try {
+        const query = `
+            UPDATE security_logs 
+            SET guard_name = $1, shift_time = $2, post_location = $3, log_date = $4, event_type = $5, status = $6, notes = $7
+            WHERE id = $8 
+            RETURNING *;
+        `;
+        const values = [guard_name, shift_time, post_location, log_date, event_type, status, notes, id];
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យសន្តិសុខនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating security log:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+app.delete('/api/fleet/security-logs/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM security_logs WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting security log:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
