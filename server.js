@@ -461,7 +461,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣០. តារាងគ្រប់គ្រងឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse Records - BWH) [ADDED days_in_bonded]
+        // ៣០. តារាងគ្រប់គ្រងឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse Records - BWH)
         await client.query(`
             CREATE TABLE IF NOT EXISTS bonded_warehouse_records (
                 id SERIAL PRIMARY KEY,
@@ -476,7 +476,24 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣១. តារាងអ្នកប្រើប្រាស់ប្រព័ន្ធ (System Users & Roles)
+        // ៣១. តារាងត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory Monitoring) [ADDED NEW]
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS duty_unpaid_inventory (
+                id SERIAL PRIMARY KEY,
+                container_number VARCHAR(100) NOT NULL,
+                cargo_name VARCHAR(255) NOT NULL,
+                owner_name VARCHAR(255) NOT NULL,
+                bonded_record_id INT REFERENCES bonded_warehouse_records(id) ON DELETE CASCADE,
+                entry_date DATE NOT NULL,
+                quantity INT NOT NULL DEFAULT 0,
+                unit VARCHAR(50) NOT NULL DEFAULT 'Pallets',
+                tax_status VARCHAR(100) DEFAULT 'Pending Duty Payment',
+                warehouse_location VARCHAR(150) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // ៣២. តារាងអ្នកប្រើប្រាស់ប្រព័ន្ធ (System Users & Roles)
         await client.query(`
             CREATE TABLE IF NOT EXISTS system_users (
                 id SERIAL PRIMARY KEY,
@@ -678,8 +695,13 @@ app.get('/views/bwh-inout.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'bwh-inout.html'));
 });
 
+// HTML Route សម្រាប់ទំព័រត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ [ADDED NEW]
+app.get('/views/duty-unpaid-inventory.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'duty-unpaid-inventory.html'));
+});
+
 // ==========================================
-// API Routes: ឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse - BWH In/Out) [UPDATED]
+// API Routes: ឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse - BWH In/Out)
 // ==========================================
 app.get('/api/bwh-records', async (req, res) => {
     try {
@@ -737,6 +759,62 @@ app.delete('/api/bwh-records/:id', async (req, res) => {
         res.json({ success: true, message: 'Deleted successfully' });
     } catch (err) {
         console.error('Error deleting BWH record:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// ==========================================
+// API Routes: ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory) [ADDED NEW]
+// ==========================================
+app.get('/api/duty-unpaid-inventory', async (req, res) => {
+    try {
+        const query = `
+            SELECT dui.*, bwr.movement_type, bwr.customs_status as bwh_status 
+            FROM duty_unpaid_inventory dui
+            LEFT JOIN bonded_warehouse_records bwr ON dui.bonded_record_id = bwr.id
+            ORDER BY dui.id DESC;
+        `;
+        const result = await pool.query(query);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching duty-unpaid inventory:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/duty-unpaid-inventory', async (req, res) => {
+    const { container_number, cargo_name, owner_name, bonded_record_id, entry_date, quantity, unit, tax_status, warehouse_location } = req.body;
+    try {
+        const query = `
+            INSERT INTO duty_unpaid_inventory (container_number, cargo_name, owner_name, bonded_record_id, entry_date, quantity, unit, tax_status, warehouse_location)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
+        `;
+        const values = [
+            container_number, 
+            cargo_name, 
+            owner_name, 
+            bonded_record_id || null, 
+            entry_date, 
+            parseInt(quantity) || 0, 
+            unit || 'Pallets', 
+            tax_status || 'Pending Duty Payment', 
+            warehouse_location
+        ];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving duty-unpaid inventory:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.delete('/api/duty-unpaid-inventory/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM duty_unpaid_inventory WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting duty-unpaid inventory:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
