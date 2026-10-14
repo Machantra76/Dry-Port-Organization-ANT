@@ -172,10 +172,11 @@
         <!-- Section: Record New Yard Operation -->
         <div class="section-card">
             <div class="section-header">
-                <span>កត់ត្រាប្រតិបត្តិការទីលានថ្មី (Record New Yard Operation)</span>
+                <span id="formTitle">កត់ត្រាប្រតិបត្តិការទីលានថ្មី (Record New Yard Operation)</span>
             </div>
             <div class="section-body">
                 <form id="yardForm">
+                    <input type="hidden" id="editId" value="">
                     <div class="row g-3">
                         <div class="col-md-3">
                             <label for="container_number" class="form-label">លេខកូដកុងតឺន័រ (Container No.):</label>
@@ -218,9 +219,12 @@
                             <textarea class="form-control" id="notes" rows="2" placeholder="ព័ត៌មានលម្អិតបន្ថែម..."></textarea>
                         </div>
                     </div>
-                    <div class="mt-3">
-                        <button type="submit" class="btn-submit">
+                    <div class="mt-3 d-flex gap-2">
+                        <button type="submit" class="btn-submit" id="saveBtn">
                             <i class="fa-solid fa-floppy-disk me-1"></i> រក្សាទុកប្រតិបត្តិការ (Save Operation)
+                        </button>
+                        <button type="button" class="btn btn-secondary d-none" id="cancelEditBtn" onclick="resetForm()">
+                            បោះបង់ (Cancel)
                         </button>
                     </div>
                 </form>
@@ -269,11 +273,12 @@
                                 <th>កាលបរិច្ឆេទ (Date)</th>
                                 <th>អ្នកបញ្ជាគ្រឿងចក្រ</th>
                                 <th>ស្ថានភាព</th>
+                                <th class="text-center">សកម្មភាព (Actions)</th>
                             </tr>
                         </thead>
                         <tbody id="yardTableBody">
                             <tr>
-                                <td colspan="7" class="empty-text">កំពុងទាញយកទិន្នន័យ...</td>
+                                <td colspan="8" class="empty-text">កំពុងទាញយកទិន្នន័យ...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -285,20 +290,22 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let allYardData = []; // រក្សាទុកទិន្នន័យដើមទាំងអស់សម្រាប់ Filter នៅ phía Client
+        let allYardData = []; 
 
-        // កំណត់ថ្ងៃម៉ោងបច្ចុប្បន្នស្វ័យប្រវត្តិក្នុង Form កត់ត្រា
         document.addEventListener('DOMContentLoaded', () => {
-            const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            const dateInput = document.getElementById('operation_date');
-            if(dateInput) {
-                dateInput.value = now.toISOString().slice(0, 16);
-            }
+            setDefaultDateTime();
             fetchYardData();
         });
 
-        // មុខងារទាញយកទិន្នន័យពី Server (ជំនួស URL API តាម Backend របស់អ្នក)
+        function setDefaultDateTime() {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            const dateInput = document.getElementById('operation_date');
+            if(dateInput && !dateInput.value) {
+                dateInput.value = now.toISOString().slice(0, 16);
+            }
+        }
+
         async function fetchYardData() {
             try {
                 const response = await fetch('/api/fleet/yard-operations');
@@ -313,22 +320,21 @@
                 }
             } catch (err) {
                 console.error('Error fetching data:', err);
-                document.getElementById('yardTableBody').innerHTML = `<tr><td colspan="7" class="text-center text-danger py-3">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+                document.getElementById('yardTableBody').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-3">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server[cite: 7]</td></tr>`;
             }
         }
 
-        // មុខងារបង្ហាញទិន្នន័យចូលក្នុង Table
         function displayData(data) {
             const tbody = document.getElementById('yardTableBody');
             tbody.innerHTML = '';
 
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" class="empty-text">រកមិនឃើញទិន្នន័យប្រតិបត្តិការទីលានទេ</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="empty-text">រកមិនឃើញទិន្នន័យប្រតិបត្តិការទីលានទេ</td></tr>`;
                 return;
             }
 
             data.forEach((item, index) => {
-                const formattedDate = new Date(item.operation_date).toLocaleString('km-KH');
+                const formattedDate = item.operation_date ? new Date(item.operation_date).toLocaleString('km-KH') : '';
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>${index + 1}</td>
@@ -338,12 +344,15 @@
                     <td>${formattedDate}</td>
                     <td>${item.operator_name}</td>
                     <td><span class="badge ${item.status === 'Completed' ? 'bg-success' : 'bg-warning text-dark'}">${item.status}</span></td>
+                    <td class="text-center">
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editYard(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteYard(${item.id})" title="លុប"><i class="fa-solid fa-trash"></i></button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
         }
 
-        // ព្រឹត្តិការណ៍ស្វែងរក (Filter តាមលេខកុងតឺន័រពេញ ឬ ៤លេខចុងក្រោយ និង From/To Date)
         document.getElementById('filterForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const searchText = document.getElementById('filterContainer').value.trim().toLowerCase();
@@ -351,7 +360,6 @@
             const toDate = document.getElementById('filterTo').value;
 
             const filtered = allYardData.filter(item => {
-                // ត្រងលេខកុងតឺន័រ (គាំទ្រទាំងលេខពេញ ឬ ៤ លេខចុងក្រោយ)
                 let matchContainer = true;
                 if (searchText) {
                     const containerNum = (item.container_number || '').toLowerCase();
@@ -359,7 +367,6 @@
                     matchContainer = containerNum.includes(searchText) || last4Digits.includes(searchText);
                 }
 
-                // ត្រងតាមកាលបរិច្ឆេទ From Date និង To Date
                 let matchDate = true;
                 const itemDateOnly = item.operation_date ? item.operation_date.split('T')[0] : '';
                 if (fromDate && itemDateOnly < fromDate) {
@@ -375,17 +382,108 @@
             displayData(filtered);
         });
 
-        // មុខងារ Export ទិន្នន័យទៅជា PDF
+        document.getElementById('yardForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const editId = document.getElementById('editId').value;
+            const formData = {
+                container_number: document.getElementById('container_number').value.trim(),
+                operation_type: document.getElementById('operation_type').value,
+                yard_location: document.getElementById('yard_location').value.trim(),
+                operation_date: document.getElementById('operation_date').value,
+                equipment_used: document.getElementById('equipment_used').value.trim(),
+                operator_name: document.getElementById('operator_name').value.trim(),
+                status: document.getElementById('status').value,
+                notes: document.getElementById('notes').value.trim()
+            };
+
+            try {
+                const url = editId ? `/api/fleet/yard-operations/${editId}` : '/api/fleet/yard-operations';
+                const method = editId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    alert(editId ? 'កែប្រែប្រតិបត្តិការទីលានបានជោគជ័យ!' : 'កត់ត្រាប្រតិបត្តិការទីលានបានជោគជ័យ!');
+                    resetForm();
+                    fetchYardData();
+                } else {
+                    alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកទិន្នន័យបានទេ'));
+                }
+            } catch (err) {
+                console.error('Error saving data:', err);
+                alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
+            }
+        });
+
+        function editYard(id) {
+            const item = allYardData.find(d => d.id === id);
+            if (!item) return;
+
+            document.getElementById('editId').value = item.id;
+            document.getElementById('container_number').value = item.container_number || '';
+            document.getElementById('operation_type').value = item.operation_type || 'Stacking';
+            document.getElementById('yard_location').value = item.yard_location || '';
+            
+            if (item.operation_date) {
+                document.getElementById('operation_date').value = item.operation_date.slice(0, 16);
+            }
+            
+            document.getElementById('equipment_used').value = item.equipment_used || '';
+            document.getElementById('operator_name').value = item.operator_name || '';
+            document.getElementById('status').value = item.status || 'Completed';
+            document.getElementById('notes').value = item.notes || '';
+
+            document.getElementById('formTitle').innerText = 'កែប្រែព័ត៌មានប្រតិបត្តិការទីលាន (Edit Yard Operation)';
+            document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-1"></i> កែប្រែទិន្នន័យ (Update)`;
+            document.getElementById('cancelEditBtn').classList.remove('d-none');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetForm() {
+            document.getElementById('yardForm').reset();
+            document.getElementById('editId').value = '';
+            document.getElementById('formTitle').innerText = 'កត់ត្រាប្រតិបត្តិការទីលានថ្មី (Record New Yard Operation)';
+            document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-1"></i> រក្សាទុកប្រតិបត្តិការ (Save Operation)`;
+            document.getElementById('cancelEditBtn').classList.add('d-none');
+            setDefaultDateTime();
+        }
+
+        async function deleteYard(id) {
+            if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
+                try {
+                    const response = await fetch(`/api/fleet/yard-operations/${id}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        alert('លុបទិន្នន័យបានជោគជ័យ!');
+                        fetchYardData();
+                    } else {
+                        alert('កំហុស៖ ' + (result.error || 'មិនអាចលុបទិន្នន័យបានទេ'));
+                    }
+                } catch (err) {
+                    console.error('Error deleting data:', err);
+                    alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server');
+                }
+            }
+        }
+
         function exportToPDF() {
             const { jsPDF } = window.jspdf;
             const element = document.getElementById('printableArea');
 
-            // លាក់ប៊ូតុងបណ្តោះអាសន្នមិនឱ្យជាប់ក្នុង PDF
-            const buttons = element.querySelectorAll('button, a.btn-back');
-            buttons.forEach(btn => btn.style.display = 'none');
+            const hiddenElements = element.querySelectorAll('button, a.btn-back, th:last-child, td:last-child');
+            hiddenElements.forEach(el => el.style.display = 'none');
 
             html2canvas(element, { scale: 2 }).then(canvas => {
-                buttons.forEach(btn => btn.style.display = '');
+                hiddenElements.forEach(el => el.style.display = '');
 
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
@@ -408,45 +506,10 @@
                 pdf.save('yard-operations-report.pdf');
             }).catch(err => {
                 console.error('PDF Export Error:', err);
-                buttons.forEach(btn => btn.style.display = '');
+                hiddenElements.forEach(el => el.style.display = '');
                 alert('មានបញ្ហាក្នុងការទាញយក PDF');
             });
         }
-
-        // ព្រឹត្តិការណ៍ពេលចុច Submit Form កត់ត្រាប្រតិបត្តិការថ្មី
-        document.getElementById('yardForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const formData = {
-                container_number: document.getElementById('container_number').value.trim(),
-                operation_type: document.getElementById('operation_type').value,
-                yard_location: document.getElementById('yard_location').value.trim(),
-                operation_date: document.getElementById('operation_date').value,
-                equipment_used: document.getElementById('equipment_used').value.trim(),
-                operator_name: document.getElementById('operator_name').value.trim(),
-                status: document.getElementById('status').value,
-                notes: document.getElementById('notes').value.trim()
-            };
-
-            try {
-                const response = await fetch('/api/fleet/yard-operations', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
-
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    alert('កត់ត្រាប្រតិបត្តិការទីលានបានជោគជ័យ!');
-                    location.reload();
-                } else {
-                    alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកទិន្នន័យបានទេ'));
-                }
-            } catch (err) {
-                console.error('Error saving data:', err);
-                alert('មានបញ្ហាក្នុងการភ្ជាប់ទៅកាន់ Server');
-            }
-        });
     </script>
 </body>
 </html>
