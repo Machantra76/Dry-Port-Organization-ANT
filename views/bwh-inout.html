@@ -175,28 +175,29 @@
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         th, td {
-            padding: 14px 20px;
+            padding: 12px 15px;
             border-bottom: 1px solid var(--border-color);
+            white-space: nowrap; /* ការពារមិនឱ្យអក្សរធ្លាក់ចុះបន្ទាត់ */
         }
 
-     th {
-    background-color: #f8fafc;
-    color: var(--primary-color);
-    font-weight: 700;
-    white-space: nowrap; /* ការពារមិនឱ្យអក្សរធ្លាក់ចុះបន្ទាត់ */
-}
+        th {
+            background-color: #f8fafc;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
         tr:hover {
             background-color: #fcfdfd;
         }
 
         .badge {
-            padding: 5px 10px;
+            padding: 4px 10px;
             border-radius: 20px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             display: inline-block;
         }
@@ -218,12 +219,12 @@
         }
 
         .btn-action {
-            padding: 6px 10px;
+            padding: 5px 8px;
             border-radius: 6px;
             border: none;
             cursor: pointer;
-            font-size: 13px;
-            margin-right: 5px;
+            font-size: 12px;
+            margin-right: 4px;
             transition: opacity 0.2s;
         }
 
@@ -333,9 +334,9 @@
         </div>
     </header>
 
-    <div class="container" id="pdfContent">
+    <div class="container">
         <!-- Action & Search Bar -->
-        <div class="action-bar">
+        <div class="action-bar no-print">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="ស្វែងរកតាមលេខកុងតឺន័រ ឈ្មោះទំនិញ ឬក្រុមហ៊ុន..." onkeyup="filterTable()">
                 <button class="btn-primary" onclick="filterTable()"><i class="fa-solid fa-search"></i></button>
@@ -346,21 +347,24 @@
             </div>
         </div>
 
-        <!-- Data Table Card -->
-        <div class="card">
+        <!-- Data Table Card (ផ្នែកដែលត្រូវ Print PDF) -->
+        <div class="card" id="pdfContent">
+            <div style="padding: 15px 20px; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: none;" id="pdfHeaderTitle">
+                <h3 style="margin: 0; color: var(--primary-color); font-size: 16px;">របាយការណ៍ឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse Report)</h3>
+            </div>
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
-                            <th>ល.រ (No.)</th>
-                            <th>លេខកុងតឺន័រ (Container No.)</th>
-                            <th>ឈ្មោះទំនិញ (Cargo Name)</th>
-                            <th>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន (Owner)</th>
-                            <th>ប្រភេទ (Type)</th>
-                            <th>កាលបរិច្ឆេទចូល (Date)</th>
-                            <th>ចំនួនថ្ងៃក្នុងឃ្លាំង (Days in Bonded)</th>
-                            <th>ស្ថានភាពគយ (Customs Status)</th>
-                            <th style="text-align: center;" class="no-print">សកម្មភាព (Action)</th>
+                            <th>ល.រ</th>
+                            <th>លេខកុងតឺន័រ</th>
+                            <th>ឈ្មោះទំនិញ</th>
+                            <th>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន</th>
+                            <th>ប្រភេទ</th>
+                            <th>កាលបរិច្ឆេទចូល</th>
+                            <th>ចំនួនថ្ងៃក្នុងឃ្លាំង</th>
+                            <th>ស្ថានភាពគយ</th>
+                            <th style="text-align: center;" class="no-print">សកម្មភាព</th>
                         </tr>
                     </thead>
                     <tbody id="bwhTableBody">
@@ -426,7 +430,6 @@
             renderTable(bwhData);
         });
 
-        // មុខងារគណនាចំនួនថ្ងៃស្វ័យប្រវត្តពីថ្ងៃចូលដល់ថ្ងៃបច្ចុប្បន្ន
         function calculateDaysInBonded(dateStr) {
             const entryDate = new Date(dateStr);
             const today = new Date();
@@ -469,36 +472,27 @@
             });
         }
 
-        // មុខងារទាញយកឯកសារជា PDF
-      // មុខងារទាញយកឯកសារជា PDF ให้อອກមកពេញលេញល្អ
-function exportToPDF() {
-    const element = document.getElementById('pdfContent');
-    
-    // បង្កើនទំហំ width បណ្ដោះអាសន្នពេល Print ដើម្បីកុំឱ្យធ្លាក់ខ្សែកាបបន្ទាត់
-    element.style.width = '1200px';
+        // មុខងារទាញយកឯកសារជា PDF ให้ออกមកពេញលេញល្អ
+        function exportToPDF() {
+            const element = document.getElementById('pdfContent');
+            const pdfTitle = document.getElementById('pdfHeaderTitle');
+            
+            // បង្ហាញចំណងជើងពេល Export PDF
+            pdfTitle.style.display = 'block';
 
-    const options = {
-        margin:       [5, 5, 5, 5], // រឹមតូច সাល្មម
-        filename:     'Bonded_Warehouse_Report.pdf',
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { 
-            scale: 2,           // ធ្វើឱ្យអក្សរច្បាស់ល្អ មិនμπ៉ុស្តិ៍
-            useCORS: true, 
-            letterRendering: true 
-        },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' } // ទម្រង់ក្រដាសផ្ដេក (Landscape) ធំទូលាយ
-    };
-    
-    // លាក់ប៊ូតុង និង Search Bar ពេលកំពុង Export PDF
-    const actionElements = document.querySelectorAll('.no-print, .action-bar');
-    actionElements.forEach(el => el.style.display = 'none');
-
-    html2pdf().from(element).set(options).save().then(() => {
-        // បង្ហាញឡើងវិញធម្មតាក្រោយ Export រួច
-        actionElements.forEach(el => el.style.display = 'flex');
-        element.style.width = '100%'; // ទម្លាក់ទំហំមកធម្មតាវិញ
-    });
-}
+            const options = {
+                margin:       5,
+                filename:     'Bonded_Warehouse_Report.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+            
+            html2pdf().from(element).set(options).save().then(() => {
+                // លាក់ចំណងជើងដើមវិញក្រោយ Export រួច
+                pdfTitle.style.display = 'none';
+            });
+        }
 
         function openModal() {
             document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-boxes-stacked me-2"></i> បញ្ជីកត់ត្រាទំនិញ ឃ្លាំងពន្ធដារ (BWH)`;
