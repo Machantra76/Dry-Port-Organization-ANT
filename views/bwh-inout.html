@@ -6,6 +6,8 @@
     <title>ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out) - ANT Dry Port</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- ឯកសារជំនួយសម្រាប់ Export PDF (html2pdf) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary-color: #1e3c72;
@@ -113,11 +115,16 @@
             outline: none;
         }
 
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
         .btn-primary {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 10px 18px;
             border-radius: 8px;
             font-family: 'Kantumruy Pro', sans-serif;
             font-weight: 600;
@@ -125,9 +132,29 @@
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(30, 60, 114, 0.2);
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .btn-primary:hover {
+        .btn-pdf {
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary:hover, .btn-pdf:hover {
             opacity: 0.9;
             transform: translateY(-1px);
         }
@@ -297,23 +324,26 @@
     <!-- Header -->
     <header>
         <div class="header-title">
-            <h1>ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)[cite: 5]</h1>
-            <p>Bonded Warehouse Cargo In/Out Control Dashboard - ANT Dry Port[cite: 5]</p>
+            <h1>ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)</h1>
+            <p>Bonded Warehouse Cargo In/Out Control Dashboard - ANT Dry Port</p>
         </div>
         <div class="user-info">
-            <a href="/" class="btn-back"><i class="fa-solid fa-arrow-left me-1"></i> ត្រឡប់ក្រោយ[cite: 5]</a>
-            <span id="welcomeUser"><i class="fa-solid fa-user me-1"></i> មន្ត្រីឃ្លាំងពន្ធដារ[cite: 5]</span>
+            <a href="/" class="btn-back"><i class="fa-solid fa-arrow-left me-1"></i> ត្រឡប់ក្រោយ</a>
+            <span id="welcomeUser"><i class="fa-solid fa-user me-1"></i> មន្ត្រីឃ្លាំងពន្ធដារ</span>
         </div>
     </header>
 
-    <div class="container">
+    <div class="container" id="pdfContent">
         <!-- Action & Search Bar -->
         <div class="action-bar">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="ស្វែងរកតាមលេខកុងតឺន័រ ឈ្មោះទំនិញ ឬក្រុមហ៊ុន..." onkeyup="filterTable()">
                 <button class="btn-primary" onclick="filterTable()"><i class="fa-solid fa-search"></i></button>
             </div>
-            <button class="btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> បញ្ចូលទំនិញថ្មី (New Record)</button>
+            <div class="action-buttons">
+                <button class="btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> ទាញយក PDF</button>
+                <button class="btn-primary" onclick="openModal()"><i class="fa-solid fa-plus"></i> បញ្ចូលទំនិញថ្មី</button>
+            </div>
         </div>
 
         <!-- Data Table Card -->
@@ -330,7 +360,7 @@
                             <th>កាលបរិច្ឆេទចូល (Date)</th>
                             <th>ចំនួនថ្ងៃក្នុងឃ្លាំង (Days in Bonded)</th>
                             <th>ស្ថានភាពគយ (Customs Status)</th>
-                            <th style="text-align: center;">សកម្មភាព (Action)</th>
+                            <th style="text-align: center;" class="no-print">សកម្មភាព (Action)</th>
                         </tr>
                     </thead>
                     <tbody id="bwhTableBody">
@@ -349,15 +379,15 @@
                 <input type="hidden" id="recordId">
                 <div class="form-group">
                     <label>លេខកុងតឺន័រ (Container No.):</label>
-                    <input type="text" id="containerNo" class="form-control" placeholder="ឧ. TGBU 1234567" required[cite: 5]>
+                    <input type="text" id="containerNo" class="form-control" placeholder="ឧ. TGBU 1234567" required>
                 </div>
                 <div class="form-group">
                     <label>ឈ្មោះទំនិញ (Cargo Description):</label>
-                    <input type="text" id="cargoName" class="form-control" placeholder="ឧ. គ្រឿងអេឡិចត្រូនិក / សម្ភារៈប្រើប្រាស់" required[cite: 5]>
+                    <input type="text" id="cargoName" class="form-control" placeholder="ឧ. គ្រឿងអេឡិចត្រូនិក / សម្ភារៈប្រើប្រាស់" required>
                 </div>
                 <div class="form-group">
                     <label>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន (Owner / Importer):</label>
-                    <input type="text" id="cargoOwner" class="form-control" placeholder="ឧ. ក្រុមហ៊ុន អេអិនធី ឡូជីស្ទិក" required[cite: 5]>
+                    <input type="text" id="cargoOwner" class="form-control" placeholder="ឧ. ក្រុមហ៊ុន អេអិនធី ឡូជីស្ទិក" required>
                 </div>
                 <div class="form-group">
                     <label>ស្ថានភាពចលនាទំនិញ (Movement Type):</label>
@@ -375,7 +405,7 @@
                     </select>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn-secondary" onclick="closeModal()">បោះបង់[cite: 5]</button>
+                    <button type="button" class="btn-secondary" onclick="closeModal()">បោះបង់</button>
                     <button type="submit" class="btn-primary">រក្សាទុកទិន្នន័យ</button>
                 </div>
             </form>
@@ -429,13 +459,34 @@
                         <td>${item.date}</td>
                         <td><span class="badge badge-days"><i class="fa-solid fa-clock me-1"></i> ${daysInBonded} ថ្ងៃ</span></td>
                         <td>${item.status}</td>
-                        <td style="text-align: center;">
+                        <td style="text-align: center;" class="no-print">
                             <button class="btn-action btn-edit" onclick="editRecord(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
                             <button class="btn-action btn-delete" onclick="deleteRecord(${item.id})" title="លុប"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
                 tbody.innerHTML += row;
+            });
+        }
+
+        // មុខងារទាញយកឯកសារជា PDF
+        function exportToPDF() {
+            const element = document.getElementById('pdfContent');
+            const options = {
+                margin:       10,
+                filename:     'Bonded_Warehouse_Report.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+            
+            // លាក់ប៊ូតុងពេលកំពុង Print / Export PDF
+            const actionElements = document.querySelectorAll('.no-print, .action-bar');
+            actionElements.forEach(el => el.style.display = 'none');
+
+            html2pdf().from(element).set(options).save().then(() => {
+                // បង្ហាញឡើងវិញក្រោយ Export រួច
+                actionElements.forEach(el => el.style.display = 'flex');
             });
         }
 
