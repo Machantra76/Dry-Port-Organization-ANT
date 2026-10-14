@@ -139,7 +139,7 @@
 
     <!-- Form កត់ត្រាព័ត៌មានបណ្តឹង ឬការតវ៉ាថ្មី -->
     <div class="section-card no-print">
-        <div class="section-card-title"><i class="fa-solid fa-triangle-exclamation me-2"></i> កត់ត្រាទំនាស់ ឬបណ្តឹងតវ៉ាថ្មី (Record New Dispute / Complaint)</div>
+        <div class="section-card-title"><i class="fa-solid fa-triangle-exclamation me-2"></i> កត់ត្រាទំនាស់ ឬបណ្តឹងតវ៉ាថ្មី (Record New Dispute / Complaint)[cite: 12, 13]</div>
         <form id="disputeForm">
             <input type="hidden" id="editId" value="">
             <div class="row g-3">
@@ -184,12 +184,12 @@
                     </select>
                 </div>
                 <div class="col-12">
-                    <label class="form-label">รายละเอียด / ដំណោះស្រាយ (Description & Resolution Details):</label>
+                    <label class="form-label">ដំណោះស្រាយ (Description & Resolution Details):</label>
                     <textarea class="form-control" id="description" rows="3" placeholder="ព័ត៌មានលម្អិតពីបញ្ហា និងទិសដៅដោះស្រាយ..." required></textarea>
                 </div>
                 <div class="col-12 mt-4">
                     <button type="submit" class="btn btn-primary-custom" id="saveBtn">
-                        <i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ
+                        <i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ (Save Data)
                     </button>
                 </div>
             </div>
@@ -198,7 +198,7 @@
 
     <!-- តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ -->
     <div class="section-card">
-        <div class="section-card-title mb-3"><i class="fa-solid fa-table-list me-2"></i> តារាងតាមដានការដោះស្រាយបញ្ហា និងការតវ៉ា (Dispute Records List)</div>
+        <div class="section-card-title mb-3"><i class="fa-solid fa-table-list me-2"></i> តារាងតាមដានការដោះស្រាយបញ្ហា និងការតវ៉ា (Dispute Records List)[cite: 12, 13]</div>
 
         <!-- ផ្នែកស្វែងរក (Search & Filter) -->
         <div class="filter-action-bar no-print">
@@ -237,7 +237,7 @@
                     </tr>
                 </thead>
                 <tbody id="disputeTableBody">
-                    <tr><td colspan="9" class="text-center text-muted py-4">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                    <tr><td colspan="9" class="text-center text-muted py-4">កំពុងទាញយកទិន្នន័យ...[cite: 7]</td></tr>
                 </tbody>
             </table>
         </div>
@@ -253,11 +253,10 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('dispute_date').value = new Date().toISOString().split('T')[0];
-        loadCustomerDropdown(); // ទាញយកឈ្មោះអតិថិជនមកដាក់ក្នុង Dropdown
+        loadCustomerDropdown();
         loadDisputes();
     });
 
-    // មុខងារទាញឈ្មោះអតិថិជនពី API ទំនាក់ទំនងអតិថិជន
     async function loadCustomerDropdown() {
         try {
             const response = await fetch('/api/customer-relations');
@@ -278,7 +277,6 @@
         }
     }
 
-    // មុខងារបំពេញលេខទូរស័ព្ទដោយស្វ័យប្រវត្តពេលជ្រើសរើសអតិថិជន
     document.getElementById('complainant_name').addEventListener('change', function() {
         const selectedName = this.value;
         const found = customerList.find(c => c.customer_name === selectedName);
@@ -297,7 +295,7 @@
             renderTable(disputeDataList);
         } catch (err) {
             console.error('Error loading disputes:', err);
-            document.getElementById('disputeTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            document.getElementById('disputeTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server[cite: 7]</td></tr>`;
         }
     }
 
@@ -372,7 +370,7 @@
                 document.getElementById('disputeForm').reset();
                 document.getElementById('editId').value = '';
                 document.getElementById('dispute_date').value = new Date().toISOString().split('T')[0];
-                document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ`;
+                document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ (Save Data)`;
                 loadCustomerDropdown();
                 loadDisputes();
             } else {
@@ -397,7 +395,7 @@
         document.getElementById('status').value = item.status;
         document.getElementById('description').value = item.description;
 
-        document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យ`;
+        document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យ (Update Data)`;
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
