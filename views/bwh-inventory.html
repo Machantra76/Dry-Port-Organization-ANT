@@ -290,33 +290,30 @@
         }
 
         async function loadBwhDropdown() {
-            try {
-                const res = await fetch('/api/bwh-records');
-                if (!res.ok) throw new Error('Network response was not ok');
-                
-                bwhRecords = await res.json();
-                console.log('BWH Records Loaded:', bwhRecords);
+    try {
+        const res = await fetch('/api/bwh-records');
+        bwhRecords = await res.json();
+        const select = document.getElementById('bwhSelect');
+        select.innerHTML = '<option value="">-- ជ្រើសរើសកុងតឺន័រពី BWH --</option>';
+        
+        // ត្រងយកเฉพาะកុងតឺន័រណាដែលមិនទាន់បង់ពន្ធ (Duty Unpaid)
+        const unpaidRecords = bwhRecords.filter(item => {
+            const status = (item.customs_status || item.status || '').toLowerCase();
+            return status.includes('មិនទាន់បង់ពន្ធ') || status.includes('unpaid');
+        });
 
-                const select = document.getElementById('bwhSelect');
-                select.innerHTML = '<option value="">-- ជ្រើសរើសកុងតឺន័រពី BWH --</option>';
-
-                if (!bwhRecords || bwhRecords.length === 0) {
-                    select.innerHTML = '<option value="">-- មិនទាន់មានទិន្នន័យក្នុង BWH ឡើយ --</option>';
-                    return;
-                }
-
-                bwhRecords.forEach(item => {
-                    const container = item.container_number || 'N/A';
-                    const cargo = item.cargo_name || 'N/A';
-                    const owner = item.owner_name || 'N/A';
-                    select.innerHTML += `<option value="${item.id}">${container} - ${cargo} (${owner})</option>`;
-                });
-            } catch (err) {
-                console.error('Error loading BWH dropdown:', err);
-                const select = document.getElementById('bwhSelect');
-                select.innerHTML = '<option value="">-- មិនអាចទាញទិន្នន័យពី BWH បានទេ --</option>';
-            }
+        if (unpaidRecords.length === 0) {
+            select.innerHTML = '<option value="">-- គ្មានកុងតឺន័រមិនទាន់បង់ពន្ធឡើយ --</option>';
+            return;
         }
+
+        unpaidRecords.forEach(item => {
+            select.innerHTML += `<option value="${item.id}">${item.container_number || item.container} - ${item.cargo_name || item.cargo} (${item.owner_name || item.owner})</option>`;
+        });
+    } catch (err) {
+        console.error('Error:', err);
+    }
+}
 
         function selectBwhRecord() {
             const id = document.getElementById('bwhSelect').value;
