@@ -14,7 +14,7 @@ const pool = new Pool({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 4]
+app.use('/views', express.static(path.join(__dirname, 'views'))); // បន្ថែមเพื่อให้อានហ្វាលក្នុង views បានយ៉ាងរលូន[cite: 4, 8]
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
@@ -476,7 +476,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៩. តារាងអ្នកកាន់ឯកសារគយ (Document Controller / Handler) [បន្ថែមថ្មី]
+        // ២៩. តារាងអ្នកកាន់ឯកសារគយ (Document Controller / Handler)
         await client.query(`
             CREATE TABLE IF NOT EXISTS document_handlers (
                 id SERIAL PRIMARY KEY,
@@ -621,7 +621,7 @@ app.get('/views/document-handlers.html', (req, res) => {
 });
 
 // ==========================================
-// API Routes: អ្នកកាន់ឯកសារគយ (Document Controller / Handler) [បន្ថែមថ្មី]
+// API Routes: អ្នកកាន់ឯកសារគយ (Document Controller / Handler)
 // ==========================================
 app.get('/api/document-handlers', async (req, res) => {
     try {
@@ -2291,7 +2291,7 @@ app.put('/api/fleet/container-gate-out/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រតិបត្តិការទីលាន (Yard Operations)
+// API Routes: ប្រតិបត្តិការទីលាន (Yard Operations) [បន្ថែមពេញលេញ GET, POST, PUT, DELETE]
 // ==========================================
 app.get('/api/fleet/yard-operations', async (req, res) => {
     try {
@@ -2345,6 +2345,59 @@ app.post('/api/fleet/yard-operations', async (req, res) => {
     } catch (err) {
         console.error('Error saving yard operation:', err);
         res.status(500).json({ success: false, error: 'មិនអាចរក្សាទុកទិន្នន័យក្នុង Database បានទេ' });
+    }
+});
+
+app.put('/api/fleet/yard-operations/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { 
+            container_number, 
+            operation_type, 
+            yard_location, 
+            operation_date, 
+            equipment_used, 
+            operator_name, 
+            status, 
+            notes 
+        } = req.body;
+
+        const query = `
+            UPDATE yard_operations 
+            SET container_number = $1, operation_type = $2, yard_location = $3, 
+                operation_date = $4, equipment_used = $5, operator_name = $6, status = $7, notes = $8
+            WHERE id = $9 
+            RETURNING *;
+        `;
+        const values = [
+            container_number, operation_type, yard_location, 
+            operation_date, equipment_used || null, operator_name, 
+            status, notes || null, id
+        ];
+
+        const result = await pool.query(query, values);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating yard operation:', err);
+        res.status(500).json({ success: false, error: 'Database error' });
+    }
+});
+
+app.delete('/api/fleet/yard-operations/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM yard_operations WHERE id = $1 RETURNING *;', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+        res.json({ success: true, message: 'Deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting yard operation:', err);
+        res.status(500).json({ success: false, error: 'Database error' });
     }
 });
 
