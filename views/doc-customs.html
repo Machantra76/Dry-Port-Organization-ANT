@@ -159,7 +159,7 @@
                         <option value="Duty Calculation">ការគណនាពន្ធ និងអាករ (Duty Calculation)</option>
                         <option value="Inspection Entry">ការកត់ត្រាពិនិត្យទំនិញ (Inspection Entry)</option>
                         <option value="System Clearance">ការបោសសម្អាតតាមប្រព័ន្ធ (Clearance)</option>
-                         <option value="Transit Permit">ប័ណ្ណឆ្លងកាត់ (Transit Permit)</option>
+                        <option value="Transit Permit">ប័ណ្ណឆ្លងកាត់ (Transit Permit)</option>
                     </select>
                 </div>
                 <div class="col-md-4">
@@ -180,8 +180,10 @@
                     <input type="text" class="form-control" id="operator_name" placeholder="ឧ. លោក សុខ ជា" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">លេខយោងកុងតឺន័រ ឬវិក្កយបត្រ (Reference / BL / Container No.):</label>
-                    <input type="text" class="form-control" id="reference_number" placeholder="ឧ. CONT9988776 ឬ INV-2026-88">
+                    <label class="form-label">ជ្រើសរើសលេខឯកសារយោង / វិក្កយបត្រ (Reference / Document No.):</label>
+                    <select class="form-select" id="reference_number" required>
+                        <option value="">-- ជ្រើសរើសលេខឯកសារគយ --</option>
+                    </select>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">ច្រកទ្វារ ឬការិយាល័យគយ (Customs Office / Gate):</label>
@@ -235,7 +237,7 @@
                         <th class="table-custom-header">ប្រភេទប្រតិបត្តិការ</th>
                         <th class="table-custom-header">កាលបរិច្ឆេទ</th>
                         <th class="table-custom-header">មន្ត្រីប្រតិបត្តិករ</th>
-                        <th class="table-custom-header">លេខយោង / កុងតឺន័រ</th>
+                        <th class="table-custom-header">លេខយោង / ឯកសារ</th>
                         <th class="table-custom-header">ស្ថានភាព</th>
                         <th class="table-custom-header no-print">សកម្មភាព</th>
                     </tr>
@@ -256,12 +258,33 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('entry_date').value = new Date().toISOString().split('T')[0];
+        loadDocumentDropdown(); // ទាញយកលេខឯកសារមកដាក់ក្នុង Dropdown
         loadCustomsData();
     });
 
+    // មុខងារទាញយកលេខឯកសារពី API មកដាក់ក្នុង Dropdown សម្រាប់ Relationship
+    async function loadDocumentDropdown() {
+        try {
+            const response = await fetch('/api/customs-documents');
+            const docs = await response.json();
+            const select = document.getElementById('reference_number');
+            select.innerHTML = '<option value="">-- ជ្រើសរើសលេខឯកសារគយ --</option>';
+            
+            if (Array.isArray(docs)) {
+                docs.forEach(doc => {
+                    const option = document.createElement('option');
+                    option.value = doc.document_number;
+                    option.textContent = `${doc.document_number} (${doc.company_name})`;
+                    select.appendChild(option);
+                });
+            }
+        } catch (err) {
+            console.error('Error loading documents for dropdown:', err);
+        }
+    }
+
     async function loadCustomsData() {
         try {
-            // កែសម្រួល Endpoint តាមការចង់បានរបស់អ្នក (ឧ. /api/customs-system-data)
             const response = await fetch('/api/customs-system-data');
             customsList = await response.json();
             renderTable(customsList);
@@ -340,6 +363,7 @@
                 document.getElementById('editId').value = '';
                 document.getElementById('entry_date').value = new Date().toISOString().split('T')[0];
                 document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យប្រព័ន្ធគយ`;
+                loadDocumentDropdown();
                 loadCustomsData();
             } else {
                 alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
