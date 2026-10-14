@@ -716,16 +716,27 @@ app.get('/api/bwh-records', async (req, res) => {
 app.post('/api/bwh-records', async (req, res) => {
     const { container_number, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status } = req.body;
     try {
+        // កំណត់យកកាលបរិច្ឆេទបច្ចុប្បន្នជា Date format ត្រឹមត្រូវ ប្រសិនបើ record_date មិនមាន
+        const formattedDate = record_date ? new Date(record_date) : new Date();
+
         const query = `
             INSERT INTO bonded_warehouse_records (container_number, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status)
             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
         `;
-        const values = [container_number, cargo_name, owner_name, movement_type, record_date || new Date(), parseInt(days_in_bonded) || 0, customs_status];
+        const values = [
+            container_number, 
+            cargo_name, 
+            owner_name, 
+            movement_type, 
+            formattedDate, 
+            parseInt(days_in_bonded) || 0, 
+            customs_status
+        ];
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error saving BWH record:', err);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
