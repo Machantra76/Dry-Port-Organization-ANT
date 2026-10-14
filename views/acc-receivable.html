@@ -150,7 +150,7 @@
         <a href="/" class="back-btn no-print">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
         
         <div class="invoice-header">
-            <h2>ឃ្លាំងស្ងួត (DRY PORT ORGANIZATION)</h2>
+            <h2>ANT DRY PORT</h2>
             <h3>របាយការណ៍គណនេយ្យទទួល (ACCOUNTS RECEIVABLE REPORT)</h3>
             <hr>
         </div>
@@ -262,7 +262,7 @@
                 }
                 
                 const today = new Date();
-                today.setHours(0, 0, 0, 0); // កំណត់ម៉ោងស្មើ 0 ដើម្បីប្រៀបធៀបថ្ងៃជាមួយ Due Date
+                today.setHours(0, 0, 0, 0);
 
                 data.forEach(item => {
                     const invDate = new Date(item.invoice_date).toLocaleDateString('km-KH');
@@ -272,7 +272,6 @@
                     let badgeClass = 'badge-pending';
                     let statusText = 'មិនទាន់ទូទាត់ (Pending)';
 
-                    // Logic ឆែកមើលស្ថានភាព Paid, Overdue ឬ Pending
                     if (item.status === 'Paid') {
                         badgeClass = 'badge-paid';
                         statusText = 'បានទូទាត់ (Paid)';
@@ -281,9 +280,8 @@
                         statusText = 'ហួសថ្ងៃកំណត់ (Overdue)';
                     }
 
-                    // បង្កើត Action Buttons (បោះពុម្ពវិក្កយបត្រ និងប៊ូតុងបង់ប្រាក់រួច)
                     let actionButtons = `
-                        <a class="action-link" onclick="printInvoice('${item.customer_name}', '${invDate}', '${dueDate}', '${item.amount}', '${statusText}', '${item.description || '-'}')">🧾 វិក្កយបត្រ</a>
+                        <a class="action-link" onclick="printInvoice('${item.id}', '${item.customer_name}', '${invDate}', '${dueDate}', '${item.amount}', '${statusText}', '${item.description || '-'}')">🧾 វិក្កយបត្រ</a>
                     `;
 
                     if (item.status !== 'Paid') {
@@ -306,7 +304,6 @@
             }
         }
 
-        // Function សម្រាប់អតិថិជនមកបង់ប្រាក់ (Update ទៅ Paid)
         async function markAsPaid(receivableId) {
             if (confirm('តើអ្នកពិតជាចង់កំណត់ថាអតិថិជនបានទូទាត់ប្រាក់រួចហើយមែនទេ?')) {
                 try {
@@ -335,7 +332,9 @@
             loadReceivables();
         }
 
-        function printInvoice(customer, invDate, dueDate, amount, status, desc) {
+        // បង្កើតមុខងារបោះពុម្ពវិក្កយបត្រដែលមានកែទម្រង់ឈ្មោះ ANT DRY PORT និងពង្រីកទំហំចំណងជើងវិក្កយបត្រ
+        function printInvoice(id, customer, invDate, dueDate, amount, status, desc) {
+            const invoiceNo = `INV-${new Date().getFullYear()}-${String(id).padStart(4, '0')}`;
             const printWindow = window.open('', '_blank');
             printWindow.document.write(`
                 <html>
@@ -343,23 +342,31 @@
                     <title>វិក្កយបត្រគណនេយ្យទទួល - Accounts Receivable Invoice</title>
                     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
                     <style>
-                        body { font-family: 'Kantumruy Pro', sans-serif; padding: 30px; color: #333; }
-                        .invoice-box { max-width: 700px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0,0,0,0.15); border-radius: 8px; }
-                        h2 { text-align: center; color: #1e3c72; margin-bottom: 5px; }
-                        .sub-title { text-align: center; color: #666; font-size: 14px; margin-bottom: 30px; }
-                        .info-row { display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid #f0f0f0; padding-bottom: 8px; }
+                        body { font-family: 'Kantumruy Pro', sans-serif; padding: 40px; color: #333; }
+                        .invoice-box { max-width: 750px; margin: auto; padding: 40px; border: 1px solid #cbd5e1; box-shadow: 0 0 15px rgba(0,0,0,0.1); border-radius: 8px; background: #fff; }
+                        h2 { text-align: center; color: #1e3c72; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 0.5px; }
+                        .sub-title { text-align: center; color: #1e3c72; font-size: 20px; font-weight: 700; margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; }
+                        .eng-sub-title { text-align: center; color: #64748b; font-size: 14px; font-weight: 600; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 0.5px; }
+                        .meta-info { display: flex; justify-content: space-between; margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 14px; }
+                        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; font-size: 15px; }
                         .label { font-weight: bold; color: #1e3c72; }
-                        .total-box { margin-top: 30px; text-align: right; font-size: 18px; font-weight: bold; color: #1e3c72; background: #e0f2fe; padding: 12px; border-radius: 6px; }
-                        .footer { margin-top: 50px; display: flex; justify-content: space-between; text-align: center; }
+                        .total-box { margin-top: 30px; text-align: right; font-size: 20px; font-weight: bold; color: #1e3c72; background: #e0f2fe; padding: 15px; border-radius: 6px; border: 1px solid #bae6fd; }
+                        .footer { margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-size: 14px; }
                     </style>
                 </head>
                 <body>
                     <div class="invoice-box">
-                        <h2>ឃ្លាំងស្ងួត (DRY PORT ORGANIZATION)</h2>
-                        <div class="sub-title">វិក្កយបត្រគណនេយ្យទទួល (ACCOUNTS RECEIVABLE INVOICE)</div>
+                        <h2>ANT DRY PORT</h2>
                         
+                        <div class="sub-title">វិក្កយបត្រគណនេយ្យទទួល</div>
+                        <div class="eng-sub-title">(ACCOUNTS RECEIVABLE INVOICE)</div>
+                        
+                        <div class="meta-info">
+                            <div><strong>លេខវិក្កយបត្រ (Invoice No.):</strong> ${invoiceNo}</div>
+                            <div><strong>កាលបរិច្ឆេទ (Date):</strong> ${invDate}</div>
+                        </div>
+
                         <div class="info-row"><span class="label">អតិថិជន (Customer):</span> <span>${customer}</span></div>
-                        <div class="info-row"><span class="label">កាលបរិច្ឆេទវិក្កយបត្រ (Invoice Date):</span> <span>${invDate}</span></div>
                         <div class="info-row"><span class="label">ថ្ងៃកំណត់បង់ប្រាក់ (Due Date):</span> <span>${dueDate}</span></div>
                         <div class="info-row"><span class="label">ស្ថានភាព (Status):</span> <span>${status}</span></div>
                         <div class="info-row"><span class="label">បរិយាយ (Description):</span> <span>${desc}</span></div>
