@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out) - ANT Dry Port</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1e3c72;
+            --secondary-color: #2a5298;
+            --accent-color: #00c6ff;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --text-sub: #555555;
+            --border-color: #e2e8f0;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+        }
+
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 4px 15px rgba(0, 198, 255, 0.4);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        header .header-title h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        header .header-title p {
+            margin: 4px 0 0 0;
+            font-size: 12px;
+            color: #dbeafe;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-weight: 600;
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-back:hover {
+            background: white;
+            color: var(--primary-color);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .action-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(30, 60, 114, 0.2);
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        tr:hover {
+            background-color: #fcfdfd;
+        }
+
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .badge-in {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-out {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-pending {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        /* Modal Popup */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 550px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .modal-card h2 {
+            color: var(--primary-color);
+            margin-top: 0;
+            font-size: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 5px;
+            color: #334155;
+        }
+
+        .form-control, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #334155;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-title">
+            <h1>ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)</h1>
+            <p>Bonded Warehouse Cargo In/Out Control Dashboard - ANT Dry Port</p>
+        </div>
+        <div class="user-info">
+            <a href="/" class="btn-back"><i class="fa-solid fa-arrow-left me-1"></i> ត្រឡប់ក្រោយ</a>
+            <span id="welcomeUser"><i class="fa-solid fa-user me-1"></i> មន្ត្រីឃ្លាំងពន្ធដារ</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Action & Search Bar -->
+        <div class="action-bar">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="ស្វែងរកតាមលេខកុងតឺន័រ ឈ្មោះទំនិញ ឬក្រុមហ៊ុន..." onkeyup="filterTable()">
+                <button class="btn-primary" onclick="filterTable()"><i class="fa-solid fa-search"></i></button>
+            </div>
+            <button class="btn-primary" onclick="openModal()"><i class="fa-solid fa-plus me-1"></i> បញ្ចូលទំនិញថ្មី (New Record)</button>
+        </div>
+
+        <!-- Data Table Card -->
+        <div class="card">
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ល.រ (No.)</th>
+                            <th>លេខកុងតឺន័រ (Container No.)</th>
+                            <th>ឈ្មោះទំនិញ (Cargo Name)</th>
+                            <th>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន (Owner)</th>
+                            <th>ប្រភេទ (Type)</th>
+                            <th>កាលបរិច្ឆេទ (Date)</th>
+                            <th>ស្ថានភាពគយ (Customs Status)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bwhTableBody">
+                        <!-- Data will be populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Form for Adding Record -->
+    <div id="bwhModal" class="modal-overlay">
+        <div class="modal-card">
+            <h2><i class="fa-solid fa-boxes-stacked me-2"></i> បញ្ជីកត់ត្រាទំនិញ ឃ្លាំងពន្ធដារ (BWH)</h2>
+            <form id="bwhForm" onsubmit="saveRecord(event)">
+                <div class="form-group">
+                    <label>លេខកុងតឺន័រ (Container No.):</label>
+                    <input type="text" id="containerNo" class="form-control" placeholder="ឧ. TGBU 1234567" required>
+                </div>
+                <div class="form-group">
+                    <label>ឈ្មោះទំនិញ (Cargo Description):</label>
+                    <input type="text" id="cargoName" class="form-control" placeholder="ឧ. គ្រឿងអេឡិចត្រូនិក / សម្ភារៈប្រើប្រាស់" required>
+                </div>
+                <div class="form-group">
+                    <label>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន (Owner / Importer):</label>
+                    <input type="text" id="cargoOwner" class="form-control" placeholder="ឧ. ក្រុមហ៊ុន អេអិនធី ឡូជីស្ទិក" required>
+                </div>
+                <div class="form-group">
+                    <label>ស្ថានភាពចលនាទំនិញ (Movement Type):</label>
+                    <select id="movementType" class="form-select">
+                        <option value="IN">ទំនិញចូលឃ្លាំង (Cargo IN)</option>
+                        <option value="OUT">ទំនិញចេញពីឃ្លាំង (Cargo OUT)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ស្ថានភាពគយ (Customs Status):</label>
+                    <select id="customsStatus" class="form-select">
+                        <option value="មិនទាន់បង់ពន្ធ (Duty Unpaid)">មិនទាន់បង់ពន្ធ (Duty Unpaid)</option>
+                        <option value="បានបង់ពន្ធរួច (Duty Paid / Released)">បានបង់ពន្ធរួច (Duty Paid / Released)</option>
+                        <option value="រង់ចាំការត្រួតពិនិត្យ (Pending Inspection)">រង់ចាំការត្រួតពិនិត្យ (Pending Inspection)</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">បោះបង់</button>
+                    <button type="submit" class="btn-primary">រក្សាទុកទិន្នន័យ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Default sample data for BWH In/Out
+        let bwhData = JSON.parse(localStorage.getItem('ant_bwh_records')) || [
+            { id: 1, container: "MSKU 9823412", cargo: "គ្រឿងបន្លាស់រថយន្ត", owner: "Toyota Cambodia Co., Ltd.", type: "IN", date: "2026-10-12 09:30", status: "មិនទាន់បង់ពន្ធ (Duty Unpaid)" },
+            { id: 2, container: "CMAU 4512789", cargo: "សម្ភារៈតុបតែងផ្ទះ", owner: "Home Deco Enterprise", type: "OUT", date: "2026-10-13 14:15", status: "បានបង់ពន្ធរួច (Duty Paid / Released)" },
+            { id: "3", container: "TGBU 6712390", cargo: "ផលិតផលកសិកម្មកែច្នៃ", owner: "Agri Trade SP Co.", type: "IN", date: "2026-10-14 10:00", status: "រង់ចាំការត្រួតពិនិត្យ (Pending Inspection)" }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('ant_logged_user_info'));
+            if (user) {
+                document.getElementById('welcomeUser').innerHTML = `<i class="fa-solid fa-user me-1"></i> ${user.full_name} (${user.role})`;
+            }
+            renderTable(bwhData);
+        });
+
+        function renderTable(data) {
+            const tbody = document.getElementById('bwhTableBody');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យទំនិញក្នុងប្រព័ន្ធឡើយ</td></tr>`;
+                return;
+            }
+
+            data.forEach((item, index) => {
+                let badgeClass = item.type === 'IN' ? 'badge-in' : 'badge-out';
+                let typeText = item.type === 'IN' ? 'ចូល (IN)' : 'ចេញ (OUT)';
+
+                let row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${item.container}</strong></td>
+                        <td>${item.cargo}</td>
+                        <td>${item.owner}</td>
+                        <td><span class="badge ${badgeClass}">${typeText}</span></td>
+                        <td>${item.date}</td>
+                        <td>${item.status}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function openModal() {
+            document.getElementById('bwhModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('bwhModal').style.display = 'none';
+        }
+
+        function saveRecord(e) {
+            e.preventDefault();
+            
+            const now = new Date();
+            const dateStr = now.toISOString().slice(0, 10) + ' ' + now.toTimeString().slice(0, 5);
+
+            const newRecord = {
+                id: Date.now(),
+                container: document.getElementById('containerNo').value.trim().toUpperCase(),
+                cargo: document.getElementById('cargoName').value.trim(),
+                owner: document.getElementById('cargoOwner').value.trim(),
+                type: document.getElementById('movementType').value,
+                date: dateStr,
+                status: document.getElementById('customsStatus').value
+            };
+
+            bwhData.unshift(newRecord);
+            localStorage.setItem('ant_bwh_records', JSON.stringify(bwhData));
+            
+            renderTable(bwhData);
+            closeModal();
+            document.getElementById('bwhForm').reset();
+            alert('បានកត់ត្រាទិន្នន័យទំនិញចូល-ចេញ ឃ្លាំងពន្ធដារដោយជោគជ័យ!');
+        }
+
+        function filterTable() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = bwhData.filter(item => 
+                item.container.toLowerCase().includes(query) ||
+                item.cargo.toLowerCase().includes(query) ||
+                item.owner.toLowerCase().includes(query)
+            );
+            renderTable(filtered);
+        }
+    </script>
+</body>
+</html>
