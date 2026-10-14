@@ -57,18 +57,19 @@
         .user-info {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             background: rgba(255, 255, 255, 0.15);
             padding: 8px 16px;
             border-radius: 8px;
             font-size: 14px;
+            flex-wrap: wrap;
         }
 
         .btn-back {
             background: rgba(255, 255, 255, 0.2);
             color: white;
             border: 1px solid rgba(255, 255, 255, 0.4);
-            padding: 6px 14px;
+            padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
             font-family: 'Kantumruy Pro', sans-serif;
@@ -76,6 +77,9 @@
             font-size: 13px;
             text-decoration: none;
             transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
         }
 
         .btn-back:hover {
@@ -181,7 +185,7 @@
         th, td {
             padding: 12px 15px;
             border-bottom: 1px solid var(--border-color);
-            white-space: nowrap; /* ការពារមិនឱ្យអក្សរធ្លាក់ចុះបន្ទាត់ */
+            white-space: nowrap;
         }
 
         th {
@@ -329,7 +333,8 @@
             <p>Bonded Warehouse Cargo In/Out Control Dashboard - ANT Dry Port</p>
         </div>
         <div class="user-info">
-            <a href="/views/duty-unpaid-inventory.html" class="btn-back"><i class="fa-solid fa-warehouse me-1"></i> ទៅកាន់ស្តុកមិនទាន់បង់ពន្ធ</a>
+            <a href="/" class="btn-back"><i class="fa-solid fa-house"></i> ទៅកាន់ទំព័រដើម</a>
+            <a href="/views/duty-unpaid-inventory.html" class="btn-back"><i class="fa-solid fa-warehouse"></i> ស្តុកមិនទាន់បង់ពន្ធ</a>
             <span id="welcomeUser"><i class="fa-solid fa-user me-1"></i> មន្ត្រីឃ្លាំងពន្ធដារ</span>
         </div>
     </header>
@@ -424,10 +429,9 @@
             if (user) {
                 document.getElementById('welcomeUser').innerHTML = `<i class="fa-solid fa-user me-1"></i> ${user.full_name} (${user.role})`;
             }
-            fetchBwhData(); // ទាញយកទិន្នន័យពី PostgreSQL Database ផ្ទាល់
+            fetchBwhData();
         });
 
-        // មុខងារទាញយកទិន្នន័យពី Database
         async function fetchBwhData() {
             try {
                 const res = await fetch('/api/bwh-records');
@@ -483,7 +487,6 @@
             });
         }
 
-        // មុខងាររក្សាទុកទិន្នន័យចូល PostgreSQL Database
         async function saveRecord(e) {
             e.preventDefault();
             
@@ -529,7 +532,7 @@
                 }
             } catch (err) {
                 console.error('Error saving record:', err);
-                alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ Server!');
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
             }
         }
 
