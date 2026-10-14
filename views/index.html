@@ -179,7 +179,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 24px;
-            align-items: stretch; /* ធ្វើឱ្យប្រអប់កាតទាំងអស់មានកំពស់ស្មើគ្នា */
+            align-items: stretch;
         }
 
         .card {
@@ -215,7 +215,7 @@
             padding: 20px 20px 10px 20px;
             border-bottom: 1px solid var(--border-color);
             background-color: #fafbfc;
-            text-align: center; /* ចំណងជើងកាតនៅចំកណ្តាល */
+            text-align: center;
         }
 
         .card-header h3 {
@@ -246,18 +246,18 @@
             margin: 0;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
 
         .role-item {
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: center; /* ให้อក្សរនៅចំកណ្តាលប្រអប់ទាំងផ្តេក និងបញ្ឈរ */
-            text-align: center;   /* ให้อក្សរនៅចំកណ្តាលប្រអប់ */
+            align-items: center;
+            text-align: center;
             background: #f8fafc;
             border: 1px solid var(--border-color);
-            padding: 12px 14px;
+            padding: 14px 16px;
             border-radius: 8px;
             text-decoration: none;
             transition: all 0.2s ease;
@@ -277,16 +277,16 @@
 
         .role-km {
             display: block;
-            font-size: 14px;
+            font-size: 16px; /* កែទំហំអក្សរខ្មែរឱ្យធំស្អាត */
             font-weight: 600;
             color: var(--text-main);
         }
 
         .role-en {
             display: block;
-            font-size: 12px;
+            font-size: 14px; /* កែទំហំអក្សរអង់គ្លេសឱ្យធំល្មមមើលស្រួល */
             color: #64748b;
-            margin-top: 2px;
+            margin-top: 4px;
         }
     </style>
 </head>
