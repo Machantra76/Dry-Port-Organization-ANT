@@ -161,8 +161,10 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">លេខរៀង ឬកូដឯកសារកាន់កាប់ (Assigned Document Ref):</label>
-                    <input type="text" class="form-control" id="assigned_doc_ref" placeholder="ឧ. DOC-2026-998" required>
+                    <label class="form-label">ជ្រើសរើសលេខឯកសារយោង (Assigned Document Ref):</label>
+                    <select class="form-select" id="assigned_doc_ref" required>
+                        <option value="">-- ជ្រើសរើសលេខឯកសារគយ --</option>
+                    </select>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">កាលបរិច្ឆេទប្រគល់ភារកិច្ច (Assignment Date):</label>
@@ -245,12 +247,33 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('assignment_date').value = new Date().toISOString().split('T')[0];
+        loadDocumentDropdown(); // ទាញយកលេខឯកសារមកដាក់ក្នុង Dropdown
         loadDocHandlers();
     });
 
+    // មុខងារទាញយកលេខឯកសារពី API មកដាក់ក្នុង Dropdown (Relationship Data Fetching)
+    async function loadDocumentDropdown() {
+        try {
+            const response = await fetch('/api/customs-documents');
+            const docs = await response.json();
+            const select = document.getElementById('assigned_doc_ref');
+            select.innerHTML = '<option value="">-- ជ្រើសរើសលេខឯកសារគយ --</option>';
+            
+            if (Array.isArray(docs)) {
+                docs.forEach(doc => {
+                    const option = document.createElement('option');
+                    option.value = doc.document_number;
+                    option.textContent = `${doc.document_number} (${doc.company_name})`;
+                    select.appendChild(option);
+                });
+            }
+        } catch (err) {
+            console.error('Error loading documents for dropdown:', err);
+        }
+    }
+
     async function loadDocHandlers() {
         try {
-            // កែសម្រួល Endpoint តាមការចង់បានរបស់អ្នក (ឧ. /api/document-handlers)
             const response = await fetch('/api/document-handlers');
             handlerList = await response.json();
             renderTable(handlerList);
@@ -326,6 +349,7 @@
                 document.getElementById('editId').value = '';
                 document.getElementById('assignment_date').value = new Date().toISOString().split('T')[0];
                 document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យអ្នកកាន់ឯកសារ`;
+                loadDocumentDropdown();
                 loadDocHandlers();
             } else {
                 alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
