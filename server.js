@@ -534,7 +534,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // ==========================================
-// API Route: Register (បង្កើត User ថ្មី) [ADDED]
+// API Route: Register (បង្កើត User ថ្មី)
 // ==========================================
 app.post('/api/auth/register', async (req, res) => {
     const { username, password, full_name, role, dept_id } = req.body;
@@ -672,7 +672,7 @@ app.get('/views/document-handlers.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'document-handlers.html'));
 });
 
-// HTML Route សម្រាប់ទំព័រ Bonded Warehouse (BWH In/Out) [ADDED]
+// HTML Route សម្រាប់ទំព័រ Bonded Warehouse (BWH In/Out)
 app.get('/views/bwh-inout.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'bwh-inout.html'));
 });
@@ -702,6 +702,40 @@ app.post('/api/bwh-records', async (req, res) => {
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error saving BWH record:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.put('/api/bwh-records/:id', async (req, res) => {
+    const { id } = req.params;
+    const { container_number, cargo_name, owner_name, movement_type, customs_status } = req.body;
+    try {
+        const query = `
+            UPDATE bonded_warehouse_records 
+            SET container_number = $1, cargo_name = $2, owner_name = $3, movement_type = $4, customs_status = $5
+            WHERE id = $6 RETURNING *;
+        `;
+        const values = [container_number, cargo_name, owner_name, movement_type, customs_status, id];
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating BWH record:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.delete('/api/bwh-records/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM bonded_warehouse_records WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting BWH record:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -2302,7 +2336,7 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
                     success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out ได้ទេ!` 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out បានទេ!` 
                 });
             }
         }
