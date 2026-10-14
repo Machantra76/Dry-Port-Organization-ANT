@@ -474,7 +474,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត (ប្រសិនបើទօន្នន័យទទេ)
+        // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត (ប្រសិនបើទិន្នន័យទទេ)
         const checkUser = await client.query('SELECT COUNT(*) FROM system_users');
         if (parseInt(checkUser.rows[0].count) === 0) {
             await client.query(`
@@ -515,6 +515,26 @@ app.post('/api/auth/login', async (req, res) => {
     } catch (err) {
         console.error('Login error:', err);
         res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+// ==========================================
+// API Route: Register (បង្កើត User ថ្មី) [ADDED]
+// ==========================================
+app.post('/api/auth/register', async (req, res) => {
+    const { username, password, full_name, role, dept_id } = req.body;
+    try {
+        const query = `
+            INSERT INTO system_users (username, password, full_name, role, dept_id)
+            VALUES ($1, $2, $3, $4, $5) RETURNING id, username, full_name, role, dept_id;
+        `;
+        const values = [username, password, full_name, role || 'STAFF', dept_id || 'HR_ADMIN'];
+        const result = await pool.query(query, values);
+
+        res.json({ success: true, message: 'បង្កើត User ដោយជោគជ័យ', user: result.rows[0] });
+    } catch (err) {
+        console.error('Register error:', err);
+        res.status(400).json({ success: false, error: 'ឈ្មោះគណនី (Username) នេះមានរួចហើយ ឬមានបញ្ហា!' });
     }
 });
 
