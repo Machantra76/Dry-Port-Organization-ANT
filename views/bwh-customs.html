@@ -113,8 +113,8 @@
                 <input type="text" id="searchInput" placeholder="ស្វែងរកលេខលិខិត ឬលេខកុងតឺន័រ..." onkeyup="filterTable()">
             </div>
             <div>
-                <button class="btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> ទាញយក PDF</button>
-                <button class="btn-primary" onclick="openModal()"><i class="fa-solid fa-plus"></i> បញ្ចូលលិខិតអនុញ្ញាតថ្មី</button>
+                <button type="button" class="btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> ទាញយក PDF</button>
+                <button type="button" class="btn-primary" onclick="openModal()"><i class="fa-solid fa-plus"></i> បញ្ចូលលិខិតអនុញ្ញាតថ្មី</button>
             </div>
         </div>
 
@@ -231,3 +231,130 @@
                     select.innerHTML += `<option value="${item.id}">${item.container_number} - ${item.cargo_name} (${item.owner_name})</option>`;
                 });
             } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        function selectBwhRecord() {
+            const id = document.getElementById('bwhSelect').value;
+            const selected = bwhRecords.find(item => item.id == id);
+            if (selected) {
+                document.getElementById('containerNo').value = selected.container_number;
+                document.getElementById('cargoName').value = selected.cargo_name;
+                document.getElementById('companyName').value = selected.owner_name;
+            } else {
+                document.getElementById('containerNo').value = '';
+                document.getElementById('cargoName').value = '';
+                document.getElementById('companyName').value = '';
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('permitTableBody');
+            tbody.innerHTML = '';
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យលិខិតអនុញ្ញាតគយឡើយ</td></tr>`;
+                return;
+            }
+            data.forEach((item, index) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${item.permit_number}</strong></td>
+                        <td>${item.container_number}</td>
+                        <td>${item.cargo_description}</td>
+                        <td>${item.company_name}</td>
+                        <td>${item.permit_type}</td>
+                        <td>${item.issue_date ? item.issue_date.slice(0, 10) : ''}</td>
+                        <td>${item.officer_name}</td>
+                        <td><span class="badge badge-active">${item.status}</span></td>
+                        <td style="text-align: center;" class="no-print">
+                            <button class="btn-primary" style="padding: 5px 10px; font-size: 11px; background: #ef4444;" onclick="deletePermit(${item.id})"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function savePermit(e) {
+            e.preventDefault();
+            const payload = {
+                bonded_record_id: document.getElementById('bwhSelect').value,
+                permit_number: document.getElementById('permitNumber').value.trim(),
+                container_number: document.getElementById('containerNo').value,
+                cargo_description: document.getElementById('cargoName').value,
+                company_name: document.getElementById('companyName').value,
+                permit_type: document.getElementById('permitType').value,
+                issue_date: document.getElementById('issueDate').value,
+                officer_name: document.getElementById('officerName').value.trim(),
+                notes: document.getElementById('notes').value.trim(),
+                status: 'Active'
+            };
+
+            try {
+                const res = await fetch('/api/customs-permits', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert('បានរក្សាទុកលិខិតអនុញ្ញាតគយដោយជោគជ័យ!');
+                    closeModal();
+                    loadPermits();
+                } else {
+                    alert('មានបញ្ហា៖ ' + result.error);
+                }
+            } catch (err) {
+                console.error('Error:', err);
+            }
+        }
+
+        async function deletePermit(id) {
+            if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
+                await fetch(`/api/customs-permits/${id}`, { method: 'DELETE' });
+                loadPermits();
+            }
+        }
+
+        function openModal() { 
+            loadBwhDropdown(); 
+            document.getElementById('permitModal').style.display = 'flex'; 
+        }
+        
+        function closeModal() { 
+            document.getElementById('permitModal').style.display = 'none'; 
+            document.getElementById('permitForm').reset(); 
+            document.getElementById('issueDate').value = new Date().toISOString().slice(0, 10);
+        }
+
+        function exportToPDF() {
+            const element = document.getElementById('pdfContent');
+            const title = document.getElementById('pdfHeaderTitle');
+            title.style.display = 'block';
+
+            const options = {
+                margin: 5,
+                filename: 'Customs_Permit_Report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            html2pdf().from(element).set(options).save().then(() => {
+                title.style.display = 'none';
+            });
+        }
+
+        function filterTable() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = permitData.filter(i => 
+                i.permit_number.toLowerCase().includes(query) || 
+                i.container_number.toLowerCase().includes(query) ||
+                i.company_name.toLowerCase().includes(query)
+            );
+            renderTable(filtered);
+        }
+    </script>
+</body>
+</html>
