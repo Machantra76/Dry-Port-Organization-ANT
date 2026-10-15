@@ -501,7 +501,7 @@ async function initializeDatabase() {
         `);
         await client.query(`ALTER TABLE duty_unpaid_inventory ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);`);
 
-        // ៣២. តារាងអ្នកប្រើប្រាស់ប្រព័ន្ធ (System Users & Roles)
+        // ៣២. តារាងអ្នកប្រើប្រាស់ប្រព័ន្ធ (System Users & Roles) - បន្ថែម status column
         await client.query(`
             CREATE TABLE IF NOT EXISTS system_users (
                 id SERIAL PRIMARY KEY,
@@ -510,11 +510,13 @@ async function initializeDatabase() {
                 full_name VARCHAR(150) NOT NULL,
                 role VARCHAR(50) NOT NULL DEFAULT 'STAFF',
                 dept_id VARCHAR(100) NOT NULL,
+                status VARCHAR(50) DEFAULT 'Active',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        await client.query(`ALTER TABLE system_users ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Active';`);
 
-        // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH) - Updated with new fields
+        // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH)
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_permit_records (
                 id SERIAL PRIMARY KEY,
@@ -537,7 +539,6 @@ async function initializeDatabase() {
             );
         `);
 
-        // បន្ថែម Column ប្រសិនបើតារាងមានរួចស្រេចហើយ
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS customs_reg_number VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS manifest_number VARCHAR(100);`);
@@ -547,17 +548,17 @@ async function initializeDatabase() {
         const checkUser = await client.query('SELECT COUNT(*) FROM system_users');
         if (parseInt(checkUser.rows[0].count) === 0) {
             await client.query(`
-                INSERT INTO system_users (username, password, full_name, role, dept_id) VALUES
-                ('admin', '123456', 'អភិបាលប្រព័ន្ធ (System Admin)', 'ADMIN', 'ALL'),
-                ('hr_user', '123456', 'មន្ត្រីធនធានមនុស្ស', 'STAFF', 'HR_ADMIN'),
-                ('acc_user', '123456', 'មន្ត្រីគណនេយ្យ', 'STAFF', 'ACC_FIN'),
-                ('transport_user', '123456', 'មន្ត្រីដឹកជញ្ជូន', 'STAFF', 'TRANSPORT'),
-                ('container_user', '123456', 'មន្ត្រីកុងតឺន័រ', 'STAFF', 'CONTAINER_MGT'),
-                ('tech_user', '123456', 'មន្ត្រីទីលាន', 'STAFF', 'TECH_STUFFING'),
-                ('it_user', '123456', 'មន្ត្រី IT', 'STAFF', 'IT_SYSTEMS'),
-                ('cs_user', '123456', 'មន្ត្រីសេវាកម្មអតិថិជន', 'STAFF', 'CUSTOMER_SVC'),
-                ('doc_user', '123456', 'មន្ត្រីឯកសារគយ', 'STAFF', 'FACILITIES'),
-                ('bwh_user', '123456', 'មន្ត្រីឃ្លាំងពន្ធដារ', 'STAFF', 'BONDED_WH');
+                INSERT INTO system_users (username, password, full_name, role, dept_id, status) VALUES
+                ('admin', '123456', 'អភិបាលប្រព័ន្ធ (System Admin)', 'ADMIN', 'ALL', 'Active'),
+                ('hr_user', '123456', 'មន្ត្រីធនធានមនុស្ស', 'STAFF', 'HR_ADMIN', 'Active'),
+                ('acc_user', '123456', 'មន្ត្រីគណនេយ្យ', 'STAFF', 'ACC_FIN', 'Active'),
+                ('transport_user', '123456', 'មន្ត្រីដឹកជញ្ជូន', 'STAFF', 'TRANSPORT', 'Active'),
+                ('container_user', '123456', 'មន្ត្រីកុងតឺន័រ', 'STAFF', 'CONTAINER_MGT', 'Active'),
+                ('tech_user', '123456', 'មន្ត្រីទីលាន', 'STAFF', 'TECH_STUFFING', 'Active'),
+                ('it_user', '123456', 'មន្ត្រី IT', 'STAFF', 'IT_SYSTEMS', 'Active'),
+                ('cs_user', '123456', 'មន្ត្រីសេវាកម្មអតិថិជន', 'STAFF', 'CUSTOMER_SVC', 'Active'),
+                ('doc_user', '123456', 'មន្ត្រីឯកសារគយ', 'STAFF', 'FACILITIES', 'Active'),
+                ('bwh_user', '123456', 'មន្ត្រីឃ្លាំងពន្ធដារ', 'STAFF', 'BONDED_WH', 'Active');
             `);
         }
 
@@ -572,7 +573,7 @@ async function initializeDatabase() {
 }
 
 // ==========================================
-// API Route: Authentication (Login)
+// API Route: Authentication (Login) - ពិនិត្យ status Active
 // ==========================================
 app.post('/api/auth/login', async (req, res) => {
     const { username, password } = req.body;
@@ -581,7 +582,13 @@ app.post('/api/auth/login', async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(401).json({ success: false, error: 'ឈ្មោះគណនី ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ!' });
         }
-        res.json({ success: true, user: result.rows[0] });
+        
+        const user = result.rows[0];
+        if (user.status && user.status !== 'Active') {
+            return res.status(403).json({ success: false, error: 'គណនីនេះត្រូវបានផ្អាក ឬបិទសិទ្ធិរួចហើយ (បុគ្គលិកឈប់សម្រាកការងារ)!' });
+        }
+
+        res.json({ success: true, user });
     } catch (err) {
         console.error('Login error:', err);
         res.status(500).json({ success: false, error: 'Server error' });
@@ -595,8 +602,8 @@ app.post('/api/auth/register', async (req, res) => {
     const { username, password, full_name, role, dept_id } = req.body;
     try {
         const query = `
-            INSERT INTO system_users (username, password, full_name, role, dept_id)
-            VALUES ($1, $2, $3, $4, $5) RETURNING id, username, full_name, role, dept_id;
+            INSERT INTO system_users (username, password, full_name, role, dept_id, status)
+            VALUES ($1, $2, $3, $4, $5, 'Active') RETURNING id, username, full_name, role, dept_id, status;
         `;
         const values = [username, password, full_name, role || 'STAFF', dept_id || 'HR_ADMIN'];
         const result = await pool.query(query, values);
@@ -605,6 +612,52 @@ app.post('/api/auth/register', async (req, res) => {
     } catch (err) {
         console.error('Register error:', err);
         res.status(400).json({ success: false, error: 'ឈ្មោះគណនី (Username) នេះមានរួចហើយ ឬមានបញ្ហា!' });
+    }
+});
+
+// ==========================================
+// API Routes: User Management (សម្រាប់ Admin គ្រប់គ្រង User / បិទសិទ្ធិ)
+// ==========================================
+app.get('/api/users', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT id, username, full_name, role, dept_id, status, created_at FROM system_users ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching users:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.put('/api/users/:id', async (req, res) => {
+    const { id } = req.params;
+    const { status, password, full_name, role, dept_id } = req.body;
+    try {
+        let query = 'UPDATE system_users SET ';
+        let fields = [];
+        let values = [];
+        let idx = 1;
+
+        if (status) { fields.push(`status = $${idx++}`); values.push(status); }
+        if (password) { fields.push(`password = $${idx++}`); values.push(password); }
+        if (full_name) { fields.push(`full_name = $${idx++}`); values.push(full_name); }
+        if (role) { fields.push(`role = $${idx++}`); values.push(role); }
+        if (dept_id) { fields.push(`dept_id = $${idx++}`); values.push(dept_id); }
+
+        if (fields.length === 0) {
+            return res.status(400).json({ success: false, error: 'គ្មានទិន្នន័យត្រូវកែប្រែទេ' });
+        }
+
+        query += fields.join(', ') + ` WHERE id = $${idx} RETURNING id, username, full_name, role, dept_id, status;`;
+        values.push(id);
+
+        const result = await pool.query(query, values);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញ User នេះទេ' });
+        }
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating user:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
     }
 });
 
@@ -847,20 +900,13 @@ app.post('/api/bwh-records', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: លុបទិន្នន័យ ឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse - Delete)
-// ==========================================
 app.delete('/api/bwh-records/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
-
-            // លុបទិន្នន័យក្នុងតារាង duty_unpaid_inventory មុន (ប្រសិនបើមានជាប់ Foreign Key)
             await client.query('DELETE FROM duty_unpaid_inventory WHERE bonded_record_id = $1', [id]);
-
-            // លុបទិន្នន័យក្នុងតារាង bonded_warehouse_records តាម ID
             const result = await client.query('DELETE FROM bonded_warehouse_records WHERE id = $1 RETURNING *;', [id]);
 
             if (result.rows.length === 0) {
@@ -2403,7 +2449,6 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
     } = req.body;
     
     const repairStatus = status || 'In Progress';
-
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
@@ -2655,14 +2700,8 @@ app.get('/api/fleet/yard-operations', async (req, res) => {
 app.post('/api/fleet/yard-operations', async (req, res) => {
     try {
         const { 
-            container_number, 
-            operation_type, 
-            yard_location, 
-            operation_date, 
-            equipment_used, 
-            operator_name, 
-            status, 
-            notes 
+            container_number, operation_type, yard_location, 
+            operation_date, equipment_used, operator_name, status, notes 
         } = req.body;
 
         if (!container_number || !operation_type || !yard_location || !operation_date || !operator_name || !status) {
@@ -2675,21 +2714,13 @@ app.post('/api/fleet/yard-operations', async (req, res) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
             RETURNING *;
         `;
-
         const values = [
-            container_number, 
-            operation_type, 
-            yard_location, 
-            operation_date, 
-            equipment_used || null, 
-            operator_name, 
-            status, 
-            notes || null
+            container_number, operation_type, yard_location, 
+            operation_date, equipment_used || null, operator_name, status, notes || null
         ];
 
         const result = await pool.query(query, values);
         res.status(201).json({ success: true, data: result.rows[0] });
-
     } catch (err) {
         console.error('Error saving yard operation:', err);
         res.status(500).json({ success: false, error: 'មិនអាចរក្សាទុកទិន្នន័យក្នុង Database បានទេ' });
@@ -2700,14 +2731,8 @@ app.put('/api/fleet/yard-operations/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const { 
-            container_number, 
-            operation_type, 
-            yard_location, 
-            operation_date, 
-            equipment_used, 
-            operator_name, 
-            status, 
-            notes 
+            container_number, operation_type, yard_location, 
+            operation_date, equipment_used, operator_name, status, notes 
         } = req.body;
 
         const query = `
@@ -2719,8 +2744,7 @@ app.put('/api/fleet/yard-operations/:id', async (req, res) => {
         `;
         const values = [
             container_number, operation_type, yard_location, 
-            operation_date, equipment_used || null, operator_name, 
-            status, notes || null, id
+            operation_date, equipment_used || null, operator_name, status, notes || null, id
         ];
 
         const result = await pool.query(query, values);
@@ -2766,19 +2790,12 @@ app.get('/api/fleet/cargo-gates', async (req, res) => {
 app.post('/api/fleet/cargo-gates', async (req, res) => {
     try {
         const { 
-            cargo_code, 
-            container_number, 
-            gate_type, 
-            gate_date, 
-            truck_plate_number, 
-            driver_name, 
-            company_name, 
-            status, 
-            notes 
+            cargo_code, container_number, gate_type, gate_date, 
+            truck_plate_number, driver_name, company_name, status, notes 
         } = req.body;
 
         if (!cargo_code || !gate_type || !gate_date || !truck_plate_number || !driver_name) {
-            return res.status(400).json({ success: false, error: 'សូមបំព័នព័ត៌មានសំខាន់ៗឱ្យបានគ្រប់គ្រាន់!' });
+            return res.status(400).json({ success: false, error: 'សូមបំពេញព័ត៌មានសំខាន់ៗឱ្យបានគ្រប់គ្រាន់!' });
         }
 
         const query = `
@@ -2787,22 +2804,13 @@ app.post('/api/fleet/cargo-gates', async (req, res) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING *;
         `;
-
         const values = [
-            cargo_code, 
-            container_number || null, 
-            gate_type, 
-            gate_date, 
-            truck_plate_number, 
-            driver_name, 
-            company_name || null, 
-            status || 'Completed', 
-            notes || null
+            cargo_code, container_number || null, gate_type, gate_date, 
+            truck_plate_number, driver_name, company_name || null, status || 'Completed', notes || null
         ];
 
         const result = await pool.query(query, values);
         res.status(201).json({ success: true, data: result.rows[0] });
-
     } catch (err) {
         console.error('Error saving cargo gate log:', err);
         res.status(500).json({ success: false, error: 'មិនអាចរក្សាទុកទិន្នន័យក្នុង Database បានទេ' });
