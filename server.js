@@ -514,14 +514,14 @@ await client.query(`ALTER TABLE duty_unpaid_inventory ADD COLUMN IF NOT EXISTS v
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-
-        // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH)
+ // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH)
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_permit_records (
                 id SERIAL PRIMARY KEY,
                 permit_number VARCHAR(100) UNIQUE NOT NULL,
                 bonded_record_id INT REFERENCES bonded_warehouse_records(id) ON DELETE CASCADE,
                 container_number VARCHAR(100) NOT NULL,
+                vehicle_vin VARCHAR(100),
                 cargo_description VARCHAR(255) NOT NULL,
                 company_name VARCHAR(255) NOT NULL,
                 permit_type VARCHAR(100) NOT NULL,
@@ -532,6 +532,11 @@ await client.query(`ALTER TABLE duty_unpaid_inventory ADD COLUMN IF NOT EXISTS v
                 notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
+        `);
+
+        // បន្ថែមaddColumn ប្រសិនបើតារាងមានរួចស្រេចហើយ
+        await client.query(`
+            ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);
         `);
 
         // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត (ប្រសិនបើទិន្នន័យទទេ)
@@ -605,7 +610,7 @@ app.post('/api/auth/register', async (req, res) => {
 app.get('/api/customs-permits', async (req, res) => {
     try {
         const query = `
-            SELECT cpr.*, bwr.movement_type, bwr.customs_status as bwh_status 
+            SELECT cpr.*, bwr.movement_type, bwr.customs_status as bwh_status, bwr.vehicle_vin as bwh_vin
             FROM customs_permit_records cpr
             LEFT JOIN bonded_warehouse_records bwr ON cpr.bonded_record_id = bwr.id
             ORDER BY cpr.id DESC;
@@ -619,16 +624,22 @@ app.get('/api/customs-permits', async (req, res) => {
 });
 
 app.post('/api/customs-permits', async (req, res) => {
-    const { permit_number, bonded_record_id, container_number, cargo_description, company_name, permit_type, issue_date, expiry_date, status, officer_name, notes } = req.body;
+    const { 
+        permit_number, bonded_record_id, container_number, vehicle_vin, 
+        cargo_description, company_name, permit_type, issue_date, expiry_date, status, officer_name, notes 
+    } = req.body;
+    
     try {
         const query = `
-            INSERT INTO customs_permit_records (permit_number, bonded_record_id, container_number, cargo_description, company_name, permit_type, issue_date, expiry_date, status, officer_name, notes)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *;
+            INSERT INTO customs_permit_records 
+            (permit_number, bonded_record_id, container_number, vehicle_vin, cargo_description, company_name, permit_type, issue_date, expiry_date, status, officer_name, notes)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;
         `;
         const values = [
             permit_number,
             bonded_record_id || null,
-            container_number,
+            container_number || 'N/A',
+            vehicle_vin || null,
             cargo_description,
             company_name,
             permit_type,
