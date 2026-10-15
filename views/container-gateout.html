@@ -102,13 +102,13 @@
             font-size: 14px;
             background-color: #f8fafc;
             transition: all 0.2s;
+            height: 45px;
         }
         .form-control:focus, .form-select:focus {
             border-color: var(--accent-color);
             box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
             background-color: #fff;
         }
-        /* ប៊ូតុងរក្សាទុកការចេញប្រភេទវែងពេញទទឹង ពណ៌បៃតងស្អាតបែបទំនើប */
         .btn-submit-wide {
             background: linear-gradient(135deg, #059669 0%, #10b981 100%);
             border: none;
@@ -136,27 +136,56 @@
             color: white;
             border: none;
             font-weight: 600;
-            padding: 10px 16px;
+            padding: 0 16px;
             border-radius: 10px;
             font-size: 14px;
+            height: 45px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
             transition: all 0.2s;
         }
         .btn-search:hover {
             background-color: #1d4ed8;
             color: white;
         }
-        .btn-pdf {
-            background-color: #dc2626;
+        .btn-reset {
+            background-color: #475569;
             color: white;
             border: none;
             font-weight: 600;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.85rem;
+            padding: 0 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            height: 45px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        .btn-reset:hover {
+            background-color: #334155;
+            color: white;
+        }
+        .btn-pdf {
+            background-color: #d97706;
+            color: white;
+            border: none;
+            font-weight: 600;
+            padding: 0 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            height: 45px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
             transition: all 0.2s;
         }
         .btn-pdf:hover {
-            background-color: #b91c1c;
+            background-color: #b45309;
             color: white;
         }
         .table thead th {
@@ -266,7 +295,6 @@
                             <input type="text" class="form-control" id="notes" placeholder="កំណត់សម្គាល់បន្ថែម...">
                         </div>
                     </div>
-                    <!-- ប៊ូតុងរក្សាទុកការចេញប្រភេទវែងពេញទទឹង -->
                     <div class="mt-4 pt-2">
                         <button type="submit" class="btn-submit-wide">
                             <i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកការចេញ (Save Gate-Out)
@@ -280,13 +308,10 @@
         <div class="section-card" id="historySection">
             <div class="section-header">
                 <span><i class="fa-solid fa-list-check text-primary me-2"></i> បញ្ជីប្រវត្តិកុងតឺន័រចេញ (Gate-Out History Records)</span>
-                <button type="button" class="btn-pdf" onclick="exportHistoryToPDF()">
-                    <i class="fa-solid fa-file-pdf me-1"></i> Download PDF
-                </button>
             </div>
             <div class="section-body">
-                <!-- Search Filter Form -->
-                <form id="filterForm" class="row g-3 mb-4 bg-light p-3 rounded-3 border">
+                <!-- Search Filter Form រៀបចំប៊ូតុងស្មើគ្នាជាជួរដេក -->
+                <form id="filterForm" class="row g-3 mb-4 bg-light p-3 rounded-3 border align-items-end">
                     <div class="col-md-3">
                         <label for="filterContainer" class="form-label">លេខកុងតឺន័រ:</label>
                         <input type="text" class="form-control" id="filterContainer" placeholder="ឧ. 4567 ឬ TGHU1234567">
@@ -306,16 +331,28 @@
                             <option value="45'">45 Feet</option>
                         </select>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-5">
                         <label class="form-label">ចាប់ពីថ្ងៃទី - ដល់ថ្ងៃទី:</label>
                         <div class="input-group">
                             <input type="date" class="form-control" id="filterFrom">
                             <input type="date" class="form-control" id="filterTo">
                         </div>
                     </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn-search w-100">
+                    
+                    <!-- ប៊ូតុងទាំងបីរៀបចំស្មើគ្នាក្នុងជួរដេកតែមួយ ពណ៌ឆ្លាស់គ្នាស្រស់ស្អាត -->
+                    <div class="col-md-4">
+                        <button type="submit" class="btn-search">
                             <i class="fa-solid fa-search me-1"></i> ស្វែងរក
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn-reset" onclick="resetFilter()">
+                            <i class="fa-solid fa-rotate-right me-1"></i> កំណត់ឡើងវិញ
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn-pdf" onclick="exportHistoryToPDF()">
+                            <i class="fa-solid fa-file-pdf me-1"></i> Download PDF
                         </button>
                     </div>
                 </form>
@@ -516,19 +553,25 @@
             displayData(filtered);
         });
 
+        function resetFilter() {
+            document.getElementById('filterContainer').value = '';
+            document.getElementById('filterShippingLine').value = '';
+            document.getElementById('filterSize').value = '';
+            document.getElementById('filterFrom').value = '';
+            document.getElementById('filterTo').value = '';
+            displayData(allGateOutData);
+        }
+
         function exportHistoryToPDF() {
             const { jsPDF } = window.jspdf;
             const historyElement = document.getElementById('historySection');
 
             const filterForm = historyElement.querySelector('#filterForm');
-            const pdfBtn = historyElement.querySelector('.btn-pdf');
             
             if(filterForm) filterForm.style.display = 'none';
-            if(pdfBtn) pdfBtn.style.display = 'none';
 
             html2canvas(historyElement, { scale: 2 }).then(canvas => {
                 if(filterForm) filterForm.style.display = '';
-                if(pdfBtn) pdfBtn.style.display = '';
 
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
@@ -552,7 +595,6 @@
             }).catch(err => {
                 console.error('PDF Export Error:', err);
                 if(filterForm) filterForm.style.display = '';
-                if(pdfBtn) pdfBtn.style.display = '';
                 alert('មានបញ្ហាក្នុងការទាញយក PDF');
             });
         }
@@ -590,7 +632,7 @@
                 }
             } catch (err) {
                 console.error('Error saving data:', err);
-                alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
+                alert('មានបញ្ហាក្នុងการភ្ជាប់ទៅកាន់ Server');
             }
         });
     </script>
