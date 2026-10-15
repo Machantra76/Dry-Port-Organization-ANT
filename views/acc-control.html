@@ -106,41 +106,41 @@
 </head>
 <body>
     <div class="container">
-        <a href="/" class="back-btn">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)[cite: 7]</a>
+        <a href="/" class="back-btn">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
         
-        <h1>ការគ្រប់គ្រងថវិកា / ចំណាយ[cite: 7]</h1>
-        <div class="eng-sub">Budget & Expense Control Management[cite: 7]</div>
+        <h1>ការគ្រប់គ្រងថវិកា / ចំណាយ</h1>
+        <div class="eng-sub">Budget & Expense Control Management</div>
 
         <!-- ទម្រង់កត់ត្រាចំណាយថ្មី -->
         <div class="section-box">
-            <h3>កត់ត្រាបانចំណាយថ្មី (Record New Expense)[cite: 7]</h3>
+            <h3>កត់ត្រាបانចំណាយថ្មី (Record New Expense)</h3>
             <form id="expenseForm" onsubmit="saveExpense(event)">
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>កាលបរិច្ឆេទចំណាយ (Date):[cite: 7]</label>
+                        <label>កាលបរិច្ឆេទចំណាយ (Date):</label>
                         <input type="date" id="expense_date" required>
                     </div>
                     <div class="form-group">
-                        <label>ប្រភេទចំណាយ (Category):[cite: 7]</label>
+                        <label>ប្រភេទចំណាយ (Category):</label>
                         <select id="category" required>
-                            <option value="Operational Expense">ចំណាយប្រតិបត្តិការ (Operational Expense)[cite: 7]</option>
-                            <option value="Salary & Wages">ប្រាក់បៀវត្សរ៍បុគ្គលិក (Salary & Wages)[cite: 7]</option>
-                            <option value="Maintenance & Repair">ការថែទាំ និងជួសជុល (Maintenance & Repair)[cite: 7]</option>
-                            <option value="Utilities">ទឹក ភ្លើង អ៊ីនធឺណិត (Utilities)[cite: 7]</option>
-                            <option value="Other">ផ្សេងៗ (Other)[cite: 7]</option>
+                            <option value="Operational Expense">ចំណាយប្រតិបត្តិការ (Operational Expense)</option>
+                            <option value="Salary & Wages">ប្រាក់បៀវត្សរ៍បុគ្គលិក (Salary & Wages)</option>
+                            <option value="Maintenance & Repair">ការថែទាំ និងជួសជុល (Maintenance & Repair)</option>
+                            <option value="Utilities">ទឹក ភ្លើង អ៊ីនធឺណិត (Utilities)</option>
+                            <option value="Other">ផ្សេងៗ (Other)</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>បរិមាណទឹកប្រាក់ ($ Amount):[cite: 7]</label>
+                        <label>បរិមាណទឹកប្រាក់ ($ Amount):</label>
                         <input type="number" step="0.01" id="amount" placeholder="0.00" required>
                     </div>
                     <div class="form-group">
-                        <label>បង់ឱ្យ / អ្នកផ្គត់ផ្គង់ (Paid To):[cite: 7]</label>
+                        <label>បង់ឱ្យ / អ្នកផ្គត់ផ្គង់ (Paid To):</label>
                         <input type="text" id="paid_to" placeholder="ឈ្មោះអ្នកទទួលប្រាក់" required>
                     </div>
                 </div>
                 <div class="form-group" style="margin-top: 15px;">
-                    <label>បរិយាយ / មូលហេតុ (Description):[cite: 7]</label>
+                    <label>បរិយាយ / មូលហេតុ (Description):</label>
                     <textarea id="description" placeholder="ពិពណ៌នាបន្ថែមពីចំណាយ..."></textarea>
                 </div>
                 <button type="submit" class="btn-submit">💾 រក្សាទុកចំណាយ (Save Expense)</button>
@@ -149,20 +149,20 @@
 
         <!-- បញ្ជីចំណាយសរុប -->
         <div class="section-box">
-            <h3>បញ្ជីប្រវត្តិចំណាយ (Expense History Records)[cite: 7]</h3>
+            <h3>បញ្ជីប្រវត្តិចំណាយ (Expense History Records)</h3>
             <table>
                 <thead>
                     <tr>
-                        <th>ល.រ (No.)[cite: 7]</th>
-                        <th>កាលបរិច្ឆេទ (Date)[cite: 7]</th>
-                        <th>ប្រភេទ (Category)[cite: 7]</th>
-                        <th>បរិយាយ (Description)[cite: 7]</th>
-                        <th>អ្នកទទួល (Paid To)[cite: 7]</th>
-                        <th>ទឹកប្រាក់ ($)[cite: 7]</th>
+                        <th>ល.រ (No.)</th>
+                        <th>កាលបរិច្ឆេទ (Date)</th>
+                        <th>ប្រភេទ (Category)</th>
+                        <th>បរិយាយ (Description)</th>
+                        <th>អ្នកទទួល (Paid To)</th>
+                        <th>ទឹកប្រាក់ ($)</th>
                     </tr>
                 </thead>
                 <tbody id="expenseTableBody">
-                    <tr><td colspan="6" style="text-align: center; color: #64748b;">កំពុងទាញយកទិន្នន័យ...[cite: 7]</td></tr>
+                    <tr><td colspan="6" style="text-align: center; color: #64748b;">កំពុងទាញយកទិន្នន័យ...</td></tr>
                 </tbody>
             </table>
         </div>
