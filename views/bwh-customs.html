@@ -110,7 +110,7 @@
     <div class="container">
         <div class="action-bar no-print">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="ស្វែងរកលេខលិខិត ឬលេខកុងតឺន័រ..." onkeyup="filterTable()">
+                <input type="text" id="searchInput" placeholder="ស្វែងរកលេខលិខិត លេខកុងតឺន័រ ឬលេខតួឡាន..." onkeyup="filterTable()">
             </div>
             <div>
                 <button type="button" class="btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> ទាញយក PDF</button>
@@ -129,7 +129,8 @@
                             <th>ល.រ</th>
                             <th>លេខលិខិតអនុញ្ញាត</th>
                             <th>លេខកុងតឺន័រ</th>
-                            <th>ឈ្មោះទំនិញ</th>
+                            <th>លេខតួឡាន (VIN)</th>
+                            <th>ឈ្មោះទំនិញ / ម៉ាកឡាន</th>
                             <th>ក្រុមហ៊ុន / ម្ចាស់ទំនិញ</th>
                             <th>ប្រភេទលិខិតអនុញ្ញាត</th>
                             <th>កាលបរិច្ឆេទចេញ</th>
@@ -154,7 +155,7 @@
                 <div class="form-group">
                     <label>ទាញយកទិន្នន័យពី ឃ្លាំងពន្ធដារ (Link from BWH):</label>
                     <select id="bwhSelect" class="form-select" onchange="selectBwhRecord()" required>
-                        <option value="">-- ជ្រើសរើសកុងតឺន័រពី BWH --</option>
+                        <option value="">-- ជ្រើសរើសកុងតឺន័រ ឬយានយន្តពី BWH --</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -166,7 +167,11 @@
                     <input type="text" id="containerNo" class="form-control" readonly required>
                 </div>
                 <div class="form-group">
-                    <label>ឈ្មោះទំនិញ:</label>
+                    <label>លេខតួឡាន / VIN (Chassis No.):</label>
+                    <input type="text" id="vehicleVin" class="form-control" readonly placeholder="គ្មានលេខតួ">
+                </div>
+                <div class="form-group">
+                    <label>ឈ្មោះទំនិញ / ម៉ាកឡាន:</label>
                     <input type="text" id="cargoName" class="form-control" readonly required>
                 </div>
                 <div class="form-group">
@@ -226,9 +231,10 @@
                 const res = await fetch('/api/bwh-records');
                 bwhRecords = await res.json();
                 const select = document.getElementById('bwhSelect');
-                select.innerHTML = '<option value="">-- ជ្រើសរើសកុងតឺន័រពី BWH --</option>';
+                select.innerHTML = '<option value="">-- ជ្រើសរើសកុងតឺន័រ ឬយានយន្តពី BWH --</option>';
                 bwhRecords.forEach(item => {
-                    select.innerHTML += `<option value="${item.id}">${item.container_number} - ${item.cargo_name} (${item.owner_name})</option>`;
+                    const identifier = item.vehicle_vin ? `VIN: ${item.vehicle_vin}` : (item.container_number || 'N/A');
+                    select.innerHTML += `<option value="${item.id}">${identifier} - ${item.cargo_name} (${item.owner_name})</option>`;
                 });
             } catch (err) {
                 console.error('Error:', err);
@@ -239,11 +245,13 @@
             const id = document.getElementById('bwhSelect').value;
             const selected = bwhRecords.find(item => item.id == id);
             if (selected) {
-                document.getElementById('containerNo').value = selected.container_number;
-                document.getElementById('cargoName').value = selected.cargo_name;
-                document.getElementById('companyName').value = selected.owner_name;
+                document.getElementById('containerNo').value = selected.container_number || 'N/A';
+                document.getElementById('vehicleVin').value = selected.vehicle_vin || '';
+                document.getElementById('cargoName').value = selected.cargo_name || '';
+                document.getElementById('companyName').value = selected.owner_name || '';
             } else {
                 document.getElementById('containerNo').value = '';
+                document.getElementById('vehicleVin').value = '';
                 document.getElementById('cargoName').value = '';
                 document.getElementById('companyName').value = '';
             }
@@ -252,8 +260,8 @@
         function renderTable(data) {
             const tbody = document.getElementById('permitTableBody');
             tbody.innerHTML = '';
-            if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យលិខិតអនុញ្ញាតគយឡើយ</td></tr>`;
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យលិខិតអនុញ្ញាតគយឡើយ</td></tr>`;
                 return;
             }
             data.forEach((item, index) => {
@@ -261,13 +269,14 @@
                     <tr>
                         <td>${index + 1}</td>
                         <td><strong>${item.permit_number}</strong></td>
-                        <td>${item.container_number}</td>
-                        <td>${item.cargo_description}</td>
-                        <td>${item.company_name}</td>
-                        <td>${item.permit_type}</td>
+                        <td>${item.container_number || 'N/A'}</td>
+                        <td><span style="color: #2563eb; font-weight: 600;">${item.vehicle_vin || '-'}</span></td>
+                        <td>${item.cargo_description || ''}</td>
+                        <td>${item.company_name || ''}</td>
+                        <td>${item.permit_type || ''}</td>
                         <td>${item.issue_date ? item.issue_date.slice(0, 10) : ''}</td>
-                        <td>${item.officer_name}</td>
-                        <td><span class="badge badge-active">${item.status}</span></td>
+                        <td>${item.officer_name || ''}</td>
+                        <td><span class="badge badge-active">${item.status || 'Active'}</span></td>
                         <td style="text-align: center;" class="no-print">
                             <button class="btn-primary" style="padding: 5px 10px; font-size: 11px; background: #ef4444;" onclick="deletePermit(${item.id})"><i class="fa-solid fa-trash"></i></button>
                         </td>
@@ -282,6 +291,7 @@
                 bonded_record_id: document.getElementById('bwhSelect').value,
                 permit_number: document.getElementById('permitNumber').value.trim(),
                 container_number: document.getElementById('containerNo').value,
+                vehicle_vin: document.getElementById('vehicleVin').value,
                 cargo_description: document.getElementById('cargoName').value,
                 company_name: document.getElementById('companyName').value,
                 permit_type: document.getElementById('permitType').value,
@@ -349,9 +359,10 @@
         function filterTable() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filtered = permitData.filter(i => 
-                i.permit_number.toLowerCase().includes(query) || 
-                i.container_number.toLowerCase().includes(query) ||
-                i.company_name.toLowerCase().includes(query)
+                (i.permit_number && i.permit_number.toLowerCase().includes(query)) || 
+                (i.container_number && i.container_number.toLowerCase().includes(query)) ||
+                (i.vehicle_vin && i.vehicle_vin.toLowerCase().includes(query)) ||
+                (i.company_name && i.company_name.toLowerCase().includes(query))
             );
             renderTable(filtered);
         }
