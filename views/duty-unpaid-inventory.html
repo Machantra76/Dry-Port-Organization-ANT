@@ -168,6 +168,8 @@
         .modal-card {
             background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 500px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .form-group { margin-bottom: 15px; text-align: left; }
         .form-group label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; color: #334155; }
@@ -189,7 +191,7 @@
     <div class="container">
         <div class="action-bar no-print">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="ស្វែងរកលេខកុងតឺន័រ ឬឈ្មោះទំនិញ..." onkeyup="filterTable()">
+                <input type="text" id="searchInput" placeholder="ស្វែងរកលេខកុងតឺន័រ លេខតួ ឬឈ្មោះទំនិញ..." onkeyup="filterTable()">
             </div>
             <div>
                 <button class="btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> ទាញយក PDF</button>
@@ -207,7 +209,8 @@
                         <tr>
                             <th>ល.រ</th>
                             <th>លេខកុងតឺន័រ</th>
-                            <th>ឈ្មោះទំនិញ</th>
+                            <th>លេខតួឡាន (VIN)</th>
+                            <th>ឈ្មោះទំនិញ / ម៉ាកឡាន</th>
                             <th>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន</th>
                             <th>កាលបរិច្ឆេទចូល</th>
                             <th>បរិមាណស្តុក</th>
@@ -240,7 +243,11 @@
                     <input type="text" id="containerNo" class="form-control" readonly required>
                 </div>
                 <div class="form-group">
-                    <label>ឈ្មោះទំនិញ:</label>
+                    <label>លេខតួឡាន / VIN (Chassis No.):</label>
+                    <input type="text" id="vehicleVin" class="form-control" readonly placeholder="គ្មានលេខតួ">
+                </div>
+                <div class="form-group">
+                    <label>ឈ្មោះទំនិញ / ម៉ាកឡាន:</label>
                     <input type="text" id="cargoName" class="form-control" readonly required>
                 </div>
                 <div class="form-group">
@@ -255,6 +262,7 @@
                             <option value="Pallets">Pallets</option>
                             <option value="Cartons">Cartons</option>
                             <option value="CBM">CBM</option>
+                            <option value="Units">Units (គ្រឿង)</option>
                         </select>
                     </div>
                 </div>
@@ -290,41 +298,43 @@
         }
 
         async function loadBwhDropdown() {
-    try {
-        const res = await fetch('/api/bwh-records');
-        bwhRecords = await res.json();
-        const select = document.getElementById('bwhSelect');
-        select.innerHTML = '<option value="">-- ជ្រើសរើសកុងតឺន័រពី BWH --</option>';
-        
-        // ត្រងយកเฉพาะកុងតឺន័រណាដែលមិនទាន់បង់ពន្ធ (Duty Unpaid)
-        const unpaidRecords = bwhRecords.filter(item => {
-            const status = (item.customs_status || item.status || '').toLowerCase();
-            return status.includes('មិនទាន់បង់ពន្ធ') || status.includes('unpaid');
-        });
+            try {
+                const res = await fetch('/api/bwh-records');
+                bwhRecords = await res.json();
+                const select = document.getElementById('bwhSelect');
+                select.innerHTML = '<option value="">-- ជ្រើសរើសទំនិញ/យានយន្តពី BWH --</option>';
+                
+                const unpaidRecords = bwhRecords.filter(item => {
+                    const status = (item.customs_status || item.status || '').toLowerCase();
+                    return status.includes('មិនទាន់បង់ពន្ធ') || status.includes('unpaid');
+                });
 
-        if (unpaidRecords.length === 0) {
-            select.innerHTML = '<option value="">-- គ្មានកុងតឺន័រមិនទាន់បង់ពន្ធឡើយ --</option>';
-            return;
+                if (unpaidRecords.length === 0) {
+                    select.innerHTML = '<option value="">-- គ្មានទំនិញ/យានយន្តមិនទាន់បង់ពន្ធឡើយ --</option>';
+                    return;
+                }
+
+                unpaidRecords.forEach(item => {
+                    const identifier = item.vehicle_vin ? `VIN: ${item.vehicle_vin}` : (item.container_number || 'N/A');
+                    select.innerHTML += `<option value="${item.id}">${identifier} - ${item.cargo_name || item.cargo} (${item.owner_name || item.owner})</option>`;
+                });
+            } catch (err) {
+                console.error('Error:', err);
+            }
         }
-
-        unpaidRecords.forEach(item => {
-            select.innerHTML += `<option value="${item.id}">${item.container_number || item.container} - ${item.cargo_name || item.cargo} (${item.owner_name || item.owner})</option>`;
-        });
-    } catch (err) {
-        console.error('Error:', err);
-    }
-}
 
         function selectBwhRecord() {
             const id = document.getElementById('bwhSelect').value;
             const selected = bwhRecords.find(item => item.id == id);
             
             if (selected) {
-                document.getElementById('containerNo').value = selected.container_number || '';
-                document.getElementById('cargoName').value = selected.cargo_name || '';
-                document.getElementById('ownerName').value = selected.owner_name || '';
+                document.getElementById('containerNo').value = selected.container_number || 'N/A';
+                document.getElementById('vehicleVin').value = selected.vehicle_vin || '';
+                document.getElementById('cargoName').value = selected.cargo_name || selected.cargo || '';
+                document.getElementById('ownerName').value = selected.owner_name || selected.owner || '';
             } else {
                 document.getElementById('containerNo').value = '';
+                document.getElementById('vehicleVin').value = '';
                 document.getElementById('cargoName').value = '';
                 document.getElementById('ownerName').value = '';
             }
@@ -333,21 +343,22 @@
         function renderTable(data) {
             const tbody = document.getElementById('inventoryTableBody');
             tbody.innerHTML = '';
-            if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យស្តុកទំនិញមិនទាន់បង់ពន្ធឡើយ</td></tr>`;
+            if (!data || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យស្តុកទំនិញមិនទាន់បង់ពន្ធឡើយ</td></tr>`;
                 return;
             }
             data.forEach((item, index) => {
                 tbody.innerHTML += `
                     <tr>
                         <td>${index + 1}</td>
-                        <td><strong>${item.container_number}</strong></td>
-                        <td>${item.cargo_name}</td>
-                        <td>${item.owner_name}</td>
+                        <td><strong>${item.container_number || 'N/A'}</strong></td>
+                        <td><span style="color: #2563eb; font-weight: 600;">${item.vehicle_vin || '-'}</span></td>
+                        <td>${item.cargo_name || ''}</td>
+                        <td>${item.owner_name || ''}</td>
                         <td>${item.entry_date ? item.entry_date.slice(0, 10) : ''}</td>
                         <td><strong>${item.quantity}</strong> ${item.unit}</td>
-                        <td>${item.warehouse_location}</td>
-                        <td><span class="badge badge-pending">${item.tax_status}</span></td>
+                        <td>${item.warehouse_location || ''}</td>
+                        <td><span class="badge badge-pending">${item.tax_status || 'Pending Duty Payment'}</span></td>
                         <td style="text-align: center;" class="no-print">
                             <button class="btn-primary" style="padding: 5px 10px; font-size: 11px; background: #ef4444;" onclick="deleteItem(${item.id})"><i class="fa-solid fa-trash"></i></button>
                         </td>
@@ -361,6 +372,7 @@
             const payload = {
                 bonded_record_id: document.getElementById('bwhSelect').value,
                 container_number: document.getElementById('containerNo').value,
+                vehicle_vin: document.getElementById('vehicleVin').value,
                 cargo_name: document.getElementById('cargoName').value,
                 owner_name: document.getElementById('ownerName').value,
                 quantity: document.getElementById('qty').value,
@@ -397,7 +409,7 @@
         }
 
         function openModal() { 
-            loadBwhDropdown(); // Refresh dropdown ពេលបើក Modal
+            loadBwhDropdown();
             document.getElementById('inventoryModal').style.display = 'flex'; 
         }
         
@@ -423,6 +435,7 @@
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filtered = inventoryData.filter(i => 
                 (i.container_number && i.container_number.toLowerCase().includes(query)) || 
+                (i.vehicle_vin && i.vehicle_vin.toLowerCase().includes(query)) ||
                 (i.cargo_name && i.cargo_name.toLowerCase().includes(query))
             );
             renderTable(filtered);
