@@ -55,14 +55,14 @@
         }
         .btn-back:hover { background: white; color: var(--primary-color); }
 
-        .container { max-width: 1400px; margin: 30px auto; padding: 0 20px; }
+        .container { max-width: 1500px; margin: 30px auto; padding: 0 20px; }
 
         .action-bar {
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; flex-wrap: wrap;
         }
 
         .search-box input {
-            padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; width: 300px; font-family: 'Kantumruy Pro', sans-serif; outline: none;
+            padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; width: 320px; font-family: 'Kantumruy Pro', sans-serif; outline: none;
         }
 
         .btn-primary {
@@ -81,17 +81,20 @@
 
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
         .badge-active { background-color: #d1fae5; color: #065f46; }
+        .badge-type { background-color: #e0f2fe; color: #0369a1; font-weight: 700; }
 
         /* Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000;
         }
         .modal-card {
-            background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 600px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto;
+            background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 650px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto;
         }
         .form-group { margin-bottom: 15px; text-align: left; }
         .form-group label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; color: #334155; }
         .form-control, .form-select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-family: 'Kantumruy Pro', sans-serif; outline: none; }
+        .form-row { display: flex; gap: 15px; }
+        .form-row .form-group { flex: 1; }
     </style>
 </head>
 <body>
@@ -110,7 +113,7 @@
     <div class="container">
         <div class="action-bar no-print">
             <div class="search-box">
-                <input type="text" id="searchInput" placeholder="ស្វែងរកលេខលិខិត លេខកុងតឺន័រ ឬលេខតួឡាន..." onkeyup="filterTable()">
+                <input type="text" id="searchInput" placeholder="ស្វែងរកលេខលិខិត, កុងតឺន័រ, លេខតួ ឬ Reg No..." onkeyup="filterTable()">
             </div>
             <div>
                 <button type="button" class="btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> ទាញយក PDF</button>
@@ -127,7 +130,10 @@
                     <thead>
                         <tr>
                             <th>ល.រ</th>
-                            <th>លេខលិខិតអនុញ្ញាត</th>
+                            <th>ប្រភេទ (I/T)</th>
+                            <th>លេខលិខិតអនុញ្ញាតគយ</th>
+                            <th>លេខចុះបញ្ជីគយ (Reg No.)</th>
+                            <th>លេខ Manifest</th>
                             <th>លេខកុងតឺន័រ</th>
                             <th>លេខតួឡាន (VIN)</th>
                             <th>ឈ្មោះទំនិញ / ម៉ាកឡាន</th>
@@ -155,29 +161,56 @@
                 <div class="form-group">
                     <label>ទាញយកទិន្នន័យពី ឃ្លាំងពន្ធដារ (Link from BWH):</label>
                     <select id="bwhSelect" class="form-select" onchange="selectBwhRecord()" required>
-                        <option value="">-- ជ្រើសរើសកុងតឺន័រ ឬយានយន្តពី BWH --</option>
+                        <option value="">-- ជ្រើសរើសទំនិញ/យានយន្តពី BWH --</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>លេខលិខិតអនុញ្ញាតគយ (Customs Permit No.):</label>
-                    <input type="text" id="permitNumber" class="form-control" placeholder="ឧ. PER-2026-001" required>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ប្រភេទឯកសារ (Type):</label>
+                        <select id="docType" class="form-select">
+                            <option value="I">I (Import - នាំចូល)</option>
+                            <option value="T">T (Transit - ឆ្លងកាត់)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>លេខលិខិតអនុញ្ញាតគយ (Permit No.):</label>
+                        <input type="text" id="permitNumber" class="form-control" placeholder="ឧ. PER-2026-001" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>លេខកុងតឺន័រ:</label>
-                    <input type="text" id="containerNo" class="form-control" readonly required>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>លេខចុះបញ្ជីគយ (Customs Reg No.):</label>
+                        <input type="text" id="customsRegNo" class="form-control" placeholder="ឧ. CUST-REG-8899">
+                    </div>
+                    <div class="form-group">
+                        <label>លេខ Manifest No.:</label>
+                        <input type="text" id="manifestNo" class="form-control" placeholder="ឧ. MAN-2026-112">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>លេខតួឡាន / VIN (Chassis No.):</label>
-                    <input type="text" id="vehicleVin" class="form-control" readonly placeholder="គ្មានលេខតួ">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>លេខកុងតឺន័រ:</label>
+                        <input type="text" id="containerNo" class="form-control" readonly required>
+                    </div>
+                    <div class="form-group">
+                        <label>លេខតួឡាន / VIN (Chassis No.):</label>
+                        <input type="text" id="vehicleVin" class="form-control" readonly placeholder="គ្មានលេខតួ">
+                    </div>
                 </div>
+
                 <div class="form-group">
                     <label>ឈ្មោះទំនិញ / ម៉ាកឡាន:</label>
                     <input type="text" id="cargoName" class="form-control" readonly required>
                 </div>
+
                 <div class="form-group">
                     <label>ក្រុមហ៊ុន / ម្ចាស់ទំនិញ:</label>
                     <input type="text" id="companyName" class="form-control" readonly required>
                 </div>
+
                 <div class="form-group">
                     <label>ប្រភេទលិខិតអនុញ្ញាត (Permit Type):</label>
                     <select id="permitType" class="form-select">
@@ -186,18 +219,23 @@
                         <option value="លិខិតផ្ទេរទំនិញចេញក្រៅឃ្លាំង">លិខិតផ្ទេរទំនិញចេញក្រៅឃ្លាំង</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>កាលបរិច្ឆេទចេញលិខិត (Issue Date):</label>
-                    <input type="date" id="issueDate" class="form-control" required>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>កាលបរិច្ឆេទចេញលិខិត (Issue Date):</label>
+                        <input type="date" id="issueDate" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>មន្ត្រីគយទទួលបន្ទុក (Customs Officer):</label>
+                        <input type="text" id="officerName" class="form-control" placeholder="ឈ្មោះមន្ត្រីគយ" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>មន្ត្រីគយទទួលបន្ទុក (Customs Officer):</label>
-                    <input type="text" id="officerName" class="form-control" placeholder="ឈ្មោះមន្ត្រីគយ" required>
-                </div>
+
                 <div class="form-group">
                     <label>កំណត់សម្គាល់ (Notes):</label>
                     <textarea id="notes" class="form-control" rows="2" placeholder="ព័ត៌មានបន្ថែម..."></textarea>
                 </div>
+
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
                     <button type="button" class="btn-primary" style="background: #cbd5e1; color: #334155;" onclick="closeModal()">បោះបង់</button>
                     <button type="submit" class="btn-primary">រក្សាទុក</button>
@@ -231,10 +269,10 @@
                 const res = await fetch('/api/bwh-records');
                 bwhRecords = await res.json();
                 const select = document.getElementById('bwhSelect');
-                select.innerHTML = '<option value="">-- ជ្រើសរើសកុងតឺន័រ ឬយានយន្តពី BWH --</option>';
+                select.innerHTML = '<option value="">-- ជ្រើសរើសទំនិញ/យានយន្តពី BWH --</option>';
                 bwhRecords.forEach(item => {
                     const identifier = item.vehicle_vin ? `VIN: ${item.vehicle_vin}` : (item.container_number || 'N/A');
-                    select.innerHTML += `<option value="${item.id}">${identifier} - ${item.cargo_name} (${item.owner_name})</option>`;
+                    select.innerHTML += `<option value="${item.id}">${identifier} - ${item.cargo_name || item.cargo} (${item.owner_name || item.owner})</option>`;
                 });
             } catch (err) {
                 console.error('Error:', err);
@@ -247,8 +285,8 @@
             if (selected) {
                 document.getElementById('containerNo').value = selected.container_number || 'N/A';
                 document.getElementById('vehicleVin').value = selected.vehicle_vin || '';
-                document.getElementById('cargoName').value = selected.cargo_name || '';
-                document.getElementById('companyName').value = selected.owner_name || '';
+                document.getElementById('cargoName').value = selected.cargo_name || selected.cargo || '';
+                document.getElementById('companyName').value = selected.owner_name || selected.owner || '';
             } else {
                 document.getElementById('containerNo').value = '';
                 document.getElementById('vehicleVin').value = '';
@@ -261,14 +299,17 @@
             const tbody = document.getElementById('permitTableBody');
             tbody.innerHTML = '';
             if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យលិខិតអនុញ្ញាតគយឡើយ</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="14" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យលិខិតអនុញ្ញាតគយឡើយ</td></tr>`;
                 return;
             }
             data.forEach((item, index) => {
                 tbody.innerHTML += `
                     <tr>
                         <td>${index + 1}</td>
+                        <td><span class="badge badge-type">${item.doc_type || 'I'}</span></td>
                         <td><strong>${item.permit_number}</strong></td>
+                        <td><span style="color: #0369a1; font-weight: 600;">${item.customs_reg_number || '-'}</span></td>
+                        <td>${item.manifest_number || '-'}</td>
                         <td>${item.container_number || 'N/A'}</td>
                         <td><span style="color: #2563eb; font-weight: 600;">${item.vehicle_vin || '-'}</span></td>
                         <td>${item.cargo_description || ''}</td>
@@ -289,7 +330,10 @@
             e.preventDefault();
             const payload = {
                 bonded_record_id: document.getElementById('bwhSelect').value,
+                doc_type: document.getElementById('docType').value,
                 permit_number: document.getElementById('permitNumber').value.trim(),
+                customs_reg_number: document.getElementById('customsRegNo').value.trim(),
+                manifest_number: document.getElementById('manifestNo').value.trim(),
                 container_number: document.getElementById('containerNo').value,
                 vehicle_vin: document.getElementById('vehicleVin').value,
                 cargo_description: document.getElementById('cargoName').value,
@@ -360,6 +404,8 @@
             const query = document.getElementById('searchInput').value.toLowerCase();
             const filtered = permitData.filter(i => 
                 (i.permit_number && i.permit_number.toLowerCase().includes(query)) || 
+                (i.customs_reg_number && i.customs_reg_number.toLowerCase().includes(query)) ||
+                (i.manifest_number && i.manifest_number.toLowerCase().includes(query)) ||
                 (i.container_number && i.container_number.toLowerCase().includes(query)) ||
                 (i.vehicle_vin && i.vehicle_vin.toLowerCase().includes(query)) ||
                 (i.company_name && i.company_name.toLowerCase().includes(query))
