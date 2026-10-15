@@ -111,15 +111,12 @@
         .submit-btn { background: #10b981; color: white; width: 100%; height: auto; }
         .submit-btn:hover { background: #059669; }
         
-        /* ប៊ូតុងទី១: ពណ៌ខៀវស្រស់ (Search / Filter)[cite: 9] */
         .filter-btn { background: #2563eb; color: white; }
         .filter-btn:hover { background: #1d4ed8; }
 
-        /* ប៊ូតុងទី២: ពណ៌ប្រផេះដិត (Reset)[cite: 9] */
         .reset-btn { background: #475569; color: white; }
         .reset-btn:hover { background: #334155; }
 
-        /* ប៊ូតុងទី៣: ពណ៌ទឹកក្រូច / លឿងទុំ (Print / PDF)[cite: 9] */
         .print-btn { background: #d97706; color: white; }
         .print-btn:hover { background: #b45309; }
 
@@ -141,7 +138,6 @@
         th { background: #1e3c72; color: white; font-weight: 600; }
         tr:hover { background: #f1f5f9; }
         
-        /* Status Badges */
         .badge-pending { background: #fef3c7; color: #92400e; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 700; }
         .badge-paid { background: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 700; }
         .badge-overdue { background: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 700; }
@@ -163,96 +159,94 @@
 </head>
 <body>
     <div class="container">
-        <a href="/" class="back-btn no-print">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)[cite: 9]</a>
+        <a href="/" class="back-btn no-print">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
         
         <div class="invoice-header">
-            <h2>ANT DRY PORT[cite: 9]</h2>
-            <h3>របាយការណ៍គណនេយ្យទទួល (ACCOUNTS RECEIVABLE REPORT)[cite: 9]</h3>
+            <h2>ANT DRY PORT</h2>
+            <h3>របាយការណ៍គណនេយ្យទទួល (ACCOUNTS RECEIVABLE REPORT)</h3>
             <hr>
         </div>
 
-        <h1>គណនេយ្យទទួល[cite: 9]</h1>
-        <div class="eng-sub no-print">Accounts Receivable System & Tracking[cite: 9]</div>
+        <h1>គណនេយ្យទទួល</h1>
+        <div class="eng-sub no-print">Accounts Receivable System & Tracking</div>
         
-        <!-- Form កត់ត្រាថ្មី[cite: 9] -->
         <div class="section-box no-print">
-            <h3>កត់ត្រាគណនេយ្យទទួលថ្មី (Record New Receivable)[cite: 9]</h3>
+            <h3>កត់ត្រាគណនេយ្យទទួលថ្មី (Record New Receivable)</h3>
             <form id="receivableForm">
                 <div class="form-row">
                     <div>
-                        <label>ឈ្មោះអតិថិជន / ដៃគូ (Customer / Partner Name):[cite: 9]</label>
-                        <input type="text" id="customer_name" required placeholder="ឧ. ក្រុមហ៊ុន ABC (Ex. ABC Company)[cite: 9]">
+                        <label>ឈ្មោះអតិថិជន / ដៃគូ (Customer / Partner Name):</label>
+                        <input type="text" id="customer_name" required placeholder="ឧ. ក្រុមហ៊ុន ABC (Ex. ABC Company)">
                     </div>
                     <div>
-                        <label>ទឹកប្រាក់ត្រូវទទួល ($) (Amount):[cite: 9]</label>
-                        <input type="number" id="amount" required step="0.01" placeholder="ឧ. 2500.00 (Ex. 2500.00)[cite: 9]">
+                        <label>ទឹកប្រាក់ត្រូវទទួល ($) (Amount):</label>
+                        <input type="number" id="amount" required step="0.01" placeholder="ឧ. 2500.00 (Ex. 2500.00)">
                     </div>
                 </div>
                 <div class="form-row">
                     <div>
-                        <label>កាលបរិច្ឆេទវិក្កយបត្រ (Invoice Date):[cite: 9]</label>
+                        <label>កាលបរិច្ឆេទវិក្កយបត្រ (Invoice Date):</label>
                         <input type="date" id="invoice_date" required>
                     </div>
                     <div>
-                        <label>កាលបរិច្ឆេទកំណត់បង់ប្រាក់ (Due Date):[cite: 9]</label>
+                        <label>កាលបរិច្ឆេទកំណត់បង់ប្រាក់ (Due Date):</label>
                         <input type="date" id="due_date" required>
                     </div>
                 </div>
                 <div class="form-row">
                     <div>
-                        <label>ស្ថានភាពទូទាត់ (Payment Status):[cite: 9]</label>
+                        <label>ស្ថានភាពទូទាត់ (Payment Status):</label>
                         <select id="status" required>
-                            <option value="Pending">មិនទាន់ទូទាត់ (Pending)[cite: 9]</option>
-                            <option value="Paid">បានទូទាត់រួច (Paid)[cite: 9]</option>
+                            <option value="Pending">មិនទាន់ទូទាត់ (Pending)</option>
+                            <option value="Paid">បានទូទាត់រួច (Paid)</option>
                         </select>
                     </div>
                     <div>
-                        <label>បរិយាយ / កំណត់សម្គាល់ (Description / Notes):[cite: 9]</label>
-                        <input type="text" id="description" placeholder="ព័ត៌មានលម្អិត... (Details...)[cite: 9]">
+                        <label>បរិយាយ / កំណត់សម្គាល់ (Description / Notes):</label>
+                        <input type="text" id="description" placeholder="ព័ត៌មានលម្អិត... (Details...)">
                     </div>
                 </div>
-                <button type="submit" class="submit-btn">រក្សាទុកគណនេយ្យទទួល (Save Receivable)[cite: 9]</button>
+                <button type="submit" class="submit-btn">រក្សាទុកគណនេយ្យទទួល (Save Receivable)</button>
             </form>
         </div>
 
-        <!-- ផ្នែកត្រង និងតារាងបង្ហាញ[cite: 9] -->
         <div class="section-box">
-            <h3 style="margin-top: 0; padding-bottom: 8px;">តារាងតាមដានគណនេយ្យទទួល (Receivables List & Report)[cite: 9]</h3>
+            <h3 style="margin-top: 0; padding-bottom: 8px;">តារាងតាមដានគណនេយ្យទទួល (Receivables List & Report)</h3>
             
             <div class="filter-row no-print" style="margin-top: 15px;">
                 <div>
-                    <label>ចាប់ពីថ្ងៃទី (From Date):[cite: 9]</label>
+                    <label>ចាប់ពីថ្ងៃទី (From Date):</label>
                     <input type="date" id="filter_from">
                 </div>
                 <div>
-                    <label>ដល់ថ្ងៃទី (To Date):[cite: 9]</label>
+                    <label>ដល់ថ្ងៃទី (To Date):</label>
                     <input type="date" id="filter_to">
                 </div>
                 <div>
-                    <button type="button" class="filter-btn" onclick="loadReceivables()">🔍 ស្វែងរក / ត្រង[cite: 9]</button>
+                    <button type="button" class="filter-btn" onclick="loadReceivables()">🔍 ស្វែងរក / ត្រង</button>
                 </div>
                 <div>
-                    <button type="button" class="reset-btn" onclick="resetFilter()">🔄 កំណត់ឡើងវិញ[cite: 9]</button>
+                    <button type="button" class="reset-btn" onclick="resetFilter()">🔄 កំណត់ឡើងវិញ</button>
                 </div>
                 <div>
-                    <button type="button" class="print-btn" onclick="window.print()">🖨️ បោះពុម្ព / PDF[cite: 9]</button>
+                    <button type="button" class="print-btn" onclick="window.print()">🖨️ បោះពុម្ព / PDF</button>
                 </div>
             </div>
 
             <table>
                 <thead>
                     <tr>
-                        <th>អតិថិជន (Customer)[cite: 9]</th>
-                        <th>កាលបរិច្ឆេទ (Invoice Date)[cite: 9]</th>
-                        <th>ថ្ងៃកំណត់ (Due Date)[cite: 9]</th>
-                        <th>ទឹកប្រាក់ ($) (Amount)[cite: 9]</th>
-                        <th>ស្ថានភាព (Status)[cite: 9]</th>
-                        <th>បរិយាយ (Description)[cite: 9]</th>
-                        <th class="no-print">សកម្មភាព (Actions)[cite: 9]</th>
+                        <th>អតិថិជន (Customer)</th>
+                        <th>កាលបរិច្ឆេទ (Invoice Date)</th>
+                        <th>ថ្ងៃកំណត់ (Due Date)</th>
+                        <th>ទឹកប្រាក់ ($) (Amount)</th>
+                        <th>ស្ថានភាព (Status)</th>
+                        <th>បរិយាយ (Description)</th>
+                        <th class="no-print">សកម្មភាព (Actions)</th>
                     </tr>
                 </thead>
                 <tbody id="receivableTableBody">
-                    <tr><td colspan="7" style="text-align: center; color: #64748b;">កំពុងទាញយកទិន្នន័យ... (Loading Data...)[cite: 9]</td></tr>
+                    <tr><td colspan="7" style="text-align: center; color: #64748b;">កំពុងទាញយកទិន្នន័យ... (Loading Data...)</td></tr>
                 </tbody>
             </table>
         </div>
@@ -275,7 +269,7 @@
                 tbody.innerHTML = '';
                 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #64748b;">មិនមានទិន្នន័យគណនេយ្យទទួលក្នុងកំឡុងពេលនេះទេ (No receivable data found)[cite: 9]</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #64748b;">មិនមានទិន្នន័យគណនេយ្យទទួលក្នុងកំឡុងពេលនេះទេ (No receivable data found)</td></tr>';
                     return;
                 }
                 
@@ -299,31 +293,31 @@
                     }
 
                     let actionButtons = `
-                        <a class="action-link" onclick="printInvoice('${item.id}', '${item.customer_name}', '${invDate}', '${dueDate}', '${item.amount}', '${statusText}', '${item.description || '-'}')">🧾 វិក្កយបត្រ[cite: 9]</a>
+                        <a class="action-link" onclick="printInvoice('${item.id}', '${item.customer_name}', '${invDate}', '${dueDate}', '${item.amount}', '${statusText}', '${item.description || '-'}')">🧾 វិក្កយបត្រ</a>
                     `;
 
                     if (item.status !== 'Paid') {
-                        actionButtons += ` | <a class="action-link" style="color: #10b981;" onclick="markAsPaid('${item.id}')">✅ បង់ប្រាក់រួច[cite: 9]</a>`;
+                        actionButtons += ` | <a class="action-link" style="color: #10b981;" onclick="markAsPaid('${item.id}')">✅ បង់ប្រាក់រួច</a>`;
                     }
 
                     tbody.innerHTML += `<tr>
-                        <td><strong>${item.customer_name}</strong>[cite: 9]</td>
-                        <td>${invDate}[cite: 9]</td>
-                        <td>${dueDate}[cite: 9]</td>
-                        <td>$${parseFloat(item.amount).toFixed(2)}[cite: 9]</td>
-                        <td><span class="${badgeClass}">${statusText}</span>[cite: 9]</td>
-                        <td>${item.description || '-'}[cite: 9]</td>
+                        <td><strong>${item.customer_name}</strong></td>
+                        <td>${invDate}</td>
+                        <td>${dueDate}</td>
+                        <td>$${parseFloat(item.amount).toFixed(2)}</td>
+                        <td><span class="${badgeClass}">${statusText}</span></td>
+                        <td>${item.description || '-'}</td>
                         <td class="no-print">${actionButtons}</td>
                     </tr>`;
                 });
             } catch (err) { 
                 console.error(err);
-                document.getElementById('receivableTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">មានបញ្ហាក្នុងការទាញយកទិន្នន័យ (Error loading data)[cite: 9]</td></tr>';
+                document.getElementById('receivableTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">មានបញ្ហាក្នុងការទាញយកទិន្នន័យ (Error loading data)</td></tr>';
             }
         }
 
         async function markAsPaid(receivableId) {
-            if (confirm('តើអ្នកពិតជាចង់កំណត់ថាអតិថិជនបានទូទាត់ប្រាក់រួចហើយមែនទេ?[cite: 9]')) {
+            if (confirm('តើអ្នកពិតជាចង់កំណត់ថាអតិថិជនបានទូទាត់ប្រាក់រួចហើយមែនទេ?')) {
                 try {
                     const response = await fetch(`/api/receivables/${receivableId}`, {
                         method: 'PUT',
@@ -332,14 +326,14 @@
                     });
 
                     if (response.ok) {
-                        alert('បានកែប្រែស្ថានភាពជា "បានទូទាត់" ដោយជោគជ័យ![cite: 9]');
+                        alert('បានកែប្រែស្ថានភាពជា "បានទូទាត់" ដោយជោគជ័យ!');
                         loadReceivables();
                     } else {
-                        alert('មានបញ្ហាក្នុងការកែប្រែទិន្នន័យ![cite: 9]');
+                        alert('មានបញ្ហាក្នុងការកែប្រែទិន្នន័យ!');
                     }
                 } catch (error) {
                     console.error('Error:', error);
-                    alert('មានបញ្ហា kết nối ទៅកាន់ Server![cite: 9]');
+                    alert('មានបញ្ហា kết nối ទៅកាន់ Server!');
                 }
             }
         }
@@ -356,7 +350,7 @@
             printWindow.document.write(`
                 <html>
                 <head>
-                    <title>វិក្កយបត្រគណនេយ្យទទួល - Accounts Receivable Invoice[cite: 9]</title>
+                    <title>វិក្កយបត្រគណនេយ្យទទួល - Accounts Receivable Invoice</title>
                     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
                     <style>
                         body { font-family: 'Kantumruy Pro', sans-serif; padding: 40px; color: #333; }
@@ -373,28 +367,28 @@
                 </head>
                 <body>
                     <div class="invoice-box">
-                        <h2>ANT DRY PORT[cite: 9]</h2>
+                        <h2>ANT DRY PORT</h2>
                         
-                        <div class="sub-title">វិក្កយបត្រគណនេយ្យទទួល[cite: 9]</div>
-                        <div class="eng-sub-title">(ACCOUNTS RECEIVABLE INVOICE)[cite: 9]</div>
+                        <div class="sub-title">វិក្កយបត្រគណនេយ្យទទួល</div>
+                        <div class="eng-sub-title">(ACCOUNTS RECEIVABLE INVOICE)</div>
                         
                         <div class="meta-info">
-                            <div><strong>លេខវិក្កយបត្រ (Invoice No.):</strong> ${invoiceNo}[cite: 9]</div>
-                            <div><strong>កាលបរិច្ឆេទ (Date):</strong> ${invDate}[cite: 9]</div>
+                            <div><strong>លេខវិក្កយបត្រ (Invoice No.):</strong> ${invoiceNo}</div>
+                            <div><strong>កាលបរិច្ឆេទ (Date):</strong> ${invDate}</div>
                         </div>
 
-                        <div class="info-row"><span class="label">អតិថិជន (Customer):</span> <span>${customer}</span>[cite: 9]</div>
-                        <div class="info-row"><span class="label">ថ្ងៃកំណត់បង់ប្រាក់ (Due Date):</span> <span>${dueDate}</span>[cite: 9]</div>
-                        <div class="info-row"><span class="label">ស្ថានភាព (Status):</span> <span>${status}</span>[cite: 9]</div>
-                        <div class="info-row"><span class="label">បរិយាយ (Description):</span> <span>${desc}</span>[cite: 9]</div>
+                        <div class="info-row"><span class="label">អតិថិជន (Customer):</span> <span>${customer}</span></div>
+                        <div class="info-row"><span class="label">ថ្ងៃកំណត់បង់ប្រាក់ (Due Date):</span> <span>${dueDate}</span></div>
+                        <div class="info-row"><span class="label">ស្ថានភាព (Status):</span> <span>${status}</span></div>
+                        <div class="info-row"><span class="label">បរិយាយ (Description):</span> <span>${desc}</span></div>
                         
                         <div class="total-box">
-                            ទឹកប្រាក់សរុប (Total Amount Due): $${parseFloat(amount).toFixed(2)}[cite: 9]
+                            ទឹកប្រាក់សរុប (Total Amount Due): $${parseFloat(amount).toFixed(2)}
                         </div>
 
                         <div class="footer">
-                            <div><br><br>ហត្ថលេខាអ្នកចេញវិក្កយបត្រ<br>Issued By[cite: 9]</div>
-                            <div><br><br>ហត្ថលេខាអតិថិជន<br>Customer's Signature[cite: 9]</div>
+                            <div><br><br>ហត្ថលេខាអ្នកចេញវិក្កយបត្រ<br>Issued By</div>
+                            <div><br><br>ហត្ថលេខាអតិថិជន<br>Customer's Signature</div>
                         </div>
                     </div>
                     <script>
@@ -425,12 +419,12 @@
                 });
                 
                 if (res.ok) {
-                    alert('បានរក្សាទុកគណនេយ្យទទួលដោយជោគជ័យ! (Successfully saved receivable!)[cite: 9]');
+                    alert('បានរក្សាទុកគណនេយ្យទទួលដោយជោគជ័យ! (Successfully saved receivable!)');
                     e.target.reset();
                     document.getElementById('invoice_date').valueAsDate = new Date();
                     loadReceivables();
                 } else {
-                    alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ! (Error saving data!)[cite: 9]');
+                    alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ! (Error saving data!)');
                 }
             } catch (error) {
                 console.error(error);
