@@ -79,6 +79,7 @@
             font-size: 14px;
             background-color: #f8fafc;
             transition: all 0.2s;
+            height: 45px;
         }
         .form-control:focus, .form-select:focus {
             box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
@@ -122,17 +123,22 @@
             color: white;
         }
         .btn-pdf {
-            background-color: #dc2626;
+            background-color: #d97706;
             color: white;
             border: none;
             font-weight: 600;
             padding: 8px 16px;
             border-radius: 8px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
+            height: 45px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
             transition: all 0.2s;
         }
         .btn-pdf:hover {
-            background-color: #b91c1c;
+            background-color: #b45309;
             color: white;
             transform: translateY(-1px);
         }
@@ -261,13 +267,10 @@
             <div class="card-inner mt-4" id="historySection">
                 <div class="card-inner-title">
                     <span><i class="fas fa-list-alt text-primary me-2"></i> បញ្ជីទីតាំងកុងតឺន័រក្នុងទីធ្លា (Yard Inventory & Mapping)</span>
-                    <button type="button" class="btn-pdf" onclick="exportHistoryToPDF()">
-                        <i class="fas fa-file-pdf me-1"></i> Download PDF
-                    </button>
                 </div>
                 
-                <!-- Search Filter Form -->
-                <form id="filterForm" class="row g-3 mb-4 bg-light p-3 rounded-3 border">
+                <!-- Search Filter Form រៀបចំប៊ូតុងស្មើគ្នាជាជួរដេក -->
+                <form id="filterForm" class="row g-3 mb-4 bg-light p-3 rounded-3 border align-items-end">
                     <div class="col-md-3">
                         <label class="form-label">លេខកុងតឺន័រ:</label>
                         <input type="text" id="filterContainer" class="form-control" placeholder="ឧ. 4567 ឬ TGHU1234567">
@@ -303,12 +306,21 @@
                             <input type="date" id="dateTo" class="form-control form-control-sm">
                         </div>
                     </div>
-                    <div class="col-12 text-end mt-3">
-                        <button type="submit" class="btn btn-primary px-4 py-2 fw-semibold shadow-sm" style="border-radius: 8px; background-color: #2563eb;">
+                    
+                    <!-- ប៊ូតុងទាំងបីរៀបចំស្មើគ្នាក្នុងជួរដេកតែមួយ ពណ៌ឆ្លាស់គ្នា -->
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100 fw-bold" style="height: 45px; border-radius: 8px; background-color: #2563eb; border: none;">
                             <i class="fas fa-search me-1"></i> ស្វែងរកទិន្នន័យ
                         </button>
-                        <button type="button" class="btn btn-outline-secondary px-3 py-2 ms-2 fw-semibold" onclick="resetFilter()" style="border-radius: 8px;">
-                            កំណត់ឡើងវិញ
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-secondary w-100 fw-bold" onclick="resetFilter()" style="height: 45px; border-radius: 8px; background-color: #475569; border: none;">
+                            <i class="fas fa-rotate-right me-1"></i> កំណត់ឡើងវិញ
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn-pdf w-100 fw-bold" onclick="exportHistoryToPDF()">
+                            <i class="fas fa-file-pdf me-1"></i> Download PDF
                         </button>
                     </div>
                 </form>
@@ -661,16 +673,13 @@
             const historyElement = document.getElementById('historySection');
 
             const filterForm = historyElement.querySelector('#filterForm');
-            const pdfBtn = historyElement.querySelector('.btn-pdf');
             const actionCells = historyElement.querySelectorAll('th:nth-child(11), td:nth-child(11)');
             
             if(filterForm) filterForm.style.display = 'none';
-            if(pdfBtn) pdfBtn.style.display = 'none';
             actionCells.forEach(cell => cell.style.display = 'none');
 
             html2canvas(historyElement, { scale: 2 }).then(canvas => {
                 if(filterForm) filterForm.style.display = '';
-                if(pdfBtn) pdfBtn.style.display = '';
                 actionCells.forEach(cell => cell.style.display = '');
 
                 const imgData = canvas.toDataURL('image/png');
@@ -695,7 +704,6 @@
             }).catch(err => {
                 console.error('PDF Export Error:', err);
                 if(filterForm) filterForm.style.display = '';
-                if(pdfBtn) pdfBtn.style.display = '';
                 actionCells.forEach(cell => cell.style.display = '');
                 alert('មានបញ្ហាក្នុងការទាញយក PDF');
             });
