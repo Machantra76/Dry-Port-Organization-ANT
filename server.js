@@ -461,7 +461,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣០. តារាងគ្រប់គ្រងឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse Records - BWH) [Updated with vehicle_vin]
+        // ៣០. តារាងគ្រប់គ្រងឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse Records - BWH)
         await client.query(`
             CREATE TABLE IF NOT EXISTS bonded_warehouse_records (
                 id SERIAL PRIMARY KEY,
@@ -482,25 +482,24 @@ async function initializeDatabase() {
             ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);
         `);
 
-        // ៣១. តារាងត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory Monitoring) [ADDED NEW]
-       await client.query(`
-    CREATE TABLE IF NOT EXISTS duty_unpaid_inventory (
-        id SERIAL PRIMARY KEY,
-        container_number VARCHAR(100) NOT NULL,
-        vehicle_vin VARCHAR(100),
-        cargo_name VARCHAR(255) NOT NULL,
-        owner_name VARCHAR(255) NOT NULL,
-        bonded_record_id INT REFERENCES bonded_warehouse_records(id) ON DELETE CASCADE,
-        entry_date DATE NOT NULL,
-        quantity INT NOT NULL DEFAULT 0,
-        unit VARCHAR(50) NOT NULL DEFAULT 'Pallets',
-        tax_status VARCHAR(100) DEFAULT 'Pending Duty Payment',
-        warehouse_location VARCHAR(150) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-`);
-// បន្ថែមaddColumn ប្រសិនបើតារាងមានរួចស្រេចហើយ
-await client.query(`ALTER TABLE duty_unpaid_inventory ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);`);
+        // ៣១. តារាងត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory Monitoring)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS duty_unpaid_inventory (
+                id SERIAL PRIMARY KEY,
+                container_number VARCHAR(100) NOT NULL,
+                vehicle_vin VARCHAR(100),
+                cargo_name VARCHAR(255) NOT NULL,
+                owner_name VARCHAR(255) NOT NULL,
+                bonded_record_id INT REFERENCES bonded_warehouse_records(id) ON DELETE CASCADE,
+                entry_date DATE NOT NULL,
+                quantity INT NOT NULL DEFAULT 0,
+                unit VARCHAR(50) NOT NULL DEFAULT 'Pallets',
+                tax_status VARCHAR(100) DEFAULT 'Pending Duty Payment',
+                warehouse_location VARCHAR(150) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        await client.query(`ALTER TABLE duty_unpaid_inventory ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);`);
 
         // ៣២. តារាងអ្នកប្រើប្រាស់ប្រព័ន្ធ (System Users & Roles)
         await client.query(`
@@ -514,7 +513,8 @@ await client.query(`ALTER TABLE duty_unpaid_inventory ADD COLUMN IF NOT EXISTS v
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
- // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH)
+
+        // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH) - Updated with new fields
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_permit_records (
                 id SERIAL PRIMARY KEY,
@@ -522,6 +522,9 @@ await client.query(`ALTER TABLE duty_unpaid_inventory ADD COLUMN IF NOT EXISTS v
                 bonded_record_id INT REFERENCES bonded_warehouse_records(id) ON DELETE CASCADE,
                 container_number VARCHAR(100) NOT NULL,
                 vehicle_vin VARCHAR(100),
+                customs_reg_number VARCHAR(100),
+                manifest_number VARCHAR(100),
+                doc_type VARCHAR(10),
                 cargo_description VARCHAR(255) NOT NULL,
                 company_name VARCHAR(255) NOT NULL,
                 permit_type VARCHAR(100) NOT NULL,
@@ -534,10 +537,11 @@ await client.query(`ALTER TABLE duty_unpaid_inventory ADD COLUMN IF NOT EXISTS v
             );
         `);
 
-        // បន្ថែមaddColumn ប្រសិនបើតារាងមានរួចស្រេចហើយ
-        await client.query(`
-            ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);
-        `);
+        // បន្ថែម Column ប្រសិនបើតារាងមានរួចស្រេចហើយ
+        await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);`);
+        await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS customs_reg_number VARCHAR(100);`);
+        await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS manifest_number VARCHAR(100);`);
+        await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS doc_type VARCHAR(10);`);
 
         // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត (ប្រសិនបើទិន្នន័យទទេ)
         const checkUser = await client.query('SELECT COUNT(*) FROM system_users');
@@ -605,7 +609,7 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Customs Permit & Document Control (BWH)
+// API Routes: Customs Permit & Document Control (BWH) - Updated
 // ==========================================
 app.get('/api/customs-permits', async (req, res) => {
     try {
@@ -626,20 +630,24 @@ app.get('/api/customs-permits', async (req, res) => {
 app.post('/api/customs-permits', async (req, res) => {
     const { 
         permit_number, bonded_record_id, container_number, vehicle_vin, 
+        customs_reg_number, manifest_number, doc_type,
         cargo_description, company_name, permit_type, issue_date, expiry_date, status, officer_name, notes 
     } = req.body;
     
     try {
         const query = `
             INSERT INTO customs_permit_records 
-            (permit_number, bonded_record_id, container_number, vehicle_vin, cargo_description, company_name, permit_type, issue_date, expiry_date, status, officer_name, notes)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;
+            (permit_number, bonded_record_id, container_number, vehicle_vin, customs_reg_number, manifest_number, doc_type, cargo_description, company_name, permit_type, issue_date, expiry_date, status, officer_name, notes)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *;
         `;
         const values = [
             permit_number,
             bonded_record_id || null,
             container_number || 'N/A',
             vehicle_vin || null,
+            customs_reg_number || null,
+            manifest_number || null,
+            doc_type || 'I',
             cargo_description,
             company_name,
             permit_type,
@@ -838,6 +846,7 @@ app.post('/api/bwh-records', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
 // ==========================================
 // API Routes: លុបទិន្នន័យ ឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse - Delete)
 // ==========================================
@@ -920,6 +929,7 @@ app.get('/api/duty-unpaid-inventory', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+
 app.post('/api/duty-unpaid-inventory', async (req, res) => {
     const { container_number, vehicle_vin, cargo_name, owner_name, bonded_record_id, entry_date, quantity, unit, tax_status, warehouse_location } = req.body;
     try {
@@ -930,32 +940,6 @@ app.post('/api/duty-unpaid-inventory', async (req, res) => {
         const values = [
             container_number || 'N/A', 
             vehicle_vin || null,
-            cargo_name, 
-            owner_name, 
-            bonded_record_id || null, 
-            entry_date, 
-            parseInt(quantity) || 0, 
-            unit || 'Pallets', 
-            tax_status || 'Pending Duty Payment', 
-            warehouse_location
-        ];
-        const result = await pool.query(query, values);
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        console.error('Error saving duty-unpaid inventory:', err);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-app.post('/api/duty-unpaid-inventory', async (req, res) => {
-    const { container_number, cargo_name, owner_name, bonded_record_id, entry_date, quantity, unit, tax_status, warehouse_location } = req.body;
-    try {
-        const query = `
-            INSERT INTO duty_unpaid_inventory (container_number, cargo_name, owner_name, bonded_record_id, entry_date, quantity, unit, tax_status, warehouse_location)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
-        `;
-        const values = [
-            container_number, 
             cargo_name, 
             owner_name, 
             bonded_record_id || null, 
@@ -2580,7 +2564,7 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
                     success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out ได้ទេ!` 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out បានទេ!` 
                 });
             }
         }
@@ -2794,7 +2778,7 @@ app.post('/api/fleet/cargo-gates', async (req, res) => {
         } = req.body;
 
         if (!cargo_code || !gate_type || !gate_date || !truck_plate_number || !driver_name) {
-            return res.status(400).json({ success: false, error: 'សូមបំពេញព័ត៌មានសំខាន់ៗឱ្យបានគ្រប់គ្រាន់!' });
+            return res.status(400).json({ success: false, error: 'សូមបំព័នព័ត៌មានសំខាន់ៗឱ្យបានគ្រប់គ្រាន់!' });
         }
 
         const query = `
