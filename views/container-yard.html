@@ -8,8 +8,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Battambang for Khmer & Inter for English -->
-    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@300;400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Google Fonts Kantumruy Pro & Poppins -->
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- jsPDF & html2canvas for PDF Export -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -21,8 +21,8 @@
             --bg-body: #f1f5f9;
         }
         body {
-            /* កំណត់ Font ភាសាខ្មែរ Battambang រួចបន្តដោយ Font អង់គ្លេសស្អាតៗ Inter */
-            font-family: 'Battambang', 'Inter', sans-serif;
+            /* កំណត់ Font ភាសាខ្មែរ Kantumruy Pro រួចបន្តដោយ Font អង់គ្លេស Poppins */
+            font-family: 'Kantumruy Pro', 'Poppins', sans-serif;
             background-color: var(--bg-body);
             color: #1e293b;
         }
@@ -59,7 +59,7 @@
             letter-spacing: -0.5px;
         }
         .section-subtitle {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Poppins', sans-serif;
             color: #64748b;
             font-size: 13px;
             font-weight: 600;
@@ -75,9 +75,9 @@
         }
         .form-control, .form-select {
             border-radius: 10px;
-            padding: 11px 16px;
+            padding: 10px 14px;
             border: 1.5px solid #cbd5e1;
-            font-family: 'Battambang', 'Inter', sans-serif;
+            font-family: 'Kantumruy Pro', 'Poppins', sans-serif;
             font-size: 14px;
             background-color: #f8fafc;
             transition: all 0.2s;
@@ -124,14 +124,52 @@
             box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
             color: white;
         }
+        .btn-search {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            font-weight: 600;
+            padding: 0 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            height: 45px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        .btn-search:hover {
+            background-color: #1d4ed8;
+            color: white;
+        }
+        .btn-reset {
+            background-color: #475569;
+            color: white;
+            border: none;
+            font-weight: 600;
+            padding: 0 16px;
+            border-radius: 10px;
+            font-size: 14px;
+            height: 45px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        .btn-reset:hover {
+            background-color: #334155;
+            color: white;
+        }
         .btn-pdf {
             background-color: #d97706;
             color: white;
             border: none;
             font-weight: 600;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            padding: 0 16px;
+            border-radius: 10px;
+            font-size: 14px;
             height: 45px;
             display: inline-flex;
             align-items: center;
@@ -142,7 +180,6 @@
         .btn-pdf:hover {
             background-color: #b45309;
             color: white;
-            transform: translateY(-1px);
         }
         .table thead th {
             background-color: var(--primary-color);
@@ -271,7 +308,7 @@
                     <span><i class="fas fa-list-alt text-primary me-2"></i> បញ្ជីទីតាំងកុងតឺន័រក្នុងទីធ្លា (Yard Inventory & Mapping)</span>
                 </div>
                 
-                <!-- Search Filter Form -->
+                <!-- Search Filter Form រៀបចំប៊ូតុងស្មើគ្នាជាជួរដេក -->
                 <form id="filterForm" class="row g-3 mb-4 bg-light p-3 rounded-3 border align-items-end">
                     <div class="col-md-3">
                         <label class="form-label">លេខកុងតឺន័រ:</label>
@@ -304,23 +341,24 @@
                     <div class="col-md-3">
                         <label class="form-label">ចាប់ពីថ្ងៃទី - ដល់ថ្ងៃទី:</label>
                         <div class="input-group">
-                            <input type="date" id="dateFrom" class="form-control form-control-sm">
-                            <input type="date" id="dateTo" class="form-control form-control-sm">
+                            <input type="date" id="dateFrom" class="form-control">
+                            <input type="date" id="dateTo" class="form-control">
                         </div>
                     </div>
                     
+                    <!-- ប៊ូតុងទាំងបីរៀបចំស្មើគ្នាក្នុងជួរដេកតែមួយ ពណ៌ឆ្លាស់គ្នាស្រស់ស្អាត -->
                     <div class="col-md-4">
-                        <button type="submit" class="btn btn-primary w-100 fw-bold" style="height: 45px; border-radius: 8px; background-color: #2563eb; border: none;">
+                        <button type="submit" class="btn-search">
                             <i class="fas fa-search me-1"></i> ស្វែងរកទិន្នន័យ
                         </button>
                     </div>
                     <div class="col-md-4">
-                        <button type="button" class="btn btn-secondary w-100 fw-bold" onclick="resetFilter()" style="height: 45px; border-radius: 8px; background-color: #475569; border: none;">
+                        <button type="button" class="btn-reset" onclick="resetFilter()">
                             <i class="fas fa-rotate-right me-1"></i> កំណត់ឡើងវិញ
                         </button>
                     </div>
                     <div class="col-md-4">
-                        <button type="button" class="btn-pdf w-100 fw-bold" onclick="exportHistoryToPDF()">
+                        <button type="button" class="btn-pdf" onclick="exportHistoryToPDF()">
                             <i class="fas fa-file-pdf me-1"></i> Download PDF
                         </button>
                     </div>
@@ -479,7 +517,7 @@
                 }
             } catch (err) {
                 console.error('Error loading data:', err);
-                document.getElementById('yardTableBody').innerHTML = `<tr><td colspan="11" class="text-center text-danger py-4">មានបញ្ហាក្នុងการទាញយកទិន្នន័យពី Server</td></tr>`;
+                document.getElementById('yardTableBody').innerHTML = `<tr><td colspan="11" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
             }
         }
 
@@ -706,7 +744,7 @@
                 console.error('PDF Export Error:', err);
                 if(filterForm) filterForm.style.display = '';
                 actionCells.forEach(cell => cell.style.display = '');
-                alert('មានបញ្ហាក្នុងការទាញយក PDF');
+                alert('មានបញ្ហាក្នុងการទាញយក PDF');
             });
         }
 
