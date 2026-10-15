@@ -225,13 +225,13 @@
                             <h6 class="text-primary fw-bold mb-3"><i class="fas fa-info-circle me-1"></i> ព័ត៌មានកុងតឺន័រមូលដ្ឋាន</h6>
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <label class="form-label fw-semibold small text-secondary">លេខកុងតឺន័រ (Container No.) *</label>
+                                    <label class="form-label fw-semibold small text-secondary">លេខកុងតឺន័រ (Container No.)</label>
                                     <select name="container_number" id="repairContainerSelect" class="form-select" required onchange="onYardContainerSelected()">
                                         <option value="">-- ជ្រើសរើសពីក្នុងទីធ្លា --</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label fw-semibold small text-secondary">ទំហំ (Size) *</label>
+                                    <label class="form-label fw-semibold small text-secondary">ទំហំ (Size)</label>
                                     <select name="container_size" class="form-select" required>
                                         <option value="20'">20 Feet</option>
                                         <option value="40'" selected>40 Feet</option>
@@ -239,7 +239,7 @@
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label fw-semibold small text-secondary">ប្រភេទ (Type) *</label>
+                                    <label class="form-label fw-semibold small text-secondary">ប្រភេទ (Type)</label>
                                     <select name="container_type" class="form-select" required>
                                         <option value="DC" selected>Dry Van (DC)</option>
                                         <option value="HC">High Cube (HC)</option>
@@ -250,7 +250,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <label class="form-label fw-semibold small text-secondary mb-0">Shipping Line *</label>
+                                        <label class="form-label fw-semibold small text-secondary mb-0">Shipping Line</label>
                                         <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 11px;" onclick="toggleCustomShippingLine()">
                                             <i class="fas fa-plus me-1"></i> ផ្សេងទៀត
                                         </button>
@@ -266,7 +266,7 @@
                                     <input type="text" name="shipping_line" id="shippingLineCustomInput" class="form-control mt-2 d-none" placeholder="បញ្ចូលឈ្មោះ Shipping Line..." disabled>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-semibold small text-secondary">កាលបរិច្ឆេទជួសជុល *</label>
+                                    <label class="form-label fw-semibold small text-secondary">កាលបរិច្ឆេទជួសជុល</label>
                                     <input type="date" name="repair_date" class="form-control" required id="currentDate">
                                 </div>
                             </div>
@@ -294,15 +294,15 @@
                             <h6 class="text-primary fw-bold mb-3"><i class="fas fa-wrench me-1"></i> ព័ត៌មានការជួសជុល និងចំណាយ</h6>
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label fw-semibold small text-secondary">ប្រភេទការជួសជុល *</label>
+                                    <label class="form-label fw-semibold small text-secondary">ប្រភេទការជួសជុល</label>
                                     <input type="text" name="repair_type" class="form-control" required placeholder="ឧ. ប្តូរជញ្ជាំង, បិទប៊ូឡុង...">
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-semibold small text-secondary">ថ្លៃចំណាយ ($) *</label>
+                                    <label class="form-label fw-semibold small text-secondary">ថ្លៃចំណាយ ($)</label>
                                     <input type="number" step="0.01" name="cost" class="form-control" required placeholder="0.00">
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label fw-semibold small text-secondary">ឈ្មោះជាងបច្ចេកទេស *</label>
+                                    <label class="form-label fw-semibold small text-secondary">ឈ្មោះជាងបច្ចេកទេស</label>
                                     <input type="text" name="technician_name" class="form-control" required placeholder="ឈ្មោះក្រុមជាង">
                                 </div>
                                 <div class="col-md-6">
@@ -342,7 +342,7 @@
                         <input type="hidden" id="edit_id">
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label fw-semibold small text-secondary">លេខកុងតឺន័រ *</label>
+                                <label class="form-label fw-semibold small text-secondary">លេខកុងតឺន័រ</label>
                                 <input type="text" id="edit_container_number" name="container_number" class="form-control" required>
                             </div>
                             <div class="col-md-4">
@@ -368,7 +368,7 @@
                                 <input type="text" id="edit_shipping_line" name="shipping_line" class="form-control" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold small text-secondary">កាលបរិច្ឆេទជួសជុល *</label>
+                                <label class="form-label fw-semibold small text-secondary">កាលបរិច្ឆេទជួសជុល</label>
                                 <input type="date" id="edit_repair_date" name="repair_date" class="form-control" required>
                             </div>
                             <div class="col-md-4">
@@ -384,15 +384,15 @@
                                 <input type="number" id="edit_tier_number" name="tier_number" class="form-control">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold small text-secondary">ប្រភេទការជួសជុល *</label>
+                                <label class="form-label fw-semibold small text-secondary">ប្រភេទការជួសជុល</label>
                                 <input type="text" id="edit_repair_type" name="repair_type" class="form-control" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold small text-secondary">ថ្លៃចំណាយ ($) *</label>
+                                <label class="form-label fw-semibold small text-secondary">ថ្លៃចំណាយ ($)</label>
                                 <input type="number" step="0.01" id="edit_cost" name="cost" class="form-control" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold small text-secondary">ឈ្មោះជាង *</label>
+                                <label class="form-label fw-semibold small text-secondary">ឈ្មោះជាង</label>
                                 <input type="text" id="edit_technician_name" name="technician_name" class="form-control" required>
                             </div>
                             <div class="col-md-6">
