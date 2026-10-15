@@ -227,11 +227,11 @@
                 <form id="yardForm">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label">លេខកុងតឺន័រ (Container Number) *</label>
+                            <label class="form-label">លេខកុងតឺន័រ (Container Number)</label>
                             <input type="text" class="form-control" name="container_number" required placeholder="ឧ. TGHU1234567">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">ទំហំកុងតឺន័រ (Size) *</label>
+                            <label class="form-label">ទំហំកុងតឺន័រ (Size)</label>
                             <select name="container_size" class="form-select" required>
                                 <option value="20'">20 Feet</option>
                                 <option value="40'" selected>40 Feet</option>
@@ -239,7 +239,7 @@
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">ប្រភេទ (Type) *</label>
+                            <label class="form-label">ប្រភេទ (Type)</label>
                             <select name="container_type" class="form-select" required>
                                 <option value="DC" selected>Dry Van (DC)</option>
                                 <option value="HC">High Cube (HC)</option>
@@ -250,7 +250,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="d-flex justify-content-between align-items-center mb-1">
-                                <label class="form-label mb-0">Shipping Line *</label>
+                                <label class="form-label mb-0">Shipping Line</label>
                                 <button type="button" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 11px; border-radius: 6px;" onclick="toggleCustomShippingLine()">
                                     <i class="fas fa-plus me-1"></i> បន្ថែមផ្សេងទៀត
                                 </button>
@@ -266,19 +266,19 @@
                             <input type="text" name="shipping_line" id="shippingLineCustomInput" class="form-control mt-2 d-none" placeholder="បញ្ចូលឈ្មោះ Shipping Line..." disabled>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">ប្លុកទីតាំង (Block Code) *</label>
+                            <label class="form-label">ប្លុកទីតាំង (Block Code)</label>
                             <input type="text" class="form-control" name="block_code" required placeholder="ឧ. Block A, Block B">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">លេខជួរ (Row Number) *</label>
+                            <label class="form-label">លេខជួរ (Row Number)</label>
                             <input type="number" class="form-control" name="row_number" required value="1" min="1">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">លេខជាន់ / កំពស់ (Tier Number) *</label>
+                            <label class="form-label">លេខជាន់ / កំពស់ (Tier Number)</label>
                             <input type="number" class="form-control" name="tier_number" required value="1" min="1">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">កាលបរិច្ឆេទធ្វើបច្ចុប្បន្នភាព *</label>
+                            <label class="form-label">កាលបរិច្ឆេទធ្វើបច្ចុប្បន្នភាព</label>
                             <input type="date" class="form-control" name="updated_date" required>
                         </div>
                         <div class="col-md-6">
@@ -405,7 +405,7 @@
                         <input type="hidden" id="edit_id">
                         <div class="row g-3">
                             <div class="col-md-4">
-                                <label class="form-label">លេខកុងតឺន័រ *</label>
+                                <label class="form-label">លេខកុងតឺន័រ</label>
                                 <input type="text" class="form-control" id="edit_container_number" required>
                             </div>
                             <div class="col-md-4">
@@ -427,23 +427,23 @@
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">Shipping Line *</label>
+                                <label class="form-label">Shipping Line</label>
                                 <input type="text" class="form-control" id="edit_shipping_line" required>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label">ប្លុកទីតាំង (Block Code) *</label>
+                                <label class="form-label">ប្លុកទីតាំង (Block Code)</label>
                                 <input type="text" class="form-control" id="edit_block_code" required>
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">លេខជួរ (Row) *</label>
+                                <label class="form-label">លេខជួរ (Row)</label>
                                 <input type="number" class="form-control" id="edit_row_number" required min="1">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">លេខជាន់ (Tier) *</label>
+                                <label class="form-label">លេខជាន់ (Tier)</label>
                                 <input type="number" class="form-control" id="edit_tier_number" required min="1">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">កាលបរិច្ឆេទ *</label>
+                                <label class="form-label">កាលបរិច្ឆេទ</label>
                                 <input type="date" class="form-control" id="edit_updated_date" required>
                             </div>
                             <div class="col-md-6">
@@ -703,7 +703,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
+                alert('មានបញ្ហាក្នុងการភ្ជាប់ទៅកាន់ Server');
             }
         });
 
@@ -744,7 +744,7 @@
                 console.error('PDF Export Error:', err);
                 if(filterForm) filterForm.style.display = '';
                 actionCells.forEach(cell => cell.style.display = '');
-                alert('មានបញ្ហាក្នុងการទាញយក PDF');
+                alert('មានបញ្ហាក្នុងការទាញយក PDF');
             });
         }
 
