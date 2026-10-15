@@ -1001,15 +1001,36 @@ app.put('/api/bwh-records/:id', async (req, res) => {
     }
 });
 app.put('/api/bwh-records/:id/duty-status', async (req, res) => {
+    const { id } = req.params;
+    const { duty_status } = req.body;
+    
     try {
-        const { id } = req.params;
-        const { duty_status } = req.body;
-        await pool.query(
-            'UPDATE bonded_warehouse_records SET customs_status = $1 WHERE id = $2',
-            [duty_status, id]
-        );
-        res.json({ success: true });
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            // ១. អាប់ដេតស្ថានភាពគយក្នុងតារាង bonded_warehouse_records
+            await client.query(
+                'UPDATE bonded_warehouse_records SET customs_status = $1 WHERE id = $2',
+                [duty_status, id]
+            );
+
+            // ២. ប្រសិនបើបានបង់ពន្ធរួច ធ្វើការលុបទិន្នន័យចេញពីតារាង duty_unpaid_inventory ស្វ័យប្រវត្ត
+            const statusLower = (duty_status || '').toLowerCase();
+            if (statusLower.includes('បានបង់ពន្ធរួច') || statusLower.includes('paid') || statusLower.includes('released')) {
+                await client.query('DELETE FROM duty_unpaid_inventory WHERE bonded_record_id = $1', [id]);
+            }
+
+            await client.query('COMMIT');
+            res.json({ success: true, message: 'បានអាប់ដេតស្ថានភាព និងលុបចេញពីស្តុកមិនទាន់បង់ពន្ធដោយជោគជ័យ!' });
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
     } catch (err) {
+        console.error('Error updating duty status:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
