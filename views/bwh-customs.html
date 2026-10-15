@@ -17,6 +17,7 @@
             --border-color: #e2e8f0;
             --success-color: #10b981;
             --danger-color: #ef4444;
+            --warning-color: #f59e0b;
         }
 
         body {
@@ -67,6 +68,12 @@
 
         .btn-primary {
             background: var(--primary-color); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-warning {
+            background: var(--warning-color); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
+        }
+        .btn-danger {
+            background: var(--danger-color); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
         }
         .btn-pdf {
             background: #ef4444; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
@@ -156,8 +163,9 @@
     <!-- Modal -->
     <div id="permitModal" class="modal-overlay">
         <div class="modal-card">
-            <h2><i class="fa-solid fa-file-shield me-2"></i> បញ្ចូលលិខិតអនុញ្ញាតគយថ្មី</h2>
+            <h2 id="modalTitle"><i class="fa-solid fa-file-shield me-2"></i> បញ្ចូលលិខិតអនុញ្ញាតគយថ្មី</h2>
             <form id="permitForm" onsubmit="savePermit(event)">
+                <input type="hidden" id="editId">
                 <div class="form-group">
                     <label>ទាញយកទិន្នន័យពី ឃ្លាំងពន្ធដារ (Link from BWH):</label>
                     <select id="bwhSelect" class="form-select" onchange="selectBwhRecord()" required>
@@ -182,7 +190,7 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>លេខចុះបញ្ជីគយ (Customs Reg No.):</label>
-                        <input type="text" id="customsRegNo" class="form-control" placeholder="ឧ. CUST-REG-8899">
+                        <input type="text" id="customsRegNo" class="form-control" placeholder="ឧ. CUST-REG-8899" required>
                     </div>
                     <div class="form-group">
                         <label>លេខ Manifest No.:</label>
@@ -238,7 +246,7 @@
 
                 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
                     <button type="button" class="btn-primary" style="background: #cbd5e1; color: #334155;" onclick="closeModal()">បោះបង់</button>
-                    <button type="submit" class="btn-primary">រក្សាទុក</button>
+                    <button type="submit" class="btn-primary" id="saveBtnText">រក្សាទុក</button>
                 </div>
             </form>
         </div>
@@ -318,8 +326,9 @@
                         <td>${item.issue_date ? item.issue_date.slice(0, 10) : ''}</td>
                         <td>${item.officer_name || ''}</td>
                         <td><span class="badge badge-active">${item.status || 'Active'}</span></td>
-                        <td style="text-align: center;" class="no-print">
-                            <button class="btn-primary" style="padding: 5px 10px; font-size: 11px; background: #ef4444;" onclick="deletePermit(${item.id})"><i class="fa-solid fa-trash"></i></button>
+                        <td style="text-align: center; display: flex; gap: 5px; justify-content: center;" class="no-print">
+                            <button class="btn-warning" onclick="editPermit(${item.id})"><i class="fa-solid fa-pen-to-square"></i> កែរ-ចុះបញ្ជី</button>
+                            <button class="btn-danger" onclick="deletePermit(${item.id})"><i class="fa-solid fa-trash"></i> លុប</button>
                         </td>
                     </tr>
                 `;
@@ -328,12 +337,16 @@
 
         async function savePermit(e) {
             e.preventDefault();
+            const editId = document.getElementById('editId').value;
+            const manifestVal = document.getElementById('manifestNo').value.trim();
+            const bondedRecordId = document.getElementById('bwhSelect').value;
+
             const payload = {
-                bonded_record_id: document.getElementById('bwhSelect').value,
+                bonded_record_id: bondedRecordId,
                 doc_type: document.getElementById('docType').value,
                 permit_number: document.getElementById('permitNumber').value.trim(),
                 customs_reg_number: document.getElementById('customsRegNo').value.trim(),
-                manifest_number: document.getElementById('manifestNo').value.trim(),
+                manifest_number: manifestVal || null,
                 container_number: document.getElementById('containerNo').value,
                 vehicle_vin: document.getElementById('vehicleVin').value,
                 cargo_description: document.getElementById('cargoName').value,
@@ -346,14 +359,31 @@
             };
 
             try {
-                const res = await fetch('/api/customs-permits', {
-                    method: 'POST',
+                let url = '/api/customs-permits';
+                let method = 'POST';
+                if (editId) {
+                    url = `/api/customs-permits/${editId}`;
+                    method = 'PUT';
+                }
+
+                const res = await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 const result = await res.json();
+                
                 if (result.success) {
-                    alert('បានរក្សាទុកលិខិតអនុញ្ញាតគយដោយជោគជ័យ!');
+                    // ប្រសិនបើមានការចុះលេខ Manifest No. សម្រេច ធ្វើបច្ចុប្បន្នភាពស្ថានភាពគយក្នុងតារាង BWH ទៅជា "បានបង់ពន្ធរួច (Duty Paid / Released)"
+                    if (manifestVal && bondedRecordId) {
+                        await fetch(`/api/bwh-records/${bondedRecordId}/duty-status`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ duty_status: 'បានបង់ពន្ធរួច (Duty Paid / Released)' })
+                        });
+                    }
+
+                    alert('បានរក្សាទុកលិខិតអនុញ្ញាតគយ និងចុះបញ្ជីដោយជោគជ័យ!');
                     closeModal();
                     loadPermits();
                 } else {
@@ -362,6 +392,31 @@
             } catch (err) {
                 console.error('Error:', err);
             }
+        }
+
+        function editPermit(id) {
+            const item = permitData.find(d => d.id == id);
+            if (!item) return;
+
+            document.getElementById('editId').value = item.id;
+            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square me-2"></i> កែប្រែ និងចុះបញ្ជីលិខិតអនុញ្ញាតគយ`;
+            document.getElementById('saveBtnText').innerText = `កែរ-ចុះបញ្ជី`;
+
+            document.getElementById('bwhSelect').value = item.bonded_record_id || '';
+            document.getElementById('docType').value = item.doc_type || 'I';
+            document.getElementById('permitNumber').value = item.permit_number || '';
+            document.getElementById('customsRegNo').value = item.customs_reg_number || '';
+            document.getElementById('manifestNo').value = item.manifest_number || '';
+            document.getElementById('containerNo').value = item.container_number || '';
+            document.getElementById('vehicleVin').value = item.vehicle_vin || '';
+            document.getElementById('cargoName').value = item.cargo_description || '';
+            document.getElementById('companyName').value = item.company_name || '';
+            document.getElementById('permitType').value = item.permit_type || '';
+            document.getElementById('issueDate').value = item.issue_date ? item.issue_date.slice(0, 10) : '';
+            document.getElementById('officerName').value = item.officer_name || '';
+            document.getElementById('notes').value = item.notes || '';
+
+            document.getElementById('permitModal').style.display = 'flex';
         }
 
         async function deletePermit(id) {
@@ -373,12 +428,18 @@
 
         function openModal() { 
             loadBwhDropdown(); 
+            document.getElementById('editId').value = '';
+            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-file-shield me-2"></i> បញ្ចូលលិខិតអនុញ្ញាតគយថ្មី`;
+            document.getElementById('saveBtnText').innerText = `រក្សាទុក`;
+            document.getElementById('permitForm').reset();
+            document.getElementById('issueDate').value = new Date().toISOString().slice(0, 10);
             document.getElementById('permitModal').style.display = 'flex'; 
         }
         
         function closeModal() { 
             document.getElementById('permitModal').style.display = 'none'; 
             document.getElementById('permitForm').reset(); 
+            document.getElementById('editId').value = '';
             document.getElementById('issueDate').value = new Date().toISOString().slice(0, 10);
         }
 
