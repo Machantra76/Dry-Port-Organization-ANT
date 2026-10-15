@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>การគ្រប់គ្រងការជួសជុល និងស្តុកកុងតឺន័រ (Container M&R & Yard Stock)</title>
+    <title>ការគ្រប់គ្រងការជួសជុល និងស្តុកកុងតឺន័រ (Container M&R & Yard Stock)</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome CSS -->
@@ -59,6 +59,7 @@
             border: 1px solid #cbd5e1;
             padding: 0.55rem 0.9rem;
             font-size: 14px;
+            height: 45px;
         }
         .form-control:focus, .form-select:focus {
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
@@ -70,18 +71,22 @@
             border-radius: 6px;
         }
         .btn-pdf {
-            background-color: #dc2626;
+            background-color: #d97706;
             color: white;
             border: none;
             font-weight: 600;
             padding: 8px 16px;
             border-radius: 8px;
+            height: 45px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
         }
         .btn-pdf:hover {
-            background-color: #b91c1c;
+            background-color: #b45309;
             color: white;
         }
-        /* Style សម្រាប់ពេល Print PDF ឱ្យមានរបៀបរៀបរយ */
         @media print {
             .no-print { display: none !important; }
         }
@@ -111,11 +116,8 @@
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="fw-bold text-primary mb-0"><i class="fas fa-filter me-2"></i>តម្រៀប និងស្វែងរកទិន្នន័យស្តុកកុងតឺន័រ</h5>
-                    <button class="btn btn-pdf btn-sm" onclick="exportPDF()">
-                        <i class="fas fa-file-pdf me-1"></i> ទាញយក PDF របាយការណ៍
-                    </button>
                 </div>
-                <div class="row g-3">
+                <div class="row g-3 align-items-end">
                     <div class="col-md-3">
                         <label class="form-label fw-semibold small text-muted brand-font">ស្វែងរកលេខកុងតឺន័រ</label>
                         <input type="text" id="filterContainerNo" class="form-control" placeholder="ឧ. TGHU1234567">
@@ -148,12 +150,21 @@
                             <input type="date" id="dateTo" class="form-control form-control-sm">
                         </div>
                     </div>
-                    <div class="col-12 text-end">
-                        <button class="btn btn-dark px-4 py-2 shadow-sm brand-font" onclick="loadContainerRepairs()">
+                    
+                    <!-- ប៊ូតុងទាំងបីរៀបចំស្មើគ្នាក្នុងជួរដេកតែមួយ ពណ៌ឆ្លាស់គ្នា -->
+                    <div class="col-md-4">
+                        <button class="btn btn-primary w-100 fw-bold shadow-sm brand-font" onclick="loadContainerRepairs()" style="height: 45px; border-radius: 8px;">
                             <i class="fas fa-search me-1"></i> ស្វែងរកទិន្នន័យ
                         </button>
-                        <button class="btn btn-outline-secondary px-3 py-2 ms-2" onclick="resetFilter()">
-                            កំណត់ឡើងវិញ
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-secondary w-100 fw-bold" onclick="resetFilter()" style="height: 45px; border-radius: 8px; background-color: #475569; border: none;">
+                            <i class="fas fa-rotate-right me-1"></i> កំណត់ឡើងវិញ
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn-pdf fw-bold shadow-sm" onclick="exportPDF()">
+                            <i class="fas fa-file-pdf me-1"></i> ទាញយក PDF របាយការណ៍
                         </button>
                     </div>
                 </div>
@@ -200,7 +211,7 @@
         </div>
     </div>
 
-    <!-- Modal បន្ថែមការជួសជុល និងស្តុកថ្មី (បានจัดរៀបចំអក្សរ និងពណ៌ឱ្យមានរបៀបរៀបរយ) -->
+    <!-- Modal បន្ថែមការជួសជុល និងស្តុកថ្មី -->
     <div class="modal fade" id="addRepairModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -689,21 +700,17 @@
             }
         });
 
-        // មុខងារ Export PDF ដែលបានកែសម្រួលថ្មីឱ្យចេញជារបាយការណ៍ស្អាត និងលាក់ប៊ូតុងរ៉ូញ៉េរ៉ូញ៉ៃ
         function exportPDF() {
             const { jsPDF } = window.jspdf;
             const actionCols = document.querySelectorAll('.action-col');
             const pdfHeader = document.querySelector('.pdf-header-show');
             
-            // កំណត់ថ្ងៃទីសម្រាប់របាយការណ៍
             document.getElementById('reportDate').innerText = new Date().toLocaleDateString('km-KH');
 
-            // លាក់កলামសកម្មភាព និងបង្ហាញក្បាលទំព័រ PDF
             actionCols.forEach(col => col.style.display = 'none');
             pdfHeader.classList.remove('d-none');
 
             html2canvas(document.getElementById('pdfArea'), { scale: 2, useCORS: true }).then(canvas => {
-                // បង្ហាញត្រឡប់មកដូចเดิมក្រោយពេលថតរួច
                 actionCols.forEach(col => col.style.display = '');
                 pdfHeader.classList.add('d-none');
 
