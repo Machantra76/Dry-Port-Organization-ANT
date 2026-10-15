@@ -303,7 +303,7 @@
             }
         }
 
-        function renderTable(data) {
+       function renderTable(data) {
             const tbody = document.getElementById('permitTableBody');
             tbody.innerHTML = '';
             if (!data || data.length === 0) {
@@ -311,11 +311,18 @@
                 return;
             }
             data.forEach((item, index) => {
+                // ពិនិត្យមើលថាតើបានចុះបញ្ជីរួចរាល់ហើយ ឬยัง (ឧ. ផ្អែកលើការមាន permit_number ឬ customs_reg_number)
+                const isRegistered = item.permit_number && item.customs_reg_number;
+                
+                // បើបានចុះបញ្ជីរួច ដាក់ disabled និងប្ដូរពណ៌បន្តិចដើម្បីឱ្យដឹងថាហាមចុចซ้ำ
+                const btnStyle = isRegistered ? 'background: #cbd5e1; color: #64748b; cursor: not-allowed; pointer-events: none;' : '';
+                const btnAttr = isRegistered ? 'disabled' : '';
+
                 tbody.innerHTML += `
                     <tr>
                         <td>${index + 1}</td>
                         <td><span class="badge badge-type">${item.doc_type || 'I'}</span></td>
-                        <td><strong>${item.permit_number}</strong></td>
+                        <td><strong>${item.permit_number || '-'}</strong></td>
                         <td><span style="color: #0369a1; font-weight: 600;">${item.customs_reg_number || '-'}</span></td>
                         <td>${item.manifest_number || '-'}</td>
                         <td>${item.container_number || 'N/A'}</td>
@@ -327,7 +334,9 @@
                         <td>${item.officer_name || ''}</td>
                         <td><span class="badge badge-active">${item.status || 'Active'}</span></td>
                         <td style="text-align: center; display: flex; gap: 5px; justify-content: center;" class="no-print">
-                            <button class="btn-warning" onclick="editPermit(${item.id})"><i class="fa-solid fa-pen-to-square"></i> កែរ-ចុះបញ្ជី</button>
+                            <button class="btn-warning" ${btnAttr} style="${btnStyle}" onclick="editPermit(${item.id})">
+                                <i class="fa-solid fa-pen-to-square"></i> ${isRegistered ? 'បានចុះបញ្ជីរួច' : 'កែរ-ចុះបញ្ជី'}
+                            </button>
                             <button class="btn-danger" onclick="deletePermit(${item.id})"><i class="fa-solid fa-trash"></i> លុប</button>
                         </td>
                     </tr>
