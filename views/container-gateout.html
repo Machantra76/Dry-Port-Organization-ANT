@@ -239,13 +239,13 @@
                 <form id="gateOutForm">
                     <div class="row g-3">
                         <div class="col-md-3">
-                            <label for="container_number" class="form-label">លេខកូដកុងតឺន័រ (Container No.) *</label>
+                            <label for="container_number" class="form-label">លេខកូដកុងតឺន័រ (Container No.)</label>
                             <select class="form-select" id="container_number" required onchange="onContainerSelected()">
                                 <option value="">-- ជ្រើសរើសកុងតឺន័រក្នុងស្តុក --</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">ទំហំកុងតឺន័រ (Size) *</label>
+                            <label class="form-label">ទំហំកុងតឺន័រ (Size)</label>
                             <select id="container_size" class="form-select" required>
                                 <option value="20'">20 Feet</option>
                                 <option value="40'" selected>40 Feet</option>
@@ -253,7 +253,7 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">ប្រភេទ (Type) *</label>
+                            <label class="form-label">ប្រភេទ (Type)</label>
                             <select id="container_type" class="form-select" required>
                                 <option value="DC" selected>Dry Van (DC)</option>
                                 <option value="HC">High Cube (HC)</option>
@@ -263,23 +263,23 @@
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">Shipping Line *</label>
+                            <label class="form-label">Shipping Line</label>
                             <input type="text" id="shippingLineInput" class="form-control" required readonly placeholder="Shipping Line...">
                         </div>
                         <div class="col-md-3">
-                            <label for="gate_out_date" class="form-label">កាលបរិច្ឆេទចេញ (Gate-Out Date) *</label>
+                            <label for="gate_out_date" class="form-label">កាលបរិច្ឆេទចេញ (Gate-Out Date)</label>
                             <input type="datetime-local" class="form-control" id="gate_out_date" required>
                         </div>
                         <div class="col-md-3">
-                            <label for="truck_plate_number" class="form-label">ស្លាកលេខរថយន្ត (Truck Plate) *</label>
+                            <label for="truck_plate_number" class="form-label">ស្លាកលេខរថយន្ត (Truck Plate)</label>
                             <input type="text" class="form-control" id="truck_plate_number" required placeholder="ឧ. ភ្នំពេញ 3A-1234">
                         </div>
                         <div class="col-md-3">
-                            <label for="driver_name" class="form-label">ឈ្មោះអ្នកបើកបរ (Driver Name) *</label>
+                            <label for="driver_name" class="form-label">ឈ្មោះអ្នកបើកបរ (Driver Name)</label>
                             <input type="text" class="form-control" id="driver_name" required placeholder="ឈ្មោះអ្នកបើកបរ">
                         </div>
                         <div class="col-md-3">
-                            <label for="destination" class="form-label">គោលដៅ (Destination) *</label>
+                            <label for="destination" class="form-label">គោលដៅ (Destination)</label>
                             <input type="text" class="form-control" id="destination" required placeholder="ឧ. ផែស្វយ័តក្រុងព្រះសីហនុ">
                         </div>
                         <div class="col-md-4">
@@ -287,7 +287,7 @@
                             <input type="text" class="form-control" id="bill_of_lading" placeholder="Bill of Lading / Booking No.">
                         </div>
                         <div class="col-md-4">
-                            <label for="released_by" class="form-label">អ្នកចេញ/អនុញ្ញាត (Released By) *</label>
+                            <label for="released_by" class="form-label">អ្នកចេញ/អនុញ្ញាត (Released By)</label>
                             <input type="text" class="form-control" id="released_by" required placeholder="ឈ្មោះអ្នកបញ្ចេញ">
                         </div>
                         <div class="col-md-4">
@@ -632,7 +632,7 @@
                 }
             } catch (err) {
                 console.error('Error saving data:', err);
-                alert('មានបញ្ហាក្នុងการភ្ជាប់ទៅកាន់ Server');
+                alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
             }
         });
     </script>
