@@ -728,6 +728,50 @@ app.delete('/api/customs-permits/:id', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+app.put('/api/customs-permits/:id', async (req, res) => {
+    const { id } = req.params;
+    const { 
+        permit_number, bonded_record_id, container_number, vehicle_vin, 
+        customs_reg_number, manifest_number, doc_type,
+        cargo_description, company_name, permit_type, issue_date, expiry_date, status, officer_name, notes 
+    } = req.body;
+
+    try {
+        const query = `
+            UPDATE customs_permit_records 
+            SET permit_number = $1, bonded_record_id = $2, container_number = $3, vehicle_vin = $4, 
+                customs_reg_number = $5, manifest_number = $6, doc_type = $7, cargo_description = $8, 
+                company_name = $9, permit_type = $10, issue_date = $11, expiry_date = $12, status = $13, officer_name = $14, notes = $15
+            WHERE id = $16 RETURNING *;
+        `;
+        const values = [
+            permit_number || null,
+            bonded_record_id || null,
+            container_number || 'N/A',
+            vehicle_vin || null,
+            customs_reg_number,
+            manifest_number || null,
+            doc_type || 'I',
+            cargo_description,
+            company_name,
+            permit_type,
+            issue_date,
+            expiry_date || null,
+            status || 'Active',
+            officer_name,
+            notes || null,
+            id
+        ];
+        const result = await pool.query(query, values);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating customs permit:', err);
+        res.status(500).json({ success: false, error: 'Server error: ' + err.message });
+    }
+});
 
 // ==========================================
 // HTML Routes សម្រាប់បើកទំព័រ Views ផ្សេងៗ
@@ -953,6 +997,19 @@ app.put('/api/bwh-records/:id', async (req, res) => {
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error updating BWH record:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+app.put('/api/bwh-records/:id/duty-status', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { duty_status } = req.body;
+        await pool.query(
+            'UPDATE bonded_warehouse_records SET customs_status = $1 WHERE id = $2',
+            [duty_status, id]
+        );
+        res.json({ success: true });
+    } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
 });
