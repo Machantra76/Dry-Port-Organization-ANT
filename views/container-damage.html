@@ -62,6 +62,10 @@
             padding: 10px 15px;
             border: 1px solid #cbd5e1;
             font-family: 'Battambang', sans-serif;
+            height: 45px;
+        }
+        textarea.form-control {
+            height: auto;
         }
         .form-control:focus, .form-select:focus {
             box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.15);
@@ -99,16 +103,21 @@
             background-color: #059669;
         }
         .btn-pdf {
-            background-color: #dc2626;
+            background-color: #d97706;
             color: white;
             border: none;
             font-weight: 600;
-            padding: 6px 14px;
+            padding: 8px 14px;
             border-radius: 6px;
             font-size: 0.85rem;
+            height: 42px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
         }
         .btn-pdf:hover {
-            background-color: #b91c1c;
+            background-color: #b45309;
             color: white;
         }
         .table thead th {
@@ -122,12 +131,6 @@
             vertical-align: middle;
             text-align: center;
             font-size: 14px;
-        }
-        .badge-status {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
         }
     </style>
 </head>
@@ -243,13 +246,10 @@
             <div class="card-inner mt-4" id="historySection">
                 <div class="card-inner-title">
                     <span><i class="fas fa-table me-2"></i> តារាងរបាយការណ៍ និងការត្រងទិន្នន័យ (Container Report & Filter)</span>
-                    <button type="button" class="btn-pdf" onclick="exportHistoryToPDF()">
-                        <i class="fas fa-file-pdf me-1"></i> Download PDF
-                    </button>
                 </div>
                 
-                <!-- Search Filter Form -->
-                <form id="filterForm" class="row g-3 mb-4">
+                <!-- Search Filter Form ຈັດប៊ូតុងស្មើគ្នាជាជួរដេក -->
+                <form id="filterForm" class="row g-3 mb-4 align-items-end">
                     <div class="col-md-3">
                         <label class="form-label">លេខកុងតឺន័រ (Container No.):</label>
                         <input type="text" id="filterContainer" class="form-control" placeholder="ឧ. 4567 ឬ TGHU1234567">
@@ -279,18 +279,23 @@
                     <div class="col-md-3">
                         <label class="form-label">ចាប់ពីថ្ងៃទី - ដល់ថ្ងៃទី:</label>
                         <div class="input-group">
-                            <input type="date" id="filterFrom" class="form-control form-control-sm">
-                            <input type="date" id="filterTo" class="form-control form-control-sm">
+                            <input type="date" id="filterFrom" class="form-control">
+                            <input type="date" id="filterTo" class="form-control">
                         </div>
                     </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button type="submit" class="btn btn-primary w-100 py-2" style="border-radius: 8px;">
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100 fw-bold" style="height: 42px; border-radius: 6px;">
                             <i class="fas fa-search me-1"></i> ស្វែងរក
                         </button>
                     </div>
-                    <div class="col-12 text-end">
-                        <button type="button" class="btn btn-secondary px-4 py-2" onclick="resetFilter()" style="border-radius: 8px;">
-                            កំណត់ឡើងវិញ
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-secondary w-100 fw-bold" onclick="resetFilter()" style="height: 42px; border-radius: 6px; background-color: #475569; border: none;">
+                            <i class="fas fa-rotate-right me-1"></i> កំណត់ឡើងវិញ
+                        </button>
+                    </div>
+                    <div class="col-md-8">
+                        <button type="button" class="btn-pdf w-100 fw-bold" onclick="exportHistoryToPDF()">
+                            <i class="fas fa-file-pdf me-1"></i> Download PDF
                         </button>
                     </div>
                 </form>
@@ -496,7 +501,6 @@
             });
         }
 
-        // មុខងារស្វែងរក និង Filter ទិន្នន័យ
         document.getElementById('filterForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const searchText = document.getElementById('filterContainer').value.trim().toLowerCase();
@@ -549,7 +553,6 @@
             displayTableData(allDamagedData);
         }
 
-        // បើក Modal សម្រាប់កែប្រែ/ដោះដូរទិន្នន័យតាម ID
         function openEditModal(id) {
             const item = allDamagedData.find(d => d.id === id);
             if (!item) {
@@ -573,7 +576,6 @@
             editModal.show();
         }
 
-        // រក្សាទុកការកែប្រែទិន្នន័យ (PUT API)
         document.getElementById('editContainerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const id = document.getElementById('edit_id').value;
@@ -606,26 +608,22 @@
                 }
             } catch (err) {
                 console.error(err);
-                alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
+                alert('មានបញ្ហាក្នុងการភ្ជាប់ទៅកាន់ Server');
             }
         });
 
-        // មុខងារ Download PDF (លាក់ Form ស្វែងរក និងប៊ូតុង Actions)
         function exportHistoryToPDF() {
             const { jsPDF } = window.jspdf;
             const historyElement = document.getElementById('historySection');
 
             const filterForm = historyElement.querySelector('#filterForm');
-            const pdfBtn = historyElement.querySelector('.btn-pdf');
             const actionCells = historyElement.querySelectorAll('th:nth-child(11), td:nth-child(11)');
             
             if(filterForm) filterForm.style.display = 'none';
-            if(pdfBtn) pdfBtn.style.display = 'none';
             actionCells.forEach(cell => cell.style.display = 'none');
 
             html2canvas(historyElement, { scale: 2 }).then(canvas => {
                 if(filterForm) filterForm.style.display = '';
-                if(pdfBtn) pdfBtn.style.display = '';
                 actionCells.forEach(cell => cell.style.display = '');
 
                 const imgData = canvas.toDataURL('image/png');
@@ -650,13 +648,11 @@
             }).catch(err => {
                 console.error('PDF Export Error:', err);
                 if(filterForm) filterForm.style.display = '';
-                if(pdfBtn) pdfBtn.style.display = '';
                 actionCells.forEach(cell => cell.style.display = '');
                 alert('មានបញ្ហាក្នុងការទាញយក PDF');
             });
         }
 
-        // កត់ត្រាថ្មី
         document.getElementById('containerForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const formData = new FormData(this);
