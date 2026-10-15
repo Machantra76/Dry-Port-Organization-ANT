@@ -112,7 +112,6 @@
             text-align: center;
         }
         
-        /* រៀបចំរចនាប័ទ្មប៊ូតុងផ្នែក Filter និង Print ឱ្យមានសោភ័ណភាពស្រស់ស្អាត */
         .filter-action-bar {
             background-color: #f8fafc;
             padding: 20px;
@@ -168,7 +167,7 @@
 <div class="main-container">
     <!-- ប៊ូតុងត្រឡប់ក្រោយ -->
     <a href="/" class="btn-back no-print">
-        <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)
+        <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ
     </a>
 
     <!-- ចំណងជើងទំព័រ -->
@@ -177,54 +176,54 @@
 
     <!-- Form កត់ត្រាថ្មី -->
     <div class="section-card no-print">
-        <div class="section-card-title">កត់ត្រាការចូល/ចេញទំនិញថ្មី (Record New Cargo Gate Entry/Exit)</div>
+        <div class="section-card-title">កត់ត្រាការចូល/ចេញទំនិញថ្មី</div>
         <form id="cargoGateForm">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">លេខកូដទំនិញ / កុងតឺន័រ (Cargo Code / Container No.):</label>
-                    <input type="text" class="form-control" id="cargo_code" placeholder="ឧ. CG-2026-001 (Ex. Cargo Code)" required>
+                    <label class="form-label">លេខកូដទំនិញ / កុងតឺន័រ</label>
+                    <input type="text" class="form-control" id="cargo_code" placeholder="ឧ. CG-2026-001" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">លេខកុងតឺន័រ (Container Number - បើមាន):</label>
-                    <input type="text" class="form-control" id="container_number" placeholder="ឧ. TGHU1234567 (Ex. Container No.)">
+                    <label class="form-label">លេខកុងតឺន័រ (បើមាន)</label>
+                    <input type="text" class="form-control" id="container_number" placeholder="ឧ. TGHU1234567">
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">ប្រភេទខ្លោងទ្វារ (Gate Type):</label>
+                    <label class="form-label">ប្រភេទខ្លោងទ្វារ</label>
                     <select class="form-select" id="gate_type" required>
-                        <option value="Gate-In">Gate-In (ចូល)</option>
-                        <option value="Gate-Out">Gate-Out (ចេញ)</option>
+                        <option value="Gate-In">ចូល (Gate-In)</option>
+                        <option value="Gate-Out">ចេញ (Gate-Out)</option>
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង (Gate Date & Time):</label>
+                    <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង</label>
                     <input type="datetime-local" class="form-control" id="gate_date" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">ស្លាកលេខរថយន្ត (Truck Plate Number):</label>
-                    <input type="text" class="form-control" id="truck_plate_number" placeholder="ឧ. ភ្នំពេញ 3A-1234 (Ex. Truck Plate)" required>
+                    <label class="form-label">ស្លាកលេខរថយន្ត</label>
+                    <input type="text" class="form-control" id="truck_plate_number" placeholder="ឧ. ភ្នំពេញ 3A-1234" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">ឈ្មោះអ្នកបើកបរ (Driver Name):</label>
-                    <input type="text" class="form-control" id="driver_name" placeholder="ឧ. សុខ សុភា (Ex. Driver Name)" required>
+                    <label class="form-label">ឈ្មោះអ្នកបើកបរ</label>
+                    <input type="text" class="form-control" id="driver_name" placeholder="ឧ. សុខ សុភា" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">ឈ្មោះក្រុមហ៊ុនដឹកជញ្ជូន (Company Name):</label>
-                    <input type="text" class="form-control" id="company_name" placeholder="ឧ. ក្រុមហ៊ុន ឡូជីស្ទិក (Ex. Company Name)">
+                    <label class="form-label">ឈ្មោះក្រុមហ៊ុនដឹកជញ្ជូន</label>
+                    <input type="text" class="form-control" id="company_name" placeholder="ឧ. ក្រុមហ៊ុន ឡូជីស្ទិក">
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">ស្ថានភាព (Status):</label>
+                    <label class="form-label">ស្ថានភាព</label>
                     <select class="form-select" id="status">
-                        <option value="Completed">បានបញ្ចប់ (Completed)</option>
-                        <option value="Pending">កំពុងរង់ចាំ (Pending)</option>
+                        <option value="Completed">បានបញ្ចប់</option>
+                        <option value="Pending">កំពុងរង់ចាំ</option>
                     </select>
                 </div>
                 <div class="col-12">
-                    <label class="form-label">បរិយាយ / កំណត់សម្គាល់ (Description / Notes):</label>
-                    <textarea class="form-control" id="notes" rows="2" placeholder="ព័ត៌មានលម្អិតបន្ថែម... (Details...)"></textarea>
+                    <label class="form-label">បរិយាយ / កំណត់សម្គាល់</label>
+                    <textarea class="form-control" id="notes" rows="2" placeholder="ព័ត៌មានលម្អិតបន្ថែម..."></textarea>
                 </div>
                 <div class="col-12 mt-4">
                     <button type="submit" class="btn btn-primary-custom">
-                        <i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យខ្លោងទ្វារ (Save Gate Record)
+                        <i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យខ្លោងទ្វារ
                     </button>
                 </div>
             </div>
@@ -233,21 +232,21 @@
 
     <!-- តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ -->
     <div class="section-card">
-        <div class="section-card-title mb-3">តារាងតាមដានការចូល/ចេញទំនិញ (Cargo Gate List & Report)</div>
+        <div class="section-card-title mb-3">តារាងតាមដានការចូល/ចេញទំនិញ</div>
 
-        <!-- ផ្នែកតម្រងស្វែងរក (Filter & Search Bar) រៀបចំឱ្យមានសោភ័ណភាពល្អ -->
+        <!-- ផ្នែកតម្រងស្វែងរក (Filter & Search Bar) -->
         <div class="filter-action-bar no-print">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <label class="form-label">ស្វែងរកលេខកុងតឺន័រ (Search Container):</label>
+                    <label class="form-label">ស្វែងរកលេខកុងតឺន័រ</label>
                     <input type="text" class="form-control" id="searchContainer" placeholder="បញ្ចូលលេខកុងតឺន័រ...">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">ចាប់ពីថ្ងៃទី (From):</label>
+                    <label class="form-label">ចាប់ពីថ្ងៃទី</label>
                     <input type="date" class="form-control" id="filterFrom">
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label">ដល់ថ្ងៃទី (To):</label>
+                    <label class="form-label">ដល់ថ្ងៃទី</label>
                     <input type="date" class="form-control" id="filterTo">
                 </div>
                 <div class="col-md-5 d-flex gap-2 justify-content-end flex-wrap">
@@ -269,20 +268,20 @@
             <table class="table table-bordered table-hover">
                 <thead>
                     <tr>
-                        <th class="table-custom-header">ល.រ (No.)</th>
-                        <th class="table-custom-header">កូដទំនិញ (Cargo Code)</th>
-                        <th class="table-custom-header">កុងតឺន័រ (Container No.)</th>
-                        <th class="table-custom-header">ប្រភេទ (Gate Type)</th>
-                        <th class="table-custom-header">កាលបរិច្ឆេទ (Date & Time)</th>
-                        <th class="table-custom-header">ស្លាកលេខរថយន្ត (Truck Plate)</th>
-                        <th class="table-custom-header">អ្នកបើកបរ (Driver)</th>
-                        <th class="table-custom-header">ស្ថានភាព (Status)</th>
-                        <th class="table-custom-header no-print">សកម្មភាព (Actions)</th>
+                        <th class="table-custom-header">ល.រ</th>
+                        <th class="table-custom-header">កូដទំនិញ</th>
+                        <th class="table-custom-header">កុងតឺន័រ</th>
+                        <th class="table-custom-header">ប្រភេទ</th>
+                        <th class="table-custom-header">កាលបរិច្ឆេទ & ម៉ោង</th>
+                        <th class="table-custom-header">ស្លាកលេខរថយន្ត</th>
+                        <th class="table-custom-header">អ្នកបើកបរ</th>
+                        <th class="table-custom-header">ស្ថានភាព</th>
+                        <th class="table-custom-header no-print">សកម្មភាព</th>
                     </tr>
                 </thead>
                 <tbody id="cargoGateTableBody">
                     <tr>
-                        <td colspan="9" class="text-center text-muted py-4">កំពុងទាញយកទិន្នន័យ... (Loading Data...)</td>
+                        <td colspan="9" class="text-center text-muted py-4">កំពុងទាញយកទិន្នន័យ...</td>
                     </tr>
                 </tbody>
             </table>
@@ -310,7 +309,7 @@
                 <p><strong>កំណត់សម្គាល់:</strong> <span id="modal_notes" class="text-muted"></span></p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">បិទ (Close)</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">បិទ</button>
             </div>
         </div>
     </div>
@@ -368,7 +367,7 @@
             }
         } catch (err) {
             console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ Server!');
+            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
         }
     });
 
@@ -411,7 +410,7 @@
             tbody.innerHTML = '';
 
             if (!Array.isArray(filteredData) || filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">ពុំមានទិន្នន័យខ្លោងទ្វារដែលត្រូវស្វែងរកទេ (No gate data found)</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">ពុំមានទិន្នន័យខ្លោងទ្វារដែលត្រូវស្វែងរកទេ</td></tr>`;
                 return;
             }
 
