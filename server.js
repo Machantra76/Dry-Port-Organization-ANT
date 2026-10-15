@@ -483,21 +483,24 @@ async function initializeDatabase() {
         `);
 
         // ៣១. តារាងត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory Monitoring) [ADDED NEW]
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS duty_unpaid_inventory (
-                id SERIAL PRIMARY KEY,
-                container_number VARCHAR(100) NOT NULL,
-                cargo_name VARCHAR(255) NOT NULL,
-                owner_name VARCHAR(255) NOT NULL,
-                bonded_record_id INT REFERENCES bonded_warehouse_records(id) ON DELETE CASCADE,
-                entry_date DATE NOT NULL,
-                quantity INT NOT NULL DEFAULT 0,
-                unit VARCHAR(50) NOT NULL DEFAULT 'Pallets',
-                tax_status VARCHAR(100) DEFAULT 'Pending Duty Payment',
-                warehouse_location VARCHAR(150) NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
+       await client.query(`
+    CREATE TABLE IF NOT EXISTS duty_unpaid_inventory (
+        id SERIAL PRIMARY KEY,
+        container_number VARCHAR(100) NOT NULL,
+        vehicle_vin VARCHAR(100),
+        cargo_name VARCHAR(255) NOT NULL,
+        owner_name VARCHAR(255) NOT NULL,
+        bonded_record_id INT REFERENCES bonded_warehouse_records(id) ON DELETE CASCADE,
+        entry_date DATE NOT NULL,
+        quantity INT NOT NULL DEFAULT 0,
+        unit VARCHAR(50) NOT NULL DEFAULT 'Pallets',
+        tax_status VARCHAR(100) DEFAULT 'Pending Duty Payment',
+        warehouse_location VARCHAR(150) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+`);
+// បន្ថែមaddColumn ប្រសិនបើតារាងមានរួចស្រេចហើយ
+await client.query(`ALTER TABLE duty_unpaid_inventory ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);`);
 
         // ៣២. តារាងអ្នកប្រើប្រាស់ប្រព័ន្ធ (System Users & Roles)
         await client.query(`
@@ -903,6 +906,32 @@ app.get('/api/duty-unpaid-inventory', async (req, res) => {
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching duty-unpaid inventory:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+app.post('/api/duty-unpaid-inventory', async (req, res) => {
+    const { container_number, vehicle_vin, cargo_name, owner_name, bonded_record_id, entry_date, quantity, unit, tax_status, warehouse_location } = req.body;
+    try {
+        const query = `
+            INSERT INTO duty_unpaid_inventory (container_number, vehicle_vin, cargo_name, owner_name, bonded_record_id, entry_date, quantity, unit, tax_status, warehouse_location)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
+        `;
+        const values = [
+            container_number || 'N/A', 
+            vehicle_vin || null,
+            cargo_name, 
+            owner_name, 
+            bonded_record_id || null, 
+            entry_date, 
+            parseInt(quantity) || 0, 
+            unit || 'Pallets', 
+            tax_status || 'Pending Duty Payment', 
+            warehouse_location
+        ];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving duty-unpaid inventory:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
