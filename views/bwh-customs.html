@@ -359,11 +359,12 @@
             }
 
             const isBWHDepartment = checkIsBWHDepartment();
-            // កំណត់ attribute disable ចំពោះតែប៊ូតុងលុប ប្រសិនបើជា BWH Department
             const deleteDisabledAttr = isBWHDepartment ? 'disabled' : '';
 
             data.forEach((item, index) => {
-                const isRegistered = item.permit_number && item.customs_reg_number;
+                // ពិនិត្យមើលថាតើមាន លេខ Manifest រួចរាល់ហើយឬยัง (បើគ្មាន គឺ Enable ធម្មតា)
+                const isRegistered = item.manifest_number && item.manifest_number.trim() !== '';
+                
                 const editBtnStyle = isRegistered ? 'background: #cbd5e1; color: #64748b; cursor: not-allowed; pointer-events: none;' : '';
                 const editBtnAttr = isRegistered ? 'disabled' : '';
 
