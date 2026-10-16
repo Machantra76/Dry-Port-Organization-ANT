@@ -48,6 +48,17 @@
             color: #dbeafe;
         }
 
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+
         .btn-back {
             background: rgba(255, 255, 255, 0.2);
             color: white;
@@ -109,6 +120,19 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
+        }
+
+        .btn-primary:hover:not(:disabled), .btn-pdf:hover:not(:disabled) {
+            opacity: 0.9;
+        }
+
+        /* Style សម្រាប់ Button Disabled */
+        button:disabled {
+            background-color: #cbd5e1 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed !important;
+            opacity: 0.6 !important;
+            box-shadow: none !important;
         }
 
         .card {
@@ -183,8 +207,9 @@
             <h1>ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory)</h1>
             <p>Relationship with Bonded Warehouse Records - ANT Dry Port</p>
         </div>
-        <div>
+        <div class="user-info">
             <a href="/views/bwh-inout.html" class="btn-back"><i class="fa-solid fa-arrow-left me-1"></i> ទៅកាន់ឃ្លាំងពន្ធដារ (BWH)</a>
+            <span id="welcomeUser"><i class="fa-solid fa-user me-1"></i> មន្ត្រីឃ្លាំងពន្ធដារ</span>
         </div>
     </header>
 
@@ -195,7 +220,7 @@
             </div>
             <div>
                 <button class="btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> ទាញយក PDF</button>
-                <button class="btn-primary" onclick="openModal()"><i class="fa-solid fa-plus"></i> បញ្ចូលស្តុកថ្មី</button>
+                <button class="btn-primary" id="btnAddStock" onclick="openModal()"><i class="fa-solid fa-plus"></i> បញ្ចូលស្តុកថ្មី</button>
             </div>
         </div>
 
@@ -281,11 +306,41 @@
     <script>
         let inventoryData = [];
         let bwhRecords = [];
+        let currentUserInfo = null;
 
         document.addEventListener('DOMContentLoaded', () => {
+            const userStr = localStorage.getItem('ant_logged_user_info');
+            if (userStr) {
+                try {
+                    currentUserInfo = JSON.parse(userStr);
+                    const displayName = currentUserInfo.full_name || currentUserInfo.username || 'មន្ត្រី';
+                    const displayRole = currentUserInfo.role || currentUserInfo.dept_id || 'BWH';
+                    document.getElementById('welcomeUser').innerHTML = `<i class="fa-solid fa-user me-1"></i> ${displayName} (${displayRole})`;
+                } catch (e) {
+                    console.error("Error parsing user info:", e);
+                }
+            }
+
+            // ត្រួតពិនិត្យសិទ្ធិ បើជា BWH Department ឱ្យលាក់ប៊ូតុងបញ្ចូលស្តុកថ្មី
+            if (checkIsBWHDepartment()) {
+                const addBtn = document.getElementById('btnAddStock');
+                if (addBtn) addBtn.style.display = 'none';
+            }
+
             loadInventory();
             loadBwhDropdown();
         });
+
+        function checkIsBWHDepartment() {
+            if (!currentUserInfo) return false;
+            const deptId = (currentUserInfo.dept_id || '').toUpperCase();
+            const userRole = (currentUserInfo.role || '').toUpperCase();
+            
+            if (deptId === 'BONDED_WH' || userRole === 'STAFF') {
+                return true;
+            }
+            return false;
+        }
 
         async function loadInventory() {
             try {
@@ -347,6 +402,10 @@
                 tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យស្តុកទំនិញមិនទាន់បង់ពន្ធឡើយ</td></tr>`;
                 return;
             }
+
+            const isBWHDepartment = checkIsBWHDepartment();
+            const disabledAttr = isBWHDepartment ? 'disabled' : '';
+
             data.forEach((item, index) => {
                 tbody.innerHTML += `
                     <tr>
@@ -360,7 +419,7 @@
                         <td>${item.warehouse_location || ''}</td>
                         <td><span class="badge badge-pending">${item.tax_status || 'Pending Duty Payment'}</span></td>
                         <td style="text-align: center;" class="no-print">
-                            <button class="btn-primary" style="padding: 5px 10px; font-size: 11px; background: #ef4444;" onclick="deleteItem(${item.id})"><i class="fa-solid fa-trash"></i></button>
+                            <button class="btn-primary" ${disabledAttr} style="padding: 5px 10px; font-size: 11px; background: #ef4444;" onclick="deleteItem(${item.id})" title="${isBWHDepartment ? 'មន្ត្រីឃ្លាំងពន្ធដារគ្មានសិទ្ធិលុបទេ' : 'លុប'}"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -369,6 +428,11 @@
 
         async function saveInventory(e) {
             e.preventDefault();
+            if (checkIsBWHDepartment()) {
+                alert('មន្ត្រីឃ្លាំងពន្ធដារ (BONDED_WH) មិនមានសិទ្ធិបញ្ចូលស្តុកថ្មីឡើយ!');
+                return;
+            }
+
             const payload = {
                 bonded_record_id: document.getElementById('bwhSelect').value,
                 container_number: document.getElementById('containerNo').value,
@@ -402,13 +466,32 @@
         }
 
         async function deleteItem(id) {
+            if (checkIsBWHDepartment()) {
+                alert('មន្ត្រីឃ្លាំងពន្ធដារ (BONDED_WH) មិនមានសិទ្ធិលុបទិន្នន័យឡើយ!');
+                return;
+            }
+
             if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
-                await fetch(`/api/duty-unpaid-inventory/${id}`, { method: 'DELETE' });
-                loadInventory();
+                try {
+                    const res = await fetch(`/api/duty-unpaid-inventory/${id}`, { method: 'DELETE' });
+                    const result = await res.json();
+                    if (result.success) {
+                        alert('បានលុបទិន្នន័យដោយជោគជ័យ!');
+                        loadInventory();
+                    } else {
+                        alert('មានបញ្ហា៖ ' + (result.error || 'មិនអាចលុបបានទេ'));
+                    }
+                } catch (err) {
+                    console.error('Error:', err);
+                }
             }
         }
 
         function openModal() { 
+            if (checkIsBWHDepartment()) {
+                alert('មន្ត្រីឃ្លាំងពន្ធដារ (BONDED_WH) មិនមានសិទ្ធិបញ្ចូលស្តុកថ្មីឡើយ!');
+                return;
+            }
             loadBwhDropdown();
             document.getElementById('inventoryModal').style.display = 'flex'; 
         }
