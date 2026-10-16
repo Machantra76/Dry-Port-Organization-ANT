@@ -21,7 +21,6 @@
             --bg-body: #f1f5f9;
         }
         body {
-            /* កំណត់ Font ភាសាខ្មែរ Kantumruy Pro រួចបន្តដោយ Font អង់គ្លេស Poppins */
             font-family: 'Kantumruy Pro', 'Poppins', sans-serif;
             background-color: var(--bg-body);
             color: #1e293b;
@@ -286,6 +285,7 @@
                             <select class="form-select" name="status">
                                 <option value="Stored">កំពុងរក្សាទុក (Stored)</option>
                                 <option value="Dispatched">បានបញ្ចេញដឹកជញ្ជូន (Dispatched)</option>
+                                <option value="Gate-Out">Gate-Out</option>
                                 <option value="Moved">បានប្តូរទីតាំង (Moved)</option>
                             </select>
                         </div>
@@ -335,6 +335,7 @@
                             <option value="">ទាំងអស់</option>
                             <option value="Stored">រក្សាទុក</option>
                             <option value="Dispatched">បានបញ្ចេញ</option>
+                            <option value="Gate-Out">Gate-Out</option>
                             <option value="Moved">ប្តូរទីតាំង</option>
                         </select>
                     </div>
@@ -451,6 +452,7 @@
                                 <select class="form-select" id="edit_status">
                                     <option value="Stored">កំពុងរក្សាទុក (Stored)</option>
                                     <option value="Dispatched">បានបញ្ចេញដឹកជញ្ជូន (Dispatched)</option>
+                                    <option value="Gate-Out">Gate-Out</option>
                                     <option value="Moved">បានប្តូរទីតាំង (Moved)</option>
                                 </select>
                             </div>
@@ -539,14 +541,22 @@
             filterSelect.value = currentSelected;
         }
 
-        function calculateDayInYard(dateString) {
-            if (!dateString) return '-';
-            const updatedDate = new Date(dateString.split('T')[0]);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            updatedDate.setHours(0, 0, 0, 0);
+        // 🛑 កែសម្រួល Function គណនាថ្ងៃ៖ បើ Status ជា Dispatched ឬ Gate-Out ឱ្យឈប់រាប់ថ្ងៃបន្ត
+        function calculateDayInYard(item) {
+            if (!item.updated_date) return '-';
+            const entryDate = new Date(item.updated_date.split('T')[0]);
+            
+            let endDate = new Date();
+            const status = (item.status || '').trim();
 
-            const diffTime = today - updatedDate;
+            if (status === 'Dispatched' || status === 'Gate-Out') {
+                endDate = new Date(item.updated_date.split('T')[0]); // ឈប់រាប់បន្ត គណនាត្រឹមថ្ងៃ Gate-Out
+            }
+
+            endDate.setHours(0, 0, 0, 0);
+            entryDate.setHours(0, 0, 0, 0);
+
+            const diffTime = endDate - entryDate;
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
             return diffDays >= 0 ? `${diffDays + 1} ថ្ងៃ` : '0 ថ្ងៃ';
@@ -565,9 +575,10 @@
                 let statusBadge = 'bg-primary text-white';
                 if (item.status === 'Stored') statusBadge = 'bg-success text-white';
                 else if (item.status === 'Dispatched') statusBadge = 'bg-secondary text-white';
+                else if (item.status === 'Gate-Out') statusBadge = 'bg-danger text-white';
                 else if (item.status === 'Moved') statusBadge = 'bg-warning text-dark';
 
-                const dayInYardText = calculateDayInYard(item.updated_date);
+                const dayInYardText = calculateDayInYard(item);
 
                 const row = `
                     <tr>
@@ -703,7 +714,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                alert('មានបញ្ហាក្នុងการភ្ជាប់ទៅកាន់ Server');
+                alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
             }
         });
 
