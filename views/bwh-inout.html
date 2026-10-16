@@ -242,8 +242,17 @@
             color: white;
         }
 
-        .btn-action:hover {
+        .btn-action:hover:not(:disabled) {
             opacity: 0.8;
+        }
+
+        /* Style សម្រាប់ Button Disabled */
+        .btn-action:disabled {
+            background-color: #cbd5e1 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed !important;
+            opacity: 0.6 !important;
+            box-shadow: none !important;
         }
 
         /* Modal Popup */
@@ -430,10 +439,12 @@
 
     <script>
         let bwhData = [];
+        let userRole = '';
 
         document.addEventListener('DOMContentLoaded', () => {
             const user = JSON.parse(localStorage.getItem('ant_logged_user_info'));
             if (user) {
+                userRole = (user.role || '').trim();
                 document.getElementById('welcomeUser').innerHTML = `<i class="fa-solid fa-user me-1"></i> ${user.full_name} (${user.role})`;
             }
             fetchBwhData();
@@ -467,6 +478,10 @@
                 return;
             }
 
+            // ត្រួតពិនិត្យថាតើ User ជា "ផ្នែកឃ្លាំងទំនិញពន្ធដារ (BWH)" ឬ "BWH" ដែរឬទេ
+            const isBWHDepartment = (userRole.includes('ឃ្លាំងទំនិញពន្ធដារ') || userRole.toUpperCase() === 'BWH');
+            const disabledAttr = isBWHDepartment ? 'disabled' : '';
+
             data.forEach((item, index) => {
                 const movementType = item.movement_type || item.type || 'IN';
                 let badgeClass = movementType === 'IN' ? 'badge-in' : 'badge-out';
@@ -486,8 +501,8 @@
                         <td><span class="badge badge-days"><i class="fa-solid fa-clock me-1"></i> ${daysInBonded} ថ្ងៃ</span></td>
                         <td>${item.customs_status || item.status}</td>
                         <td style="text-align: center;" class="no-print">
-                            <button class="btn-action btn-edit" onclick="editRecord(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button class="btn-action btn-delete" onclick="deleteRecord(${item.id})" title="លុប"><i class="fa-solid fa-trash"></i></button>
+                            <button class="btn-action btn-edit" ${disabledAttr} onclick="editRecord(${item.id})" title="${isBWHDepartment ? 'ផ្នែកឃ្លាំងទំនិញពន្ធដារគ្មានសិទ្ធិកែប្រែទេ' : 'កែប្រែ'}"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button class="btn-action btn-delete" ${disabledAttr} onclick="deleteRecord(${item.id})" title="${isBWHDepartment ? 'ផ្នែកឃ្លាំងទំនិញពន្ធដារគ្មានសិទ្ធិលុបទេ' : 'លុប'}"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -547,6 +562,12 @@
         }
 
         function editRecord(id) {
+            const isBWHDepartment = (userRole.includes('ឃ្លាំងទំនិញពន្ធដារ') || userRole.toUpperCase() === 'BWH');
+            if (isBWHDepartment) {
+                alert('ផ្នែកឃ្លាំងទំនិញពន្ធដារ មិនមានសិទ្ធិកែប្រែទិន្នន័យឡើយ!');
+                return;
+            }
+
             const item = bwhData.find(d => d.id == id);
             if (!item) return;
 
@@ -563,6 +584,12 @@
         }
 
         async function deleteRecord(id) {
+            const isBWHDepartment = (userRole.includes('ឃ្លាំងទំនិញពន្ធដារ') || userRole.toUpperCase() === 'BWH');
+            if (isBWHDepartment) {
+                alert('ផ្នែកឃ្លាំងទំនិញពន្ធដារ មិនមានសិទ្ធិលុបទិន្នន័យឡើយ!');
+                return;
+            }
+
             if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
                 try {
                     const res = await fetch(`/api/bwh-records/${id}`, { method: 'DELETE' });
