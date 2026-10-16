@@ -660,14 +660,20 @@ app.put('/api/users/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
-// API សម្រាប់បន្តកាលបរិច្ឆេទថ្មី (Renew BWH Record ពេលគ្រប់ ១៨០ ថ្ងៃ)
+// API សម្រាប់បន្តកាលបរិច្ឆេទថ្មី (Renew BWH Record) និងរក្សាទុកប្រវត្តិថ្ងៃចាស់
 app.put('/api/bwh-records/:id/renew', async (req, res) => {
     const { id } = req.params;
-    const { record_date } = req.body;
+    const { record_date, current_days } = req.body;
     try {
-        const query = 'UPDATE bwh_records SET record_date = $1 WHERE id = $2';
-        await pool.query(query, [record_date, id]);
-        res.json({ success: true, message: 'បានបន្តកាលបរិច្ឆេទថ្មីដោយជោគជ័យ!' });
+        // យកចំនួនថ្ងៃបច្ចុប្បន្នទៅបូកបន្ថែមលើ previous_days និងអាប់ដេតថ្ងៃថ្មី
+        const query = `
+            UPDATE bwh_records 
+            SET previous_days = COALESCE(previous_days, 0) + $1, 
+                record_date = $2 
+            WHERE id = $3
+        `;
+        await pool.query(query, [current_days, record_date, id]);
+        res.json({ success: true, message: 'បានបន្តកាលបរិច្ឆេទថ្មី និងរក្សាទុកប្រវត្តិដោយជោគជ័យ!' });
     } catch (err) {
         console.error('Error renewing BWH record:', err);
         res.status(500).json({ success: false, error: err.message });
