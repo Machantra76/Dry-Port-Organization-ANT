@@ -41,6 +41,17 @@
         header h1 { margin: 0; font-size: 20px; }
         header p { margin: 4px 0 0 0; font-size: 12px; color: #dbeafe; }
 
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            flex-wrap: wrap;
+        }
+
         .btn-back {
             background: rgba(255, 255, 255, 0.2);
             color: white;
@@ -79,6 +90,15 @@
             background: #ef4444; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
         }
 
+        /* Style សម្រាប់ Button Disabled */
+        button:disabled {
+            background-color: #cbd5e1 !important;
+            color: #94a3b8 !important;
+            cursor: not-allowed !important;
+            opacity: 0.6 !important;
+            box-shadow: none !important;
+        }
+
         .card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color); }
         .table-responsive { overflow-x: auto; }
 
@@ -111,7 +131,10 @@
             <h1>ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH)</h1>
             <p>Relationship with Bonded Warehouse Records - ANT Dry Port</p>
         </div>
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <div class="user-info">
+                <span id="welcomeUser"><i class="fa-solid fa-user me-1"></i> មន្ត្រីឃ្លាំងពន្ធដារ</span>
+            </div>
             <a href="/" class="btn-back"><i class="fa-solid fa-house"></i> ទៅកាន់ទំព័រដើម</a>
             <a href="/views/bwh-inout.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> ឃ្លាំងពន្ធដារ (BWH)</a>
         </div>
@@ -255,12 +278,36 @@
     <script>
         let permitData = [];
         let bwhRecords = [];
+        let currentUserInfo = null;
 
         document.addEventListener('DOMContentLoaded', () => {
+            const userStr = localStorage.getItem('ant_logged_user_info');
+            if (userStr) {
+                try {
+                    currentUserInfo = JSON.parse(userStr);
+                    const displayName = currentUserInfo.full_name || currentUserInfo.username || 'មន្ត្រី';
+                    const displayRole = currentUserInfo.role || currentUserInfo.dept_id || 'BWH';
+                    document.getElementById('welcomeUser').innerHTML = `<i class="fa-solid fa-user me-1"></i> ${displayName} (${displayRole})`;
+                } catch (e) {
+                    console.error("Error parsing user info:", e);
+                }
+            }
+
             loadPermits();
             loadBwhDropdown();
             document.getElementById('issueDate').value = new Date().toISOString().slice(0, 10);
         });
+
+        function checkIsBWHDepartment() {
+            if (!currentUserInfo) return false;
+            const deptId = (currentUserInfo.dept_id || '').toUpperCase();
+            const userRole = (currentUserInfo.role || '').toUpperCase();
+            
+            if (deptId === 'BONDED_WH' || userRole === 'STAFF') {
+                return true;
+            }
+            return false;
+        }
 
         async function loadPermits() {
             try {
@@ -303,20 +350,22 @@
             }
         }
 
-       function renderTable(data) {
+        function renderTable(data) {
             const tbody = document.getElementById('permitTableBody');
             tbody.innerHTML = '';
             if (!data || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="14" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យលិខិតអនុញ្ញាតគយឡើយ</td></tr>`;
                 return;
             }
+
+            const isBWHDepartment = checkIsBWHDepartment();
+            // កំណត់ attribute disable ចំពោះតែប៊ូតុងលុប ប្រសិនបើជា BWH Department
+            const deleteDisabledAttr = isBWHDepartment ? 'disabled' : '';
+
             data.forEach((item, index) => {
-                // ពិនិត្យមើលថាតើបានចុះបញ្ជីរួចរាល់ហើយ ឬยัง (ឧ. ផ្អែកលើការមាន permit_number ឬ customs_reg_number)
                 const isRegistered = item.permit_number && item.customs_reg_number;
-                
-                // បើបានចុះបញ្ជីរួច ដាក់ disabled និងប្ដូរពណ៌បន្តិចដើម្បីឱ្យដឹងថាហាមចុចซ้ำ
-                const btnStyle = isRegistered ? 'background: #cbd5e1; color: #64748b; cursor: not-allowed; pointer-events: none;' : '';
-                const btnAttr = isRegistered ? 'disabled' : '';
+                const editBtnStyle = isRegistered ? 'background: #cbd5e1; color: #64748b; cursor: not-allowed; pointer-events: none;' : '';
+                const editBtnAttr = isRegistered ? 'disabled' : '';
 
                 tbody.innerHTML += `
                     <tr>
@@ -334,10 +383,12 @@
                         <td>${item.officer_name || ''}</td>
                         <td><span class="badge badge-active">${item.status || 'Active'}</span></td>
                         <td style="text-align: center; display: flex; gap: 5px; justify-content: center;" class="no-print">
-                            <button class="btn-warning" ${btnAttr} style="${btnStyle}" onclick="editPermit(${item.id})">
+                            <button class="btn-warning" ${editBtnAttr} style="${editBtnStyle}" onclick="editPermit(${item.id})">
                                 <i class="fa-solid fa-pen-to-square"></i> ${isRegistered ? 'បានចុះបញ្ជីរួច' : 'កែរ-ចុះបញ្ជី'}
                             </button>
-                            <button class="btn-danger" onclick="deletePermit(${item.id})"><i class="fa-solid fa-trash"></i> លុប</button>
+                            <button class="btn-danger" ${deleteDisabledAttr} onclick="deletePermit(${item.id})" title="${isBWHDepartment ? 'មន្ត្រីឃ្លាំងពន្ធដារគ្មានសិទ្ធិលុបទេ' : 'លុប'}">
+                                <i class="fa-solid fa-trash"></i> លុប
+                            </button>
                         </td>
                     </tr>
                 `;
@@ -383,7 +434,6 @@
                 const result = await res.json();
                 
                 if (result.success) {
-                    // ប្រសិនបើមានការចុះលេខ Manifest No. សម្រេច ធ្វើបច្ចុប្បន្នភាពស្ថានភាពគយក្នុងតារាង BWH ទៅជា "បានបង់ពន្ធរួច (Duty Paid / Released)"
                     if (manifestVal && bondedRecordId) {
                         await fetch(`/api/bwh-records/${bondedRecordId}/duty-status`, {
                             method: 'PUT',
@@ -429,9 +479,24 @@
         }
 
         async function deletePermit(id) {
+            if (checkIsBWHDepartment()) {
+                alert('មន្ត្រីឃ្លាំងពន្ធដារ (BONDED_WH) មិនមានសិទ្ធិលុបទិន្នន័យឡើយ!');
+                return;
+            }
+
             if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
-                await fetch(`/api/customs-permits/${id}`, { method: 'DELETE' });
-                loadPermits();
+                try {
+                    const res = await fetch(`/api/customs-permits/${id}`, { method: 'DELETE' });
+                    const result = await res.json();
+                    if (result.success) {
+                        alert('បានលុបទិន្នន័យដោយជោគជ័យ!');
+                        loadPermits();
+                    } else {
+                        alert('មានបញ្ហា៖ ' + (result.error || 'មិនអាចលុបបានទេ'));
+                    }
+                } catch (err) {
+                    console.error('Error:', err);
+                }
             }
         }
 
