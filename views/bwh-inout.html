@@ -6,7 +6,6 @@
     <title>ការគ្រប់គ្រងទំនិញ ឬយានយន្ត ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out) - ANT Dry Port</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- ឯកសារជំនួយសម្រាប់ Export PDF (html2pdf) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
@@ -399,14 +398,14 @@
                         </tr>
                     </thead>
                     <tbody id="bwhTableBody">
-                        <!-- Data will be populated dynamically -->
+                        <!-- Data populated dynamically -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Modal Form for Adding/Editing Record -->
+    <!-- Modal Form -->
     <div id="bwhModal" class="modal-overlay">
         <div class="modal-card">
             <h2 id="modalTitle"><i class="fa-solid fa-car-side me-2"></i> បញ្ជីកត់ត្រាទំនិញ ឬយានយន្ត ឃ្លាំងពន្ធដារ (BWH)</h2>
@@ -529,7 +528,9 @@
                 let typeText = movementType === 'IN' ? 'ចូល (IN)' : 'ចេញ (OUT)';
                 let recordDate = item.record_date || item.date || new Date().toISOString();
                 
-                let daysInBonded = calculateDaysInBonded(item);
+                let currentDays = calculateDaysInBonded(item);
+                let previousDays = item.previous_days || 0;
+                let totalDays = currentDays + previousDays; // ចំនួនថ្ងៃសរុប (ថ្ងៃបច្ចុប្បន្ន + ថ្ងៃចាស់ដែលធ្លាប់បន្ត)
 
                 let daysBadgeClass = 'badge-days';
                 let warningText = '';
@@ -538,17 +539,22 @@
                 const isPaid = status.includes('បានបង់ពន្ធរួច') || status.includes('duty paid') || status.includes('released');
 
                 if (!isPaid) {
-                    if (daysInBonded >= 180) {
+                    if (totalDays >= 180) {
                         daysBadgeClass = 'badge-danger-days';
                         warningText = ' (ហួសកំណត់ ១៨០ថ្ងៃ!)';
-                    } else if (daysInBonded >= 150) {
+                    } else if (totalDays >= 150) {
                         daysBadgeClass = 'badge-warning-days';
                         warningText = ' (Warning: សល់ជិត ៣០ថ្ងៃទៀត)';
                     }
                 }
 
-                // 🟢 បង្ហាញប៊ូតុង "បន្តថ្មី" ជានិច្ច ឱ្យមន្ត្រីងាយស្រួលចុចបន្តកាលបរិច្ឆេទ
-                let renewButton = `<button class="btn-action btn-renew" onclick="renewRecord(${item.id})" title="បន្តកាលបរិច្ឆេទថ្មី"><i class="fa-solid fa-rotate-right"></i> បន្តថ្មី</button>`;
+                // បង្ហាញប្រវត្តិថ្ងៃចាស់ប្រសិនបើធ្លាប់បានបន្តថ្មី
+                let historyText = '';
+                if (previousDays > 0) {
+                    historyText = `<br><span style="font-size: 10px; color: #0284c7; font-weight: 600;">(រួមថ្ងៃចាស់: ${previousDays} ថ្ងៃ)</span>`;
+                }
+
+                let renewButton = `<button class="btn-action btn-renew" onclick="renewRecord(${item.id}, ${totalDays})" title="បន្តកាលបរិច្ឆេទថ្មី"><i class="fa-solid fa-rotate-right"></i> បន្តថ្មី</button>`;
 
                 let row = `
                     <tr>
@@ -561,8 +567,9 @@
                         <td>${recordDate.replace('T', ' ').slice(0, 16)}</td>
                         <td>
                             <span class="badge ${daysBadgeClass}" title="${warningText}">
-                                <i class="fa-solid fa-clock me-1"></i> ${daysInBonded} ថ្ងៃ ${warningText}
+                                <i class="fa-solid fa-clock me-1"></i> ${totalDays} ថ្ងៃ ${warningText}
                             </span>
+                            ${historyText}
                         </td>
                         <td>${item.customs_status || item.status}</td>
                         <td style="text-align: center;" class="no-print">
@@ -576,17 +583,21 @@
             });
         }
 
-        async function renewRecord(id) {
-            if (confirm('តើអ្នកពិតជាចង់បន្តកាលបរិច្ឆេទថ្មី (Reset ថ្ងៃរាប់សារថ្មី) សម្រាប់ទំនិញនេះមែនទេ?[cite: 6]')) {
+        // Function សម្រាប់បន្តថ្មី ដោយផ្ញើចំនួនថ្ងៃសរុបបច្ចុប្បន្នទៅរក្សាទុកជាប្រវត្តិ
+        async function renewRecord(id, currentTotalDays) {
+            if (confirm(`តើអ្នកពិតជាចង់បន្តកាលបរិច្ឆេទថ្មីមែនទេ? (ចំនួនថ្ងៃសរុប ${currentTotalDays} ថ្ងៃ នឹងត្រូវរក្សាទុកជាប្រវត្តិថ្ងៃចាស់)`)) {
                 try {
                     const res = await fetch(`/api/bwh-records/${id}/renew`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ record_date: new Date().toISOString() })
+                        body: JSON.stringify({ 
+                            record_date: new Date().toISOString(),
+                            current_days: currentTotalDays 
+                        })
                     });
                     const result = await res.json();
                     if (result.success) {
-                        alert('បានបន្តកាលបរិច្ឆេទថ្មីដោយជោគជ័យ!');
+                        alert('បានបន្តកាលបរិច្ឆេទថ្មី និងរក្សាទុកប្រវត្តិដោយជោគជ័យ!');
                         fetchBwhData();
                     } else {
                         alert('មានបញ្ហា៖ ' + (result.error || 'មិនអាចបន្តកាលបរិច្ឆេទបានទេ'));
@@ -658,7 +669,7 @@
             const item = bwhData.find(d => d.id == id);
             if (!item) return;
 
-            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-car-side me-2"></i> កែប្រែព័ត៌មានទំនិញ ឬយានយន្ត ឃ្លាំងពន្ធដារ`;
+            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square me-2"></i> កែប្រែព័ត៌មានទំនិញ ឬយានយន្ត ឃ្លាំងពន្ធដារ`;
             document.getElementById('recordId').value = item.id;
             document.getElementById('containerNo').value = item.container_number || '';
             document.getElementById('vehicleVin').value = item.vehicle_vin || '';
