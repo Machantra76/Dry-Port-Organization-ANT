@@ -439,13 +439,19 @@
 
     <script>
         let bwhData = [];
-        let userRole = '';
+        let currentUserInfo = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            const user = JSON.parse(localStorage.getItem('ant_logged_user_info'));
-            if (user) {
-                userRole = (user.role || '').trim();
-                document.getElementById('welcomeUser').innerHTML = `<i class="fa-solid fa-user me-1"></i> ${user.full_name} (${user.role})`;
+            const userStr = localStorage.getItem('ant_logged_user_info');
+            if (userStr) {
+                try {
+                    currentUserInfo = JSON.parse(userStr);
+                    const displayName = currentUserInfo.full_name || currentUserInfo.username || 'មន្ត្រី';
+                    const displayRole = currentUserInfo.role || currentUserInfo.dept_id || 'BWH';
+                    document.getElementById('welcomeUser').innerHTML = `<i class="fa-solid fa-user me-1"></i> ${displayName} (${displayRole})`;
+                } catch (e) {
+                    console.error("Error parsing user info:", e);
+                }
             }
             fetchBwhData();
         });
@@ -469,6 +475,19 @@
             return diffDays >= 0 ? diffDays : 0;
         }
 
+        // ฟังก์ชันពិនិត្យសិទ្ធិ BWH Department
+        function checkIsBWHDepartment() {
+            if (!currentUserInfo) return false;
+            const deptId = (currentUserInfo.dept_id || '').toUpperCase();
+            const userRole = (currentUserInfo.role || '').toUpperCase();
+            
+            // ប្រសិនបើ dept_id ជា BONDED_WH ឬ role ជា STAFF
+            if (deptId === 'BONDED_WH' || userRole === 'STAFF') {
+                return true;
+            }
+            return false;
+        }
+
         function renderTable(data) {
             const tbody = document.getElementById('bwhTableBody');
             tbody.innerHTML = '';
@@ -478,8 +497,7 @@
                 return;
             }
 
-            // ត្រួតពិនិត្យថាតើ User ជា "ផ្នែកឃ្លាំងទំនិញពន្ធដារ (BWH)" ឬ "BWH" ដែរឬទេ
-            const isBWHDepartment = (userRole.includes('ឃ្លាំងទំនិញពន្ធដារ') || userRole.toUpperCase() === 'BWH');
+            const isBWHDepartment = checkIsBWHDepartment();
             const disabledAttr = isBWHDepartment ? 'disabled' : '';
 
             data.forEach((item, index) => {
@@ -501,8 +519,8 @@
                         <td><span class="badge badge-days"><i class="fa-solid fa-clock me-1"></i> ${daysInBonded} ថ្ងៃ</span></td>
                         <td>${item.customs_status || item.status}</td>
                         <td style="text-align: center;" class="no-print">
-                            <button class="btn-action btn-edit" ${disabledAttr} onclick="editRecord(${item.id})" title="${isBWHDepartment ? 'ផ្នែកឃ្លាំងទំនិញពន្ធដារគ្មានសិទ្ធិកែប្រែទេ' : 'កែប្រែ'}"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button class="btn-action btn-delete" ${disabledAttr} onclick="deleteRecord(${item.id})" title="${isBWHDepartment ? 'ផ្នែកឃ្លាំងទំនិញពន្ធដារគ្មានសិទ្ធិលុបទេ' : 'លុប'}"><i class="fa-solid fa-trash"></i></button>
+                            <button class="btn-action btn-edit" ${disabledAttr} onclick="editRecord(${item.id})" title="${isBWHDepartment ? 'មន្ត្រីឃ្លាំងពន្ធដារគ្មានសិទ្ធិកែប្រែទេ' : 'កែប្រែ'}"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button class="btn-action btn-delete" ${disabledAttr} onclick="deleteRecord(${item.id})" title="${isBWHDepartment ? 'មន្ត្រីឃ្លាំងពន្ធដារគ្មានសិទ្ធិលុបទេ' : 'លុប'}"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
@@ -562,9 +580,8 @@
         }
 
         function editRecord(id) {
-            const isBWHDepartment = (userRole.includes('ឃ្លាំងទំនិញពន្ធដារ') || userRole.toUpperCase() === 'BWH');
-            if (isBWHDepartment) {
-                alert('ផ្នែកឃ្លាំងទំនិញពន្ធដារ មិនមានសិទ្ធិកែប្រែទិន្នន័យឡើយ!');
+            if (checkIsBWHDepartment()) {
+                alert('មន្ត្រីឃ្លាំងពន្ធដារ (BONDED_WH) មិនមានសិទ្ធិកែប្រែទិន្នន័យឡើយ!');
                 return;
             }
 
@@ -584,9 +601,8 @@
         }
 
         async function deleteRecord(id) {
-            const isBWHDepartment = (userRole.includes('ឃ្លាំងទំនិញពន្ធដារ') || userRole.toUpperCase() === 'BWH');
-            if (isBWHDepartment) {
-                alert('ផ្នែកឃ្លាំងទំនិញពន្ធដារ មិនមានសិទ្ធិលុបទិន្នន័យឡើយ!');
+            if (checkIsBWHDepartment()) {
+                alert('មន្ត្រីឃ្លាំងពន្ធដារ (BONDED_WH) មិនមានសិទ្ធិលុបទិន្នន័យឡើយ!');
                 return;
             }
 
