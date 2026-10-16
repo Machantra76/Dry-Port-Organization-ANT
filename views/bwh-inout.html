@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out) - ANT Dry Port</title>
+    <title>ការគ្រប់គ្រងទំនិញ ឬយានយន្ត ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out) - ANT Dry Port</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- ឯកសារជំនួយសម្រាប់ Export PDF (html2pdf) -->
@@ -220,6 +220,22 @@
             background-color: #e0f2fe;
             color: #0369a1;
             font-weight: 700;
+        }
+
+        /* Badge សម្រាប់ Warning ពេលជិតครบ 180 ថ្ងៃ (>= 150 ថ្ងៃ) */
+        .badge-warning-days {
+            background-color: #fef3c7;
+            color: #d97706;
+            font-weight: 700;
+            border: 1px solid #f59e0b;
+        }
+
+        /* Badge សម្រាប់ហួសកំណត់ 180 ថ្ងៃ */
+        .badge-danger-days {
+            background-color: #fee2e2;
+            color: #991b1b;
+            font-weight: 700;
+            border: 1px solid #ef4444;
         }
 
         .btn-action {
@@ -466,11 +482,27 @@
             }
         }
 
-        function calculateDaysInBonded(dateStr) {
-            if (!dateStr) return 0;
-            const entryDate = new Date(dateStr);
-            const today = new Date();
-            const diffTime = today - entryDate;
+        // 🛠️ កែសម្រួល Function គណនាចំនួនថ្ងៃ យោងតាមស្ថានភាពគយ និងលក្ខខណ្ឌ 180 ថ្ងៃ
+        function calculateDaysInBonded(item) {
+            if (!item.record_date && !item.date) return 0;
+            const entryDate = new Date(item.record_date || item.date);
+            const status = (item.customs_status || item.status || '').toLowerCase();
+            
+            let targetDate = new Date(); // ថ្ងៃបច្ចុប្បន្នសម្រាប់ករណីមិនទាន់បង់ពន្ធ
+            
+            // ប្រសិនបើ Status គឺ "បានបង់ពន្ធរួច (Duty Paid / Released)" 
+            // យើងអាចឱ្យវាគណនាដល់ត្រឹមថ្ងៃអាប់ដេតចុងក្រោយ ឬកាលបរិច្ឆេទបង់ពន្ធ (ទីនេះយក updated_at បើมี ឬថ្ងៃបច្ចុប្បន្នដែលបាន Released ស្កត់ត្រាទុក 
+            // ប៉ុន្តែដើម្បីឱ្យងាយស្រួល ប្រសិនបើមាន updated_at យក updated_at មកគណនាជំនួសថ្ងៃបច្ចុប្បន្ន ដើម្បីកុំឱ្យថ្ងៃវាដើរទៅមុខទៀត)
+            if (status.includes('ได้បង់ពន្ធរួច') || status.includes('duty paid') || status.includes('released')) {
+                if (item.updated_at) {
+                    targetDate = new Date(item.updated_at);
+                } else if (item.release_date) {
+                    targetDate = new Date(item.release_date);
+                }
+                // បើគ្មាន Date ជំនួសទេ វាប្រៀបធៀបជាមួយ entryDate ស្មើថ្ងៃហ្នឹង ឬរក្សាទុកចំនួនថ្ងៃថេរ
+            }
+
+            const diffTime = targetDate - entryDate;
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
             return diffDays >= 0 ? diffDays : 0;
         }
@@ -481,7 +513,6 @@
             const deptId = (currentUserInfo.dept_id || '').toUpperCase();
             const userRole = (currentUserInfo.role || '').toUpperCase();
             
-            // ប្រសិនបើ dept_id ជា BONDED_WH ឬ role ជា STAFF
             if (deptId === 'BONDED_WH' || userRole === 'STAFF') {
                 return true;
             }
@@ -505,7 +536,27 @@
                 let badgeClass = movementType === 'IN' ? 'badge-in' : 'badge-out';
                 let typeText = movementType === 'IN' ? 'ចូល (IN)' : 'ចេញ (OUT)';
                 let recordDate = item.record_date || item.date || new Date().toISOString();
-                let daysInBonded = calculateDaysInBonded(recordDate);
+                
+                // គណនាចំនួនថ្ងៃតាមលក្ខខណ្ឌថ្មី
+                let daysInBonded = calculateDaysInBonded(item);
+
+                // កំណត់ Badge ពណ៌សម្រាប់ Warning (នៅសល់ 30 ថ្ងៃទៀតครบ 180 ថ្ងៃ ពោលគឺ >= 150 ថ្ងៃ) 
+                // ឬ Overdue (> 180 ថ្ងៃ)
+                let daysBadgeClass = 'badge-days';
+                let warningText = '';
+                
+                const status = (item.customs_status || item.status || '').toLowerCase();
+                const isPaid = status.includes('បានបង់ពន្ធរួច') || status.includes('duty paid') || status.includes('released');
+
+                if (!isPaid) {
+                    if (daysInBonded >= 180) {
+                        daysBadgeClass = 'badge-danger-days';
+                        warningText = ' (ហួសកំណត់ ១៨០ថ្ងៃ!)';
+                    } else if (daysInBonded >= 150) {
+                        daysBadgeClass = 'badge-warning-days';
+                        warningText = ' (Warning: សល់ជិត ៣០ថ្ងៃទៀត)';
+                    }
+                }
 
                 let row = `
                     <tr>
@@ -516,7 +567,11 @@
                         <td>${item.owner_name || item.owner}</td>
                         <td><span class="badge ${badgeClass}">${typeText}</span></td>
                         <td>${recordDate.replace('T', ' ').slice(0, 16)}</td>
-                        <td><span class="badge badge-days"><i class="fa-solid fa-clock me-1"></i> ${daysInBonded} ថ្ងៃ</span></td>
+                        <td>
+                            <span class="badge ${daysBadgeClass}" title="${warningText}">
+                                <i class="fa-solid fa-clock me-1"></i> ${daysInBonded} ថ្ងៃ ${warningText}
+                            </span>
+                        </td>
                         <td>${item.customs_status || item.status}</td>
                         <td style="text-align: center;" class="no-print">
                             <button class="btn-action btn-edit" ${disabledAttr} onclick="editRecord(${item.id})" title="${isBWHDepartment ? 'មន្ត្រីឃ្លាំងពន្ធដារគ្មានសិទ្ធិកែប្រែទេ' : 'កែប្រែ'}"><i class="fa-solid fa-pen-to-square"></i></button>
@@ -588,7 +643,7 @@
             const item = bwhData.find(d => d.id == id);
             if (!item) return;
 
-            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square me-2"></i> កែប្រែព័ត៌មានទំនិញ ឬយានយន្ត ឃ្លាំងពន្ធដារ`;
+            document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-car-side me-2"></i> កែប្រែព័ត៌មានទំនិញ ឬយានយន្ត ឃ្លាំងពន្ធដារ`;
             document.getElementById('recordId').value = item.id;
             document.getElementById('containerNo').value = item.container_number || '';
             document.getElementById('vehicleVin').value = item.vehicle_vin || '';
