@@ -660,6 +660,19 @@ app.put('/api/users/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
+// API សម្រាប់បន្តកាលបរិច្ឆេទថ្មី (Renew BWH Record ពេលគ្រប់ ១៨០ ថ្ងៃ)
+app.put('/api/bwh-records/:id/renew', async (req, res) => {
+    const { id } = req.params;
+    const { record_date } = req.body;
+    try {
+        const query = 'UPDATE bwh_records SET record_date = $1 WHERE id = $2';
+        await pool.query(query, [record_date, id]);
+        res.json({ success: true, message: 'បានបន្តកាលបរិច្ឆេទថ្មីដោយជោគជ័យ!' });
+    } catch (err) {
+        console.error('Error renewing BWH record:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 
 // ==========================================
 // API Routes: Customs Permit & Document Control (BWH) - Updated
