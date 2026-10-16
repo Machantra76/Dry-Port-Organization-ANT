@@ -258,6 +258,11 @@
             color: white;
         }
 
+        .btn-renew {
+            background-color: #0284c7;
+            color: white;
+        }
+
         .btn-action:hover:not(:disabled) {
             opacity: 0.8;
         }
@@ -482,24 +487,20 @@
             }
         }
 
-        // 🛠️ កែសម្រួល Function គណនាចំនួនថ្ងៃ យោងតាមស្ថានភាពគយ និងលក្ខខណ្ឌ 180 ថ្ងៃ
+        // 🛠️ Function គណនាចំនួនថ្ងៃ (ឈប់រាប់បន្តពេលបង់ពន្ធរួច)
         function calculateDaysInBonded(item) {
             if (!item.record_date && !item.date) return 0;
             const entryDate = new Date(item.record_date || item.date);
             const status = (item.customs_status || item.status || '').toLowerCase();
             
-            let targetDate = new Date(); // ថ្ងៃបច្ចុប្បន្នសម្រាប់ករណីមិនទាន់បង់ពន្ធ
+            let targetDate = new Date(); 
             
-            // ប្រសិនបើ Status គឺ "បានបង់ពន្ធរួច (Duty Paid / Released)" 
-            // យើងអាចឱ្យវាគណនាដល់ត្រឹមថ្ងៃអាប់ដេតចុងក្រោយ ឬកាលបរិច្ឆេទបង់ពន្ធ (ទីនេះយក updated_at បើมี ឬថ្ងៃបច្ចុប្បន្នដែលបាន Released ស្កត់ត្រាទុក 
-            // ប៉ុន្តែដើម្បីឱ្យងាយស្រួល ប្រសិនបើមាន updated_at យក updated_at មកគណនាជំនួសថ្ងៃបច្ចុប្បន្ន ដើម្បីកុំឱ្យថ្ងៃវាដើរទៅមុខទៀត)
             if (status.includes('ได้បង់ពន្ធរួច') || status.includes('duty paid') || status.includes('released')) {
                 if (item.updated_at) {
                     targetDate = new Date(item.updated_at);
                 } else if (item.release_date) {
                     targetDate = new Date(item.release_date);
                 }
-                // បើគ្មាន Date ជំនួសទេ វាប្រៀបធៀបជាមួយ entryDate ស្មើថ្ងៃហ្នឹង ឬរក្សាទុកចំនួនថ្ងៃថេរ
             }
 
             const diffTime = targetDate - entryDate;
@@ -507,7 +508,6 @@
             return diffDays >= 0 ? diffDays : 0;
         }
 
-        // ฟังก์ชันពិនិត្យសិទ្ធិ BWH Department
         function checkIsBWHDepartment() {
             if (!currentUserInfo) return false;
             const deptId = (currentUserInfo.dept_id || '').toUpperCase();
@@ -537,13 +537,11 @@
                 let typeText = movementType === 'IN' ? 'ចូល (IN)' : 'ចេញ (OUT)';
                 let recordDate = item.record_date || item.date || new Date().toISOString();
                 
-                // គណនាចំនួនថ្ងៃតាមលក្ខខណ្ឌថ្មី
                 let daysInBonded = calculateDaysInBonded(item);
 
-                // កំណត់ Badge ពណ៌សម្រាប់ Warning (នៅសល់ 30 ថ្ងៃទៀតครบ 180 ថ្ងៃ ពោលគឺ >= 150 ថ្ងៃ) 
-                // ឬ Overdue (> 180 ថ្ងៃ)
                 let daysBadgeClass = 'badge-days';
                 let warningText = '';
+                let renewButton = '';
                 
                 const status = (item.customs_status || item.status || '').toLowerCase();
                 const isPaid = status.includes('បានបង់ពន្ធរួច') || status.includes('duty paid') || status.includes('released');
@@ -552,6 +550,8 @@
                     if (daysInBonded >= 180) {
                         daysBadgeClass = 'badge-danger-days';
                         warningText = ' (ហួសកំណត់ ១៨០ថ្ងៃ!)';
+                        // បង្ហាញប៊ូតុងបន្តកាលបរិច្ឆេទថ្មីពេលគ្រប់ ឬហួស ១៨០ ថ្ងៃ[cite: 6]
+                        renewButton = `<button class="btn-action btn-renew" onclick="renewRecord(${item.id})" title="បន្តកាលបរិច្ឆេទថ្មី ១៨០ថ្ងៃបន្ថែម"><i class="fa-solid fa-rotate-right"></i> បន្តថ្មី</button>`;
                     } else if (daysInBonded >= 150) {
                         daysBadgeClass = 'badge-warning-days';
                         warningText = ' (Warning: សល់ជិត ៣០ថ្ងៃទៀត)';
@@ -574,6 +574,7 @@
                         </td>
                         <td>${item.customs_status || item.status}</td>
                         <td style="text-align: center;" class="no-print">
+                            ${renewButton}
                             <button class="btn-action btn-edit" ${disabledAttr} onclick="editRecord(${item.id})" title="${isBWHDepartment ? 'មន្ត្រីឃ្លាំងពន្ធដារគ្មានសិទ្ធិកែប្រែទេ' : 'កែប្រែ'}"><i class="fa-solid fa-pen-to-square"></i></button>
                             <button class="btn-action btn-delete" ${disabledAttr} onclick="deleteRecord(${item.id})" title="${isBWHDepartment ? 'មន្ត្រីឃ្លាំងពន្ធដារគ្មានសិទ្ធិលុបទេ' : 'លុប'}"><i class="fa-solid fa-trash"></i></button>
                         </td>
@@ -581,6 +582,29 @@
                 `;
                 tbody.innerHTML += row;
             });
+        }
+
+        // Function សម្រាប់ធ្វើការបន្តកាលបរិច្ឆេទថ្មី (Reset Days) ពេលគ្រប់ ១៨០ ថ្ងៃ[cite: 6]
+        async function renewRecord(id) {
+            if (confirm('តើទំនិញនេះគ្រប់កំណត់ ១៨០ ថ្ងៃហើយ តើអ្នកពិតជាចង់បន្តកាលបរិច្ឆេទថ្មី (Reset ថ្ងៃរាប់សារថ្មី) មែនទេ?')) {
+                try {
+                    const res = await fetch(`/api/bwh-records/${id}/renew`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ record_date: new Date().toISOString() })
+                    });
+                    const result = await res.json();
+                    if (result.success) {
+                        alert('បានបន្តកាលបរិច្ឆេទថ្មីដោយជោគជ័យ!');
+                        fetchBwhData();
+                    } else {
+                        alert('មានបញ្ហា៖ ' + (result.error || 'មិនអាចបន្តកាលបរិច្ឆេទបានទេ'));
+                    }
+                } catch (err) {
+                    console.error('Error renewing record:', err);
+                    alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ Server!');
+                }
+            }
         }
 
         async function saveRecord(e) {
