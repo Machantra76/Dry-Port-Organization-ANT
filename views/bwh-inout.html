@@ -480,17 +480,23 @@
         }
 
         function calculateDaysInBonded(item) {
-            if (!item.record_date && !item.date) return 0;
-            const entryDate = new Date(item.record_date || item.date);
+            // ទាញយកកាលបរិច្ឆេទចូលពីគ្រប់ Field ដែលអាចទៅរួច ដើម្បីការពារកុំឱ្យ Invalid Date
+            const rawDate = item.record_date || item.date || item.created_at || item.in_date || item.entry_date;
+            if (!rawDate) return 0;
+
+            const entryDate = new Date(rawDate);
+            if (isNaN(entryDate.getTime())) return 0;
+
             const status = (item.customs_status || item.status || '').toLowerCase();
-            
             let targetDate = new Date(); 
             
-            if (status.includes('បានបង់ពន្ធរួច') || status.includes('duty paid') || status.includes('released')) {
-                if (item.updated_at) {
-                    targetDate = new Date(item.updated_at);
-                } else if (item.release_date) {
-                    targetDate = new Date(item.release_date);
+            if (status.includes('បានបង់ពន្ធរួច') || status.includes('duty paid') || status.includes('released') || status.includes('out')) {
+                const updateRaw = item.updated_at || item.release_date || item.out_date;
+                if (updateRaw) {
+                    const updateDate = new Date(updateRaw);
+                    if (!isNaN(updateDate.getTime())) {
+                        targetDate = updateDate;
+                    }
                 }
             }
 
@@ -526,11 +532,11 @@
                 const movementType = item.movement_type || item.type || 'IN';
                 let badgeClass = movementType === 'IN' ? 'badge-in' : 'badge-out';
                 let typeText = movementType === 'IN' ? 'ចូល (IN)' : 'ចេញ (OUT)';
-                let recordDate = item.record_date || item.date || new Date().toISOString();
+                let recordDate = item.record_date || item.date || item.created_at || item.in_date || new Date().toISOString();
                 
                 let currentDays = calculateDaysInBonded(item);
                 let previousDays = item.previous_days || 0;
-                let totalDays = currentDays + previousDays; // ចំនួនថ្ងៃសរុប (ថ្ងៃបច្ចុប្បន្ន + ថ្ងៃចាស់ដែលធ្លាប់បន្ត)
+                let totalDays = currentDays + previousDays; 
 
                 let daysBadgeClass = 'badge-days';
                 let warningText = '';
@@ -548,7 +554,6 @@
                     }
                 }
 
-                // បង្ហាញប្រវត្តិថ្ងៃចាស់ប្រសិនបើធ្លាប់បានបន្តថ្មី
                 let historyText = '';
                 if (previousDays > 0) {
                     historyText = `<br><span style="font-size: 10px; color: #0284c7; font-weight: 600;">(រួមថ្ងៃចាស់: ${previousDays} ថ្ងៃ)</span>`;
@@ -583,7 +588,6 @@
             });
         }
 
-        // Function សម្រាប់បន្តថ្មី ដោយផ្ញើចំនួនថ្ងៃសរុបបច្ចុប្បន្នទៅរក្សាទុកជាប្រវត្តិ
         async function renewRecord(id, currentTotalDays) {
             if (confirm(`តើអ្នកពិតជាចង់បន្តកាលបរិច្ឆេទថ្មីមែនទេ? (ចំនួនថ្ងៃសរុប ${currentTotalDays} ថ្ងៃ នឹងត្រូវរក្សាទុកជាប្រវត្តិថ្ងៃចាស់)`)) {
                 try {
