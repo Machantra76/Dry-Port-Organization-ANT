@@ -248,7 +248,7 @@
 
     <div class="container">
         <div class="action-bar no-print">
-            <h3>ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE) - បន្ថែមមុខទំនិញបាន</h3>
+            <h3>ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE) - Logistical Services</h3>
             <div>
                 <button class="btn-success no-print" onclick="addRow()"><i class="fa-solid fa-plus"></i> បន្ថែមជួរមុខទំនិញ</button>
                 <button class="btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> បោះពុម្ពវិក្កយបត្រ</button>
@@ -393,23 +393,47 @@
     <script>
         let isManualVAT = false;
 
+        const descriptionOptions = [
+            "Inbound",
+            "bonded storage charge",
+            "Showroom Storage",
+            "Lolo",
+            "Forklift",
+            "Loading",
+            "Permit to Showroom",
+            "Handling Inbound",
+            "Handling Outbound",
+            "Gate Fee 1.5T",
+            "Gate Fee 2.5T",
+            "Gate Fee 3.5-5T",
+            "Gate Fee 8-10T",
+            "Laden Con Storage",
+            "Empty Con",
+            "Cy Storage for Tractor",
+            "Cy For Escavator",
+            "RAM",
+            "Permit Transit",
+            "Clear",
+            "Dry port Facility",
+            "Gate Fee"
+        ];
+
         // បន្ថែមជួរថ្មីចូលតារាង
-        function addRow(desc = "Gate Fee", size = "40HC", status = "Full", rate = 5.00, qty = 1, duration = 0) {
+        function addRow(selectedDesc = "Gate Fee", size = "40HC", status = "Full", rate = 5.00, qty = 1, duration = 0) {
             const tbody = document.getElementById('invoiceTableBody');
             const rowCount = tbody.rows.length + 1;
             const row = tbody.insertRow();
+
+            let optionsHtml = '';
+            descriptionOptions.forEach(opt => {
+                optionsHtml += `<option value="${opt}" ${opt === selectedDesc ? 'selected' : ''}>${opt}</option>`;
+            });
 
             row.innerHTML = `
                 <td class="row-index">${rowCount}</td>
                 <td class="text-left">
                     <select class="item-desc" style="width:100%; border:none; outline:none; font-family:'Kantumruy Pro'; background:transparent;">
-                        <option value="Empty lift off" ${desc === 'Empty lift off' ? 'selected' : ''}>Empty lift off</option>
-                        <option value="Empty lift Out" ${desc === 'Empty lift Out' ? 'selected' : ''}>Empty lift Out</option>
-                        <option value="Gate Fee" ${desc === 'Gate Fee' ? 'selected' : ''}>Gate Fee</option>
-                        <option value="InShowroom" ${desc === 'InShowroom' ? 'selected' : ''}>InShowroom</option>
-                        <option value="In BWH" ${desc === 'In BWH' ? 'selected' : ''}>In BWH</option>
-                        <option value="Full lift off" ${desc === 'Full lift off' ? 'selected' : ''}>Full lift off</option>
-                        <option value="Full lift On" ${desc === 'Full lift On' ? 'selected' : ''}>Full lift On</option>
+                        ${optionsHtml}
                     </select>
                 </td>
                 <td><input type="text" class="item-size" style="width:100%; border:none; outline:none; text-align:center;" value="${size}"></td>
