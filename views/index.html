@@ -70,11 +70,24 @@
             font-weight: 600;
             font-size: 13px;
             transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
         }
 
         .btn-action:hover {
             background: #ffffff;
             color: var(--primary-color);
+        }
+
+        .btn-tax-invoice {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-tax-invoice:hover {
+            background: #059669;
+            color: white;
         }
 
         .btn-logout {
@@ -391,6 +404,10 @@
         </div>
         <div class="user-info" id="userInfoDisplay" style="display: none;">
             <span id="welcomeText"><i class="fa-solid fa-user me-1"></i>...</span>
+            <!-- ប៊ូតុង TAX INVOICE ភ្ជាប់ទៅ file billing-cashier.html -->
+            <a href="billing-cashier.html" class="btn-action btn-tax-invoice">
+                <i class="fa-solid fa-file-invoice-dollar" style="margin-right: 5px;"></i>TAX INVOICE
+            </a>
             <button class="btn-action" id="btnCreateUser" onclick="openCreateUserModal()" style="display: none;">+ បង្កើត User</button>
             <button class="btn-action" id="btnManageUsers" onclick="openManageUsersModal()" style="display: none; background: #8b5cf6; color: white;">គ្រប់គ្រង User</button>
             <button class="btn-action btn-logout" onclick="handleLogout()">ចាកចេញ</button>
@@ -469,12 +486,15 @@
             /* មុខងារសម្រាប់ Bonded Warehouse (BWH) */
             "ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)": { en: "Bonded Warehouse Cargo In/Out Control", url: "/views/bwh-inout.html" },
             "ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ": { en: "Duty-Unpaid Inventory Monitoring", url: "/views/bwh-inventory.html" },
-            "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ": { en: "Customs Permit & Document Control (BWH)", url: "/views/bwh-customs.html" }
+            "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ": { en: "Customs Permit & Document Control (BWH)", url: "/views/bwh-customs.html" },
+
+            /* បន្ថែម Tax Invoice ទៅក្នុងបញ្ជី roleDetails ប្រសិនបើចង់ប្រើក្នុង Card គណនេយ្យ */
+            "វិក្កយបត្រពន្ធ (TAX INVOICE)": { en: "Tax Invoice & Billing", url: "billing-cashier.html" }
         };
 
         const departments = [
             { id: "HR_ADMIN", name: "ធនធានមនុស្ស & រដ្ឋបាល", roles: ["វត្តមាន ចេញ/ចូល", "ទ្រព្យសម្បត្តិ/ស្តុក និងការគ្រប់គ្រង សារពើភណ្ឌ", "ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល", "ប្រាក់បៀវត្សរ៍ - ដំណើរការប្រាក់ខែ & អត្ថប្រយោជន៍"] },
-            { id: "ACC_FIN", name: "គណនេយ្យ & ហិរញ្ញវត្ថុ", roles: ["គណនេយ្យប្រាក់ចំណូល", "គណនេយ្យទទួល", "របាយការណ៍ហិរញ្ញវត្ថុ", "ការគ្រប់គ្រងថវិកា / ចំណាយ"] },
+            { id: "ACC_FIN", name: "គណនេយ្យ & ហិរញ្ញវត្ថុ", roles: ["គណនេយ្យប្រាក់ចំណូល", "គណនេយ្យទទួល", "របាយការណ៍ហិរញ្ញវត្ថុ", "ការគ្រប់គ្រងថវិកា / ចំណាយ", "វិក្កយបត្រពន្ធ (TAX INVOICE)"] },
             { id: "TRANSPORT", name: "ផ្នែកដឹកជញ្ជូន", roles: ["ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន", "ការគ្រប់គ្រងអ្នកបើកបរ", "ការគ្រប់គ្រងប្រេងឥន្ធនៈ / ការថែទាំ", "ការរៀបចំផែនការដឹកជញ្ជូនទំនិញ"] },
             { id: "CONTAINER_MGT", name: "ផ្នែកគ្រប់គ្រងកុងតឺន័រ", roles: ["ការត្រួតពិនិត្យកុងតឺន័រខូច", "ការគ្រប់គ្រងទីតាំងកុងតឺន័រ", "ការថែទាំ និងជួសជុល", "ការចេញកុងតឺន័រវិញ"] },
             { id: "TECH_STUFFING", name: "ផ្នែកត្រួតពិនិត្យទីលានកុងតឺន័រ", roles: ["ប្រតិបត្តិការនៅទីលាន", "ការចូល / ចេញទំនិញ", "ក្រុមសន្តិសុខ"] },
