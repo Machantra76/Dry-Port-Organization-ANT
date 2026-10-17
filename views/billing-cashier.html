@@ -227,9 +227,9 @@
             padding: 30px;
             border-radius: 12px;
             width: 100%;
-            max-width: 650px;
+            max-width: 750px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            max-height: 90vh;
+            max-height: 95vh;
             overflow-y: auto;
         }
 
@@ -255,37 +255,65 @@
         .invoice-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-size: 13px;
         }
 
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .form-group label {
             display: block;
             font-weight: 600;
-            font-size: 13px;
-            margin-bottom: 5px;
+            font-size: 12px;
+            margin-bottom: 4px;
             color: #334155;
         }
 
-        .form-control {
+        .form-control, .form-select {
             width: 100%;
-            padding: 10px 12px;
+            padding: 8px 10px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
             font-family: 'Kantumruy Pro', sans-serif;
-            font-size: 14px;
+            font-size: 13px;
             box-sizing: border-box;
+        }
+
+        .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 35px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .signature-box {
+            width: 40%;
+        }
+
+        .signature-box .line {
+            margin-top: 60px;
+            border-top: 1px dashed #333;
+            padding-top: 5px;
+            font-weight: 600;
         }
 
         .modal-actions {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
-            margin-top: 25px;
+            margin-top: 20px;
         }
 
         .btn-secondary {
@@ -313,7 +341,8 @@
                 top: 0;
                 width: 100%;
                 background: white;
-                padding: 20px;
+                padding: 15px;
+                box-shadow: none;
             }
             .no-print {
                 display: none !important;
@@ -353,8 +382,9 @@
                             <th>ល.រ</th>
                             <th>លេខវិក្កយបត្រ</th>
                             <th>លេខកុងតឺន័រ / VIN</th>
+                            <th>ទំហំ / ប្រភេទ</th>
                             <th>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន</th>
-                            <th>បរិយាយសេវាកម្ម</th>
+                            <th>ចំនួនថ្ងៃ</th>
                             <th>ទឹកប្រាក់សរុប ($)</th>
                             <th>ស្ថានភាពទូទាត់</th>
                             <th>កាលបរិច្ឆេទ</th>
@@ -369,7 +399,7 @@
         </div>
     </div>
 
-    <!-- Modal Billing & Payment -->
+    <!-- Modal Billing & Payment Invoice -->
     <div id="billingModal" class="modal-overlay">
         <div class="modal-card" id="printableInvoice">
             <div class="invoice-header">
@@ -387,36 +417,95 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>លេខកុងតឺន័រ ឬ លេខតួឡាន (Container / VIN):</label>
-                    <input type="text" id="containerNo" class="form-control" placeholder="ឧ. TGBU 1234567" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>លេខកុងតឺន័រ ឬ លេខតួឡាន (Container / VIN):</label>
+                        <input type="text" id="containerNo" class="form-control" placeholder="ឧ. TGBU 1234567" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ឈ្មោះម្ចាស់ទំនិញ / ក្រុមហ៊ុន (Owner / Company):</label>
+                        <input type="text" id="ownerName" class="form-control" placeholder="ឧ. ក្រុមហ៊ុន អេអិនធី ឡូជីស្ទិក" required>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>ឈ្មោះម្ចាស់ទំនិញ / ក្រុមហ៊ុន (Owner / Company):</label>
-                    <input type="text" id="ownerName" class="form-control" placeholder="ឧ. ក្រុមហ៊ុន អេអិនធី ឡូជីស្ទិក" required>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ទំហំកុងតឺន័រ (Container Size):</label>
+                        <select id="containerSize" class="form-select">
+                            <option value="20'">20 ფტ (20 Feet)</option>
+                            <option value="40'" selected>40 ფტ (40 Feet)</option>
+                            <option value="45'">45 ფტ (45 Feet)</option>
+                            <option value="N/A">N/A (មិនមានកុងតឺន័រ)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ប្រភេទកុងតឺន័រ (Container Type):</label>
+                        <select id="containerType" class="form-select">
+                            <option value="DC" selected>DC (Dry Van)</option>
+                            <option value="HC">HC (High Cube)</option>
+                            <option value="OT">OT (Open Top)</option>
+                            <option value="FR">FR (Flat Rack)</option>
+                            <option value="RF">RF (Reefer)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ស្ថានភាពក្នុងឃ្លាំង/ទីលាន (In Showroom/Yard):</label>
+                        <select id="locationStatus" class="form-select">
+                            <option value="ឃ្លាំងពន្ធដារ (Bonded Warehouse)">ឃ្លាំងពន្ធដារ (Bonded Warehouse)</option>
+                            <option value="ទីលានកុងតឺន័រ (Container Yard)">ទីលានកុងតឺន័រ (Container Yard)</option>
+                            <option value="ឃ្លាំងទូទៅ (General Warehouse)">ឃ្លាំងទូទៅ (General Warehouse)</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>ថ្លៃឈ្នួលរក្សាទុកទំនិញ / ឃ្លាំង ($):</label>
-                    <input type="number" step="0.01" id="storageFee" class="form-control" value="0.00" oninput="calculateTotal()">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ចំនួនថ្ងៃរក្សាទុក (Number of Days):</label>
+                        <input type="number" id="numDays" class="form-control" value="1" min="1" oninput="calculateTotal()">
+                    </div>
+                    <div class="form-group">
+                        <label>ថ្លៃឈ្នួលរក្សាទុកឃ្លាំង/ទីលាន ($):</label>
+                        <input type="number" step="0.01" id="storageFee" class="form-control" value="0.00" oninput="calculateTotal()">
+                    </div>
+                    <div class="form-group">
+                        <label>ថ្លៃឈ្នួលខ្លោងទ្វារ (Gate Fee - $):</label>
+                        <input type="number" step="0.01" id="gateFee" class="form-control" value="10.00" oninput="calculateTotal()">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>ថ្លៃលើកដាក់ទំនិញ និងសេវាទីលាន ($):</label>
-                    <input type="number" step="0.01" id="handlingFee" class="form-control" value="0.00" oninput="calculateTotal()">
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>ថ្លៃលើកដាក់ទំនិញ ($):</label>
+                        <input type="number" step="0.01" id="handlingFee" class="form-control" value="20.00" oninput="calculateTotal()">
+                    </div>
+                    <div class="form-group">
+                        <label>ថ្លៃសេវាផ្សេងៗ / ឯកសារគយ ($):</label>
+                        <input type="number" step="0.01" id="otherFee" class="form-control" value="0.00" oninput="calculateTotal()">
+                    </div>
+                    <div class="form-group">
+                        <label><strong>ទឹកប្រាក់សរុប (Total Amount - $):</strong></label>
+                        <input type="text" id="totalAmount" class="form-control" style="font-weight: bold; color: var(--primary-color); font-size: 15px;" readonly value="30.00">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>ថ្លៃសេវាផ្សេងៗ / ឯកសារគយ ($):</label>
-                    <input type="number" step="0.01" id="otherFee" class="form-control" value="0.00" oninput="calculateTotal()">
-                </div>
-                <div class="form-group">
-                    <label><strong>ទឹកប្រាក់សរុប (Total Amount - $):</strong></label>
-                    <input type="text" id="totalAmount" class="form-control" style="font-weight: bold; color: var(--primary-color); font-size: 16px;" readonly value="0.00">
-                </div>
+
                 <div class="form-group no-print">
                     <label>ស្ថានភាពទូទាត់ (Payment Status):</label>
-                    <select id="paymentStatus" class="form-control">
+                    <select id="paymentStatus" class="form-select">
                         <option value="បានបង់ប្រាក់រួច (Paid)">បានបង់ប្រាក់រួច (Paid)</option>
                         <option value="មិនទាន់បង់ប្រាក់ (Unpaid)">មិនទាន់បង់ប្រាក់ (Unpaid)</option>
                     </select>
+                </div>
+
+                <!-- ហត្ថលេខាសងខាង -->
+                <div class="signature-section">
+                    <div class="signature-box">
+                        <p><strong>តំណាងអតិថិជន / អ្នកបង់ប្រាក់</strong></p>
+                        <div class="line">ហត្ថលេខា និងឈ្មោះ</div>
+                    </div>
+                    <div class="signature-box">
+                        <p><strong>មន្ត្រីទូទាត់ប្រាក់ (Cashier)</strong></p>
+                        <div class="line">ហត្ថលេខា និងឈ្មោះ</div>
+                    </div>
                 </div>
 
                 <div class="modal-actions no-print">
@@ -445,8 +534,8 @@
 
         async function fetchBillingData() {
             billingData = [
-                { id: 1, invoice_no: 'INV-2026-001', container_number: 'TGBU 1234567', owner_name: 'ក្រុមហ៊ុន អេអិនធី ឡូជីស្ទិក', storage_fee: 50, handling_fee: 20, other_fee: 10, total_amount: 80, status: 'បានបង់ប្រាក់រួច (Paid)', date: '2026-10-16' },
-                { id: 2, invoice_no: 'INV-2026-002', container_number: 'MSCU 9876543', owner_name: 'ក្រុមហ៊ុន ខ្មែរ ត្រេឌីញ', storage_fee: 30, handling_fee: 20, other_fee: 0, total_amount: 50, status: 'មិនទាន់បង់ប្រាក់ (Unpaid)', date: '2026-10-17' }
+                { id: 1, invoice_no: 'INV-2026-001', container_number: 'TGBU 1234567', size: '40\'', type: 'DC', owner_name: 'ក្រុមហ៊ុន អេអិនធី ឡូជីស្ទិក', days: 3, gate_fee: 10, storage_fee: 45, handling_fee: 20, other_fee: 5, total_amount: 80, status: 'បានបង់ប្រាក់រួច (Paid)', date: '2026-10-16', location: 'ឃ្លាំងពន្ធដារ' },
+                { id: 2, invoice_no: 'INV-2026-002', container_number: 'MSCU 9876543', size: '20\'', type: 'HC', owner_name: 'ក្រុមហ៊ុន ខ្មែរ ត្រេឌីញ', days: 1, gate_fee: 10, storage_fee: 15, handling_fee: 20, other_fee: 0, total_amount: 45, status: 'មិនទាន់បង់ប្រាក់ (Unpaid)', date: '2026-10-17', location: 'ទីលានកុងតឺន័រ' }
             ];
             renderTable(billingData);
         }
@@ -456,7 +545,7 @@
             tbody.innerHTML = '';
 
             if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យវិក្កយបត្រក្នុងប្រព័ន្ធឡើយ</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យវិក្កយបត្រក្នុងប្រព័ន្ធឡើយ</td></tr>`;
                 return;
             }
 
@@ -467,8 +556,9 @@
                         <td>${index + 1}</td>
                         <td><strong>${item.invoice_no}</strong></td>
                         <td>${item.container_number}</td>
+                        <td>${item.size} / ${item.type}</td>
                         <td>${item.owner_name}</td>
-                        <td>រក្សាទុកឃ្លាំង + លើកដាក់</td>
+                        <td>${item.days} ថ្ងៃ</td>
                         <td><strong>$${parseFloat(item.total_amount).toFixed(2)}</strong></td>
                         <td><span class="badge ${badgeClass}">${item.status}</span></td>
                         <td>${item.date}</td>
@@ -482,10 +572,14 @@
         }
 
         function calculateTotal() {
-            const storage = parseFloat(document.getElementById('storageFee').value) || 0;
+            const days = parseInt(document.getElementById('numDays').value) || 1;
+            const storagePerDay = parseFloat(document.getElementById('storageFee').value) || 0;
+            const gate = parseFloat(document.getElementById('gateFee').value) || 0;
             const handling = parseFloat(document.getElementById('handlingFee').value) || 0;
             const other = parseFloat(document.getElementById('otherFee').value) || 0;
-            const total = storage + handling + other;
+            
+            // គណនាសរុបទឹកប្រាក់ (Storage Fee គុណនឹងចំនួនថ្ងៃ + សេវាផ្សេងៗ)
+            const total = (storagePerDay * days) + gate + handling + other;
             document.getElementById('totalAmount').value = total.toFixed(2);
         }
 
@@ -494,6 +588,10 @@
             document.getElementById('billingId').value = '';
             document.getElementById('invoiceNoDisplay').innerText = 'INV-2026-0' + (billingData.length + 1);
             document.getElementById('currentInvoiceDate').innerText = new Date().toISOString().split('T')[0];
+            document.getElementById('gateFee').value = "10.00";
+            document.getElementById('handlingFee').value = "20.00";
+            document.getElementById('numDays').value = "1";
+            calculateTotal();
             document.getElementById('billingModal').style.display = 'flex';
         }
 
@@ -505,6 +603,9 @@
             e.preventDefault();
             const container_number = document.getElementById('containerNo').value.trim();
             const owner_name = document.getElementById('ownerName').value.trim();
+            const size = document.getElementById('containerSize').value;
+            const type = document.getElementById('containerType').value;
+            const days = document.getElementById('numDays').value;
             const total_amount = parseFloat(document.getElementById('totalAmount').value) || 0;
             const status = document.getElementById('paymentStatus').value;
 
@@ -512,7 +613,10 @@
                 id: billingData.length + 1,
                 invoice_no: document.getElementById('invoiceNoDisplay').innerText,
                 container_number,
+                size,
+                type,
                 owner_name,
+                days,
                 total_amount,
                 status,
                 date: new Date().toISOString().split('T')[0]
@@ -521,7 +625,7 @@
             billingData.unshift(newItem);
             renderTable(billingData);
             closeModal();
-            alert('បានបង្កើតវិក្កយបត្រដោយជោគជ័យ!');
+            alert('បានបង្កើត និងរក្សាទុកវិក្កយបត្រដោយជោគជ័យ!');
         }
 
         function markAsPaid(id) {
@@ -537,10 +641,16 @@
             const item = billingData.find(d => d.id === id);
             if (!item) return;
 
-            // យកទិន្នន័យមកបំពេញក្នុង Modal សិនមុននឹង Print
             document.getElementById('invoiceNoDisplay').innerText = item.invoice_no;
             document.getElementById('containerNo').value = item.container_number;
             document.getElementById('ownerName').value = item.owner_name;
+            document.getElementById('containerSize').value = item.size || "40'";
+            document.getElementById('containerType').value = item.type || "DC";
+            document.getElementById('numDays').value = item.days || 1;
+            document.getElementById('gateFee').value = item.gate_fee || 10;
+            document.getElementById('storageFee').value = item.storage_fee || 0;
+            document.getElementById('handlingFee').value = item.handling_fee || 20;
+            document.getElementById('otherFee').value = item.other_fee || 0;
             document.getElementById('totalAmount').value = parseFloat(item.total_amount).toFixed(2);
             document.getElementById('currentInvoiceDate').innerText = item.date;
             document.getElementById('paymentStatus').value = item.status;
