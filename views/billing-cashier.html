@@ -56,6 +56,28 @@
             font-weight: 600;
         }
 
+        .btn-success {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
         /* ស្ទីលសម្រាប់ទម្រង់ វិក្កយបត្រអាករ ដូច Excel */
         .invoice-box {
             background: white;
@@ -226,8 +248,11 @@
 
     <div class="container">
         <div class="action-bar no-print">
-            <h3>ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE)</h3>
-            <button class="btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> បោះពុម្ពវិក្កយបត្រ (Print)</button>
+            <h3>ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE) - បន្ថែមមុខទំនិញបាន</h3>
+            <div>
+                <button class="btn-success no-print" onclick="addRow()"><i class="fa-solid fa-plus"></i> បន្ថែមជួរមុខទំនិញ</button>
+                <button class="btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> បោះពុម្ពវិក្កយបត្រ</button>
+            </div>
         </div>
 
         <!-- ផ្ទាំងវិក្កយបត្រតាមទម្រង់ Excel -->
@@ -301,68 +326,50 @@
                 </div>
             </div>
 
-            <!-- តារាងសេវាកម្ម -->
+            <!-- តារាងសេវាកម្ម (អាចបន្ថែមជួរបាន) -->
             <table class="invoice-table">
                 <thead>
                     <tr>
                         <th style="width: 5%;">ល.រ<br>No</th>
                         <th style="width: 25%;">បរិយាយមុខទំនិញ<br>Description</th>
-                        <th style="width: 12%;">ទំហំទូ<br>Size</th>
-                        <th style="width: 12%;">ប្រភេទទូ<br>Status</th>
+                        <th style="width: 10%;">ទំហំទូ<br>Size</th>
+                        <th style="width: 10%;">ប្រភេទទូ<br>Status</th>
                         <th style="width: 12%;">តម្លៃ<br>Rate($)</th>
                         <th style="width: 8%;">បរិមាណ<br>QTY</th>
-                        <th style="width: 12%;">រយៈពេលរក្សាទូ<br>Duration (Day)</th>
-                        <th style="width: 14%;">សរុប<br>Amount</th>
+                        <th style="width: 12%;">រយៈពេល<br>Duration</th>
+                        <th style="width: 13%;">សរុប<br>Amount</th>
+                        <th style="width: 5%;" class="no-print">សកម្មភាព</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td class="text-left">
-                            <select id="itemDescription" style="width:100%; border:none; outline:none; font-family:'Kantumruy Pro'; background:transparent;">
-                                <option value="Empty lift off">Empty lift off</option>
-                                <option value="Empty lift Out">Empty lift Out</option>
-                                <option value="Gate Fee" selected>Gate Fee</option>
-                                <option value="InShowroom">InShowroom</option>
-                                <option value="In BWH">In BWH</option>
-                                <option value="Full lift off">Full lift off</option>
-                                <option value="Full lift On">Full lift On</option>
-                            </select>
-                        </td>
-                        <td><input type="text" style="width:100%; border:none; outline:none; text-align:center;" value="40HC"></td>
-                        <td><input type="text" style="width:100%; border:none; outline:none; text-align:center;" value="Full"></td>
-                        <td>$ <input type="number" id="rate" style="width:70%; border:none; outline:none; text-align:right;" value="5.00" step="0.01" oninput="calculateInvoice()"></td>
-                        <td><input type="number" id="qty" style="width:100%; border:none; outline:none; text-align:center;" value="1" oninput="calculateInvoice()"></td>
-                        <td><input type="number" id="duration" style="width:100%; border:none; outline:none; text-align:center;" value="0" oninput="calculateInvoice()"></td>
-                        <td class="text-right">$ <span id="amountDisplay">5.00</span></td>
-                    </tr>
+                <tbody id="invoiceTableBody">
+                    <!-- Dynamic Rows added here -->
                 </tbody>
             </table>
 
             <!-- តារាងសរុបប្រាក់ និងព័ត៌មានពន្ធ -->
             <table class="summary-table" style="margin-top: -1px;">
                 <tr>
-                    <td colspan="6" class="text-right" style="font-weight: bold; width: 72%;">សរុប / Total</td>
-                    <td class="text-right" style="width: 28%; font-weight: bold;">$ <span id="subTotalDisplay">5.00</span></td>
+                    <td colspan="7" class="text-right" style="font-weight: bold; width: 77%;">សរុប / Total</td>
+                    <td class="text-right" style="width: 23%; font-weight: bold;">$ <span id="subTotalDisplay">0.00</span></td>
                 </tr>
                 <tr>
                     <td style="width: 25%; font-weight: bold;">Exch Rate In Riel:</td>
                     <td style="width: 10%;">KHR</td>
                     <td style="width: 15%; font-weight: bold;" class="text-right"><input type="number" id="exchRate" style="width:100%; border:none; outline:none; font-weight:bold; text-align:right;" value="4085" oninput="calculateInvoice()"></td>
-                    <td colspan="3" class="text-right" style="font-weight: bold;">អាករលើតម្លៃបន្ថែម / VAT 10%</td>
-                    <td class="text-right">$ <input type="number" id="vatInput" style="width:80%; border:none; outline:none; text-align:right; font-weight:bold;" value="0.50" step="0.01" oninput="calculateCustomVAT()"></td>
+                    <td colspan="4" class="text-right" style="font-weight: bold;">អាករលើតម្លៃបន្ថែម / VAT 10%</td>
+                    <td class="text-right">$ <input type="number" id="vatInput" style="width:80%; border:none; outline:none; text-align:right; font-weight:bold;" value="0.00" step="0.01" oninput="calculateCustomVAT()"></td>
                 </tr>
                 <tr>
                     <td style="font-weight: bold;">សរុបជាអក្សរ:</td>
-                    <td colspan="2" style="font-style: italic; font-weight: bold; text-align:center;"><span id="khrTextDisplay">...</span></td>
-                    <td colspan="3" class="text-right" style="font-weight: bold;">សរុបួមជាដុល្លារ / Grand Total In USD</td>
-                    <td class="text-right" style="font-weight: bold;">$ <span id="grandTotalUSDDisplay">5.50</span></td>
+                    <td colspan="2" style="font-style: italic; font-weight: bold; text-align:center;"><span id="khrTextDisplay">សូន្យរៀល</span></td>
+                    <td colspan="4" class="text-right" style="font-weight: bold;">សរុបួមជាដុល្លារ / Grand Total In USD</td>
+                    <td class="text-right" style="font-weight: bold;">$ <span id="grandTotalUSDDisplay">0.00</span></td>
                 </tr>
                 <tr>
                     <td style="font-weight: bold;">The sum of USD:</td>
-                    <td colspan="2" style="font-style: italic; font-weight: bold; text-align:center;"><span id="usdTextDisplay">...</span></td>
-                    <td colspan="3" class="text-right" style="font-weight: bold;">សរុបួមជាប្រាក់រៀល / Grand Total In KHR</td>
-                    <td class="text-right" style="font-weight: bold;">KHR <span id="grandTotalKHRDisplay">22,467.50</span></td>
+                    <td colspan="2" style="font-style: italic; font-weight: bold; text-align:center;"><span id="usdTextDisplay">Zero Dollars Only</span></td>
+                    <td colspan="4" class="text-right" style="font-weight: bold;">សរុបួមជាប្រាក់រៀល / Grand Total In KHR</td>
+                    <td class="text-right" style="font-weight: bold;">KHR <span id="grandTotalKHRDisplay">0.00</span></td>
                 </tr>
             </table>
 
@@ -386,27 +393,80 @@
     <script>
         let isManualVAT = false;
 
+        // បន្ថែមជួរថ្មីចូលតារាង
+        function addRow(desc = "Gate Fee", size = "40HC", status = "Full", rate = 5.00, qty = 1, duration = 0) {
+            const tbody = document.getElementById('invoiceTableBody');
+            const rowCount = tbody.rows.length + 1;
+            const row = tbody.insertRow();
+
+            row.innerHTML = `
+                <td class="row-index">${rowCount}</td>
+                <td class="text-left">
+                    <select class="item-desc" style="width:100%; border:none; outline:none; font-family:'Kantumruy Pro'; background:transparent;">
+                        <option value="Empty lift off" ${desc === 'Empty lift off' ? 'selected' : ''}>Empty lift off</option>
+                        <option value="Empty lift Out" ${desc === 'Empty lift Out' ? 'selected' : ''}>Empty lift Out</option>
+                        <option value="Gate Fee" ${desc === 'Gate Fee' ? 'selected' : ''}>Gate Fee</option>
+                        <option value="InShowroom" ${desc === 'InShowroom' ? 'selected' : ''}>InShowroom</option>
+                        <option value="In BWH" ${desc === 'In BWH' ? 'selected' : ''}>In BWH</option>
+                        <option value="Full lift off" ${desc === 'Full lift off' ? 'selected' : ''}>Full lift off</option>
+                        <option value="Full lift On" ${desc === 'Full lift On' ? 'selected' : ''}>Full lift On</option>
+                    </select>
+                </td>
+                <td><input type="text" class="item-size" style="width:100%; border:none; outline:none; text-align:center;" value="${size}"></td>
+                <td><input type="text" class="item-status" style="width:100%; border:none; outline:none; text-align:center;" value="${status}"></td>
+                <td>$ <input type="number" class="item-rate" style="width:70%; border:none; outline:none; text-align:right;" value="${rate.toFixed(2)}" step="0.01" oninput="calculateInvoice()"></td>
+                <td><input type="number" class="item-qty" style="width:100%; border:none; outline:none; text-align:center;" value="${qty}" oninput="calculateInvoice()"></td>
+                <td><input type="number" class="item-duration" style="width:100%; border:none; outline:none; text-align:center;" value="${duration}" oninput="calculateInvoice()"></td>
+                <td class="text-right">$ <span class="item-amount">0.00</span></td>
+                <td class="no-print text-center"><button class="btn-danger" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button></td>
+            `;
+            updateRowIndexes();
+            calculateInvoice();
+        }
+
+        // លុបជួរចេញពីតារាង
+        function removeRow(btn) {
+            const row = btn.closest('tr');
+            row.remove();
+            updateRowIndexes();
+            calculateInvoice();
+        }
+
+        // កែសម្រួល ល.រ (No) ឡើងវិញពេលមានការលុបជួរ
+        function updateRowIndexes() {
+            const rows = document.querySelectorAll('#invoiceTableBody tr');
+            rows.forEach((row, index) => {
+                row.querySelector('.row-index').innerText = index + 1;
+            });
+        }
+
         function calculateInvoice() {
-            const rate = parseFloat(document.getElementById('rate').value) || 0;
-            const qty = parseFloat(document.getElementById('qty').value) || 1;
+            const rows = document.querySelectorAll('#invoiceTableBody tr');
+            let subtotal = 0;
+
+            rows.forEach(row => {
+                const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
+                const amount = rate * qty;
+                row.querySelector('.item-amount').innerText = amount.toFixed(2);
+                subtotal += amount;
+            });
+
+            document.getElementById('subTotalDisplay').innerText = subtotal.toFixed(2);
+
             const exchRate = parseFloat(document.getElementById('exchRate').value) || 4085;
 
-            // គណនា Amount
-            const amount = rate * qty;
-            document.getElementById('amountDisplay').innerText = amount.toFixed(2);
-            document.getElementById('subTotalDisplay').innerText = amount.toFixed(2);
-
-            // គណនា VAT 10% ដោយស្វ័យប្រវត្តិ (ប្រសិនបើគ្មានការកែប្រែដៃ)
+            // គណនា VAT 10% ដោយស្វ័យប្រវត្តិ
             let vat = 0;
             if (!isManualVAT) {
-                vat = amount * 0.10;
+                vat = subtotal * 0.10;
                 document.getElementById('vatInput').value = vat.toFixed(2);
             } else {
                 vat = parseFloat(document.getElementById('vatInput').value) || 0;
             }
 
             // Grand Total USD
-            const grandTotalUSD = amount + vat;
+            const grandTotalUSD = subtotal + vat;
             document.getElementById('grandTotalUSDDisplay').innerText = grandTotalUSD.toFixed(2);
 
             // Grand Total KHR
@@ -480,9 +540,9 @@
             return convertKhmer(num) + "រៀល";
         }
 
-        // ដំណើរការគណនាពេល Load ដំបូង
+        // ដំណើរការបង្កើតជួរដំបូងពេល Load ចូលទំព័រ
         document.addEventListener('DOMContentLoaded', () => {
-            calculateInvoice();
+            addRow("Gate Fee", "40HC", "Full", 5.00, 1, 0);
         });
     </script>
 </body>
