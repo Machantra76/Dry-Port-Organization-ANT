@@ -3,82 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ប្រព័ន្ធចេញវិក្កយបត្រ និងបង់ប្រាក់ (Billing & Cashier)</title>
+    <title>វិក្កយបត្រអាករ - ANT DRY PORT</title>
     <!-- FontAwesome & Google Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Kantumruy Pro', sans-serif;
-            background-color: #f8fafc;
+            background-color: #525659;
             margin: 0;
             padding: 20px;
-            color: #1e293b;
+            color: #000;
         }
-        .container {
-            max-width: 1000px;
-            margin: 0 auto;
+        .invoice-container {
+            width: 210mm;
+            min-height: 297mm;
             background: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            margin: 0 auto;
+            padding: 15mm;
+            box-sizing: border-box;
+            box-shadow: 0 0 10px rgba(0,0,0,0.3);
+            position: relative;
         }
-        h2 {
+        /* Header Company Info */
+        .header-title {
             text-align: center;
-            color: #0f172a;
-            margin-bottom: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 2px;
         }
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-        .form-group label {
-            font-size: 13px;
-            font-weight: 600;
+        .header-subtitle {
+            text-align: center;
+            font-size: 16px;
+            font-weight: bold;
             margin-bottom: 5px;
-            color: #475569;
         }
-        .form-group input, .form-group select, .form-group textarea {
-            padding: 8px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 14px;
+        .company-name {
+            text-align: center;
+            font-size: 15px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        .company-vat {
+            text-align: center;
+            font-size: 13px;
+            margin-bottom: 3px;
+        }
+        .company-address {
+            text-align: center;
+            font-size: 12px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 8px;
+        }
+
+        /* Top Info Grid */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 13px;
+            margin-bottom: 15px;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 5px;
+            align-items: center;
+        }
+        .info-row label {
+            width: 130px;
+            font-weight: 500;
+        }
+        .info-row input, .info-row select {
+            flex: 1;
+            padding: 3px 6px;
+            border: 1px solid #94a3b8;
+            border-radius: 4px;
             font-family: 'Kantumruy Pro', sans-serif;
+            font-size: 13px;
         }
-        .form-group textarea {
-            grid-column: span 3;
-            resize: vertical;
-        }
+
+        /* Invoice Table */
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
+            font-size: 12px;
         }
-        table th, table td {
-            border: 1px solid #e2e8f0;
+        th, td {
+            border: 1px solid #000;
+            padding: 6px 4px;
+            text-align: center;
+        }
+        th {
+            background-color: #f1f5f9;
+            font-weight: bold;
+        }
+        table input, table select {
+            width: 95%;
+            padding: 3px;
+            border: none;
+            text-align: center;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-size: 12px;
+            background: transparent;
+        }
+        table input:focus, table select:focus {
+            outline: 1px solid #0284c7;
+            background: #fff;
+        }
+
+        /* Summary Section */
+        .summary-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+        .summary-left {
+            border: 1px solid #000;
             padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .summary-right table {
+            margin-bottom: 0;
+        }
+        .summary-right td {
+            text-align: right;
+            padding: 5px 8px;
+        }
+        .summary-right td:first-child {
+            text-align: left;
+            font-weight: 500;
+        }
+
+        /* Signatures */
+        .signature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            margin-top: 40px;
             text-align: center;
             font-size: 13px;
+            font-weight: bold;
         }
-        table th {
-            background-color: #f1f5f9;
-            color: #334155;
-        }
-        table input {
-            width: 90%;
-            padding: 5px;
-            border: 1px solid #cbd5e1;
-            border-radius: 4px;
-            text-align: center;
+
+        /* Action Buttons Bar */
+        .action-bar {
+            width: 210mm;
+            margin: 20px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         .btn {
-            padding: 8px 16px;
+            padding: 10px 20px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
@@ -90,25 +171,14 @@
         .btn-success { background-color: #16a34a; color: white; }
         .btn-danger { background-color: #dc2626; color: white; }
         .btn-secondary { background-color: #64748b; color: white; }
-        .action-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-        }
-        .summary-box {
-            text-align: right;
-            font-size: 15px;
-            font-weight: 600;
-            line-height: 1.6;
-        }
+
         /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.6);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -117,118 +187,173 @@
             background: white;
             padding: 25px;
             border-radius: 10px;
-            width: 850px;
+            width: 900px;
             max-height: 85vh;
             overflow-y: auto;
+        }
+
+        /* Print Style Optimization */
+        @media print {
+            body {
+                background: none;
+                padding: 0;
+            }
+            .invoice-container {
+                box-shadow: none;
+                padding: 0;
+                width: 100%;
+            }
+            .action-bar, .no-print {
+                display: none !important;
+            }
+            table input, table select, .info-row input, .info-row select {
+                border: none;
+                background: transparent;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2><i class="fa-solid fa-file-invoice-dollar"></i> បង្កើតវិក្កយបត្រអាករ (Tax Invoice)</h2>
+<!-- Action Bar (សម្រាប់ចុចរក្សាទុក បោះពុម្ព និងមើលប្រវត្តិ) -->
+<div class="action-bar">
+    <button class="btn btn-secondary" onclick="openInvoiceHistoryModal()"><i class="fa-solid fa-clock-rotate-left"></i> មើលប្រវត្តិវិក្កយបត្រ</button>
+    <div>
+        <button class="btn btn-success" onclick="saveInvoiceToServer()"><i class="fa-solid fa-cloud-arrow-up"></i> រក្សាទុកចូល Server</button>
+        <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> បោះពុម្ពវិក្កយបត្រ</button>
+    </div>
+</div>
 
-    <!-- Form ព័ត៌មានទូទៅ -->
-    <div class="form-grid">
-        <div class="form-group">
-            <label>លេខវិក្កយបត្រ (Invoice No)</label>
-            <input type="text" id="invoiceNo" placeholder="INV-2026-001">
+<!-- Invoice Document Container -->
+<div class="invoice-container">
+    <!-- Header -->
+    <div class="header-title">វិក្កយបត្រអាករ</div>
+    <div class="header-subtitle">TAX INVOICE</div>
+    <div class="company-name">ANT DRY PORT CO., LTD (CAMBODIA) អ.ក</div>
+    <div class="company-vat">លេខអត្តសញ្ញាណកម្ម អតប (VAT-TIN)៖ K010-902503705</div>
+    <div class="company-address">អាសយដ្ឋាន ៖ ផ្លូវជាតិលេខ ៤២២ ផ្លូវបេតុង ភូមិត្រពាំងថ្លឹង សង្កាត់ចោមចៅ ខណ្ឌពោធិ៍សែនជ័យ រាជធានីភ្នំពេញ</div>
+
+    <!-- Top Details Grid -->
+    <div class="info-grid">
+        <div>
+            <div class="info-row">
+                <label>អ្នកបង់ប្រាក់ / Charge To:</label>
+                <input type="text" id="chargeTo" placeholder="ឈ្មោះក្រុមហ៊ុន/អតិថិជន">
+            </div>
+            <div class="info-row">
+                <label>Seal No:</label>
+                <input type="text" id="sealNo">
+            </div>
+            <div class="info-row">
+                <label>Booking No:</label>
+                <input type="text" id="bookingNo">
+            </div>
+            <div class="info-row">
+                <label>Container No:</label>
+                <input type="text" id="containerNo">
+            </div>
+            <div class="info-row">
+                <label>Remark:</label>
+                <input type="text" id="remark">
+            </div>
         </div>
-        <div class="form-group">
-            <label>អតិថិជន / អ្នកបង់ប្រាក់ (Charge To)</label>
-            <input type="text" id="chargeTo" placeholder="ឈ្មោះក្រុមហ៊ុន ឬអតិថិជន">
-        </div>
-        <div class="form-group">
-            <label>កាលបរិច្ឆេទ (Date)</label>
-            <input type="date" id="invDate">
-        </div>
-        <div class="form-group">
-            <label>លេខស៊ីល (Seal No)</label>
-            <input type="text" id="sealNo">
-        </div>
-        <div class="form-group">
-            <label>លេខកក់ (Booking No)</label>
-            <input type="text" id="bookingNo">
-        </div>
-        <div class="form-group">
-            <label>លេខកុងតឺន័រ (Container No)</label>
-            <input type="text" id="containerNo">
-        </div>
-        <div class="form-group">
-            <label>ឡានចេញ (Truck Out)</label>
-            <input type="text" id="truckOut">
-        </div>
-        <div class="form-group">
-            <label>ឡានចូល (Truck In)</label>
-            <input type="text" id="truckIn">
-        </div>
-        <div class="form-group">
-            <label>ម្ចាស់ (Owner)</label>
-            <input type="text" id="owner">
-        </div>
-        <div class="form-group">
-            <label>កក់ដោយ (Booking By)</label>
-            <input type="text" id="bookingBy">
-        </div>
-        <div class="form-group">
-            <label>ទំហំ (Size)</label>
-            <select id="size">
-                <option value="20'">20'</option>
-                <option value="40'" selected>40'</option>
-                <option value="45'">45'</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>អត្រាប្តូរប្រាក់ (KHR/USD)</label>
-            <input type="number" id="exchRate" value="4085" oninput="calculateInvoice()">
-        </div>
-        <div class="form-group">
-            <textarea id="remark" placeholder="សម្គាល់ (Remark)..."></textarea>
+        <div>
+            <div class="info-row">
+                <label>Date:</label>
+                <input type="datetime-local" id="invDate">
+            </div>
+            <div class="info-row">
+                <label>Invoice No:</label>
+                <input type="text" id="invoiceNo" placeholder="INV-2026-001">
+            </div>
+            <div class="info-row">
+                <label>Truck No Out:</label>
+                <input type="text" id="truckOut">
+            </div>
+            <div class="info-row">
+                <label>Truck No In:</label>
+                <input type="text" id="truckIn">
+            </div>
+            <div class="info-row">
+                <label>Owner:</label>
+                <input type="text" id="owner">
+            </div>
+            <div class="info-row">
+                <label>Booking By:</label>
+                <input type="text" id="bookingBy">
+            </div>
+            <div class="info-row">
+                <label>Size:</label>
+                <select id="size">
+                    <option value="20'">20'</option>
+                    <option value="40HC" selected>40HC</option>
+                    <option value="45'">45'</option>
+                </select>
+            </div>
         </div>
     </div>
 
-    <!-- តារាងបញ្ជីសេវាកម្ម / ទំនិញ -->
-    <h3>បញ្ជីសេវាកម្ម</h3>
+    <!-- Item Details Table -->
     <table id="invoiceTable">
         <thead>
             <tr>
-                <th>បរិយាយមុខទំនិញ/សេវាកម្ម (Description)</th>
-                <th>ទំហំ (Size)</th>
-                <th>ស្ថានភាព (Status)</th>
-                <th>តម្លៃឯកតា ($)</th>
-                <th>បរិមាណ (Qty)</th>
-                <th>រយៈពេល (Days)</th>
-                <th>សរុប ($)</th>
-                <th>សកម្មភាព</th>
+                <th style="width: 40px;">ល.រ<br>No</th>
+                <th>បរិយាយមុខទំនិញ<br>Description</th>
+                <th style="width: 80px;">ទំហំ<br>Size</th>
+                <th style="width: 80px;">ប្រភេទខ្លួន<br>Status</th>
+                <th style="width: 80px;">តម្លៃ<br>Rate($)</th>
+                <th style="width: 70px;">បរិមាណ<br>QTY</th>
+                <th style="width: 90px;">រយៈពេល(ថ្ងៃ)<br>Duration (Day)</th>
+                <th style="width: 100px;">សរុប<br>Amount</th>
+                <th class="no-print" style="width: 40px;"><i class="fa-solid fa-gear"></i></th>
             </tr>
         </thead>
         <tbody id="invoiceTableBody">
-            <!-- Rows នឹងត្រូវបន្ថែមដោយស្វ័យប្រវត្ត -->
+            <!-- Rows នឹងត្រូវបន្ថែមស្វ័យប្រវត្ត -->
         </tbody>
     </table>
-    <button class="btn btn-secondary" onclick="addRow()"><i class="fa-solid fa-plus"></i> បន្ថែមជួរដេក</button>
+    <div class="no-print" style="margin-bottom: 15px;">
+        <button class="btn btn-secondary" style="padding: 5px 12px; font-size: 12px;" onclick="addRow()"><i class="fa-solid fa-plus"></i> បន្ថែមជួរដេក</button>
+    </div>
 
-    <!-- Summary & Totals -->
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 25px;">
-        <div>
-            <label>អាករលើតម្លៃបន្ថែម VAT (%): </label>
-            <input type="number" id="vatInput" value="0" style="width: 80px; padding: 5px;" oninput="calculateInvoice()">
+    <!-- Summary Section -->
+    <div class="summary-section">
+        <div class="summary-left">
+            <div>
+                <div style="font-size: 12px; margin-bottom: 5px;">
+                    អត្រាប្តូរប្រាក់ / Rate In Riel: 
+                    <input type="number" id="exchRate" value="4085" style="width: 70px; border: 1px solid #ccc; text-align: center;" oninput="calculateInvoice()"> KHR
+                </div>
+                <div id="amountInWords" style="font-size: 12px; font-style: italic; font-weight: bold; margin-top: 10px;">Five Dollars Only</div>
+            </div>
+            <div style="font-size: 11px; color: #555; margin-top: 15px;">ហត្ថលេខាអ្នកទទួល / Receiver Name</div>
         </div>
-        <div class="summary-box">
-            <div>សរុបរង (Subtotal): $<span id="lblSubtotal">0.00</span></div>
-            <div>VAT: $<span id="lblVat">0.00</span></div>
-            <div style="color: #0284c7;">សរុបទឹកប្រាក់ (Grand Total USD): $<span id="lblTotalUSD">0.00</span></div>
-            <div style="color: #16a34a;">សរុបប្រាក់រៀល (Grand Total KHR): <span id="lblTotalKHR">0</span> រៀល</div>
+        <div class="summary-right">
+            <table>
+                <tr>
+                    <td>សរុប / Total</td>
+                    <td>$ <span id="lblSubtotal">0.00</span></td>
+                </tr>
+                <tr>
+                    <td>អាក​រលើតម្លៃបន្ថែម / VAT <input type="number" id="vatInput" value="0" style="width: 40px; text-align: center;" oninput="calculateInvoice()">%</td>
+                    <td>$ <span id="lblVat">0.00</span></td>
+                </tr>
+                <tr>
+                    <td>សរុបទឹកប្រាក់ជាដុល្លារ / Grand Total In USD</td>
+                    <td>$ <span id="lblTotalUSD">0.00</span></td>
+                </tr>
+                <tr>
+                    <td>សរុបទឹកប្រាក់ជារៀល / Grand Total In KHR</td>
+                    <td>KHR <span id="lblTotalKHR">0</span></td>
+                </tr>
+            </table>
         </div>
     </div>
 
-    <!-- Action Buttons -->
-    <div class="action-bar">
-        <button class="btn btn-secondary" onclick="openInvoiceHistoryModal()"><i class="fa-solid fa-clock-rotate-left"></i> មើលប្រវត្តិវិក្កយបត្រ</button>
-        <div>
-            <button class="btn btn-success" onclick="saveInvoiceToServer()"><i class="fa-solid fa-cloud-arrow-up"></i> រก្សាទុកចូល Server</button>
-            <button class="btn btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> បោះពុម្ពវិក្កយបត្រ</button>
-        </div>
+    <!-- Signatures -->
+    <div class="signature-grid">
+        <div>អ្នកបង់ប្រាក់ / Payer Name</div>
+        <div>អ្នកកត់វិក្កយបត្រ / Issue Name</div>
     </div>
 </div>
 
@@ -239,43 +364,73 @@
             <h3 style="margin:0;">ប្រវត្តិវិក្កយបត្រអាករ (Tax Invoice History)</h3>
             <button class="btn btn-danger" onclick="closeInvoiceHistoryModal()" style="padding: 4px 10px;">បិទ</button>
         </div>
-        <table>
+        <table style="width:100%; border-collapse:collapse;">
             <thead>
-                <tr>
-                    <th>ល.រ</th>
-                    <th>លេខវិក្កយបត្រ</th>
-                    <th>អតិថិជន (Charge To)</th>
-                    <th>កុងតឺន័រ No</th>
-                    <th>ទឹកប្រាក់សរុប (USD)</th>
-                    <th>កាលបរិច្ឆេទបង្កើត</th>
-                    <th>សកម្មភាព</th>
+                <tr style="background:#f1f5f9;">
+                    <th style="border:1px solid #000; padding:6px;">ល.រ</th>
+                    <th style="border:1px solid #000; padding:6px;">លេខវិក្កយបត្រ</th>
+                    <th style="border:1px solid #000; padding:6px;">អតិថិជន (Charge To)</th>
+                    <th style="border:1px solid #000; padding:6px;">កុងតឺន័រ No</th>
+                    <th style="border:1px solid #000; padding:6px;">ទឹកប្រាក់សរុប (USD)</th>
+                    <th style="border:1px solid #000; padding:6px;">កាលបរិច្ឆេទបង្កើត</th>
+                    <th style="border:1px solid #000; padding:6px;">សកម្មភាព</th>
                 </tr>
             </thead>
             <tbody id="invoiceHistoryTableBody">
-                <!-- ទិន្នន័យប្រវត្តិនឹងត្រូវទាញមកដាក់ទីនេះ -->
+                <!-- ទិន្នន័យប្រវត្តិនឹងទាញមកដាក់ទីនេះ -->
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // បន្ថែមជួរដេកថ្មីក្នុងតារាង
-    function addRow(desc = '', size = "40'", status = 'Normal', rate = 0, qty = 1, duration = 1) {
+    // បញ្ជីជម្រើសសេវាកម្ម (Dropdown Options ដូចក្នុងរូបភាព Excel)
+    const serviceOptions = [
+        "Empty lift off",
+        "Empty lift Out",
+        "Gate Fee",
+        "InShowroom",
+        "In BWH",
+        "Full lift off",
+        "Full lift On"
+    ];
+
+    // បន្ថែមជួរដេកក្នុងតារាង
+    function addRow(desc = 'Gate Fee', size = "40HC", status = 'Full', rate = 5.00, qty = 1, duration = 0) {
         const tbody = document.getElementById('invoiceTableBody');
+        const rowCount = tbody.rows.length + 1;
         const row = document.createElement('tr');
         
+        let optionsHtml = '';
+        serviceOptions.forEach(opt => {
+            optionsHtml += `<option value="${opt}" ${opt === desc ? 'selected' : ''}>${opt}</option>`;
+        });
+
         row.innerHTML = `
-            <td><input type="text" class="item-desc" value="${desc}" placeholder="បរិយាយសេវាកម្ម"></td>
+            <td>${rowCount}</td>
+            <td>
+                <select class="item-desc" onchange="updateTableNumbers()">
+                    ${optionsHtml}
+                </select>
+            </td>
             <td><input type="text" class="item-size" value="${size}"></td>
             <td><input type="text" class="item-status" value="${status}"></td>
             <td><input type="number" class="item-rate" value="${rate}" step="0.01" oninput="calculateInvoice()"></td>
             <td><input type="number" class="item-qty" value="${qty}" oninput="calculateInvoice()"></td>
             <td><input type="number" class="item-duration" value="${duration}" oninput="calculateInvoice()"></td>
-            <td class="item-amount" style="font-weight: bold;">0.00</td>
-            <td><button class="btn btn-danger" style="padding: 4px 8px;" onclick="this.parentElement.parentElement.remove(); calculateInvoice();"><i class="fa-solid fa-trash"></i></button></td>
+            <td class="item-amount" style="font-weight: bold; text-align: right; padding-right: 8px;">0.00</td>
+            <td class="no-print"><button class="btn btn-danger" style="padding: 2px 6px; font-size: 11px;" onclick="this.parentElement.parentElement.remove(); updateTableNumbers(); calculateInvoice();"><i class="fa-solid fa-trash"></i></button></td>
         `;
         tbody.appendChild(row);
         calculateInvoice();
+    }
+
+    // អាប់ដេតលេខរៀង (ល.រ) ឡើងវិញពេលលុបជួរដេក
+    function updateTableNumbers() {
+        const rows = document.querySelectorAll('#invoiceTableBody tr');
+        rows.forEach((row, index) => {
+            row.cells[0].textContent = index + 1;
+        });
     }
 
     // គណនាទឹកប្រាក់សរុបស្វ័យប្រវត្ត
@@ -288,7 +443,8 @@
             const qty = parseFloat(row.querySelector('.item-qty').value) || 0;
             const duration = parseFloat(row.querySelector('.item-duration').value) || 1;
             
-            const amount = rate * qty * duration;
+            // បើ Duration ស្មើ 0 គិតត្រឹម Rate * Qty, បើមាន Duration យក Rate * Qty * Duration
+            const amount = duration > 0 ? (rate * qty * duration) : (rate * qty);
             row.querySelector('.item-amount').textContent = amount.toFixed(2);
             subtotal += amount;
         });
@@ -303,7 +459,7 @@
         document.getElementById('lblSubtotal').textContent = subtotal.toFixed(2);
         document.getElementById('lblVat').textContent = vatAmount.toFixed(2);
         document.getElementById('lblTotalUSD').textContent = grandTotalUSD.toFixed(2);
-        document.getElementById('lblTotalKHR').textContent = grandTotalKHR.toLocaleString('km-KH', {maximumFractionDigits: 2});
+        document.getElementById('lblTotalKHR').textContent = grandTotalKHR.toLocaleString('km-KH', {maximumFractionDigits: 0});
     }
 
     // រក្សាទុកវិក្កយបត្រចូល Server (Database)
@@ -342,7 +498,7 @@
                 status: row.querySelector('.item-status').value,
                 rate: parseFloat(row.querySelector('.item-rate').value) || 0,
                 qty: parseFloat(row.querySelector('.item-qty').value) || 0,
-                duration: parseFloat(row.querySelector('.item-duration').value) || 1
+                duration: parseFloat(row.querySelector('.item-duration').value) || 0
             });
         });
 
@@ -365,7 +521,7 @@
         }
     }
 
-    // បើកផ្ទាំង Modal មើលប្រវត្តិវិក្កយបត្រ
+    // បើក Modal មើលប្រវត្តិវិក្កយបត្រ
     async function openInvoiceHistoryModal() {
         document.getElementById('historyModal').style.display = 'flex';
         const tbody = document.getElementById('invoiceHistoryTableBody');
@@ -384,14 +540,14 @@
             invoices.forEach((inv, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td style="font-weight:bold;">${inv.invoice_no}</td>
-                    <td>${inv.charge_to || ''}</td>
-                    <td>${inv.container_no || ''}</td>
-                    <td style="text-align:right;">$ ${parseFloat(inv.grand_total_usd).toFixed(2)}</td>
-                    <td>${new Date(inv.created_at).toLocaleString()}</td>
-                    <td>
-                        <button class="btn btn-primary" style="padding: 3px 8px;" onclick='loadInvoiceToForm(${JSON.stringify(inv)})'><i class="fa-solid fa-eye"></i> មើល</button>
+                    <td style="border:1px solid #000; padding:5px; text-align:center;">${index + 1}</td>
+                    <td style="border:1px solid #000; padding:5px; text-align:center; font-weight:bold;">${inv.invoice_no}</td>
+                    <td style="border:1px solid #000; padding:5px;">${inv.charge_to || ''}</td>
+                    <td style="border:1px solid #000; padding:5px; text-align:center;">${inv.container_no || ''}</td>
+                    <td style="border:1px solid #000; padding:5px; text-align:right;">$ ${parseFloat(inv.grand_total_usd).toFixed(2)}</td>
+                    <td style="border:1px solid #000; padding:5px; text-align:center;">${new Date(inv.created_at).toLocaleString()}</td>
+                    <td style="border:1px solid #000; padding:5px; text-align:center;">
+                        <button class="btn btn-primary" style="padding: 3px 8px; font-size:11px;" onclick='loadInvoiceToForm(${JSON.stringify(inv)})'><i class="fa-solid fa-eye"></i> មើល</button>
                     </td>
                 `;
                 tbody.appendChild(row);
@@ -402,12 +558,12 @@
         }
     }
 
-    // បិទផ្ទាំង Modal ប្រវត្តិវិក្កយបត្រ
+    // បិទ Modal ប្រវត្តិវិក្កយបត្រ
     function closeInvoiceHistoryModal() {
         document.getElementById('historyModal').style.display = 'none';
     }
 
-    // ទាញយកទិន្នន័យវិក្កយបត្រចាស់មកបំពេញចូល Form វិញពេលចុច "មើល"
+    // ទាញយកទិន្នន័យវិក្កយបត្រចាស់មកបង្ហាញចូល Form វិញ
     function loadInvoiceToForm(inv) {
         document.getElementById('invoiceNo').value = inv.invoice_no || '';
         document.getElementById('chargeTo').value = inv.charge_to || '';
@@ -420,9 +576,9 @@
         document.getElementById('truckIn').value = inv.truck_in || '';
         document.getElementById('owner').value = inv.owner || '';
         document.getElementById('bookingBy').value = inv.booking_by || '';
-        document.getElementById('size').value = inv.size || "40'";
+        document.getElementById('size').value = inv.size || "40HC";
         document.getElementById('exchRate').value = inv.exch_rate || 4085;
-        document.getElementById('vatInput').value = inv.vat_amount || 0;
+        document.getElementById('vatInput').value = inv.vat_amount > 0 ? ((inv.vat_amount / inv.subtotal) * 100) : 0;
 
         const tbody = document.getElementById('invoiceTableBody');
         tbody.innerHTML = '';
@@ -437,10 +593,13 @@
         closeInvoiceHistoryModal();
     }
 
-    // បើកដំបូងឲ្យមានជួរដេកទទេ១សម្រាប់វាយបញ្ចូល
+    // កំណត់ពេលបើកទំព័រដំបូង
     window.onload = function() {
-        addRow();
-        document.getElementById('invDate').valueAsDate = new Date();
+        addRow('Gate Fee', '40HC', 'Full', 5.00, 1, 0);
+        // កំណត់កាលបរិច្ឆេទបច្ចុប្បន្ន
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        document.getElementById('invDate').value = now.toISOString().slice(0,16);
     };
 </script>
 
