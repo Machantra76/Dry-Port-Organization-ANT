@@ -480,7 +480,6 @@ async function initializeDatabase() {
         await client.query(`
             ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS days_in_bonded INT DEFAULT 0;
             ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);
-            -- 👉 ដាក់កូដបន្ថែមត្រង់នេះ ដើម្បីធានាថា Database មាន Column previous_days ស្រាប់
             ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS previous_days INT DEFAULT 0;
         `);
 
@@ -503,7 +502,7 @@ async function initializeDatabase() {
         `);
         await client.query(`ALTER TABLE duty_unpaid_inventory ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);`);
 
-        // ៣២. តារាងអ្នកប្រើប្រាស់ប្រព័ន្ធ (System Users & Roles) - បន្ថែម status column
+        // ៣២. តារាងអ្នកប្រើប្រាស់ប្រព័ន្ធ (System Users & Roles)
         await client.query(`
             CREATE TABLE IF NOT EXISTS system_users (
                 id SERIAL PRIMARY KEY,
@@ -546,6 +545,32 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS manifest_number VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS doc_type VARCHAR(10);`);
 
+        // ៣៤. តារាងវិក្កយបត្រអាករ (Tax Invoices - Gate Billing & Cashier)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS tax_invoices (
+                id SERIAL PRIMARY KEY,
+                invoice_no VARCHAR(50) UNIQUE NOT NULL,
+                charge_to VARCHAR(250),
+                seal_no VARCHAR(100),
+                booking_no VARCHAR(100),
+                container_no VARCHAR(100),
+                remark TEXT,
+                inv_date VARCHAR(100),
+                truck_out VARCHAR(100),
+                truck_in VARCHAR(100),
+                owner VARCHAR(150),
+                booking_by VARCHAR(100),
+                size VARCHAR(50),
+                items JSONB NOT NULL,
+                subtotal NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                exch_rate NUMERIC(10, 2) NOT NULL DEFAULT 4085,
+                vat_amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                grand_total_usd NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                grand_total_khr NUMERIC(12, 2) NOT NULL DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
         // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត (ប្រសិនបើទិន្នន័យទទេ)
         const checkUser = await client.query('SELECT COUNT(*) FROM system_users');
         if (parseInt(checkUser.rows[0].count) === 0) {
@@ -587,7 +612,7 @@ app.post('/api/auth/login', async (req, res) => {
         
         const user = result.rows[0];
         if (user.status && user.status !== 'Active') {
-            return res.status(403).json({ success: false, error: 'គណនីនេះត្រូវបានផ្អាក ឬបិទសិទ្ធិរួចហើយ (បុគ្គលិកឈប់សម្រាកការងារ)!' });
+            return res.status(403).json({ success: false, error: 'គណនីនេះត្រូវបានផ្អាក ឬបិទសិទ្ធិរួចហើយ!' });
         }
 
         res.json({ success: true, user });
@@ -618,7 +643,7 @@ app.post('/api/auth/register', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: User Management (សម្រាប់ Admin គ្រប់គ្រង User / បិទសិទ្ធិ)
+// API Routes: User Management
 // ==========================================
 app.get('/api/users', async (req, res) => {
     try {
@@ -662,12 +687,53 @@ app.put('/api/users/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
-// API សម្រាប់បន្តកាលបរិច្ឆេទថ្មី (Renew BWH Record) និងរក្សាទុកប្រវត្តិថ្ងៃចាស់
+
+// ==========================================
+// API Routes: Tax Invoices (វិក្កយបត្រអាករ - Gate Billing)
+// ==========================================
+app.get('/api/tax-invoices', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM tax_invoices ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching tax invoices:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+app.post('/api/tax-invoices', async (req, res) => {
+    const {
+        invoice_no, charge_to, seal_no, booking_no, container_no, remark,
+        inv_date, truck_out, truck_in, owner, booking_by, size,
+        items, subtotal, exch_rate, vat_amount, grand_total_usd, grand_total_khr
+    } = req.body;
+
+    try {
+        const query = `
+            INSERT INTO tax_invoices 
+            (invoice_no, charge_to, seal_no, booking_no, container_no, remark, inv_date, truck_out, truck_in, owner, booking_by, size, items, subtotal, exch_rate, vat_amount, grand_total_usd, grand_total_khr)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+            RETURNING *;
+        `;
+        const values = [
+            invoice_no, charge_to, seal_no, booking_no, container_no, remark,
+            inv_date, truck_out, truck_in, owner, booking_by, size,
+            JSON.stringify(items), subtotal, exch_rate, vat_amount, grand_total_usd, grand_total_khr
+        ];
+
+        const result = await pool.query(query, values);
+        res.json({ success: true, message: 'បានរក្សាទុកវិក្កយបត្រក្នុង Database ដោយជោគជ័យ!', data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving tax invoice:', err);
+        res.status(500).json({ success: false, error: 'លេខវិក្កយបត្រនេះមានរួចហើយ ឬមានបញ្ហាបច្ចេកទេស!' });
+    }
+});
+
+// API សម្រាប់បន្តកាលបរិច្ឆេទថ្មី (Renew BWH Record)
 app.put('/api/bwh-records/:id/renew', async (req, res) => {
     const { id } = req.params;
     const { record_date, current_days } = req.body;
     try {
-        // កែប្រែឈ្មោះ Table ទៅជា bonded_warehouse_records
         const query = `
             UPDATE bonded_warehouse_records 
             SET previous_days = COALESCE(previous_days, 0) + $1, 
@@ -681,8 +747,9 @@ app.put('/api/bwh-records/:id/renew', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
 // ==========================================
-// API Routes: Customs Permit & Document Control (BWH) - Updated
+// API Routes: Customs Permit & Document Control (BWH)
 // ==========================================
 app.get('/api/customs-permits', async (req, res) => {
     try {
@@ -748,6 +815,7 @@ app.delete('/api/customs-permits/:id', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+
 app.put('/api/customs-permits/:id', async (req, res) => {
     const { id } = req.params;
     const { 
@@ -802,6 +870,10 @@ app.get('/', (req, res) => {
 
 app.get('/views/hr-in-out.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'hr-in-out.html'));
+});
+
+app.get('/views/billing-cashier.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'billing-cashier.html'));
 });
 
 app.get('/views/hr-asset.html', (req, res) => {
@@ -925,7 +997,7 @@ app.get('/views/customs-permit-control.html', (req, res) => {
 });
 
 // ==========================================
-// API Routes: ឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse - BWH In/Out)
+// API Routes: ឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse)
 // ==========================================
 app.get('/api/bwh-records', async (req, res) => {
     try {
@@ -1020,6 +1092,7 @@ app.put('/api/bwh-records/:id', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
 app.put('/api/bwh-records/:id/duty-status', async (req, res) => {
     const { id } = req.params;
     const { duty_status } = req.body;
@@ -1028,14 +1101,11 @@ app.put('/api/bwh-records/:id/duty-status', async (req, res) => {
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
-
-            // ១. អាប់ដេតស្ថានភាពគយក្នុងតារាង bonded_warehouse_records
             await client.query(
                 'UPDATE bonded_warehouse_records SET customs_status = $1 WHERE id = $2',
                 [duty_status, id]
             );
 
-            // ២. ប្រសិនបើបានបង់ពន្ធរួច ធ្វើការលុបទិន្នន័យចេញពីតារាង duty_unpaid_inventory ស្វ័យប្រវត្ត
             const statusLower = (duty_status || '').toLowerCase();
             if (statusLower.includes('បានបង់ពន្ធរួច') || statusLower.includes('paid') || statusLower.includes('released')) {
                 await client.query('DELETE FROM duty_unpaid_inventory WHERE bonded_record_id = $1', [id]);
@@ -1056,7 +1126,7 @@ app.put('/api/bwh-records/:id/duty-status', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory)
+// API Routes: Duty-Unpaid Inventory
 // ==========================================
 app.get('/api/duty-unpaid-inventory', async (req, res) => {
     try {
@@ -1113,7 +1183,7 @@ app.delete('/api/duty-unpaid-inventory/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: អ្នកកាន់ឯកសារគយ (Document Controller / Handler)
+// API Routes: Document Handlers
 // ==========================================
 app.get('/api/document-handlers', async (req, res) => {
     try {
@@ -1176,7 +1246,7 @@ app.delete('/api/document-handlers/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Entry Management)
+// API Routes: Customs System Data
 // ==========================================
 app.get('/api/customs-system-data', async (req, res) => {
     try {
@@ -1239,7 +1309,7 @@ app.delete('/api/customs-system-data/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការគ្រប់គ្រងឯកសារគយ (Customs Document Management)
+// API Routes: Customs Documents
 // ==========================================
 app.get('/api/customs-documents', async (req, res) => {
     try {
@@ -1302,7 +1372,7 @@ app.delete('/api/customs-documents/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ស្វែងរកប្រភព និងការគាំទ្រទូទៅ (Sourcing & General Support)
+// API Routes: Sourcing & General Support
 // ==========================================
 app.get('/api/sourcing-support', async (req, res) => {
     try {
@@ -1365,7 +1435,7 @@ app.delete('/api/sourcing-support/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការដោះស្រាយបញ្ហា / ការតវ៉ា (Dispute & Complaint Resolution)
+// API Routes: Dispute & Complaint Resolution
 // ==========================================
 app.get('/api/dispute-resolutions', async (req, res) => {
     try {
@@ -1428,7 +1498,7 @@ app.delete('/api/dispute-resolutions/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ទំនាក់ទំនងជាមួយអតិថិជន (Customer Relations)
+// API Routes: Customer Relations
 // ==========================================
 app.get('/api/customer-relations', async (req, res) => {
     try {
@@ -1491,7 +1561,7 @@ app.delete('/api/customer-relations/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Job Vacancies (HR Management)
+// API Routes: Job Vacancies
 // ==========================================
 app.get('/api/jobs', async (req, res) => {
     try {
@@ -1560,7 +1630,7 @@ app.delete('/api/it-cctv/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: បុគ្គលិក (Employees)
+// API Routes: Employees
 // ==========================================
 app.get('/api/employees', async (req, res) => {
     try {
@@ -1586,7 +1656,7 @@ app.post('/api/employees', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: វត្តមាន (Attendance Logs)
+// API Routes: Attendance Logs
 // ==========================================
 app.get('/api/attendance/logs', async (req, res) => {
     const { from, to, search } = req.query;
@@ -1622,7 +1692,7 @@ app.get('/api/attendance/logs', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ទ្រព្យសម្បត្តិ និងស្តុក (Inventory)
+// API Routes: Inventory
 // ==========================================
 app.get('/api/inventory', async (req, res) => {
     const { search, category } = req.query;
@@ -1691,7 +1761,7 @@ app.put('/api/inventory/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)
+// API Routes: Payroll
 // ==========================================
 app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => {
     const { employee_code, pay_month } = req.params;
@@ -1791,7 +1861,7 @@ app.put('/api/payroll/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រាក់ចំណូល (Revenues)
+// API Routes: Revenues
 // ==========================================
 app.get('/api/revenues', async (req, res) => {
     const { from, to } = req.query;
@@ -1827,7 +1897,7 @@ app.post('/api/revenues', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: គណនេយ្យទទួល (Accounts Receivable)
+// API Routes: Accounts Receivable
 // ==========================================
 app.get('/api/receivables', async (req, res) => {
     const { from, to } = req.query;
@@ -1886,7 +1956,7 @@ app.put('/api/receivables/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ចំណាយ (Expenses)
+// API Routes: Expenses
 // ==========================================
 app.get('/api/expenses', async (req, res) => {
     const { from, to } = req.query;
@@ -1922,7 +1992,7 @@ app.post('/api/expenses', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: របាយការណ៍ហិរញ្ញវត្ថុ (Financial Summary API)
+// API Routes: Financial Summary
 // ==========================================
 app.get('/api/financial/summary', async (req, res) => {
     const { from, to } = req.query;
@@ -1968,7 +2038,7 @@ app.get('/api/financial/summary', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការចាត់ចែងរថយន្ត (Fleet Vehicles)
+// API Routes: Fleet Vehicles
 // ==========================================
 app.get('/api/fleet/vehicles', async (req, res) => {
     try {
@@ -1994,7 +2064,7 @@ app.post('/api/fleet/vehicles', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការគ្រប់គ្រងអ្នកបើកបរ (Drivers)
+// API Routes: Drivers
 // ==========================================
 app.get('/api/fleet/drivers', async (req, res) => {
     try {
@@ -2020,7 +2090,7 @@ app.post('/api/fleet/drivers', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការបញ្ជូនដឹកជញ្ជូន (Transport Dispatches)
+// API Routes: Transport Dispatches
 // ==========================================
 app.get('/api/fleet/dispatches', async (req, res) => {
     const { from, to, search } = req.query;
@@ -2062,13 +2132,8 @@ app.post('/api/fleet/dispatches', async (req, res) => {
             `;
             const result = await client.query(query, [dispatch_code, vehicle_code, driver_name, destination, dispatch_date, status || 'Dispatched', notes]);
 
-            await client.query(`
-                UPDATE fleet_vehicles SET status = 'On Mission' WHERE plate_number = $1
-            `, [vehicle_code]);
-
-            await client.query(`
-                UPDATE drivers SET status = 'On Duty' WHERE full_name = $1
-            `, [driver_name]);
+            await client.query(`UPDATE fleet_vehicles SET status = 'On Mission' WHERE plate_number = $1`, [vehicle_code]);
+            await client.query(`UPDATE drivers SET status = 'On Duty' WHERE full_name = $1`, [driver_name]);
 
             await client.query('COMMIT');
             res.status(201).json({ success: true, data: result.rows[0] });
@@ -2107,7 +2172,7 @@ app.put('/api/fleet/dispatches/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)
+// API Routes: Fuel Logs
 // ==========================================
 app.get('/api/fleet/fuel', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
@@ -2155,7 +2220,7 @@ app.post('/api/fleet/fuel', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការថែទាំយានយន្ត (Maintenance Logs)
+// API Routes: Maintenance Logs
 // ==========================================
 app.get('/api/fleet/maintenance', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
@@ -2207,13 +2272,9 @@ app.post('/api/fleet/maintenance', async (req, res) => {
             ]);
 
             if (mStatus === 'In Progress') {
-                await client.query(`
-                    UPDATE fleet_vehicles SET status = 'In Maintenance' WHERE vehicle_code = $1
-                `, [vehicle_code]);
+                await client.query(`UPDATE fleet_vehicles SET status = 'In Maintenance' WHERE vehicle_code = $1`, [vehicle_code]);
             } else {
-                await client.query(`
-                    UPDATE fleet_vehicles SET status = 'Available' WHERE vehicle_code = $1
-                `, [vehicle_code]);
+                await client.query(`UPDATE fleet_vehicles SET status = 'Available' WHERE vehicle_code = $1`, [vehicle_code]);
             }
 
             await client.query('COMMIT');
@@ -2230,7 +2291,7 @@ app.post('/api/fleet/maintenance', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)
+// API Routes: Transport Plans
 // ==========================================
 app.get('/api/fleet/transport-plans', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
@@ -2280,9 +2341,7 @@ app.post('/api/fleet/transport-plans', async (req, res) => {
                 notes
             ]);
 
-            await client.query(`
-                UPDATE fleet_vehicles SET status = 'On Mission' WHERE vehicle_code = $1
-            `, [vehicle_code]);
+            await client.query(`UPDATE fleet_vehicles SET status = 'On Mission' WHERE vehicle_code = $1`, [vehicle_code]);
 
             await client.query('COMMIT');
             res.status(201).json({ success: true, data: result.rows[0] });
@@ -2321,7 +2380,7 @@ app.put('/api/fleet/transport-plans/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
+// API Routes: Damaged Containers
 // ==========================================
 app.get('/api/fleet/damaged-containers', async (req, res) => {
     const { from, to, severity_level, shipping_line } = req.query;
@@ -2418,7 +2477,7 @@ app.put('/api/fleet/damaged-containers/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
+// API Routes: Container Yard Locations
 // ==========================================
 app.get('/api/fleet/container-yard', async (req, res) => {
     const { block_code, status, shipping_line } = req.query;
@@ -2510,7 +2569,7 @@ app.put('/api/fleet/container-yard/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)
+// API Routes: Container Repair Logs
 // ==========================================
 app.get('/api/fleet/container-repairs', async (req, res) => {
     const { status, container_number } = req.query;
@@ -2657,7 +2716,7 @@ app.put('/api/fleet/container-repairs/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការចេញកុងតឺន័រ (Container Gate-Out)
+// API Routes: Container Gate-Out
 // ==========================================
 app.get('/api/fleet/container-gate-out', async (req, res) => {
     const { from, to, container_number } = req.query;
@@ -2707,7 +2766,7 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
                     success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out បានទេ!` 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out ได้ទេ!` 
                 });
             }
         }
@@ -2782,7 +2841,7 @@ app.put('/api/fleet/container-gate-out/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រតិបត្តិការទីលាន (Yard Operations)
+// API Routes: Yard Operations
 // ==========================================
 app.get('/api/fleet/yard-operations', async (req, res) => {
     try {
@@ -2872,7 +2931,7 @@ app.delete('/api/fleet/yard-operations/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out)
+// API Routes: Cargo Gate-In / Gate-Out
 // ==========================================
 app.get('/api/fleet/cargo-gates', async (req, res) => {
     try {
@@ -2916,7 +2975,7 @@ app.post('/api/fleet/cargo-gates', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ក្រុមសន្តិសុខ (Security Guard Team)
+// API Routes: Security Logs
 // ==========================================
 app.get('/api/fleet/security-logs', async (req, res) => {
     try {
@@ -2980,7 +3039,7 @@ app.delete('/api/fleet/security-logs/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រព័ន្ធ WMS / OMS (Warehouse & Order Management Systems)
+// API Routes: WMS / OMS Records
 // ==========================================
 app.get('/api/wms-oms', async (req, res) => {
     try {
