@@ -485,7 +485,14 @@
             rows.forEach(row => {
                 const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
                 const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
-                const amount = rate * qty;
+                const duration = parseFloat(row.querySelector('.item-duration').value) || 0;
+                
+                // គណនា Rate * Qty * Duration (ប្រសិនបើ duration ស្មើ 0 មិនឱ្យគុណខុសទេ គឺគណនា rate * qty ឬគុណបញ្ចូលគ្នាប្រសិនបើមានរយៈពេល)
+                let amount = rate * qty;
+                if (duration > 0) {
+                    amount = rate * qty * duration;
+                }
+
                 row.querySelector('.item-amount').innerText = amount.toFixed(2);
                 subtotal += amount;
             });
