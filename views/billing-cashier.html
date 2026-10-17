@@ -237,7 +237,7 @@
             text-align: center;
             border-bottom: 2px solid var(--primary-color);
             padding-bottom: 15px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .invoice-header h2 {
@@ -257,6 +257,10 @@
             justify-content: space-between;
             margin-bottom: 15px;
             font-size: 13px;
+            background: #f8fafc;
+            padding: 10px 15px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
         }
 
         .form-row {
@@ -269,7 +273,7 @@
         }
 
         .form-group {
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .form-group label {
@@ -293,7 +297,7 @@
         .signature-section {
             display: flex;
             justify-content: space-between;
-            margin-top: 35px;
+            margin-top: 30px;
             text-align: center;
             font-size: 13px;
         }
@@ -303,7 +307,7 @@
         }
 
         .signature-box .line {
-            margin-top: 60px;
+            margin-top: 55px;
             border-top: 1px dashed #333;
             padding-top: 5px;
             font-weight: 600;
@@ -385,7 +389,7 @@
                             <th>ទំហំ / ប្រភេទ</th>
                             <th>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន</th>
                             <th>ចំនួនថ្ងៃ</th>
-                            <th>ទឹកប្រាក់សរុប ($)</th>
+                            <th>ទឹកប្រាក់សរុប ($ / ៛)</th>
                             <th>ស្ថានភាពទូទាត់</th>
                             <th>កាលបរិច្ឆេទ</th>
                             <th style="text-align: center;">សកម្មភាព</th>
@@ -406,16 +410,19 @@
                 <h2>ផែស្ងួត អេអិនធី (ANT DRY PORT)</h2>
                 <p>វិក្កយបត្រសេវាកម្មច្រកចេញចូល និងឃ្លាំង (Gate Invoicing & Cashier Receipt)</p>
             </div>
+            
+            <!-- លេខវិក្កយបត្រ និងថ្ងៃខែនៅជាមួយគ្នា -->
+            <div class="invoice-info">
+                <div>
+                    <strong>លេខវិក្កយបត្រ៖</strong> <span id="invoiceNoDisplay" style="color: var(--primary-color); font-weight: bold;">INV-2026-001</span>
+                </div>
+                <div>
+                    <strong>ថ្ងៃខែចេញវិក្កយបត្រ៖</strong> <span id="currentInvoiceDate"></span>
+                </div>
+            </div>
+
             <form id="billingForm" onsubmit="saveBilling(event)">
                 <input type="hidden" id="billingId">
-                <div class="invoice-info">
-                    <div>
-                        <strong>ថ្ងៃខែចេញវិក្កយបត្រ៖</strong> <span id="currentInvoiceDate"></span>
-                    </div>
-                    <div>
-                        <strong>លេខវិក្កយបត្រ៖</strong> <span id="invoiceNoDisplay">INV-2026-001</span>
-                    </div>
-                </div>
 
                 <div class="form-row">
                     <div class="form-group">
@@ -483,14 +490,29 @@
                         <input type="number" step="0.01" id="otherFee" class="form-control" value="0.00" oninput="calculateTotal()">
                     </div>
                     <div class="form-group">
-                        <label><strong>ទឹកប្រាក់សរុប (Total Amount - $):</strong></label>
-                        <input type="text" id="totalAmount" class="form-control" style="font-weight: bold; color: var(--primary-color); font-size: 15px;" readonly value="30.00">
+                        <label>អត្រាប្តូរប្រាក់ (Exchange Rate - ៛/$):</label>
+                        <input type="number" id="exchangeRate" class="form-control" value="4100" oninput="calculateTotal()">
                     </div>
                 </div>
 
-                <div class="form-group no-print">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>អាករលើតម្លៃបន្ថែម (VAT 10% - $):</label>
+                        <input type="text" id="vatAmount" class="form-control" readonly value="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label><strong>ទឹកប្រាក់សរុបជាដុល្លារ (Total USD):</strong></label>
+                        <input type="text" id="totalAmountUSD" class="form-control" style="font-weight: bold; color: var(--primary-color); font-size: 14px;" readonly value="30.00">
+                    </div>
+                    <div class="form-group">
+                        <label><strong>ទឹកប្រាក់សរុบជាប្រាក់រៀល (Total KHR):</strong></label>
+                        <input type="text" id="totalAmountKHR" class="form-control" style="font-weight: bold; color: var(--success-color); font-size: 14px;" readonly value="123,000 ៛">
+                    </div>
+                </div>
+
+                <div class="form-group no-print" style="margin-top: 10px;">
                     <label>ស្ថានភាពទូទាត់ (Payment Status):</label>
-                    <select id="paymentStatus" class="form-select">
+                    <select id="paymentStatus" class="form-control">
                         <option value="បានបង់ប្រាក់រួច (Paid)">បានបង់ប្រាក់រួច (Paid)</option>
                         <option value="មិនទាន់បង់ប្រាក់ (Unpaid)">មិនទាន់បង់ប្រាក់ (Unpaid)</option>
                     </select>
@@ -534,8 +556,8 @@
 
         async function fetchBillingData() {
             billingData = [
-                { id: 1, invoice_no: 'INV-2026-001', container_number: 'TGBU 1234567', size: '40\'', type: 'DC', owner_name: 'ក្រុមហ៊ុន អេអិនធី ឡូជីស្ទិក', days: 3, gate_fee: 10, storage_fee: 45, handling_fee: 20, other_fee: 5, total_amount: 80, status: 'បានបង់ប្រាក់រួច (Paid)', date: '2026-10-16', location: 'ឃ្លាំងពន្ធដារ' },
-                { id: 2, invoice_no: 'INV-2026-002', container_number: 'MSCU 9876543', size: '20\'', type: 'HC', owner_name: 'ក្រុមហ៊ុន ខ្មែរ ត្រេឌីញ', days: 1, gate_fee: 10, storage_fee: 15, handling_fee: 20, other_fee: 0, total_amount: 45, status: 'មិនទាន់បង់ប្រាក់ (Unpaid)', date: '2026-10-17', location: 'ទីលានកុងតឺន័រ' }
+                { id: 1, invoice_no: 'INV-2026-001', container_number: 'TGBU 1234567', size: '40\'', type: 'DC', owner_name: 'ក្រុមហ៊ុន អេអិនធី ឡូជីស្ទិក', days: 3, gate_fee: 10, storage_fee: 45, handling_fee: 20, other_fee: 5, vat: 8.00, total_usd: 88.00, total_khr: '360,800 ៛', status: 'បានបង់ប្រាក់រួច (Paid)', date: '2026-10-16' },
+                { id: 2, invoice_no: 'INV-2026-002', container_number: 'MSCU 9876543', size: '20\'', type: 'HC', owner_name: 'ក្រុមហ៊ុន ខ្មែរ ត្រេឌីញ', days: 1, gate_fee: 10, storage_fee: 15, handling_fee: 20, other_fee: 0, vat: 4.50, total_usd: 49.50, total_khr: '202,950 ៛', status: 'មិនទាន់បង់ប្រាក់ (Unpaid)', date: '2026-10-17' }
             ];
             renderTable(billingData);
         }
@@ -559,7 +581,7 @@
                         <td>${item.size} / ${item.type}</td>
                         <td>${item.owner_name}</td>
                         <td>${item.days} ថ្ងៃ</td>
-                        <td><strong>$${parseFloat(item.total_amount).toFixed(2)}</strong></td>
+                        <td><strong>$${parseFloat(item.total_usd).toFixed(2)}</strong> (${item.total_khr})</td>
                         <td><span class="badge ${badgeClass}">${item.status}</span></td>
                         <td>${item.date}</td>
                         <td style="text-align: center;">
@@ -577,10 +599,22 @@
             const gate = parseFloat(document.getElementById('gateFee').value) || 0;
             const handling = parseFloat(document.getElementById('handlingFee').value) || 0;
             const other = parseFloat(document.getElementById('otherFee').value) || 0;
+            const rate = parseFloat(document.getElementById('exchangeRate').value) || 4100;
             
-            // គណនាសរុបទឹកប្រាក់ (Storage Fee គុណនឹងចំនួនថ្ងៃ + សេវាផ្សេងៗ)
-            const total = (storagePerDay * days) + gate + handling + other;
-            document.getElementById('totalAmount').value = total.toFixed(2);
+            // គណនាទឹកប្រាក់មុន VAT
+            const subtotal = (storagePerDay * days) + gate + handling + other;
+            
+            // គណនា VAT 10%
+            const vat = subtotal * 0.10;
+            document.getElementById('vatAmount').value = vat.toFixed(2);
+
+            // ទឹកប្រាក់សរុបជាដុល្លារ (រួមបញ្ចូល VAT)
+            const totalUSD = subtotal + vat;
+            document.getElementById('totalAmountUSD').value = totalUSD.toFixed(2);
+
+            // ទឹកប្រាក់សរុបជារៀល
+            const totalKHR = Math.round(totalUSD * rate);
+            document.getElementById('totalAmountKHR').value = totalKHR.toLocaleString() + ' ៛';
         }
 
         function openNewBillingModal() {
@@ -591,6 +625,7 @@
             document.getElementById('gateFee').value = "10.00";
             document.getElementById('handlingFee').value = "20.00";
             document.getElementById('numDays').value = "1";
+            document.getElementById('exchangeRate').value = "4100";
             calculateTotal();
             document.getElementById('billingModal').style.display = 'flex';
         }
@@ -606,7 +641,8 @@
             const size = document.getElementById('containerSize').value;
             const type = document.getElementById('containerType').value;
             const days = document.getElementById('numDays').value;
-            const total_amount = parseFloat(document.getElementById('totalAmount').value) || 0;
+            const total_usd = parseFloat(document.getElementById('totalAmountUSD').value) || 0;
+            const total_khr = document.getElementById('totalAmountKHR').value;
             const status = document.getElementById('paymentStatus').value;
 
             const newItem = {
@@ -617,7 +653,8 @@
                 type,
                 owner_name,
                 days,
-                total_amount,
+                total_usd,
+                total_khr,
                 status,
                 date: new Date().toISOString().split('T')[0]
             };
@@ -651,7 +688,10 @@
             document.getElementById('storageFee').value = item.storage_fee || 0;
             document.getElementById('handlingFee').value = item.handling_fee || 20;
             document.getElementById('otherFee').value = item.other_fee || 0;
-            document.getElementById('totalAmount').value = parseFloat(item.total_amount).toFixed(2);
+            document.getElementById('exchangeRate').value = 4100;
+            document.getElementById('vatAmount').value = item.vat ? item.vat.toFixed(2) : "0.00";
+            document.getElementById('totalAmountUSD').value = parseFloat(item.total_usd).toFixed(2);
+            document.getElementById('totalAmountKHR').value = item.total_khr || "0 ៛";
             document.getElementById('currentInvoiceDate').innerText = item.date;
             document.getElementById('paymentStatus').value = item.status;
 
