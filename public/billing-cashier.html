@@ -311,7 +311,7 @@
                 <div>
                     <div class="info-row">
                         <span class="info-label">Date:</span>
-                        <span class="info-value"><input type="text" id="invDate" value="10/17/2026 2:43 PM"></span>
+                        <span class="info-value"><input type="text" id="invDate" value=""></span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Invoice No:</span>
@@ -432,6 +432,23 @@
             "Gate Fee"
         ];
 
+        // មុខងារទាញយកថ្ងៃខែ និងម៉ោងបច្ចុប្បន្នដោយស្វ័យប្រវត្តិ
+        function getCurrentDateTime() {
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const year = now.getFullYear();
+            
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12;
+            hours = hours ? hours : 12; // ម៉ោង ១២
+
+            return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
+        }
+
         // បន្ថែមជួរថ្មីចូលតារាង
         function addRow(selectedDesc = "Gate Fee", size = "40HC", status = "Full", rate = 5.00, qty = 1, duration = 0) {
             const tbody = document.getElementById('invoiceTableBody');
@@ -487,7 +504,7 @@
                 const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
                 const duration = parseFloat(row.querySelector('.item-duration').value) || 0;
                 
-                // គណនា Rate * Qty * Duration (ប្រសិនបើ duration ស្មើ 0 មិនឱ្យគុណខុសទេ គឺគណនា rate * qty ឬគុណបញ្ចូលគ្នាប្រសិនបើមានរយៈពេល)
+                // គណនា Rate * Qty * Duration (បើ Duration > 0)
                 let amount = rate * qty;
                 if (duration > 0) {
                     amount = rate * qty * duration;
@@ -635,8 +652,12 @@
             return convertKhmer(num) + "រៀល";
         }
 
-        // ដំណើរការបង្កើតជួរដំបូងពេល Load ចូលទំព័រ
+        // ដំណើរការកំណត់ម៉ោង និងបង្កើតជួរដំបូងពេល Load ចូលទំព័រ
         document.addEventListener('DOMContentLoaded', () => {
+            // កំណត់ថ្ងៃខែ និងម៉ោងបច្ចុប្បន្នស្វ័យប្រវត្តិ
+            document.getElementById('invDate').value = getCurrentDateTime();
+            
+            // បង្កើតជួរដំបូង
             addRow("Gate Fee", "40HC", "Full", 5.00, 1, 0);
         });
     </script>
