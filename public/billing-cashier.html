@@ -3,19 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>រចនាសម្ព័ន្ធស្ថាប័នផែស្ងួត អេអិនធី - Dry Port Organization Chart & Workflow Dashboard ANT</title>
+    <title>វិក្កយបត្រអាករ (Tax Invoice) - ANT Dry Port</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
             --primary-color: #1e3c72;
             --secondary-color: #2a5298;
-            --accent-color: #00c6ff;
             --bg-color: #f0f4f8;
             --card-bg: #ffffff;
             --text-main: #333333;
-            --text-sub: #555555;
-            --border-color: #e2e8f0;
+            --border-color: #000000;
         }
 
         body {
@@ -29,664 +27,639 @@
         header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
-            padding: 20px 30px;
-            box-shadow: 0 4px 15px rgba(0, 198, 255, 0.4);
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-        }
-
-        header .header-title h1 {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 700;
-        }
-
-        header .header-title p {
-            margin: 4px 0 0 0;
-            font-size: 13px;
-            color: #dbeafe;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .btn-action {
-            background: #00c6ff;
-            color: #1e3c72;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: 'Kantumruy Pro', sans-serif;
-            font-weight: 600;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        .btn-action:hover {
-            background: #ffffff;
-            color: var(--primary-color);
-        }
-
-        .btn-logout {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-logout:hover {
-            background: #dc2626;
-            color: white;
-        }
-
-        /* Modal Overlay */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.85);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .auth-card {
-            background: white;
-            padding: 35px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 450px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            text-align: center;
-        }
-
-        .auth-card h2 {
-            color: var(--primary-color);
-            margin-bottom: 5px;
-            font-size: 22px;
-        }
-
-        .auth-card p {
-            color: #64748b;
-            font-size: 13px;
-            margin-bottom: 20px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            font-size: 13px;
-            margin-bottom: 5px;
-            color: #334155;
-        }
-
-        .form-control, .form-select {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-family: 'Kantumruy Pro', sans-serif;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-
-        .btn-submit {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            font-family: 'Kantumruy Pro', sans-serif;
-            font-weight: 600;
-            font-size: 15px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .toggle-link {
-            margin-top: 15px;
-            display: block;
-            font-size: 13px;
-            color: #ef4444;
-            text-decoration: underline;
-            cursor: pointer;
         }
 
         .container {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
         }
 
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 24px;
-            align-items: stretch;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            position: relative;
+        .action-bar {
             display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            box-shadow: 0 6px 20px rgba(0, 198, 255, 0.25);
-            height: 100%;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: linear-gradient(90deg, #00c6ff, #ffffff, #8ae9ff, #0072ff, #00c6ff);
-            background-size: 300% 100%;
-            animation: diamondShimmer 3s linear infinite;
-        }
-
-        @keyframes diamondShimmer {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; }
-        }
-
-        .card-header {
-            padding: 20px 20px 10px 20px;
-            border-bottom: 1px solid var(--border-color);
-            background-color: #fafbfc;
-            text-align: center;
-        }
-
-        .card-header h3 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--primary-color);
-        }
-
-        .card-header .eng-title {
-            font-size: 13px;
-            font-weight: 600;
-            color: #64748b;
-            margin-top: 4px;
-        }
-
-        .card-body {
-            padding: 15px 20px 20px 20px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        .role-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
             gap: 10px;
         }
 
-        .role-item {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            padding: 14px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-
-        .role-item:hover {
-            background: linear-gradient(135deg, #00c6ff, #0072ff);
-            color: #ffffff;
-            border-color: transparent;
-            transform: translateY(-2px);
-        }
-
-        .role-item:hover .role-km, 
-        .role-item:hover .role-en {
-            color: #ffffff;
-        }
-
-        .role-km {
-            display: block;
-            font-size: 16px;
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Kantumruy Pro', sans-serif;
             font-weight: 600;
-            color: var(--text-main);
         }
 
-        .role-en {
-            display: block;
+        .btn-success {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-weight: 600;
+        }
+
+        .btn-add-row {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        /* ស្ទីលសម្រាប់ទម្រង់ វិក្កយបត្រអាករ ដូច Excel */
+        .invoice-box {
+            background: white;
+            padding: 30px;
+            border: 1px solid #ccc;
+            max-width: 900px;
+            margin: 0 auto;
+            color: #000;
+            font-size: 13px;
+        }
+
+        .invoice-title-container {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .invoice-title-container h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .invoice-title-container h3 {
+            margin: 2px 0;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .company-name {
             font-size: 14px;
-            color: #64748b;
-            margin-top: 4px;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+
+        .address-text {
+            font-size: 12px;
+            margin-top: 3px;
+        }
+
+        .header-divider {
+            border-bottom: 2px solid #000;
+            margin: 10px 0 15px 0;
+        }
+
+        /* ប្លង់ព័ត៌មានផ្នែកលើ (Fields Grid) */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 4px;
+            align-items: center;
+        }
+
+        .info-label {
+            width: 130px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            flex: 1;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .info-value input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-size: 13px;
+            background: transparent;
+        }
+
+        /* តារាងទំនិញ / សេវាកម្ម */
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .invoice-table th, .invoice-table td {
+            border: 1px solid #000;
+            padding: 5px 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .invoice-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .text-left { text-align: left !important; }
+        .text-right { text-align: right !important; }
+
+        /* ផ្នែកសរុបប្រាក់ */
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .summary-table td {
+            border: 1px solid #000;
+            padding: 5px 8px;
+            font-size: 12px;
+        }
+
+        /* ហត្ថលេខា */
+        .signature-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding: 0 30px;
+            text-align: center;
+        }
+
+        .signature-title {
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .signature-space {
+            height: 60px;
+        }
+
+        /* ស្ទីលសម្រាប់ Print */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #invoiceBox, #invoiceBox * {
+                visibility: visible;
+            }
+            #invoiceBox {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                border: none;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            select {
+                appearance: none;
+                -webkit-appearance: none;
+                border: none !important;
+                background: transparent;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Popup Login / Register -->
-    <div id="authModal" class="modal-overlay">
-        <!-- Form Login -->
-        <div id="loginCard" class="auth-card">
-            <h2>ចូលប្រព័ន្ធ (Login)</h2>
-            <p>ANT Dry Port Management Dashboard</p>
-            <form id="loginForm" onsubmit="handleLogin(event)">
-                <div class="form-group">
-                    <label>ឈ្មោះគណនី (Username):</label>
-                    <input type="text" id="loginUsername" class="form-control" placeholder="វាយឈ្មោះគណនី..." required>
-                </div>
-                <div class="form-group">
-                    <label>ពាក្យសម្ងាត់ (Password):</label>
-                    <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn-submit">ចូលប្រើប្រាស់</button>
-            </form>
-        </div>
-
-        <!-- Form បង្កើត User ថ្មី (សម្រាប់ Admin) -->
-        <div id="registerCard" class="auth-card" style="display: none;">
-            <h2>បង្កើត User ថ្មី (Create User)</h2>
-            <p>ចុះឈ្មោះអ្នកប្រើប្រាស់ និងកំណត់សិទ្ធិ (Role)</p>
-            <form id="registerForm" onsubmit="handleRegister(event)">
-                <div class="form-group">
-                    <label>ឈ្មោះពេញ (Full Name):</label>
-                    <input type="text" id="regFullName" class="form-control" placeholder="ឧ. សុខ ចាន់" required>
-                </div>
-                <div class="form-group">
-                    <label>ឈ្មោះគណនី (Username):</label>
-                    <input type="text" id="regUsername" class="form-control" placeholder="ឧ. sokchan" required>
-                </div>
-                <div class="form-group">
-                    <label>ពាក្យសម្ងាត់ (Password):</label>
-                    <input type="password" id="regPassword" class="form-control" placeholder="••••••••" required>
-                </div>
-                <div class="form-group">
-                    <label>ប្រភេទសិទ្ធិ (Role Level):</label>
-                    <select id="regRole" class="form-select" required onchange="toggleDeptSelect(this.value)">
-                        <option value="STAFF">បុគ្គលិកតាមផ្នែក (Staff / User)</option>
-                        <option value="SUPERVISOR">អ្នកគ្រប់គ្រងទូទៅ (Supervisor - មើលបានទាំងអស់)</option>
-                        <option value="ADMIN">អ្នកគ្រប់គ្រងប្រព័ន្ធ (Admin - មើលបានទាំងអស់)</option>
-                    </select>
-                </div>
-                <div class="form-group" id="deptGroup">
-                    <label>ជ្រើសរើសផ្នែក (Department):</label>
-                    <select id="regDept" class="form-select">
-                        <option value="HR_ADMIN">ធនធានមនុស្ស & រដ្ឋបាល</option>
-                        <option value="ACC_FIN">គណនេយ្យ & ហិរញ្ញវត្ថុ</option>
-                        <option value="TRANSPORT">ផ្នែកដឹកជញ្ជូន</option>
-                        <option value="CONTAINER_MGT">ផ្នែកគ្រប់គ្រងកុងតឺន័រ</option>
-                        <option value="TECH_STUFFING">ផ្នែកត្រួតពិនិត្យទីលានកុងតឺន័រ</option>
-                        <option value="IT_SYSTEMS">ផ្នែកព័ត៌មានវិទ្យា & ប្រព័ន្ធ</option>
-                        <option value="CUSTOMER_SVC">ផ្នែកសេវាកម្មអតិថិជន</option>
-                        <option value="FACILITIES">ប្រធានផ្នែកសម្ភារឯកសារ</option>
-                        <option value="BONDED_WH">ផ្នែកឃ្លាំងទំនិញពន្ធដារ (BWH)</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn-submit" style="background: #10b981;">រក្សាទុក User ថ្មី</button>
-            </form>
-            <span class="toggle-link" onclick="closeRegisterModal()">បិទផ្ទាំងនេះវិញ</span>
-        </div>
-    </div>
-
-    <!-- Modal សម្រាប់ Admin គ្រប់គ្រងបញ្ជី User (Active / Inactive) -->
-    <div id="manageUsersModal" class="modal-overlay" style="display: none;">
-        <div class="auth-card" style="max-width: 900px; text-align: left; max-height: 85vh; overflow-y: auto;">
-            <h2 style="text-align: center;">គ្រប់គ្រងគណនីអ្នកប្រើប្រាស់ (User Management)</h2>
-            <p style="text-align: center;">ប្ដូរស្ថានភាព Active ឬ Inactive ពេលបុគ្គលិកឈប់ការងារ</p>
-            
-            <div style="margin-top: 20px;">
-                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
-                    <thead>
-                        <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
-                            <th style="padding: 10px; text-align: left;">ឈ្មោះគណនី</th>
-                            <th style="padding: 10px; text-align: left;">ឈ្មោះពេញ</th>
-                            <th style="padding: 10px; text-align: left;">សិទ្ធិ & ផ្នែក (Role / Dept)</th>
-                            <th style="padding: 10px; text-align: center;">ស្ថានភាព (Status)</th>
-                            <th style="padding: 10px; text-align: center;">សកម្មភាព</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userTableBody">
-                        <!-- ទិន្នន័យ User នឹងត្រូវ Load ចូលទីនេះដោយស្វ័យប្រវត្តិ -->
-                    </tbody>
-                </table>
-            </div>
-
-            <button type="button" class="btn-submit" onclick="closeManageUsersModal()" style="background: #64748b; margin-top: 20px;">បិទផ្ទាំងនេះ</button>
-        </div>
-    </div>
-
-    <!-- Header Dashboard -->
-    <header>
+    <header class="no-print">
         <div class="header-title">
-            <h1>រចនាសម្ព័ន្ធស្ថាប័នផែស្ងួត អេអិនធី</h1>
-            <p>DRY PORT ORGANIZATION CHART & WORKFLOW DASHBOARD ANT</p>
+            <h1 style="margin:0; font-size: 18px;">ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រអាករ - ANT Dry Port</h1>
         </div>
-        <div class="user-info" id="userInfoDisplay" style="display: none;">
-            <span id="welcomeText"><i class="fa-solid fa-user me-1"></i>...</span>
-            <button class="btn-action" id="btnCreateUser" onclick="openCreateUserModal()" style="display: none;">+ បង្កើត User</button>
-            <button class="btn-action" id="btnManageUsers" onclick="openManageUsersModal()" style="display: none; background: #8b5cf6; color: white;">គ្រប់គ្រង User</button>
-            <button class="btn-action btn-logout" onclick="handleLogout()">ចាកចេញ</button>
+        <div>
+            <a href="/" style="color: white; text-decoration: none; font-weight: 600;"><i class="fa-solid fa-house"></i> ទំព័រដើម</a>
         </div>
     </header>
 
     <div class="container">
-        <div id="dashboard" class="grid-container">
-            <!-- Content Rendered dynamically -->
+        <div class="action-bar no-print">
+            <h3>ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE) & Database Sync</h3>
+            <div>
+                <button class="btn-add-row no-print" onclick="addRow()"><i class="fa-solid fa-plus"></i> បន្ថែមជួរមុខទំនិញ</button>
+                <button class="btn-success" onclick="saveInvoiceToDB()"><i class="fa-solid fa-cloud-arrow-up"></i> រក្សាទុកចូល Server</button>
+                <button class="btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> បោះពុម្ព</button>
+            </div>
+        </div>
+
+        <!-- ផ្ទាំងវិក្កយបត្រតាមទម្រង់ Excel -->
+        <div class="invoice-box" id="invoiceBox">
+            
+            <!-- Header វិក្កយបត្រ -->
+            <div class="invoice-title-container">
+                <h2>វិក្កយបត្រអាករ</h2>
+                <h3>TAX INVOICE</h3>
+                <div class="company-name">ANT DRY PORT CO.,LTD (CAMBODIA) ឯ.ក</div>
+                <div>លេខអត្តសញ្ញាណកម្ម អាកប (VAT-TIN) ៖ K010-902503705</div>
+                <div class="address-text">អាសយដ្ឋាន ៖ ក្បាលដីលេខ ៤៥០ ផ្លូវបេតុង ភូមិត្រពាំងអញ្ចាញ សង្កាត់ប្រទះឡាង ខណ្ឌកំបូល រាជធានីភ្នំពេញ</div>
+            </div>
+
+            <div class="header-divider"></div>
+
+            <!-- ព័ត៌មានអតិថិជន និងកុងតឺន័រ -->
+            <div class="info-grid">
+                <div>
+                    <div class="info-row">
+                        <span class="info-label">អ្នកបង់ប្រាក់/Charge To:</span>
+                        <span class="info-value"><input type="text" id="chargeTo" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Seal No:</span>
+                        <span class="info-value"><input type="text" id="sealNo" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Booking No:</span>
+                        <span class="info-value"><input type="text" id="bookingNo" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Container No :</span>
+                        <span class="info-value"><input type="text" id="containerNo" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Remark :</span>
+                        <span class="info-value"><input type="text" id="remark" value=""></span>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="info-row">
+                        <span class="info-label">Date:</span>
+                        <span class="info-value"><input type="text" id="invDate" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Invoice No:</span>
+                        <span class="info-value"><input type="text" id="invoiceNo" value="INV-2026-001"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Truck No Out:</span>
+                        <span class="info-value"><input type="text" id="truckOut" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Truck No In:</span>
+                        <span class="info-value"><input type="text" id="truckIn" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Owner:</span>
+                        <span class="info-value"><input type="text" id="owner" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Booking By:</span>
+                        <span class="info-value"><input type="text" id="bookingBy" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Size:</span>
+                        <span class="info-value"><input type="text" id="size" value="40HC"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- តារាងសេវាកម្ម (អាចបន្ថែមជួរបាន) -->
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">ល.រ<br>No</th>
+                        <th style="width: 25%;">បរិយាយមុខទំនិញ<br>Description</th>
+                        <th style="width: 10%;">ទំហំទូ<br>Size</th>
+                        <th style="width: 10%;">ប្រភេទទូ<br>Status</th>
+                        <th style="width: 12%;">តម្លៃ<br>Rate($)</th>
+                        <th style="width: 8%;">បរិមាណ<br>QTY</th>
+                        <th style="width: 12%;">រយៈពេល<br>Duration</th>
+                        <th style="width: 13%;">សរុប<br>Amount</th>
+                        <th style="width: 5%;" class="no-print">សកម្មភាព</th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceTableBody">
+                    <!-- Dynamic Rows added here -->
+                </tbody>
+            </table>
+
+            <!-- តារាងសរុបប្រាក់ និងព័ត៌មានពន្ធ -->
+            <table class="summary-table" style="margin-top: -1px;">
+                <tr>
+                    <td colspan="7" class="text-right" style="font-weight: bold; width: 77%;">សរុប / Total</td>
+                    <td class="text-right" style="width: 23%; font-weight: bold;">$ <span id="subTotalDisplay">0.00</span></td>
+                </tr>
+                <tr>
+                    <td style="width: 25%; font-weight: bold;">Exch Rate In Riel:</td>
+                    <td style="width: 10%;">KHR</td>
+                    <td style="width: 15%; font-weight: bold;" class="text-right"><input type="number" id="exchRate" style="width:100%; border:none; outline:none; font-weight:bold; text-align:right;" value="4085" oninput="calculateInvoice()"></td>
+                    <td colspan="4" class="text-right" style="font-weight: bold;">អាករលើតម្លៃបន្ថែម / VAT 10%</td>
+                    <td class="text-right">$ <input type="number" id="vatInput" style="width:80%; border:none; outline:none; text-align:right; font-weight:bold;" value="0.00" step="0.01" oninput="calculateCustomVAT()"></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;">សរុបជាអក្សរ:</td>
+                    <td colspan="2" style="font-style: italic; font-weight: bold; text-align:center;"><span id="khrTextDisplay">សូន្យរៀល</span></td>
+                    <td colspan="4" class="text-right" style="font-weight: bold;">សរុបួមជាដុល្លារ / Grand Total In USD</td>
+                    <td class="text-right" style="font-weight: bold;">$ <span id="grandTotalUSDDisplay">0.00</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;">The sum of USD:</td>
+                    <td colspan="2" style="font-style: italic; font-weight: bold; text-align:center;"><span id="usdTextDisplay">Zero Dollars Only</span></td>
+                    <td colspan="4" class="text-right" style="font-weight: bold;">សរុបួមជាប្រាក់រៀល / Grand Total In KHR</td>
+                    <td class="text-right" style="font-weight: bold;">KHR <span id="grandTotalKHRDisplay">0.00</span></td>
+                </tr>
+            </table>
+
+            <!-- ផ្នែកហត្ថលេខា -->
+            <div class="signature-container">
+                <div>
+                    <div class="signature-title">អ្នកទទួល / Receiver Name</div>
+                    <div class="signature-space"></div>
+                    <div>..................................................</div>
+                </div>
+                <div>
+                    <div class="signature-title">អ្នករៀបចំ / Issue Name</div>
+                    <div class="signature-space"></div>
+                    <div>..................................................</div>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <script>
-        const departmentNames = {
-            "HR_ADMIN": "ធនធានមនុស្ស & រដ្ឋបាល",
-            "ACC_FIN": "គណនេយ្យ & ហិរញ្ញវត្ថុ",
-            "TRANSPORT": "ផ្នែកដឹកជញ្ជូន",
-            "CONTAINER_MGT": "ផ្នែកគ្រប់គ្រងកុងតឺន័រ",
-            "TECH_STUFFING": "ផ្នែកត្រួតពិនិត្យទីលានកុងតឺន័រ",
-            "IT_SYSTEMS": "ផ្នែកព័ត៌មានវិទ្យា & ប្រព័ន្ធ",
-            "CUSTOMER_SVC": "ផ្នែកសេវាកម្មអតិថិជន",
-            "FACILITIES": "ប្រធានផ្នែកសម្ភារឯកសារ",
-            "BONDED_WH": "ផ្នែកឃ្លាំងទំនិញពន្ធដារ (BWH)",
-            "ALL": "គ្រប់ផ្នែកទាំងអស់"
-        };
+        let isManualVAT = false;
 
-        const englishTitles = {
-            "HR_ADMIN": "HR & Administration Department",
-            "ACC_FIN": "Accounting & Finance Department",
-            "TRANSPORT": "Transport Department",
-            "CONTAINER_MGT": "Container Management Department",
-            "TECH_STUFFING": "Technical & Stuffing/Unstuffing Department",
-            "IT_SYSTEMS": "IT & Systems Department",
-            "CUSTOMER_SVC": "Customer Service Department",
-            "FACILITIES": "Documentation & General Management",
-            "BONDED_WH": "Bonded Warehouse (BWH) Department"
-        };
-
-        const roleDetails = {
-            "វត្តមាន ចេញ/ចូល": { en: "Staff Attendance Check-in / Check-out", url: "/views/hr-in-out.html" },
-            "ទ្រព្យសម្បត្តិ/ស្តុក និងការគ្រប់គ្រង សារពើភណ្ឌ": { en: "Asset, Stock & Inventory Management", url: "/views/hr-asset.html" },
-            "ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល": { en: "HR Recruitment & Training", url: "/views/hr-management.html" },
-            "ប្រាក់បៀវត្សរ៍ - ដំណើរការប្រាក់ខែ & អត្ថប្រយោជន៍": { en: "Payroll Processing & Benefits", url: "/views/hr-payroll.html" },
-            
-            "គណនេយ្យប្រាក់ចំណូល": { en: "Revenue Accounting", url: "/views/acc-revenue.html" },
-            "គណនេយ្យទទួល": { en: "Accounts Receivable", url: "/views/acc-receivable.html" },
-            "របាយការណ៍ហិរញ្ញវត្ថុ": { en: "Financial Reporting", url: "/views/acc-finance.html" },
-            "ការគ្រប់គ្រងថវិកា / ចំណាយ": { en: "Budget & Expense Control", url: "/views/acc-control.html" },
-            "វិក្កយបត្រពន្ធ (TAX INVOICE)": { en: "Tax Invoice & Billing", url: "billing-cashier.html" },
-
-            "ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន": { en: "Fleet & Transport Dispatch", url: "/views/transport-fleet.html" },
-            "ការគ្រប់គ្រងអ្នកបើកបរ": { en: "Driver Management", url: "/views/transport-drivers.html" },
-            "ការគ្រប់គ្រងប្រេងឥន្ធនៈ / ការថែទាំ": { en: "Fuel & Maintenance Management", url: "/views/transport-maintenance.html" },
-            "ការរៀបចំផែនការដឹកជញ្ជូនទំនិញ": { en: "Cargo Transport Planning", url: "/views/transport-planning.html" },
-
-            "ការត្រួតពិនិត្យកុងតឺន័រខូច": { en: "Damaged Container Inspection", url: "/views/container-damage.html" },
-            "ការគ្រប់គ្រងទីតាំងកុងតឺន័រ": { en: "Container Yard Location Management", url: "/views/container-yard.html" },
-            "ការថែទាំ និងជួសជុល": { en: "Maintenance & Repair (M&R)", url: "/views/container-stock.html" },
-            "ការចេញកុងតឺន័រវិញ": { en: "Container Gate-Out", url: "/views/container-gateout.html" },
-
-            "ប្រតិបត្តិការនៅទីលាន": { en: "Yard Operations", url: "/views/tech-stuffing.html" },
-            "ការចូល / ចេញទំនិញ": { en: "Cargo Gate-In / Gate-Out", url: "/views/cargo-gate.html" },
-            "ក្រុមសន្តិសុខ": { en: "Security Guard Team", url: "/views/tech-safety.html" },
-
-            "ប្រព័ន្ធ WMS / OMS": { en: "WMS & OMS Systems", url: "/views/it-wms.html" },
-            "ប្រព័ន្ធ CCTV & បណ្តាញ": { en: "CCTV & Network Infrastructure", url: "/views/it-cctv.html" },
-            "ការគ្រប់គ្រងទិន្នន័យ": { en: "Data Management & Security", url: "/views/it-data.html" },
-
-            "ទំនាក់ទំនងជាមួយអតិថិជន": { en: "Customer Relations", url: "/views/cs-relations.html" },
-            "ការដោះស្រាយបញ្ហា / ការតវ៉ា": { en: "Dispute & Complaint Resolution", url: "/views/cs-complaints.html" },
-            "ជំនួយការផ្នែកស្វែងរកប្រភព": { en: "Sourcing & General Support", url: "/views/cs-support.html" },
-
-            "ការគ្រប់គ្រងឯកសារ": { en: "Document Management", url: "/views/doc-management.html" },
-            "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ": { en: "Customs System Data Entry Management", url: "/views/doc-customs.html" },
-            "អ្នកកាន់ឯកសារ": { en: "Document Controller / Handler", url: "/views/doc-handler.html" },
-
-            /* មុខងារសម្រាប់ Bonded Warehouse (BWH) */
-            "ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)": { en: "Bonded Warehouse Cargo In/Out Control", url: "/views/bwh-inout.html" },
-            "ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ": { en: "Duty-Unpaid Inventory Monitoring", url: "/views/bwh-inventory.html" },
-            "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ": { en: "Customs Permit & Document Control (BWH)", url: "/views/bwh-customs.html" }
-        };
-
-        const departments = [
-            { id: "HR_ADMIN", name: "ធនធានមនុស្ស & រដ្ឋបាល", roles: ["វត្តមាន ចេញ/ចូល", "ទ្រព្យសម្បត្តិ/ស្តុក និងការគ្រប់គ្រង សារពើភណ្ឌ", "ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល", "ប្រាក់បៀវត្សរ៍ - ដំណើរការប្រាក់ខែ & អត្ថប្រយោជន៍"] },
-            { id: "ACC_FIN", name: "គណនេយ្យ & ហិរញ្ញវត្ថុ", roles: ["គណនេយ្យប្រាក់ចំណូល", "គណនេយ្យទទួល", "របាយការណ៍ហិរញ្ញវត្ថុ", "ការគ្រប់គ្រងថវិកា / ចំណាយ", "វិក្កយបត្រពន្ធ (TAX INVOICE)"] },
-            { id: "TRANSPORT", name: "ផ្នែកដឹកជញ្ជូន", roles: ["ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន", "ការគ្រប់គ្រងអ្នកបើកបរ", "ការគ្រប់គ្រងប្រេងឥន្ធនៈ / ការថែទាំ", "ការរៀបចំផែនការដឹកជញ្ជូនទំនិញ"] },
-            { id: "CONTAINER_MGT", name: "ផ្នែកគ្រប់គ្រងកុងតឺន័រ", roles: ["ការត្រួតពិនិត្យកុងតឺន័រខូច", "ការគ្រប់គ្រងទីតាំងកុងតឺន័រ", "ការថែទាំ និងជួសជុល", "ការចេញកុងតឺន័រវិញ"] },
-            { id: "TECH_STUFFING", name: "ផ្នែកត្រួតពិនិត្យទីលានកុងតឺន័រ", roles: ["ប្រតិបត្តិការនៅទីលាន", "ការចូល / ចេញទំនិញ", "ក្រុមសន្តិសុខ"] },
-            { id: "IT_SYSTEMS", name: "ផ្នែកព័ត៌មានវិទ្យា & ប្រព័ន្ធ", roles: ["ប្រព័ន្ធ WMS / OMS", "ប្រព័ន្ធ CCTV & បណ្តាញ", "ការគ្រប់គ្រងទិន្នន័យ"] },
-            { id: "CUSTOMER_SVC", name: "ផ្នែកសេវាកម្មអតិថិជន", roles: ["ទំនាក់ទំនងជាមួយអតិថិជន", "ការដោះស្រាយបញ្ហា / ការតវ៉ា", "ជំនួយការផ្នែកស្វែងរកប្រភព"] },
-            { id: "FACILITIES", name: "ប្រធានផ្នែកសម្ភារឯកសារ", roles: ["ការគ្រប់គ្រងឯកសារ", "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ", "អ្នកកាន់ឯកសារ"] },
-            { id: "BONDED_WH", name: "ផ្នែកឃ្លាំងទំនិញពន្ធដារ (BWH)", roles: ["ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)", "ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ", "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ"] }
+        const descriptionOptions = [
+            "Inbound",
+            "bonded storage charge",
+            "Showroom Storage",
+            "Lolo",
+            "Forklift",
+            "Loading",
+            "Permit to Showroom",
+            "Handling Inbound",
+            "Handling Outbound",
+            "Gate Fee 1.5T",
+            "Gate Fee 2.5T",
+            "Gate Fee 3.5-5T",
+            "Gate Fee 8-10T",
+            "Laden Con Storage",
+            "Empty Con",
+            "Cy Storage for Tractor",
+            "Cy For Escavator",
+            "RAM",
+            "Permit Transit",
+            "Clear",
+            "Dry port Facility",
+            "Gate Fee"
         ];
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const loggedUser = JSON.parse(localStorage.getItem('ant_logged_user_info'));
-            if (loggedUser) {
-                document.getElementById('authModal').style.display = 'none';
-                document.getElementById('userInfoDisplay').style.display = 'flex';
-                document.getElementById('welcomeText').innerText = `${loggedUser.full_name} (${loggedUser.role})`;
+        // មុខងារទាញយកថ្ងៃខែ និងម៉ោងបច្ចុប្បន្នដោយស្វ័យប្រវត្តិ
+        function getCurrentDateTime() {
+            const now = new Date();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const year = now.getFullYear();
+            
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            
+            hours = hours % 12;
+            hours = hours ? hours : 12; // ម៉ោង ១២
+
+            return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
+        }
+
+        // បន្ថែមជួរថ្មីចូលតារាង
+        function addRow(selectedDesc = "Gate Fee", size = "40HC", status = "Full", rate = 5.00, qty = 1, duration = 0) {
+            const tbody = document.getElementById('invoiceTableBody');
+            const rowCount = tbody.rows.length + 1;
+            const row = tbody.insertRow();
+
+            let optionsHtml = '';
+            descriptionOptions.forEach(opt => {
+                optionsHtml += `<option value="${opt}" ${opt === selectedDesc ? 'selected' : ''}>${opt}</option>`;
+            });
+
+            row.innerHTML = `
+                <td class="row-index">${rowCount}</td>
+                <td class="text-left">
+                    <select class="item-desc" style="width:100%; border:none; outline:none; font-family:'Kantumruy Pro'; background:transparent;">
+                        ${optionsHtml}
+                    </select>
+                </td>
+                <td><input type="text" class="item-size" style="width:100%; border:none; outline:none; text-align:center;" value="${size}"></td>
+                <td><input type="text" class="item-status" style="width:100%; border:none; outline:none; text-align:center;" value="${status}"></td>
+                <td>$ <input type="number" class="item-rate" style="width:70%; border:none; outline:none; text-align:right;" value="${rate.toFixed(2)}" step="0.01" oninput="calculateInvoice()"></td>
+                <td><input type="number" class="item-qty" style="width:100%; border:none; outline:none; text-align:center;" value="${qty}" oninput="calculateInvoice()"></td>
+                <td><input type="number" class="item-duration" style="width:100%; border:none; outline:none; text-align:center;" value="${duration}" oninput="calculateInvoice()"></td>
+                <td class="text-right">$ <span class="item-amount">0.00</span></td>
+                <td class="no-print text-center"><button class="btn-danger" onclick="removeRow(this)"><i class="fa-solid fa-trash"></i></button></td>
+            `;
+            updateRowIndexes();
+            calculateInvoice();
+        }
+
+        // លុបជួរចេញពីតារាង
+        function removeRow(btn) {
+            const row = btn.closest('tr');
+            row.remove();
+            updateRowIndexes();
+            calculateInvoice();
+        }
+
+        // កែសម្រួល ល.រ (No) ឡើងវិញពេលមានការលុបជួរ
+        function updateRowIndexes() {
+            const rows = document.querySelectorAll('#invoiceTableBody tr');
+            rows.forEach((row, index) => {
+                row.querySelector('.row-index').innerText = index + 1;
+            });
+        }
+
+        function calculateInvoice() {
+            const rows = document.querySelectorAll('#invoiceTableBody tr');
+            let subtotal = 0;
+
+            rows.forEach(row => {
+                const rate = parseFloat(row.querySelector('.item-rate').value) || 0;
+                const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
+                const duration = parseFloat(row.querySelector('.item-duration').value) || 0;
                 
-                // បង្ហាញប៊ូតុងបង្កើត និងគ្រប់គ្រង User เฉพาะ Admin តែប៉ុណ្ណោះ
-                if (loggedUser.role === 'ADMIN') {
-                    document.getElementById('btnCreateUser').style.display = 'inline-block';
-                    document.getElementById('btnManageUsers').style.display = 'inline-block';
+                // គណនា Rate * Qty * Duration (បើ Duration > 0)
+                let amount = rate * qty;
+                if (duration > 0) {
+                    amount = rate * qty * duration;
                 }
-                renderDashboard(loggedUser);
-            }
-        });
 
-        function toggleDeptSelect(role) {
-            document.getElementById('deptGroup').style.display = (role === 'ADMIN' || role === 'SUPERVISOR') ? 'none' : 'block';
+                row.querySelector('.item-amount').innerText = amount.toFixed(2);
+                subtotal += amount;
+            });
+
+            document.getElementById('subTotalDisplay').innerText = subtotal.toFixed(2);
+
+            const exchRate = parseFloat(document.getElementById('exchRate').value) || 4085;
+
+            // គណនា VAT 10% ដោយស្វ័យប្រវត្តិ
+            let vat = 0;
+            if (!isManualVAT) {
+                vat = subtotal * 0.10;
+                document.getElementById('vatInput').value = vat.toFixed(2);
+            } else {
+                vat = parseFloat(document.getElementById('vatInput').value) || 0;
+            }
+
+            // Grand Total USD
+            const grandTotalUSD = subtotal + vat;
+            document.getElementById('grandTotalUSDDisplay').innerText = grandTotalUSD.toFixed(2);
+
+            // Grand Total KHR
+            const grandTotalKHR = grandTotalUSD * exchRate;
+            document.getElementById('grandTotalKHRDisplay').innerText = grandTotalKHR.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            // អាប់ដេតអក្សរអានទឹកប្រាក់
+            document.getElementById('usdTextDisplay').innerText = numberToUSDWords(grandTotalUSD);
+            document.getElementById('khrTextDisplay').innerText = numberToKhmerWords(Math.round(grandTotalKHR));
         }
 
-        async function handleLogin(e) {
-            e.preventDefault();
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-
-            try {
-                const response = await fetch('/api/auth/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    localStorage.setItem('ant_logged_user_info', JSON.stringify(result.user));
-                    location.reload();
-                } else {
-                    alert('បរាជ័យ៖ ' + (result.error || 'ឈ្មោះគណនី ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ!'));
-                }
-            } catch (err) {
-                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
-            }
+        function calculateCustomVAT() {
+            isManualVAT = true;
+            calculateInvoice();
         }
 
-        async function handleRegister(e) {
-            e.preventDefault();
-            const selectedRole = document.getElementById('regRole').value;
-            const payload = {
-                full_name: document.getElementById('regFullName').value.trim(),
-                username: document.getElementById('regUsername').value.trim(),
-                password: document.getElementById('regPassword').value.trim(),
-                role: selectedRole,
-                dept_id: (selectedRole === 'ADMIN' || selectedRole === 'SUPERVISOR') ? 'ALL' : document.getElementById('regDept').value
+        // មុខងាររក្សាទុកវិក្កយបត្រចូល Server / Database
+        async function saveInvoiceToDB() {
+            const invoiceData = {
+                invoice_no: document.getElementById('invoiceNo').value,
+                charge_to: document.getElementById('chargeTo').value,
+                seal_no: document.getElementById('sealNo').value,
+                booking_no: document.getElementById('bookingNo').value,
+                container_no: document.getElementById('containerNo').value,
+                remark: document.getElementById('remark').value,
+                inv_date: document.getElementById('invDate').value,
+                truck_out: document.getElementById('truckOut').value,
+                truck_in: document.getElementById('truckIn').value,
+                owner: document.getElementById('owner').value,
+                booking_by: document.getElementById('bookingBy').value,
+                size: document.getElementById('size').value,
+                items: Array.from(document.querySelectorAll('#invoiceTableBody tr')).map(row => ({
+                    description: row.querySelector('.item-desc').value,
+                    size: row.querySelector('.item-size').value,
+                    status: row.querySelector('.item-status').value,
+                    rate: parseFloat(row.querySelector('.item-rate').value) || 0,
+                    qty: parseFloat(row.querySelector('.item-qty').value) || 1,
+                    duration: parseFloat(row.querySelector('.item-duration').value) || 0,
+                    amount: parseFloat(row.querySelector('.item-amount').innerText) || 0
+                })),
+                subtotal: parseFloat(document.getElementById('subTotalDisplay').innerText) || 0,
+                exch_rate: parseFloat(document.getElementById('exchRate').value) || 4085,
+                vat_amount: parseFloat(document.getElementById('vatInput').value) || 0,
+                grand_total_usd: parseFloat(document.getElementById('grandTotalUSDDisplay').innerText) || 0,
+                grand_total_khr: parseFloat(document.getElementById('grandTotalKHRDisplay').innerText.replace(/,/g, '')) || 0
             };
 
             try {
-                const response = await fetch('/api/auth/register', {
+                const response = await fetch('/api/tax-invoices', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(invoiceData)
                 });
 
                 const result = await response.json();
                 if (response.ok && result.success) {
-                    alert('បានបង្កើត User ថ្មីដោយជោគជ័យ!');
-                    closeRegisterModal();
-                    document.getElementById('registerForm').reset();
+                    alert('💾 ' + result.message);
                 } else {
-                    alert('បរាជ័យ៖ ' + (result.error || 'ឈ្មោះគណនីនេះមានរួចហើយ!'));
+                    alert('❌ បរាជ័យ៖ ' + (result.error || 'មានបញ្ហាក្នុងការរក្សាទុក'));
                 }
             } catch (err) {
-                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+                console.error('Error:', err);
+                alert('❌ មិនអាចភ្ជាប់ទៅកាន់ Server បានទេ!');
             }
         }
 
-        function openCreateUserModal() {
-            document.getElementById('authModal').style.display = 'flex';
-            document.getElementById('loginCard').style.display = 'none';
-            document.getElementById('registerCard').style.display = 'block';
-        }
+        // មុខងារបកប្រែលេខប្រាក់ដុល្លារទៅជាអក្សរអង់គ្លេស (USD Words)
+        function numberToUSDWords(amount) {
+            const dollars = Math.floor(amount);
+            const cents = Math.round((amount - dollars) * 100);
 
-        function closeRegisterModal() {
-            document.getElementById('authModal').style.display = 'none';
-            document.getElementById('registerCard').style.display = 'none';
-            document.getElementById('loginCard').style.display = 'block';
-        }
+            const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+            const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
 
-        // បើកផ្ទាំងគ្រប់គ្រង User
-        async function openManageUsersModal() {
-            document.getElementById('manageUsersModal').style.display = 'flex';
-            loadUserList();
-        }
-
-        function closeManageUsersModal() {
-            document.getElementById('manageUsersModal').style.display = 'none';
-        }
-
-        // ទាញយកបញ្ជី User មកបង្ហាញក្នុងតារាង
-        async function loadUserList() {
-            try {
-                const response = await fetch('/api/users');
-                const users = await response.json();
-                
-                const tbody = document.getElementById('userTableBody');
-                tbody.innerHTML = '';
-
-                users.forEach(u => {
-                    const isActive = u.status === 'Active' || !u.status;
-                    const deptKhmerName = departmentNames[u.dept_id] || u.dept_id;
-                    
-                    tbody.innerHTML += `
-                        <tr style="border-bottom: 1px solid #e2e8f0;">
-                            <td style="padding: 10px; font-weight: 600;">${u.username}</td>
-                            <td style="padding: 10px;">${u.full_name}</td>
-                            <td style="padding: 10px;">
-                                <span style="color: var(--primary-color); font-weight: 600;">${u.role}</span><br>
-                                <small style="color: #64748b;">${deptKhmerName}</small>
-                            </td>
-                            <td style="padding: 10px; text-align: center;">
-                                <span style="padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; background: ${isActive ? '#dcfce7; color: #166534;' : '#fee2e2; color: #991b1b;'}">
-                                    ${isActive ? 'Active (សកម្ម)' : 'Inactive (អសកម្ម)'}
-                                </span>
-                            </td>
-                            <td style="padding: 10px; text-align: center;">
-                                <button onclick="toggleUserStatus(${u.id}, '${isActive ? 'Inactive' : 'Active'}')" style="padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-family: 'Kantumruy Pro'; font-size: 12px; background: ${isActive ? '#ef4444' : '#10b981'}; color: white;">
-                                    ${isActive ? 'បិទសិទ្ធិ (Inactive)' : 'បើកសិទ្ធិវិញ (Active)'}
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } catch (err) {
-                alert('មិនអាចទាញយកបញ្ជី User បានទេ!');
+            function convert(num) {
+                if (num < 20) return units[num];
+                if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 !== 0 ? " " + units[num % 10] : "");
+                if (num < 1000) return units[Math.floor(num / 100)] + " Hundred" + (num % 100 !== 0 ? " " + convert(num % 100) : "");
+                if (num < 1000000) return convert(Math.floor(num / 1000)) + " Thousand" + (num % 1000 !== 0 ? " " + convert(num % 1000) : "");
+                return num.toString();
             }
+
+            let str = dollars === 0 ? "Zero Dollars" : convert(dollars) + " Dollar" + (dollars > 1 ? "s" : "");
+            if (cents > 0) {
+                str += " and " + convert(cents) + " Cent" + (cents > 1 ? "s" : "");
+            } else {
+                str += " Only";
+            }
+            return str;
         }
 
-        // ប្ដូរ Status របស់ User (Active <-> Inactive)
-        async function toggleUserStatus(userId, newStatus) {
-            if (!confirm(`តើអ្នកពិតជាចង់ប្ដូរស្ថានភាព User នេះទៅជា "${newStatus}" ដែរឬទេ?`)) return;
-
-            try {
-                const response = await fetch(`/api/users/${userId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ status: newStatus })
-                });
-
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    alert('បានកែប្រែស្ថានភាព User ដោយជោគជ័យ!');
-                    loadUserList();
-                } else {
-                    alert('បរាជ័យ៖ ' + (result.error || 'មានបញ្ហាបច្ចេកទេស'));
+        // មុខងារបកប្រែលេខប្រាក់រៀលទៅជាអក្សរខ្មែរ (Khmer Words)
+        function numberToKhmerWords(num) {
+            if (num === 0) return "សូន្យរៀល";
+            const khmerNumbers = ["សូន្យ", "មួយ", "ពីរ", "បី", "បួន", "ប្រាំ", "ប្រាំមួយ", "ប្រាំពីរ", "ប្រាំបី", "ប្រាំបួន"];
+            
+            function convertKhmer(n) {
+                if (n < 10) return khmerNumbers[n];
+                if (n < 100) {
+                    let tenStr = ["", "ដប់", "ម្ភៃ", "សាមសិប", "សែសិប", "ហាសិប", "ហុកសិប", "ចិត្តសិប", "ប៉ែតសិប", "កៅសិប"];
+                    return tenStr[Math.floor(n / 10)] + (n % 10 !== 0 ? khmerNumbers[n % 10] : "");
                 }
-            } catch (err) {
-                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+                if (n < 1000) {
+                    return khmerNumbers[Math.floor(n / 100)] + "រយ" + (n % 100 !== 0 ? convertKhmer(n % 100) : "");
+                }
+                if (n < 10000) {
+                    return khmerNumbers[Math.floor(n / 1000)] + "ពាន់" + (n % 1000 !== 0 ? convertKhmer(n % 1000) : "");
+                }
+                if (n < 100000) {
+                    return convertKhmer(Math.floor(n / 10000)) + "ម៉ឺន" + (n % 10000 !== 0 ? convertKhmer(n % 10000) : "");
+                }
+                if (n < 1000000) {
+                    return convertKhmer(Math.floor(n / 100000)) + "សែន" + (n % 100000 !== 0 ? convertKhmer(n % 100000) : "");
+                }
+                if (n < 1000000000) {
+                    return convertKhmer(Math.floor(n / 1000000)) + "លាន" + (n % 1000000 !== 0 ? convertKhmer(n % 1000000) : "");
+                }
+                return n.toString();
             }
+
+            return convertKhmer(num) + "រៀល";
         }
 
-        function handleLogout() {
-            localStorage.removeItem('ant_logged_user_info');
-            location.reload();
-        }
-
-        function renderDashboard(user) {
-            const dashboardContainer = document.getElementById('dashboard');
-            dashboardContainer.innerHTML = '';
-
-            let filteredDepts = departments;
-            if (user.role !== "ADMIN" && user.role !== "SUPERVISOR") {
-                filteredDepts = departments.filter(dept => dept.id === user.dept_id);
-            }
-
-            filteredDepts.forEach(dept => {
-                let engName = englishTitles[dept.id] || "Department";
-                
-                let rolesHtml = dept.roles.map(role => {
-                    let info = roleDetails[role] || { en: "Workflow Item", url: "#" };
-                    return `
-                        <li>
-                            <a href="${info.url}" class="role-item">
-                                <span class="role-km">${role}</span>
-                                <span class="role-en">${info.en}</span>
-                            </a>
-                        </li>
-                    `;
-                }).join('');
-                
-                let card = `
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>${dept.name}</h3>
-                            <div class="eng-title">${engName}</div>
-                        </div>
-                        <div class="card-body">
-                            <ul class="role-list">${rolesHtml}</ul>
-                        </div>
-                    </div>
-                `;
-                dashboardContainer.innerHTML += card;
-            });
-        }
+        // ដំណើរការកំណត់ម៉ោង និងបង្កើតជួរដំបូងពេល Load ចូលទំព័រ
+        document.addEventListener('DOMContentLoaded', () => {
+            // កំណត់ថ្ងៃខែ និងម៉ោងបច្ចុប្បន្នស្វ័យប្រវត្តិ
+            document.getElementById('invDate').value = getCurrentDateTime();
+            
+            // បង្កើតជួរដំបូង
+            addRow("Gate Fee", "40HC", "Full", 5.00, 1, 0);
+        });
     </script>
 </body>
 </html>
