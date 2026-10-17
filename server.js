@@ -665,17 +665,14 @@ app.put('/api/bwh-records/:id/renew', async (req, res) => {
     const { id } = req.params;
     const { record_date, current_days } = req.body;
     try {
-        // កាត់យកតែ YYYY-MM-DD ឱ្យបានស្អាត និងសុវត្ថិភាពសម្រាប់ TIMESTAMP/DATE
-        const formattedDate = record_date ? record_date.split('T')[0] : new Date().toISOString().split('T')[0];
-
-        // យកចំនួនថ្ងៃបច្ចុប្បន្នទៅបូកបន្ថែមលើ previous_days និងអាប់ដេតថ្ងៃថ្មី
+        // កែប្រែឈ្មោះ Table ទៅជា bonded_warehouse_records
         const query = `
             UPDATE bonded_warehouse_records 
             SET previous_days = COALESCE(previous_days, 0) + $1, 
                 record_date = $2 
             WHERE id = $3
         `;
-        await pool.query(query, [current_days, formattedDate, id]);
+        await pool.query(query, [current_days, record_date, id]);
         res.json({ success: true, message: 'បានបន្តកាលបរិច្ឆេទថ្មី និងរក្សាទុកប្រវត្តិដោយជោគជ័យ!' });
     } catch (err) {
         console.error('Error renewing BWH record:', err);
