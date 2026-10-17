@@ -479,37 +479,36 @@
             }
         }
 
-      function calculateDaysInBonded(item) {
-    const rawDate = item.record_date || item.date || item.created_at || item.in_date || item.entry_date;
-    if (!rawDate) return 0;
+        function calculateDaysInBonded(item) {
+            const rawDate = item.record_date || item.date || item.created_at || item.in_date || item.entry_date;
+            if (!rawDate) return 0;
 
-    const formattedDateStr = rawDate.includes(' ') && !rawDate.includes('T') ? rawDate.replace(' ', 'T') : rawDate;
-    
-    const entryDate = new Date(formattedDateStr);
-    if (isNaN(entryDate.getTime())) return 0;
+            const formattedDateStr = rawDate.includes(' ') && !rawDate.includes('T') ? rawDate.replace(' ', 'T') : rawDate;
+            
+            const entryDate = new Date(formattedDateStr);
+            if (isNaN(entryDate.getTime())) return 0;
 
-    const status = (item.customs_status || item.status || '').toLowerCase();
-    let targetDate = new Date(); // កាលបរិច្ឆេទបច្ចុប្បន្ន
-    
-    if (status.includes('បានបង់ពន្ធរួច') || status.includes('duty paid') || status.includes('released') || status.includes('out')) {
-        const updateRaw = item.updated_at || item.release_date || item.out_date;
-        if (updateRaw) {
-            const formattedUpdateStr = updateRaw.includes(' ') && !updateRaw.includes('T') ? updateRaw.replace(' ', 'T') : updateRaw;
-            const updateDate = new Date(formattedUpdateStr);
-            if (!isNaN(updateDate.getTime())) {
-                targetDate = updateDate;
+            const status = (item.customs_status || item.status || '').toLowerCase();
+            let targetDate = new Date(); // កាលបរិច្ឆេទបច្ចុប្បន្ន
+            
+            if (status.includes('បានបង់ពន្ធរួច') || status.includes('duty paid') || status.includes('released') || status.includes('out')) {
+                const updateRaw = item.updated_at || item.release_date || item.out_date;
+                if (updateRaw) {
+                    const formattedUpdateStr = updateRaw.includes(' ') && !updateRaw.includes('T') ? updateRaw.replace(' ', 'T') : updateRaw;
+                    const updateDate = new Date(formattedUpdateStr);
+                    if (!isNaN(updateDate.getTime())) {
+                        targetDate = updateDate;
+                    }
+                }
             }
+
+            entryDate.setHours(0, 0, 0, 0);
+            targetDate.setHours(0, 0, 0, 0);
+
+            const diffTime = targetDate - entryDate;
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays >= 0 ? diffDays : 0;
         }
-    }
-
-    // 🛑 បន្ថែម ២ បន្ទាត់នេះដើម្បីកាត់ម៉ោងចេញ គណនាเอาតែថ្ងៃគត់
-    entryDate.setHours(0, 0, 0, 0);
-    targetDate.setHours(0, 0, 0, 0);
-
-    const diffTime = targetDate - entryDate;
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays >= 0 ? diffDays : 0;
-}
 
         function checkIsBWHDepartment() {
             if (!currentUserInfo) return false;
@@ -538,7 +537,10 @@
                 const movementType = item.movement_type || item.type || 'IN';
                 let badgeClass = movementType === 'IN' ? 'badge-in' : 'badge-out';
                 let typeText = movementType === 'IN' ? 'ចូល (IN)' : 'ចេញ (OUT)';
-                let recordDate = item.record_date || item.date || item.created_at || item.in_date || new Date().toISOString();
+                
+                // 🛑 កាត់បង្ហាញត្រឹមថ្ងៃខែឆ្នាំ (YYYY-MM-DD)
+                let rawDate = item.record_date || item.date || item.created_at || item.in_date || '';
+                let recordDate = rawDate ? rawDate.split('T')[0].split(' ')[0] : '-';
                 
                 let currentDays = calculateDaysInBonded(item);
                 let previousDays = item.previous_days || 0;
@@ -575,7 +577,7 @@
                         <td>${item.cargo_name || item.cargo}</td>
                         <td>${item.owner_name || item.owner}</td>
                         <td><span class="badge ${badgeClass}">${typeText}</span></td>
-                        <td>${recordDate.replace('T', ' ').slice(0, 16)}</td>
+                        <td>${recordDate}</td>
                         <td>
                             <span class="badge ${daysBadgeClass}" title="${warningText}">
                                 <i class="fa-solid fa-clock me-1"></i> ${totalDays} ថ្ងៃ ${warningText}
@@ -597,11 +599,14 @@
         async function renewRecord(id, currentTotalDays) {
             if (confirm(`តើអ្នកពិតជាចង់បន្តកាលបរិច្ឆេទថ្មីមែនទេ? (ចំនួនថ្ងៃសរុប ${currentTotalDays} ថ្ងៃ នឹងត្រូវរក្សាទុកជាប្រវត្តិថ្ងៃចាស់)`)) {
                 try {
+                    // 🛑 យកត្រឹមថ្ងៃខែឆ្នាំបច្ចុប្បន្ន (YYYY-MM-DD) មិនយកម៉ោង
+                    const todayDate = new Date().toISOString().split('T')[0];
+
                     const res = await fetch(`/api/bwh-records/${id}/renew`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ 
-                            record_date: new Date().toISOString(),
+                            record_date: todayDate,
                             current_days: currentTotalDays 
                         })
                     });
@@ -630,13 +635,16 @@
             const movement_type = document.getElementById('movementType').value;
             const customs_status = document.getElementById('customsStatus').value;
 
+            // 🛑 កំណត់យកត្រឹមថ្ងៃខែឆ្នាំ (YYYY-MM-DD)
+            const todayDate = new Date().toISOString().split('T')[0];
+
             const payload = {
                 container_number,
                 vehicle_vin,
                 cargo_name,
                 owner_name,
                 movement_type,
-                record_date: new Date().toISOString(),
+                record_date: todayDate,
                 days_in_bonded: 0,
                 customs_status
             };
