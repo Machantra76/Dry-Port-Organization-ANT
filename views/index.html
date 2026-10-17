@@ -332,6 +332,7 @@
                     <label>ប្រភេទសិទ្ធិ (Role Level):</label>
                     <select id="regRole" class="form-select" required onchange="toggleDeptSelect(this.value)">
                         <option value="STAFF">បុគ្គលិកតាមផ្នែក (Staff / User)</option>
+                        <option value="SUPERVISOR">អ្នកគ្រប់គ្រងទូទៅ (Supervisor - មើលបានទាំងអស់)</option>
                         <option value="ADMIN">អ្នកគ្រប់គ្រងប្រព័ន្ធ (Admin - មើលបានទាំងអស់)</option>
                     </select>
                 </div>
@@ -413,7 +414,7 @@
             "CUSTOMER_SVC": "ផ្នែកសេវាកម្មអតិថិជន",
             "FACILITIES": "ប្រធានផ្នែកសម្ភារឯកសារ",
             "BONDED_WH": "ផ្នែកឃ្លាំងទំនិញពន្ធដារ (BWH)",
-            "ALL": "គ្រប់ផ្នែកទាំងអស់ (Admin)"
+            "ALL": "គ្រប់ផ្នែកទាំងអស់"
         };
 
         const englishTitles = {
@@ -490,6 +491,7 @@
                 document.getElementById('userInfoDisplay').style.display = 'flex';
                 document.getElementById('welcomeText').innerText = `${loggedUser.full_name} (${loggedUser.role})`;
                 
+                // បង្ហាញប៊ូតុងបង្កើត និងគ្រប់គ្រង User เฉพาะ Admin តែប៉ុណ្ណោះ (Supervisor ត្រូវបានលាក់)
                 if (loggedUser.role === 'ADMIN') {
                     document.getElementById('btnCreateUser').style.display = 'inline-block';
                     document.getElementById('btnManageUsers').style.display = 'inline-block';
@@ -499,7 +501,8 @@
         });
 
         function toggleDeptSelect(role) {
-            document.getElementById('deptGroup').style.display = role === 'ADMIN' ? 'none' : 'block';
+            // បើជ្រើសរើសជា ADMIN ឬ SUPERVISOR គឺមិនចាំបាច់ជ្រើសរើសផ្នែក (deptGroup) ទេ ព្រោះមើលឃើញទាំងអស់
+            document.getElementById('deptGroup').style.display = (role === 'ADMIN' || role === 'SUPERVISOR') ? 'none' : 'block';
         }
 
         async function handleLogin(e) {
@@ -528,12 +531,13 @@
 
         async function handleRegister(e) {
             e.preventDefault();
+            const selectedRole = document.getElementById('regRole').value;
             const payload = {
                 full_name: document.getElementById('regFullName').value.trim(),
                 username: document.getElementById('regUsername').value.trim(),
                 password: document.getElementById('regPassword').value.trim(),
-                role: document.getElementById('regRole').value,
-                dept_id: document.getElementById('regRole').value === 'ADMIN' ? 'ALL' : document.getElementById('regDept').value
+                role: selectedRole,
+                dept_id: (selectedRole === 'ADMIN' || selectedRole === 'SUPERVISOR') ? 'ALL' : document.getElementById('regDept').value
             };
 
             try {
@@ -578,7 +582,7 @@
             document.getElementById('manageUsersModal').style.display = 'none';
         }
 
-        // ទាញយកបញ្ជី User មកបង្ហាញក្នុងតារាង និងបកប្រែឈ្មោះផ្នែកជាភាសាខ្មែរ (រួមទាំង BWH)
+        // ទាញយកបញ្ជី User មកបង្ហាញក្នុងតារាង
         async function loadUserList() {
             try {
                 const response = await fetch('/api/users');
@@ -631,7 +635,7 @@
                 const result = await response.json();
                 if (response.ok && result.success) {
                     alert('បានកែប្រែស្ថានភាព User ដោយជោគជ័យ!');
-                    loadUserList(); // Refresh តារាង
+                    loadUserList();
                 } else {
                     alert('បរាជ័យ៖ ' + (result.error || 'មានបញ្ហាបច្ចេកទេស'));
                 }
@@ -650,7 +654,8 @@
             dashboardContainer.innerHTML = '';
 
             let filteredDepts = departments;
-            if (user.role !== "ADMIN") {
+            // ប្រសិនបើ Role មិនមែនជា ADMIN និង SUPERVISOR ទេ គឺត្រងយកតែផ្នែករបស់ខ្លួនឯង
+            if (user.role !== "ADMIN" && user.role !== "SUPERVISOR") {
                 filteredDepts = departments.filter(dept => dept.id === user.dept_id);
             }
 
