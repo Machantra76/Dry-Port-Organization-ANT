@@ -600,7 +600,7 @@ async function initializeDatabase() {
 }
 
 // ==========================================
-// API Route: Authentication (Login) - ពិនិត្យ status Active
+// API Route: Authentication (Login)
 // ==========================================
 app.post('/api/auth/login', async (req, res) => {
     const { username, password } = req.body;
@@ -623,7 +623,7 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // ==========================================
-// API Route: Register (បង្កើត User ថ្មី)
+// API Route: Register
 // ==========================================
 app.post('/api/auth/register', async (req, res) => {
     const { username, password, full_name, role, dept_id } = req.body;
@@ -997,7 +997,7 @@ app.get('/views/customs-permit-control.html', (req, res) => {
 });
 
 // ==========================================
-// API Routes: ឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse)
+// API Routes: Bonded Warehouse
 // ==========================================
 app.get('/api/bwh-records', async (req, res) => {
     try {
@@ -1590,7 +1590,7 @@ app.post('/api/jobs', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: IT CCTV & Network Infrastructure
+// API Routes: IT CCTV & Network
 // ==========================================
 app.get('/api/it-cctv', async (req, res) => {
     try {
@@ -2766,7 +2766,7 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
                     success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out ได้ទេ!` 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out បានទេ!` 
                 });
             }
         }
@@ -2862,7 +2862,7 @@ app.post('/api/fleet/yard-operations', async (req, res) => {
         } = req.body;
 
         if (!container_number || !operation_type || !yard_location || !operation_date || !operator_name || !status) {
-            return res.status(400).json({ success: false, error: 'សូមបំពេញព័ត៌មានដែលចាំបាច់ឱ្យបានគ្រប់គ្រាន់!' });
+            return res.status(400).json({ success: false, error: 'សូមបំព័ន៌មានដែលចាំបាច់ឱ្យបានគ្រប់គ្រាន់!' });
         }
 
         const query = `
