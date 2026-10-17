@@ -167,9 +167,6 @@
             font-size: 12px;
         }
 
-        .no-border-left { border-left: none !important; }
-        .no-border-right { border-right: none !important; }
-
         /* ហត្ថលេខា */
         .signature-container {
             display: flex;
@@ -206,6 +203,12 @@
             }
             .no-print {
                 display: none !important;
+            }
+            select {
+                appearance: none;
+                -webkit-appearance: none;
+                border: none !important;
+                background: transparent;
             }
         }
     </style>
@@ -269,7 +272,7 @@
                 <div>
                     <div class="info-row">
                         <span class="info-label">Date:</span>
-                        <span class="info-value"><input type="text" id="invDate" value="10/17/2026 2:23 PM"></span>
+                        <span class="info-value"><input type="text" id="invDate" value="10/17/2026 2:43 PM"></span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Invoice No:</span>
@@ -308,17 +311,27 @@
                         <th style="width: 12%;">ប្រភេទទូ<br>Status</th>
                         <th style="width: 12%;">តម្លៃ<br>Rate($)</th>
                         <th style="width: 8%;">បរិមាណ<br>QTY</th>
-                        <th style="width: 12%;">រយៈពេលរក្សាទូ<br>Duration</th>
+                        <th style="width: 12%;">រយៈពេលរក្សាទូ<br>Duration (Day)</th>
                         <th style="width: 14%;">សរុប<br>Amount</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td>1</td>
-                        <td class="text-left"><input type="text" style="width:100%; border:none; outline:none;" value="Gate Fee"></td>
+                        <td class="text-left">
+                            <select id="itemDescription" style="width:100%; border:none; outline:none; font-family:'Kantumruy Pro'; background:transparent;">
+                                <option value="Empty lift off">Empty lift off</option>
+                                <option value="Empty lift Out">Empty lift Out</option>
+                                <option value="Gate Fee" selected>Gate Fee</option>
+                                <option value="InShowroom">InShowroom</option>
+                                <option value="In BWH">In BWH</option>
+                                <option value="Full lift off">Full lift off</option>
+                                <option value="Full lift On">Full lift On</option>
+                            </select>
+                        </td>
                         <td><input type="text" style="width:100%; border:none; outline:none; text-align:center;" value="40HC"></td>
                         <td><input type="text" style="width:100%; border:none; outline:none; text-align:center;" value="Full"></td>
-                        <td>$ <input type="number" id="rate" style="width:70%; border:none; outline:none; text-align:right;" value="5.00" oninput="calculateInvoice()"></td>
+                        <td>$ <input type="number" id="rate" style="width:70%; border:none; outline:none; text-align:right;" value="5.00" step="0.01" oninput="calculateInvoice()"></td>
                         <td><input type="number" id="qty" style="width:100%; border:none; outline:none; text-align:center;" value="1" oninput="calculateInvoice()"></td>
                         <td><input type="number" id="duration" style="width:100%; border:none; outline:none; text-align:center;" value="0" oninput="calculateInvoice()"></td>
                         <td class="text-right">$ <span id="amountDisplay">5.00</span></td>
@@ -333,23 +346,23 @@
                     <td class="text-right" style="width: 28%; font-weight: bold;">$ <span id="subTotalDisplay">5.00</span></td>
                 </tr>
                 <tr>
-                    <td style="width: 25%; font-weight: bold;">អត្រាប្តូរប្រាក់ជាExternal/Exch Rate In Riel:</td>
+                    <td style="width: 25%; font-weight: bold;">Exch Rate In Riel:</td>
                     <td style="width: 10%;">KHR</td>
                     <td style="width: 15%; font-weight: bold;" class="text-right"><input type="number" id="exchRate" style="width:100%; border:none; outline:none; font-weight:bold; text-align:right;" value="4085" oninput="calculateInvoice()"></td>
                     <td colspan="3" class="text-right" style="font-weight: bold;">អាករលើតម្លៃបន្ថែម / VAT 10%</td>
-                    <td class="text-right">$ <span id="vatDisplay">0.00</span></td>
+                    <td class="text-right">$ <input type="number" id="vatInput" style="width:80%; border:none; outline:none; text-align:right; font-weight:bold;" value="0.50" step="0.01" oninput="calculateCustomVAT()"></td>
                 </tr>
                 <tr>
                     <td style="font-weight: bold;">សរុបជាអក្សរ:</td>
-                    <td colspan="2" style="font-style: italic; font-weight: bold; text-align:center;"><span id="khrTextDisplay">ពីរម៉ឺន បួនរយម្ភៃប្រាំរៀល</span></td>
+                    <td colspan="2" style="font-style: italic; font-weight: bold; text-align:center;"><span id="khrTextDisplay">...</span></td>
                     <td colspan="3" class="text-right" style="font-weight: bold;">សរុបួមជាដុល្លារ / Grand Total In USD</td>
-                    <td class="text-right" style="font-weight: bold;">$ <span id="grandTotalUSDDisplay">5.00</span></td>
+                    <td class="text-right" style="font-weight: bold;">$ <span id="grandTotalUSDDisplay">5.50</span></td>
                 </tr>
                 <tr>
                     <td style="font-weight: bold;">The sum of USD:</td>
-                    <td colspan="2" style="font-style: italic; font-weight: bold; text-align:center;"><span id="usdTextDisplay">Five Dollars Only</span></td>
+                    <td colspan="2" style="font-style: italic; font-weight: bold; text-align:center;"><span id="usdTextDisplay">...</span></td>
                     <td colspan="3" class="text-right" style="font-weight: bold;">សរុបួមជាប្រាក់រៀល / Grand Total In KHR</td>
-                    <td class="text-right" style="font-weight: bold;">KHR <span id="grandTotalKHRDisplay">20,425.00</span></td>
+                    <td class="text-right" style="font-weight: bold;">KHR <span id="grandTotalKHRDisplay">22,467.50</span></td>
                 </tr>
             </table>
 
@@ -371,6 +384,8 @@
     </div>
 
     <script>
+        let isManualVAT = false;
+
         function calculateInvoice() {
             const rate = parseFloat(document.getElementById('rate').value) || 0;
             const qty = parseFloat(document.getElementById('qty').value) || 1;
@@ -381,9 +396,14 @@
             document.getElementById('amountDisplay').innerText = amount.toFixed(2);
             document.getElementById('subTotalDisplay').innerText = amount.toFixed(2);
 
-            // VAT 0% ដូចក្នុងរូបភាព Excel របស់បង
-            const vat = 0.00;
-            document.getElementById('vatDisplay').innerText = vat.toFixed(2);
+            // គណនា VAT 10% ដោយស្វ័យប្រវត្តិ (ប្រសិនបើគ្មានការកែប្រែដៃ)
+            let vat = 0;
+            if (!isManualVAT) {
+                vat = amount * 0.10;
+                document.getElementById('vatInput').value = vat.toFixed(2);
+            } else {
+                vat = parseFloat(document.getElementById('vatInput').value) || 0;
+            }
 
             // Grand Total USD
             const grandTotalUSD = amount + vat;
@@ -392,6 +412,72 @@
             // Grand Total KHR
             const grandTotalKHR = grandTotalUSD * exchRate;
             document.getElementById('grandTotalKHRDisplay').innerText = grandTotalKHR.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+            // អាប់ដេតអក្សរអានទឹកប្រាក់
+            document.getElementById('usdTextDisplay').innerText = numberToUSDWords(grandTotalUSD);
+            document.getElementById('khrTextDisplay').innerText = numberToKhmerWords(Math.round(grandTotalKHR));
+        }
+
+        function calculateCustomVAT() {
+            isManualVAT = true;
+            calculateInvoice();
+        }
+
+        // មុខងារបកប្រែលេខប្រាក់ដុល្លារទៅជាអក្សរអង់គ្លេស (USD Words)
+        function numberToUSDWords(amount) {
+            const dollars = Math.floor(amount);
+            const cents = Math.round((amount - dollars) * 100);
+
+            const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
+            const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
+
+            function convert(num) {
+                if (num < 20) return units[num];
+                if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 !== 0 ? " " + units[num % 10] : "");
+                if (num < 1000) return units[Math.floor(num / 100)] + " Hundred" + (num % 100 !== 0 ? " " + convert(num % 100) : "");
+                if (num < 1000000) return convert(Math.floor(num / 1000)) + " Thousand" + (num % 1000 !== 0 ? " " + convert(num % 1000) : "");
+                return num.toString();
+            }
+
+            let str = dollars === 0 ? "Zero Dollars" : convert(dollars) + " Dollar" + (dollars > 1 ? "s" : "");
+            if (cents > 0) {
+                str += " and " + convert(cents) + " Cent" + (cents > 1 ? "s" : "");
+            } else {
+                str += " Only";
+            }
+            return str;
+        }
+
+        // មុខងារបកប្រែលេខប្រាក់រៀលទៅជាអក្សរខ្មែរ (Khmer Words)
+        function numberToKhmerWords(num) {
+            if (num === 0) return "សូន្យរៀល";
+            const khmerNumbers = ["សូន្យ", "មួយ", "ពីរ", "បី", "បួន", "ប្រាំ", "ប្រាំមួយ", "ប្រាំពីរ", "ប្រាំបី", "ប្រាំបួន"];
+            
+            function convertKhmer(n) {
+                if (n < 10) return khmerNumbers[n];
+                if (n < 100) {
+                    let tenStr = ["", "ដប់", "ម្ភៃ", "សាមសិប", "សែសិប", "ហាសិប", "ហុកសិប", "ចិត្តសិប", "ប៉ែតសិប", "កៅសិប"];
+                    return tenStr[Math.floor(n / 10)] + (n % 10 !== 0 ? khmerNumbers[n % 10] : "");
+                }
+                if (n < 1000) {
+                    return khmerNumbers[Math.floor(n / 100)] + "រយ" + (n % 100 !== 0 ? convertKhmer(n % 100) : "");
+                }
+                if (n < 10000) {
+                    return khmerNumbers[Math.floor(n / 1000)] + "ពាន់" + (n % 1000 !== 0 ? convertKhmer(n % 1000) : "");
+                }
+                if (n < 100000) {
+                    return convertKhmer(Math.floor(n / 10000)) + "ម៉ឺន" + (n % 10000 !== 0 ? convertKhmer(n % 10000) : "");
+                }
+                if (n < 1000000) {
+                    return convertKhmer(Math.floor(n / 100000)) + "សែន" + (n % 100000 !== 0 ? convertKhmer(n % 100000) : "");
+                }
+                if (n < 1000000000) {
+                    return convertKhmer(Math.floor(n / 1000000)) + "លាន" + (n % 1000000 !== 0 ? convertKhmer(n % 1000000) : "");
+                }
+                return n.toString();
+            }
+
+            return convertKhmer(num) + "រៀល";
         }
 
         // ដំណើរការគណនាពេល Load ដំបូង
