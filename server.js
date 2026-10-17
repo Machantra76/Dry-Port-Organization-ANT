@@ -480,6 +480,8 @@ async function initializeDatabase() {
         await client.query(`
             ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS days_in_bonded INT DEFAULT 0;
             ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);
+            -- 👉 ដាក់កូដបន្ថែមត្រង់នេះ ដើម្បីធានាថា Database មាន Column previous_days ស្រាប់
+            ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS previous_days INT DEFAULT 0;
         `);
 
         // ៣១. តារាងត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory Monitoring)
