@@ -479,31 +479,34 @@
             }
         }
 
-        function calculateDaysInBonded(item) {
-            // ទាញយកកាលបរិច្ឆេទចូលពីគ្រប់ Field ដែលអាចទៅរួច ដើម្បីការពារកុំឱ្យ Invalid Date
-            const rawDate = item.record_date || item.date || item.created_at || item.in_date || item.entry_date;
-            if (!rawDate) return 0;
+       function calculateDaysInBonded(item) {
+    const rawDate = item.record_date || item.date || item.created_at || item.in_date || item.entry_date;
+    if (!rawDate) return 0;
 
-            const entryDate = new Date(rawDate);
-            if (isNaN(entryDate.getTime())) return 0;
+    // កែទម្រង់ string ថ្ងៃខែពី "YYYY-MM-DD HH:mm:ss" ឱ្យទៅជា "YYYY-MM-DDTHH:mm:ss"  যাতে JavaScript អានដឹង
+    const formattedDateStr = rawDate.includes(' ') && !rawDate.includes('T') ? rawDate.replace(' ', 'T') : rawDate;
+    
+    const entryDate = new Date(formattedDateStr);
+    if (isNaN(entryDate.getTime())) return 0;
 
-            const status = (item.customs_status || item.status || '').toLowerCase();
-            let targetDate = new Date(); 
-            
-            if (status.includes('បានបង់ពន្ធរួច') || status.includes('duty paid') || status.includes('released') || status.includes('out')) {
-                const updateRaw = item.updated_at || item.release_date || item.out_date;
-                if (updateRaw) {
-                    const updateDate = new Date(updateRaw);
-                    if (!isNaN(updateDate.getTime())) {
-                        targetDate = updateDate;
-                    }
-                }
+    const status = (item.customs_status || item.status || '').toLowerCase();
+    let targetDate = new Date(); // កាលបរិច្ឆេទបច្ចុប្បន្ន
+    
+    if (status.includes('បានបង់ពន្ធរួច') || status.includes('duty paid') || status.includes('released') || status.includes('out')) {
+        const updateRaw = item.updated_at || item.release_date || item.out_date;
+        if (updateRaw) {
+            const formattedUpdateStr = updateRaw.includes(' ') && !updateRaw.includes('T') ? updateRaw.replace(' ', 'T') : updateRaw;
+            const updateDate = new Date(formattedUpdateStr);
+            if (!isNaN(updateDate.getTime())) {
+                targetDate = updateDate;
             }
-
-            const diffTime = targetDate - entryDate;
-            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-            return diffDays >= 0 ? diffDays : 0;
         }
+    }
+
+    const diffTime = targetDate - entryDate;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 ? diffDays : 0;
+}
 
         function checkIsBWHDepartment() {
             if (!currentUserInfo) return false;
