@@ -341,6 +341,7 @@
                     <select id="regDept" class="form-select">
                         <option value="HR_ADMIN">ធនធានមនុស្ស & រដ្ឋបាល</option>
                         <option value="ACC_FIN">គណនេយ្យ & ហិរញ្ញវត្ថុ</option>
+                        <option value="BILLING_CASHIER">ផ្នែកវិក្កយបត្រ & ទូទាត់ប្រាក់ (Cashier)</option>
                         <option value="TRANSPORT">ផ្នែកដឹកជញ្ជូន</option>
                         <option value="CONTAINER_MGT">ផ្នែកគ្រប់គ្រងកុងតឺន័រ</option>
                         <option value="TECH_STUFFING">ផ្នែកត្រួតពិនិត្យទីលានកុងតឺន័រ</option>
@@ -407,6 +408,7 @@
         const departmentNames = {
             "HR_ADMIN": "ធនធានមនុស្ស & រដ្ឋបាល",
             "ACC_FIN": "គណនេយ្យ & ហិរញ្ញវត្ថុ",
+            "BILLING_CASHIER": "ផ្នែកវិក្កយបត្រ & ទូទាត់ប្រាក់ (Cashier)",
             "TRANSPORT": "ផ្នែកដឹកជញ្ជូន",
             "CONTAINER_MGT": "ផ្នែកគ្រប់គ្រងកុងតឺន័រ",
             "TECH_STUFFING": "ផ្នែកត្រួតពិនិត្យទីលានកុងតឺន័រ",
@@ -420,6 +422,7 @@
         const englishTitles = {
             "HR_ADMIN": "HR & Administration Department",
             "ACC_FIN": "Accounting & Finance Department",
+            "BILLING_CASHIER": "Billing, Invoicing & Cashier Department",
             "TRANSPORT": "Transport Department",
             "CONTAINER_MGT": "Container Management Department",
             "TECH_STUFFING": "Technical & Stuffing/Unstuffing Department",
@@ -440,41 +443,47 @@
             "របាយការណ៍ហិរញ្ញវត្ថុ": { en: "Financial Reporting", url: "/views/acc-finance.html" },
             "ការគ្រប់គ្រងថវិកា / ចំណាយ": { en: "Budget & Expense Control", url: "/views/acc-control.html" },
 
-            "ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន": { en: "Fleet & Transport Dispatch", url: "/views/transport-fleet.html" },
+            /* មុខងារសម្រាប់ផ្នែក Billing & Cashier */
+            "ការចេញវិក្កយបត្រ និងទូទាត់ប្រាក់ច្រកចេញចូល (Gate Billing & Cashier)": { en: "Gate Billing, Invoicing & Cashier", url: "/views/billing-cashier.html" },
+            "ការគណនាថ្លៃឈ្នួលរក្សាទុកកុងតឺន័រ និងឃ្លាំង": { en: "Storage & Demurrage Fee Calculation", url: "/views/storage-fee-calc.html" },
+            "របាយការណ៍ចំណូលប្រចាំថ្ងៃ និងបារកិច្ចប្រាក់": { en: "Daily Revenue & Cashier Settlement", url: "/views/cashier-reports.html" },
+
+            "ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន": { en: "Fleet & Transport Dispatch", url: "/views/fleet-dispatch.html" },
             "ការគ្រប់គ្រងអ្នកបើកបរ": { en: "Driver Management", url: "/views/transport-drivers.html" },
-            "ការគ្រប់គ្រងប្រេងឥន្ធនៈ / ការថែទាំ": { en: "Fuel & Maintenance Management", url: "/views/transport-maintenance.html" },
+            "ការគ្រប់គ្រងប្រេងឥន្ធនៈ / ការថែទាំ": { en: "Fuel & Maintenance Management", url: "/views/fleet-fuel-maintenance.html" },
             "ការរៀបចំផែនការដឹកជញ្ជូនទំនិញ": { en: "Cargo Transport Planning", url: "/views/transport-planning.html" },
 
-            "ការត្រួតពិនិត្យកុងតឺន័រខូច": { en: "Damaged Container Inspection", url: "/views/container-damage.html" },
+            "ការត្រួតពិនិត្យកុងតឺន័រខូច": { en: "Damaged Container Inspection", url: "/views/damaged-container.html" },
             "ការគ្រប់គ្រងទីតាំងកុងតឺន័រ": { en: "Container Yard Location Management", url: "/views/container-yard.html" },
-            "ការថែទាំ និងជួសជុល": { en: "Maintenance & Repair (M&R)", url: "/views/container-stock.html" },
-            "ការចេញកុងតឺន័រវិញ": { en: "Container Gate-Out", url: "/views/container-gateout.html" },
+            "ការថែទាំ និងជួសជុល": { en: "Maintenance & Repair (M&R)", url: "/views/container-repair.html" },
+            "ការចេញកុងតឺន័រវិញ": { en: "Container Gate-Out", url: "/views/container-gate-out.html" },
 
-            "ប្រតិបត្តិការនៅទីលាន": { en: "Yard Operations", url: "/views/tech-stuffing.html" },
+            "ប្រតិបត្តិការនៅទីលាន": { en: "Yard Operations", url: "/views/yard-operations.html" },
             "ការចូល / ចេញទំនិញ": { en: "Cargo Gate-In / Gate-Out", url: "/views/cargo-gate.html" },
             "ក្រុមសន្តិសុខ": { en: "Security Guard Team", url: "/views/tech-safety.html" },
 
-            "ប្រព័ន្ធ WMS / OMS": { en: "WMS & OMS Systems", url: "/views/it-wms.html" },
+            "ប្រព័ន្ធ WMS / OMS": { en: "WMS & OMS Systems", url: "/views/wms-oms.html" },
             "ប្រព័ន្ធ CCTV & បណ្តាញ": { en: "CCTV & Network Infrastructure", url: "/views/it-cctv.html" },
             "ការគ្រប់គ្រងទិន្នន័យ": { en: "Data Management & Security", url: "/views/it-data.html" },
 
             "ទំនាក់ទំនងជាមួយអតិថិជន": { en: "Customer Relations", url: "/views/cs-relations.html" },
-            "ការដោះស្រាយបញ្ហា / ការតវ៉ា": { en: "Dispute & Complaint Resolution", url: "/views/cs-complaints.html" },
-            "ជំនួយការផ្នែកស្វែងរកប្រភព": { en: "Sourcing & General Support", url: "/views/cs-support.html" },
+            "ការដោះស្រាយបញ្ហា / ការតវ៉ា": { en: "Dispute & Complaint Resolution", url: "/views/dispute-resolution.html" },
+            "ជំនួយការផ្នែកស្វែងរកប្រភព": { en: "Sourcing & General Support", url: "/views/sourcing-support.html" },
 
-            "ការគ្រប់គ្រងឯកសារ": { en: "Document Management", url: "/views/doc-management.html" },
-            "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ": { en: "Customs System Data Entry Management", url: "/views/doc-customs.html" },
-            "អ្នកកាន់ឯកសារ": { en: "Document Controller / Handler", url: "/views/doc-handler.html" },
+            "ការគ្រប់គ្រងឯកសារ": { en: "Document Management", url: "/views/document-management.html" },
+            "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ": { en: "Customs System Data Entry Management", url: "/views/customs-system-data.html" },
+            "អ្នកកាន់ឯកសារ": { en: "Document Controller / Handler", url: "/views/document-handlers.html" },
 
             /* មុខងារសម្រាប់ Bonded Warehouse (BWH) */
             "ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)": { en: "Bonded Warehouse Cargo In/Out Control", url: "/views/bwh-inout.html" },
-            "ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ": { en: "Duty-Unpaid Inventory Monitoring", url: "/views/bwh-inventory.html" },
-            "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ": { en: "Customs Permit & Document Control (BWH)", url: "/views/bwh-customs.html" }
+            "ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ": { en: "Duty-Unpaid Inventory Monitoring", url: "/views/duty-unpaid-inventory.html" },
+            "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ": { en: "Customs Permit & Document Control (BWH)", url: "/views/customs-permit-control.html" }
         };
 
         const departments = [
             { id: "HR_ADMIN", name: "ធនធានមនុស្ស & រដ្ឋបាល", roles: ["វត្តមាន ចេញ/ចូល", "ទ្រព្យសម្បត្តិ/ស្តុក និងការគ្រប់គ្រង សារពើភណ្ឌ", "ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល", "ប្រាក់បៀវត្សរ៍ - ដំណើរការប្រាក់ខែ & អត្ថប្រយោជន៍"] },
             { id: "ACC_FIN", name: "គណនេយ្យ & ហិរញ្ញវត្ថុ", roles: ["គណនេយ្យប្រាក់ចំណូល", "គណនេយ្យទទួល", "របាយការណ៍ហិរញ្ញវត្ថុ", "ការគ្រប់គ្រងថវិកា / ចំណាយ"] },
+            { id: "BILLING_CASHIER", name: "ផ្នែកវិក្កយបត្រ & ទូទាត់ប្រាក់ (Cashier)", roles: ["ការចេញវិក្កយបត្រ និងទូទាត់ប្រាក់ច្រកចេញចូល (Gate Billing & Cashier)", "ការគណនាថ្លៃឈ្នួលរក្សាទុកកុងតឺន័រ និងឃ្លាំង", "របាយការណ៍ចំណូលប្រចាំថ្ងៃ និងបារកិច្ចប្រាក់"] },
             { id: "TRANSPORT", name: "ផ្នែកដឹកជញ្ជូន", roles: ["ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន", "ការគ្រប់គ្រងអ្នកបើកបរ", "ការគ្រប់គ្រងប្រេងឥន្ធនៈ / ការថែទាំ", "ការរៀបចំផែនការដឹកជញ្ជូនទំនិញ"] },
             { id: "CONTAINER_MGT", name: "ផ្នែកគ្រប់គ្រងកុងតឺន័រ", roles: ["ការត្រួតពិនិត្យកុងតឺន័រខូច", "ការគ្រប់គ្រងទីតាំងកុងតឺន័រ", "ការថែទាំ និងជួសជុល", "ការចេញកុងតឺន័រវិញ"] },
             { id: "TECH_STUFFING", name: "ផ្នែកត្រួតពិនិត្យទីលានកុងតឺន័រ", roles: ["ប្រតិបត្តិការនៅទីលាន", "ការចូល / ចេញទំនិញ", "ក្រុមសន្តិសុខ"] },
@@ -491,7 +500,6 @@
                 document.getElementById('userInfoDisplay').style.display = 'flex';
                 document.getElementById('welcomeText').innerText = `${loggedUser.full_name} (${loggedUser.role})`;
                 
-                // បង្ហាញប៊ូតុងបង្កើត និងគ្រប់គ្រង User เฉพาะ Admin តែប៉ុណ្ណោះ (Supervisor ត្រូវបានលាក់)
                 if (loggedUser.role === 'ADMIN') {
                     document.getElementById('btnCreateUser').style.display = 'inline-block';
                     document.getElementById('btnManageUsers').style.display = 'inline-block';
@@ -501,7 +509,6 @@
         });
 
         function toggleDeptSelect(role) {
-            // បើជ្រើសរើសជា ADMIN ឬ SUPERVISOR គឺមិនចាំបាច់ជ្រើសរើសផ្នែក (deptGroup) ទេ ព្រោះមើលឃើញទាំងអស់
             document.getElementById('deptGroup').style.display = (role === 'ADMIN' || role === 'SUPERVISOR') ? 'none' : 'block';
         }
 
@@ -572,7 +579,6 @@
             document.getElementById('loginCard').style.display = 'block';
         }
 
-        // បើកផ្ទាំងគ្រប់គ្រង User
         async function openManageUsersModal() {
             document.getElementById('manageUsersModal').style.display = 'flex';
             loadUserList();
@@ -582,7 +588,6 @@
             document.getElementById('manageUsersModal').style.display = 'none';
         }
 
-        // ទាញយកបញ្ជី User មកបង្ហាញក្នុងតារាង
         async function loadUserList() {
             try {
                 const response = await fetch('/api/users');
@@ -621,7 +626,6 @@
             }
         }
 
-        // ប្ដូរ Status របស់ User (Active <-> Inactive)
         async function toggleUserStatus(userId, newStatus) {
             if (!confirm(`តើអ្នកពិតជាចង់ប្ដូរស្ថានភាព User នេះទៅជា "${newStatus}" ដែរឬទេ?`)) return;
 
@@ -654,7 +658,6 @@
             dashboardContainer.innerHTML = '';
 
             let filteredDepts = departments;
-            // ប្រសិនបើ Role មិនមែនជា ADMIN និង SUPERVISOR ទេ គឺត្រងយកតែផ្នែករបស់ខ្លួនឯង
             if (user.role !== "ADMIN" && user.role !== "SUPERVISOR") {
                 filteredDepts = departments.filter(dept => dept.id === user.dept_id);
             }
