@@ -6,7 +6,6 @@
     <title>ការចេញវិក្កយបត្រ និងទូទាត់ប្រាក់ច្រកចេញចូល (Gate Billing & Cashier) - ANT Dry Port</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary-color: #1e3c72;
@@ -299,11 +298,32 @@
             font-weight: 600;
             cursor: pointer;
         }
+
+        /* ស្ទីលសម្រាប់ពេលបោះពុម្ព (Print) */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #printableInvoice, #printableInvoice * {
+                visibility: visible;
+            }
+            #printableInvoice {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white;
+                padding: 20px;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
 
-    <header>
+    <header class="no-print">
         <div class="header-title">
             <h1>ការចេញវិក្កយបត្រ និងទូទាត់ប្រាក់ច្រកចេញចូល (Gate Billing & Cashier)</h1>
             <p>Gate Billing, Invoicing & Cashier System - ANT Dry Port</p>
@@ -314,7 +334,7 @@
         </div>
     </header>
 
-    <div class="container">
+    <div class="container no-print">
         <div class="action-bar">
             <div class="search-box">
                 <input type="text" id="searchInput" placeholder="ស្វែងរកតាមលេខកុងតឺន័រ ឬឈ្មោះម្ចាស់ទំនិញ..." onkeyup="filterTable()">
@@ -351,7 +371,7 @@
 
     <!-- Modal Billing & Payment -->
     <div id="billingModal" class="modal-overlay">
-        <div class="modal-card">
+        <div class="modal-card" id="printableInvoice">
             <div class="invoice-header">
                 <h2>ផែស្ងួត អេអិនធី (ANT DRY PORT)</h2>
                 <p>វិក្កយបត្រសេវាកម្មច្រកចេញចូល និងឃ្លាំង (Gate Invoicing & Cashier Receipt)</p>
@@ -391,7 +411,7 @@
                     <label><strong>ទឹកប្រាក់សរុប (Total Amount - $):</strong></label>
                     <input type="text" id="totalAmount" class="form-control" style="font-weight: bold; color: var(--primary-color); font-size: 16px;" readonly value="0.00">
                 </div>
-                <div class="form-group">
+                <div class="form-group no-print">
                     <label>ស្ថានភាពទូទាត់ (Payment Status):</label>
                     <select id="paymentStatus" class="form-control">
                         <option value="បានបង់ប្រាក់រួច (Paid)">បានបង់ប្រាក់រួច (Paid)</option>
@@ -399,8 +419,9 @@
                     </select>
                 </div>
 
-                <div class="modal-actions">
+                <div class="modal-actions no-print">
                     <button type="button" class="btn-secondary" onclick="closeModal()">បោះបង់</button>
+                    <button type="button" class="btn-primary" onclick="printCurrentInvoice()" style="background: var(--secondary-color);"><i class="fa-solid fa-print"></i> បោះពុម្ពវិក្កយបត្រ</button>
                     <button type="submit" class="btn-primary">រក្សាទុកវិក្កយបត្រ</button>
                 </div>
             </form>
@@ -423,7 +444,6 @@
         });
 
         async function fetchBillingData() {
-            // จำลองข้อมูลตัวอย่าง หรือดึงจาก API จริง
             billingData = [
                 { id: 1, invoice_no: 'INV-2026-001', container_number: 'TGBU 1234567', owner_name: 'ក្រុមហ៊ុន អេអិនធី ឡូជីស្ទិក', storage_fee: 50, handling_fee: 20, other_fee: 10, total_amount: 80, status: 'បានបង់ប្រាក់រួច (Paid)', date: '2026-10-16' },
                 { id: 2, invoice_no: 'INV-2026-002', container_number: 'MSCU 9876543', owner_name: 'ក្រុមហ៊ុន ខ្មែរ ត្រេឌីញ', storage_fee: 30, handling_fee: 20, other_fee: 0, total_amount: 50, status: 'មិនទាន់បង់ប្រាក់ (Unpaid)', date: '2026-10-17' }
@@ -516,7 +536,20 @@
         function printInvoice(id) {
             const item = billingData.find(d => d.id === id);
             if (!item) return;
-            alert(`កំពុងរៀបចំសេចក្តីព្រាងបោះពុម្ពវិក្កយបត្រលេខ៖ ${item.invoice_no} ជូនអតិថិជន ${item.owner_name}`);
+
+            // យកទិន្នន័យមកបំពេញក្នុង Modal សិនមុននឹង Print
+            document.getElementById('invoiceNoDisplay').innerText = item.invoice_no;
+            document.getElementById('containerNo').value = item.container_number;
+            document.getElementById('ownerName').value = item.owner_name;
+            document.getElementById('totalAmount').value = parseFloat(item.total_amount).toFixed(2);
+            document.getElementById('currentInvoiceDate').innerText = item.date;
+            document.getElementById('paymentStatus').value = item.status;
+
+            document.getElementById('billingModal').style.display = 'flex';
+        }
+
+        function printCurrentInvoice() {
+            window.print();
         }
 
         function filterTable() {
