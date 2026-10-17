@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ការចេញវិក្កយបត្រ និងទូទាត់ប្រាក់ច្រកចេញចូល (Gate Billing & Cashier) - ANT Dry Port</title>
+    <title>វិក្កយបត្រអាករ (Tax Invoice) - ANT Dry Port</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -13,10 +13,7 @@
             --bg-color: #f0f4f8;
             --card-bg: #ffffff;
             --text-main: #333333;
-            --border-color: #e2e8f0;
-            --success-color: #10b981;
-            --warning-color: #f59e0b;
-            --danger-color: #ef4444;
+            --border-color: #000000;
         }
 
         body {
@@ -30,323 +27,182 @@
         header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
-            padding: 20px 30px;
-            box-shadow: 0 4px 15px rgba(0, 198, 255, 0.4);
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-        }
-
-        header .header-title h1 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: 700;
-        }
-
-        header .header-title p {
-            margin: 4px 0 0 0;
-            font-size: 12px;
-            color: #dbeafe;
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.15);
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-
-        .btn-back {
-            background: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-family: 'Kantumruy Pro', sans-serif;
-            font-weight: 600;
-            font-size: 13px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .btn-back:hover {
-            background: white;
-            color: var(--primary-color);
         }
 
         .container {
-            max-width: 1400px;
-            margin: 30px auto;
-            padding: 0 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 15px;
         }
 
         .action-bar {
             display: flex;
             justify-content: space-between;
-            align-items: center;
             margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .search-box {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .search-box input {
-            flex: 1;
-            padding: 10px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-family: 'Kantumruy Pro', sans-serif;
-            font-size: 14px;
-            outline: none;
         }
 
         .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: var(--primary-color);
             color: white;
             border: none;
-            padding: 10px 18px;
-            border-radius: 8px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
             font-family: 'Kantumruy Pro', sans-serif;
             font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
         }
 
-        .btn-primary:hover {
-            opacity: 0.9;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-            margin-bottom: 30px;
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
+        /* ស្ទីលសម្រាប់ទម្រង់ វិក្កយបត្រអាករ ដូច Excel */
+        .invoice-box {
+            background: white;
+            padding: 30px;
+            border: 1px solid #ccc;
+            max-width: 900px;
+            margin: 0 auto;
+            color: #000;
             font-size: 13px;
         }
 
-        th, td {
-            padding: 12px 15px;
-            border-bottom: 1px solid var(--border-color);
-            white-space: nowrap;
+        .invoice-title-container {
+            text-align: center;
+            margin-bottom: 15px;
         }
 
-        th {
-            background-color: #f8fafc;
-            color: var(--primary-color);
+        .invoice-title-container h2 {
+            margin: 0;
+            font-size: 20px;
             font-weight: 700;
         }
 
-        tr:hover {
-            background-color: #fcfdfd;
+        .invoice-title-container h3 {
+            margin: 2px 0;
+            font-size: 16px;
+            font-weight: 700;
         }
 
-        .badge {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
+        .company-name {
+            font-size: 14px;
             font-weight: 600;
-            display: inline-block;
+            margin-top: 5px;
         }
 
-        .badge-unpaid {
-            background-color: #fef3c7;
-            color: #d97706;
-        }
-
-        .badge-paid {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-
-        .btn-action {
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
+        .address-text {
             font-size: 12px;
-            font-family: 'Kantumruy Pro', sans-serif;
-            font-weight: 600;
-            transition: opacity 0.2s;
+            margin-top: 3px;
         }
 
-        .btn-pay {
-            background-color: var(--success-color);
-            color: white;
+        .header-divider {
+            border-bottom: 2px solid #000;
+            margin: 10px 0 15px 0;
         }
 
-        .btn-print {
-            background-color: var(--secondary-color);
-            color: white;
-        }
-
-        /* Modal Invoice */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(15, 23, 42, 0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            width: 100%;
-            max-width: 750px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            max-height: 95vh;
-            overflow-y: auto;
-        }
-
-        .invoice-header {
-            text-align: center;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-        }
-
-        .invoice-header h2 {
-            margin: 0;
-            color: var(--primary-color);
-            font-size: 22px;
-        }
-
-        .invoice-header p {
-            margin: 4px 0 0 0;
-            font-size: 12px;
-            color: #64748b;
-        }
-
-        .invoice-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            font-size: 13px;
-            background: #f8fafc;
-            padding: 10px 15px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-        }
-
-        .form-row {
-            display: flex;
+        /* ប្លង់ព័ត៌មានផ្នែកលើ (Fields Grid) */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 15px;
+            margin-bottom: 15px;
         }
 
-        .form-row .form-group {
-            flex: 1;
-        }
-
-        .form-group {
-            margin-bottom: 10px;
-        }
-
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            font-size: 12px;
+        .info-row {
+            display: flex;
             margin-bottom: 4px;
-            color: #334155;
+            align-items: center;
         }
 
-        .form-control, .form-select {
+        .info-label {
+            width: 130px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            flex: 1;
+            border-bottom: 1px dotted #ccc;
+        }
+
+        .info-value input {
             width: 100%;
-            padding: 8px 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border: none;
+            outline: none;
             font-family: 'Kantumruy Pro', sans-serif;
             font-size: 13px;
-            box-sizing: border-box;
+            background: transparent;
         }
 
-        .signature-section {
+        /* តារាងទំនិញ / សេវាកម្ម */
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .invoice-table th, .invoice-table td {
+            border: 1px solid #000;
+            padding: 5px 8px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .invoice-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        .text-left { text-align: left !important; }
+        .text-right { text-align: right !important; }
+
+        /* ផ្នែកសរុបប្រាក់ */
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .summary-table td {
+            border: 1px solid #000;
+            padding: 5px 8px;
+            font-size: 12px;
+        }
+
+        .no-border-left { border-left: none !important; }
+        .no-border-right { border-right: none !important; }
+
+        /* ហត្ថលេខា */
+        .signature-container {
             display: flex;
             justify-content: space-between;
             margin-top: 30px;
+            padding: 0 30px;
             text-align: center;
+        }
+
+        .signature-title {
+            font-weight: bold;
             font-size: 13px;
         }
 
-        .signature-box {
-            width: 40%;
+        .signature-space {
+            height: 60px;
         }
 
-        .signature-box .line {
-            margin-top: 55px;
-            border-top: 1px dashed #333;
-            padding-top: 5px;
-            font-weight: 600;
-        }
-
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .btn-secondary {
-            background: #e2e8f0;
-            color: #334155;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            font-family: 'Kantumruy Pro', sans-serif;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        /* ស្ទីលសម្រាប់ពេលបោះពុម្ព (Print) */
+        /* ស្ទីលសម្រាប់ Print */
         @media print {
             body * {
                 visibility: hidden;
             }
-            #printableInvoice, #printableInvoice * {
+            #invoiceBox, #invoiceBox * {
                 visibility: visible;
             }
-            #printableInvoice {
+            #invoiceBox {
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 100%;
-                background: white;
-                padding: 15px;
-                box-shadow: none;
+                border: none;
+                padding: 0;
             }
             .no-print {
                 display: none !important;
@@ -358,359 +214,190 @@
 
     <header class="no-print">
         <div class="header-title">
-            <h1>ការចេញវិក្កយបត្រ និងទូទាត់ប្រាក់ច្រកចេញចូល (Gate Billing & Cashier)</h1>
-            <p>Gate Billing, Invoicing & Cashier System - ANT Dry Port</p>
+            <h1 style="margin:0; font-size: 18px;">ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រអាករ - ANT Dry Port</h1>
         </div>
-        <div class="user-info">
-            <a href="/" class="btn-back"><i class="fa-solid fa-house"></i> ទៅកាន់ទំព័រដើម</a>
-            <span id="welcomeUser"><i class="fa-solid fa-user me-1"></i> មន្ត្រីទូទាត់ប្រាក់ (Cashier)</span>
+        <div>
+            <a href="/" style="color: white; text-decoration: none; font-weight: 600;"><i class="fa-solid fa-house"></i> ទំព័រដើម</a>
         </div>
     </header>
 
-    <div class="container no-print">
-        <div class="action-bar">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="ស្វែងរកតាមលេខកុងតឺន័រ ឬឈ្មោះម្ចាស់ទំនិញ..." onkeyup="filterTable()">
-                <button class="btn-primary" onclick="filterTable()"><i class="fa-solid fa-search"></i></button>
-            </div>
-            <div>
-                <button class="btn-primary" onclick="openNewBillingModal()"><i class="fa-solid fa-plus"></i> បង្កើតវិក្កយបត្រថ្មី</button>
-            </div>
+    <div class="container">
+        <div class="action-bar no-print">
+            <h3>ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE)</h3>
+            <button class="btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> បោះពុម្ពវិក្កយបត្រ (Print)</button>
         </div>
 
-        <div class="card">
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ល.រ</th>
-                            <th>លេខវិក្កយបត្រ</th>
-                            <th>លេខកុងតឺន័រ / VIN</th>
-                            <th>ទំហំ / ប្រភេទ</th>
-                            <th>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន</th>
-                            <th>ចំនួនថ្ងៃ</th>
-                            <th>ទឹកប្រាក់សរុប ($ / ៛)</th>
-                            <th>ស្ថានភាពទូទាត់</th>
-                            <th>កាលបរិច្ឆេទ</th>
-                            <th style="text-align: center;">សកម្មភាព</th>
-                        </tr>
-                    </thead>
-                    <tbody id="billingTableBody">
-                        <!-- Populated Dynamically -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Billing & Payment Invoice -->
-    <div id="billingModal" class="modal-overlay">
-        <div class="modal-card" id="printableInvoice">
-            <div class="invoice-header">
-                <h2>ផែស្ងួត អេអិនធី (ANT DRY PORT)</h2>
-                <p>វិក្កយបត្រសេវាកម្មច្រកចេញចូល និងឃ្លាំង (Gate Invoicing & Cashier Receipt)</p>
-            </div>
+        <!-- ផ្ទាំងវិក្កយបត្រតាមទម្រង់ Excel -->
+        <div class="invoice-box" id="invoiceBox">
             
-            <!-- លេខវិក្កយបត្រ និងថ្ងៃខែនៅជាមួយគ្នា -->
-            <div class="invoice-info">
+            <!-- Header វិក្កយបត្រ -->
+            <div class="invoice-title-container">
+                <h2>វិក្កយបត្រអាករ</h2>
+                <h3>TAX INVOICE</h3>
+                <div class="company-name">ANT DRY PORT CO.,LTD (CAMBODIA) ឯ.ក</div>
+                <div>លេខអត្តសញ្ញាណកម្ម អាកប (VAT-TIN) ៖ K010-902503705</div>
+                <div class="address-text">អាសយដ្ឋាន ៖ ក្បាលដីលេខ ៤៥០ ផ្លូវបេតុង ភូមិត្រពាំងអញ្ចាញ សង្កាត់ប្រទះឡាង ខណ្ឌកំបូល រាជធានីភ្នំពេញ</div>
+            </div>
+
+            <div class="header-divider"></div>
+
+            <!-- ព័ត៌មានអតិថិជន និងកុងតឺន័រ -->
+            <div class="info-grid">
                 <div>
-                    <strong>លេខវិក្កយបត្រ៖</strong> <span id="invoiceNoDisplay" style="color: var(--primary-color); font-weight: bold;">INV-2026-001</span>
+                    <div class="info-row">
+                        <span class="info-label">អ្នកបង់ប្រាក់/Charge To:</span>
+                        <span class="info-value"><input type="text" id="chargeTo" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Seal No:</span>
+                        <span class="info-value"><input type="text" id="sealNo" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Booking No:</span>
+                        <span class="info-value"><input type="text" id="bookingNo" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Container No :</span>
+                        <span class="info-value"><input type="text" id="containerNo" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Remark :</span>
+                        <span class="info-value"><input type="text" id="remark" value=""></span>
+                    </div>
                 </div>
+
                 <div>
-                    <strong>ថ្ងៃខែចេញវិក្កយបត្រ៖</strong> <span id="currentInvoiceDate"></span>
+                    <div class="info-row">
+                        <span class="info-label">Date:</span>
+                        <span class="info-value"><input type="text" id="invDate" value="10/17/2026 2:23 PM"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Invoice No:</span>
+                        <span class="info-value"><input type="text" id="invoiceNo" value="INV-2026-001"></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Truck No Out:</span>
+                        <span class="info-value"><input type="text" id="truckOut" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Truck No In:</span>
+                        <span class="info-value"><input type="text" id="truckIn" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Owner:</span>
+                        <span class="info-value"><input type="text" id="owner" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Booking By:</span>
+                        <span class="info-value"><input type="text" id="bookingBy" value=""></span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Size:</span>
+                        <span class="info-value"><input type="text" id="size" value="40HC"></span>
+                    </div>
                 </div>
             </div>
 
-            <form id="billingForm" onsubmit="saveBilling(event)">
-                <input type="hidden" id="billingId">
+            <!-- តារាងសេវាកម្ម -->
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">ល.រ<br>No</th>
+                        <th style="width: 25%;">បរិយាយមុខទំនិញ<br>Description</th>
+                        <th style="width: 12%;">ទំហំទូ<br>Size</th>
+                        <th style="width: 12%;">ប្រភេទទូ<br>Status</th>
+                        <th style="width: 12%;">តម្លៃ<br>Rate($)</th>
+                        <th style="width: 8%;">បរិមាណ<br>QTY</th>
+                        <th style="width: 12%;">រយៈពេលរក្សាទូ<br>Duration</th>
+                        <th style="width: 14%;">សរុប<br>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td class="text-left"><input type="text" style="width:100%; border:none; outline:none;" value="Gate Fee"></td>
+                        <td><input type="text" style="width:100%; border:none; outline:none; text-align:center;" value="40HC"></td>
+                        <td><input type="text" style="width:100%; border:none; outline:none; text-align:center;" value="Full"></td>
+                        <td>$ <input type="number" id="rate" style="width:70%; border:none; outline:none; text-align:right;" value="5.00" oninput="calculateInvoice()"></td>
+                        <td><input type="number" id="qty" style="width:100%; border:none; outline:none; text-align:center;" value="1" oninput="calculateInvoice()"></td>
+                        <td><input type="number" id="duration" style="width:100%; border:none; outline:none; text-align:center;" value="0" oninput="calculateInvoice()"></td>
+                        <td class="text-right">$ <span id="amountDisplay">5.00</span></td>
+                    </tr>
+                </tbody>
+            </table>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>លេខកុងតឺន័រ ឬ លេខតួឡាន (Container / VIN):</label>
-                        <input type="text" id="containerNo" class="form-control" placeholder="ឧ. TGBU 1234567" required>
-                    </div>
-                    <div class="form-group">
-                        <label>ឈ្មោះម្ចាស់ទំនិញ / ក្រុមហ៊ុន (Owner / Company):</label>
-                        <input type="text" id="ownerName" class="form-control" placeholder="ឧ. ក្រុមហ៊ុន អេអិនធី ឡូជីស្ទិក" required>
-                    </div>
-                </div>
+            <!-- តារាងសរុបប្រាក់ និងព័ត៌មានពន្ធ -->
+            <table class="summary-table" style="margin-top: -1px;">
+                <tr>
+                    <td colspan="6" class="text-right" style="font-weight: bold; width: 72%;">សរុប / Total</td>
+                    <td class="text-right" style="width: 28%; font-weight: bold;">$ <span id="subTotalDisplay">5.00</span></td>
+                </tr>
+                <tr>
+                    <td style="width: 25%; font-weight: bold;">អត្រាប្តូរប្រាក់ជាExternal/Exch Rate In Riel:</td>
+                    <td style="width: 10%;">KHR</td>
+                    <td style="width: 15%; font-weight: bold;" class="text-right"><input type="number" id="exchRate" style="width:100%; border:none; outline:none; font-weight:bold; text-align:right;" value="4085" oninput="calculateInvoice()"></td>
+                    <td colspan="3" class="text-right" style="font-weight: bold;">អាករលើតម្លៃបន្ថែម / VAT 10%</td>
+                    <td class="text-right">$ <span id="vatDisplay">0.00</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;">សរុបជាអក្សរ:</td>
+                    <td colspan="2" style="font-style: italic; font-weight: bold; text-align:center;"><span id="khrTextDisplay">ពីរម៉ឺន បួនរយម្ភៃប្រាំរៀល</span></td>
+                    <td colspan="3" class="text-right" style="font-weight: bold;">សរុបួមជាដុល្លារ / Grand Total In USD</td>
+                    <td class="text-right" style="font-weight: bold;">$ <span id="grandTotalUSDDisplay">5.00</span></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;">The sum of USD:</td>
+                    <td colspan="2" style="font-style: italic; font-weight: bold; text-align:center;"><span id="usdTextDisplay">Five Dollars Only</span></td>
+                    <td colspan="3" class="text-right" style="font-weight: bold;">សរុបួមជាប្រាក់រៀល / Grand Total In KHR</td>
+                    <td class="text-right" style="font-weight: bold;">KHR <span id="grandTotalKHRDisplay">20,425.00</span></td>
+                </tr>
+            </table>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>ទំហំកុងតឺន័រ (Container Size):</label>
-                        <select id="containerSize" class="form-select">
-                            <option value="20'">20 ფტ (20 Feet)</option>
-                            <option value="40'" selected>40 ფტ (40 Feet)</option>
-                            <option value="45'">45 ფტ (45 Feet)</option>
-                            <option value="N/A">N/A (មិនមានកុងតឺន័រ)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>ប្រភេទកុងតឺន័រ (Container Type):</label>
-                        <select id="containerType" class="form-select">
-                            <option value="DC" selected>DC (Dry Van)</option>
-                            <option value="HC">HC (High Cube)</option>
-                            <option value="OT">OT (Open Top)</option>
-                            <option value="FR">FR (Flat Rack)</option>
-                            <option value="RF">RF (Reefer)</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>ស្ថានភាពក្នុងឃ្លាំង/ទីលាន (In Showroom/Yard):</label>
-                        <select id="locationStatus" class="form-select">
-                            <option value="ឃ្លាំងពន្ធដារ (Bonded Warehouse)">ឃ្លាំងពន្ធដារ (Bonded Warehouse)</option>
-                            <option value="ទីលានកុងតឺន័រ (Container Yard)">ទីលានកុងតឺន័រ (Container Yard)</option>
-                            <option value="ឃ្លាំងទូទៅ (General Warehouse)">ឃ្លាំងទូទៅ (General Warehouse)</option>
-                        </select>
-                    </div>
+            <!-- ផ្នែកហត្ថលេខា -->
+            <div class="signature-container">
+                <div>
+                    <div class="signature-title">អ្នកទទួល / Receiver Name</div>
+                    <div class="signature-space"></div>
+                    <div>..................................................</div>
                 </div>
+                <div>
+                    <div class="signature-title">អ្នករៀបចំ / Issue Name</div>
+                    <div class="signature-space"></div>
+                    <div>..................................................</div>
+                </div>
+            </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>ចំនួនថ្ងៃរក្សាទុក (Number of Days):</label>
-                        <input type="number" id="numDays" class="form-control" value="1" min="1" oninput="calculateTotal()">
-                    </div>
-                    <div class="form-group">
-                        <label>ថ្លៃឈ្នួលរក្សាទុកឃ្លាំង/ទីលាន ($):</label>
-                        <input type="number" step="0.01" id="storageFee" class="form-control" value="0.00" oninput="calculateTotal()">
-                    </div>
-                    <div class="form-group">
-                        <label>ថ្លៃឈ្នួលខ្លោងទ្វារ (Gate Fee - $):</label>
-                        <input type="number" step="0.01" id="gateFee" class="form-control" value="10.00" oninput="calculateTotal()">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>ថ្លៃលើកដាក់ទំនិញ ($):</label>
-                        <input type="number" step="0.01" id="handlingFee" class="form-control" value="20.00" oninput="calculateTotal()">
-                    </div>
-                    <div class="form-group">
-                        <label>ថ្លៃសេវាផ្សេងៗ / ឯកសារគយ ($):</label>
-                        <input type="number" step="0.01" id="otherFee" class="form-control" value="0.00" oninput="calculateTotal()">
-                    </div>
-                    <div class="form-group">
-                        <label>អត្រាប្តូរប្រាក់ (Exchange Rate - ៛/$):</label>
-                        <input type="number" id="exchangeRate" class="form-control" value="4100" oninput="calculateTotal()">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>អាករលើតម្លៃបន្ថែម (VAT 10% - $):</label>
-                        <input type="text" id="vatAmount" class="form-control" readonly value="0.00">
-                    </div>
-                    <div class="form-group">
-                        <label><strong>ទឹកប្រាក់សរុបជាដុល្លារ (Total USD):</strong></label>
-                        <input type="text" id="totalAmountUSD" class="form-control" style="font-weight: bold; color: var(--primary-color); font-size: 14px;" readonly value="30.00">
-                    </div>
-                    <div class="form-group">
-                        <label><strong>ទឹកប្រាក់សរុบជាប្រាក់រៀល (Total KHR):</strong></label>
-                        <input type="text" id="totalAmountKHR" class="form-control" style="font-weight: bold; color: var(--success-color); font-size: 14px;" readonly value="123,000 ៛">
-                    </div>
-                </div>
-
-                <div class="form-group no-print" style="margin-top: 10px;">
-                    <label>ស្ថានភាពទូទាត់ (Payment Status):</label>
-                    <select id="paymentStatus" class="form-control">
-                        <option value="បានបង់ប្រាក់រួច (Paid)">បានបង់ប្រាក់រួច (Paid)</option>
-                        <option value="មិនទាន់បង់ប្រាក់ (Unpaid)">មិនទាន់បង់ប្រាក់ (Unpaid)</option>
-                    </select>
-                </div>
-
-                <!-- ហត្ថលេខាសងខាង -->
-                <div class="signature-section">
-                    <div class="signature-box">
-                        <p><strong>តំណាងអតិថិជន / អ្នកបង់ប្រាក់</strong></p>
-                        <div class="line">ហត្ថលេខា និងឈ្មោះ</div>
-                    </div>
-                    <div class="signature-box">
-                        <p><strong>មន្ត្រីទូទាត់ប្រាក់ (Cashier)</strong></p>
-                        <div class="line">ហត្ថលេខា និងឈ្មោះ</div>
-                    </div>
-                </div>
-
-                <div class="modal-actions no-print">
-                    <button type="button" class="btn-secondary" onclick="closeModal()">បោះបង់</button>
-                    <button type="button" class="btn-primary" onclick="printCurrentInvoice()" style="background: var(--secondary-color);"><i class="fa-solid fa-print"></i> បោះពុម្ពវិក្កយបត្រ</button>
-                    <button type="submit" class="btn-primary">រក្សាទុកវិក្កយបត្រ</button>
-                </div>
-            </form>
         </div>
     </div>
 
     <script>
-        let billingData = [];
+        function calculateInvoice() {
+            const rate = parseFloat(document.getElementById('rate').value) || 0;
+            const qty = parseFloat(document.getElementById('qty').value) || 1;
+            const exchRate = parseFloat(document.getElementById('exchRate').value) || 4085;
 
+            // គណនា Amount
+            const amount = rate * qty;
+            document.getElementById('amountDisplay').innerText = amount.toFixed(2);
+            document.getElementById('subTotalDisplay').innerText = amount.toFixed(2);
+
+            // VAT 0% ដូចក្នុងរូបភាព Excel របស់បង
+            const vat = 0.00;
+            document.getElementById('vatDisplay').innerText = vat.toFixed(2);
+
+            // Grand Total USD
+            const grandTotalUSD = amount + vat;
+            document.getElementById('grandTotalUSDDisplay').innerText = grandTotalUSD.toFixed(2);
+
+            // Grand Total KHR
+            const grandTotalKHR = grandTotalUSD * exchRate;
+            document.getElementById('grandTotalKHRDisplay').innerText = grandTotalKHR.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        // ដំណើរការគណនាពេល Load ដំបូង
         document.addEventListener('DOMContentLoaded', () => {
-            const userStr = localStorage.getItem('ant_logged_user_info');
-            if (userStr) {
-                try {
-                    const user = JSON.parse(userStr);
-                    document.getElementById('welcomeUser').innerHTML = `<i class="fa-solid fa-user me-1"></i> ${user.full_name} (Cashier)`;
-                } catch(e) {}
-            }
-            document.getElementById('currentInvoiceDate').innerText = new Date().toISOString().split('T')[0];
-            fetchBillingData();
+            calculateInvoice();
         });
-
-        async function fetchBillingData() {
-            billingData = [
-                { id: 1, invoice_no: 'INV-2026-001', container_number: 'TGBU 1234567', size: '40\'', type: 'DC', owner_name: 'ក្រុមហ៊ុន អេអិនធី ឡូជីស្ទិក', days: 3, gate_fee: 10, storage_fee: 45, handling_fee: 20, other_fee: 5, vat: 8.00, total_usd: 88.00, total_khr: '360,800 ៛', status: 'បានបង់ប្រាក់រួច (Paid)', date: '2026-10-16' },
-                { id: 2, invoice_no: 'INV-2026-002', container_number: 'MSCU 9876543', size: '20\'', type: 'HC', owner_name: 'ក្រុមហ៊ុន ខ្មែរ ត្រេឌីញ', days: 1, gate_fee: 10, storage_fee: 15, handling_fee: 20, other_fee: 0, vat: 4.50, total_usd: 49.50, total_khr: '202,950 ៛', status: 'មិនទាន់បង់ប្រាក់ (Unpaid)', date: '2026-10-17' }
-            ];
-            renderTable(billingData);
-        }
-
-        function renderTable(data) {
-            const tbody = document.getElementById('billingTableBody');
-            tbody.innerHTML = '';
-
-            if (!data || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យវិក្កយបត្រក្នុងប្រព័ន្ធឡើយ</td></tr>`;
-                return;
-            }
-
-            data.forEach((item, index) => {
-                let badgeClass = item.status.includes('បានបង់') ? 'badge-paid' : 'badge-unpaid';
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td><strong>${item.invoice_no}</strong></td>
-                        <td>${item.container_number}</td>
-                        <td>${item.size} / ${item.type}</td>
-                        <td>${item.owner_name}</td>
-                        <td>${item.days} ថ្ងៃ</td>
-                        <td><strong>$${parseFloat(item.total_usd).toFixed(2)}</strong> (${item.total_khr})</td>
-                        <td><span class="badge ${badgeClass}">${item.status}</span></td>
-                        <td>${item.date}</td>
-                        <td style="text-align: center;">
-                            <button class="btn-action btn-pay" onclick="markAsPaid(${item.id})">ទូទាត់</button>
-                            <button class="btn-action btn-print" onclick="printInvoice(${item.id})"><i class="fa-solid fa-print"></i> បោះពុម្ព</button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        function calculateTotal() {
-            const days = parseInt(document.getElementById('numDays').value) || 1;
-            const storagePerDay = parseFloat(document.getElementById('storageFee').value) || 0;
-            const gate = parseFloat(document.getElementById('gateFee').value) || 0;
-            const handling = parseFloat(document.getElementById('handlingFee').value) || 0;
-            const other = parseFloat(document.getElementById('otherFee').value) || 0;
-            const rate = parseFloat(document.getElementById('exchangeRate').value) || 4100;
-            
-            // គណនាទឹកប្រាក់មុន VAT
-            const subtotal = (storagePerDay * days) + gate + handling + other;
-            
-            // គណនា VAT 10%
-            const vat = subtotal * 0.10;
-            document.getElementById('vatAmount').value = vat.toFixed(2);
-
-            // ទឹកប្រាក់សរុបជាដុល្លារ (រួមបញ្ចូល VAT)
-            const totalUSD = subtotal + vat;
-            document.getElementById('totalAmountUSD').value = totalUSD.toFixed(2);
-
-            // ទឹកប្រាក់សរុបជារៀល
-            const totalKHR = Math.round(totalUSD * rate);
-            document.getElementById('totalAmountKHR').value = totalKHR.toLocaleString() + ' ៛';
-        }
-
-        function openNewBillingModal() {
-            document.getElementById('billingForm').reset();
-            document.getElementById('billingId').value = '';
-            document.getElementById('invoiceNoDisplay').innerText = 'INV-2026-0' + (billingData.length + 1);
-            document.getElementById('currentInvoiceDate').innerText = new Date().toISOString().split('T')[0];
-            document.getElementById('gateFee').value = "10.00";
-            document.getElementById('handlingFee').value = "20.00";
-            document.getElementById('numDays').value = "1";
-            document.getElementById('exchangeRate').value = "4100";
-            calculateTotal();
-            document.getElementById('billingModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('billingModal').style.display = 'none';
-        }
-
-        function saveBilling(e) {
-            e.preventDefault();
-            const container_number = document.getElementById('containerNo').value.trim();
-            const owner_name = document.getElementById('ownerName').value.trim();
-            const size = document.getElementById('containerSize').value;
-            const type = document.getElementById('containerType').value;
-            const days = document.getElementById('numDays').value;
-            const total_usd = parseFloat(document.getElementById('totalAmountUSD').value) || 0;
-            const total_khr = document.getElementById('totalAmountKHR').value;
-            const status = document.getElementById('paymentStatus').value;
-
-            const newItem = {
-                id: billingData.length + 1,
-                invoice_no: document.getElementById('invoiceNoDisplay').innerText,
-                container_number,
-                size,
-                type,
-                owner_name,
-                days,
-                total_usd,
-                total_khr,
-                status,
-                date: new Date().toISOString().split('T')[0]
-            };
-
-            billingData.unshift(newItem);
-            renderTable(billingData);
-            closeModal();
-            alert('បានបង្កើត និងរក្សាទុកវិក្កយបត្រដោយជោគជ័យ!');
-        }
-
-        function markAsPaid(id) {
-            const item = billingData.find(d => d.id === id);
-            if (item) {
-                item.status = 'បានបង់ប្រាក់រួច (Paid)';
-                renderTable(billingData);
-                alert('បានកត់ត្រាការទូទាត់ប្រាក់ជោគជ័យ!');
-            }
-        }
-
-        function printInvoice(id) {
-            const item = billingData.find(d => d.id === id);
-            if (!item) return;
-
-            document.getElementById('invoiceNoDisplay').innerText = item.invoice_no;
-            document.getElementById('containerNo').value = item.container_number;
-            document.getElementById('ownerName').value = item.owner_name;
-            document.getElementById('containerSize').value = item.size || "40'";
-            document.getElementById('containerType').value = item.type || "DC";
-            document.getElementById('numDays').value = item.days || 1;
-            document.getElementById('gateFee').value = item.gate_fee || 10;
-            document.getElementById('storageFee').value = item.storage_fee || 0;
-            document.getElementById('handlingFee').value = item.handling_fee || 20;
-            document.getElementById('otherFee').value = item.other_fee || 0;
-            document.getElementById('exchangeRate').value = 4100;
-            document.getElementById('vatAmount').value = item.vat ? item.vat.toFixed(2) : "0.00";
-            document.getElementById('totalAmountUSD').value = parseFloat(item.total_usd).toFixed(2);
-            document.getElementById('totalAmountKHR').value = item.total_khr || "0 ៛";
-            document.getElementById('currentInvoiceDate').innerText = item.date;
-            document.getElementById('paymentStatus').value = item.status;
-
-            document.getElementById('billingModal').style.display = 'flex';
-        }
-
-        function printCurrentInvoice() {
-            window.print();
-        }
-
-        function filterTable() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = billingData.filter(item => 
-                item.container_number.toLowerCase().includes(query) || 
-                item.owner_name.toLowerCase().includes(query) ||
-                item.invoice_no.toLowerCase().includes(query)
-            );
-            renderTable(filtered);
-        }
     </script>
 </body>
 </html>
