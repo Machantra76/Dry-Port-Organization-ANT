@@ -70,11 +70,24 @@
             font-weight: 600;
             font-size: 13px;
             transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
         }
 
         .btn-action:hover {
             background: #ffffff;
             color: var(--primary-color);
+        }
+
+        .btn-tax-invoice {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-tax-invoice:hover {
+            background: #059669;
+            color: white;
         }
 
         .btn-logout {
@@ -391,6 +404,10 @@
         </div>
         <div class="user-info" id="userInfoDisplay" style="display: none;">
             <span id="welcomeText"><i class="fa-solid fa-user me-1"></i>...</span>
+            <!-- ប៊ូតុង TAX INVOICE ភ្ជាប់ទៅ file billing-cashier.html -->
+            <a href="billing-cashier.html" class="btn-action btn-tax-invoice">
+                <i class="fa-solid fa-file-invoice-dollar" style="margin-right: 5px;"></i>TAX INVOICE
+            </a>
             <button class="btn-action" id="btnCreateUser" onclick="openCreateUserModal()" style="display: none;">+ បង្កើត User</button>
             <button class="btn-action" id="btnManageUsers" onclick="openManageUsersModal()" style="display: none; background: #8b5cf6; color: white;">គ្រប់គ្រង User</button>
             <button class="btn-action btn-logout" onclick="handleLogout()">ចាកចេញ</button>
@@ -439,7 +456,6 @@
             "គណនេយ្យទទួល": { en: "Accounts Receivable", url: "/views/acc-receivable.html" },
             "របាយការណ៍ហិរញ្ញវត្ថុ": { en: "Financial Reporting", url: "/views/acc-finance.html" },
             "ការគ្រប់គ្រងថវិកា / ចំណាយ": { en: "Budget & Expense Control", url: "/views/acc-control.html" },
-            "វិក្កយបត្រពន្ធ (TAX INVOICE)": { en: "Tax Invoice & Billing", url: "billing-cashier.html" },
 
             "ការចាត់ចែងរថយន្ត & ដឹកជញ្ជូន": { en: "Fleet & Transport Dispatch", url: "/views/transport-fleet.html" },
             "ការគ្រប់គ្រងអ្នកបើកបរ": { en: "Driver Management", url: "/views/transport-drivers.html" },
@@ -470,7 +486,10 @@
             /* មុខងារសម្រាប់ Bonded Warehouse (BWH) */
             "ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)": { en: "Bonded Warehouse Cargo In/Out Control", url: "/views/bwh-inout.html" },
             "ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ": { en: "Duty-Unpaid Inventory Monitoring", url: "/views/bwh-inventory.html" },
-            "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ": { en: "Customs Permit & Document Control (BWH)", url: "/views/bwh-customs.html" }
+            "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ": { en: "Customs Permit & Document Control (BWH)", url: "/views/bwh-customs.html" },
+
+            /* បន្ថែម Tax Invoice ទៅក្នុងបញ្ជី roleDetails ប្រសិនបើចង់ប្រើក្នុង Card គណនេយ្យ */
+            "វិក្កយបត្រពន្ធ (TAX INVOICE)": { en: "Tax Invoice & Billing", url: "billing-cashier.html" }
         };
 
         const departments = [
@@ -492,7 +511,7 @@
                 document.getElementById('userInfoDisplay').style.display = 'flex';
                 document.getElementById('welcomeText').innerText = `${loggedUser.full_name} (${loggedUser.role})`;
                 
-                // បង្ហាញប៊ូតុងបង្កើត និងគ្រប់គ្រង User เฉพาะ Admin តែប៉ុណ្ណោះ
+                // បង្ហាញប៊ូតុងបង្កើត និងគ្រប់គ្រង User เฉพาะ Admin តែប៉ុណ្ណោះ (Supervisor ត្រូវបានលាក់)
                 if (loggedUser.role === 'ADMIN') {
                     document.getElementById('btnCreateUser').style.display = 'inline-block';
                     document.getElementById('btnManageUsers').style.display = 'inline-block';
@@ -502,6 +521,7 @@
         });
 
         function toggleDeptSelect(role) {
+            // បើជ្រើសរើសជា ADMIN ឬ SUPERVISOR គឺមិនចាំបាច់ជ្រើសរើសផ្នែក (deptGroup) ទេ ព្រោះមើលឃើញទាំងអស់
             document.getElementById('deptGroup').style.display = (role === 'ADMIN' || role === 'SUPERVISOR') ? 'none' : 'block';
         }
 
@@ -654,6 +674,7 @@
             dashboardContainer.innerHTML = '';
 
             let filteredDepts = departments;
+            // ប្រសិនបើ Role មិនមែនជា ADMIN និង SUPERVISOR ទេ គឺត្រងយកតែផ្នែករបស់ខ្លួនឯង
             if (user.role !== "ADMIN" && user.role !== "SUPERVISOR") {
                 filteredDepts = departments.filter(dept => dept.id === user.dept_id);
             }
