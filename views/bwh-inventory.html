@@ -126,7 +126,6 @@
             opacity: 0.9;
         }
 
-        /* Style សម្រាប់ Button Disabled */
         button:disabled {
             background-color: #cbd5e1 !important;
             color: #94a3b8 !important;
@@ -179,6 +178,28 @@
             color: #d97706;
         }
 
+        /* ស្ទីលសម្រាប់បង្រួម PDF ឱ្យត្រូវទំហំ A4 Landscape ស្អាតមិនដាច់ */
+        .pdf-export-mode {
+            width: 100% !important;
+        }
+        .pdf-export-mode table {
+            font-size: 8.5px !important;
+            width: 100% !important;
+            table-layout: fixed !important;
+        }
+        .pdf-export-mode th, .pdf-export-mode td {
+            padding: 5px 4px !important;
+            white-space: normal !important;
+            word-wrap: break-word !important;
+        }
+        .pdf-export-mode .badge {
+            font-size: 8px !important;
+            padding: 2px 6px !important;
+        }
+        .pdf-export-mode .no-print {
+            display: none !important;
+        }
+
         /* Modal */
         .modal-overlay {
             position: fixed;
@@ -226,22 +247,22 @@
 
         <div class="card" id="pdfContent">
             <div style="padding: 15px 20px; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: none;" id="pdfHeaderTitle">
-                <h3 style="margin: 0; color: var(--primary-color); font-size: 16px;">របាយការណ៍ស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory Report)</h3>
+                <h3 style="margin: 0; color: var(--primary-color); font-size: 15px;">របាយការណ៍ស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory Report)</h3>
             </div>
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
-                            <th>ល.រ</th>
-                            <th>លេខកុងតឺន័រ</th>
-                            <th>លេខតួឡាន (VIN)</th>
-                            <th>ឈ្មោះទំនិញ / ម៉ាកឡាន</th>
-                            <th>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន</th>
-                            <th>កាលបរិច្ឆេទចូល</th>
-                            <th>បរិមាណស្តុក</th>
-                            <th>ទីតាំងក្នុងឃ្លាំង</th>
-                            <th>ស្ថានភាពពន្ធ</th>
-                            <th style="text-align: center;" class="no-print">សកម្មភាព</th>
+                            <th style="width: 4%;">ល.រ</th>
+                            <th style="width: 12%;">លេខកុងតឺន័រ</th>
+                            <th style="width: 14%;">លេខតួឡាន (VIN)</th>
+                            <th style="width: 18%;">ឈ្មោះទំនិញ / ម៉ាកឡាន</th>
+                            <th style="width: 14%;">ម្ចាស់ទំនិញ / ក្រុមហ៊ុន</th>
+                            <th style="width: 10%;">កាលបរិច្ឆេទចូល</th>
+                            <th style="width: 10%;">បរិមាណស្តុក</th>
+                            <th style="width: 9%;">ទីតាំងក្នុងឃ្លាំង</th>
+                            <th style="width: 9%;">ស្ថានភាពពន្ធ</th>
+                            <th style="width: 0%; display: none;" class="no-print">សកម្មភាព</th>
                         </tr>
                     </thead>
                     <tbody id="inventoryTableBody">
@@ -321,7 +342,6 @@
                 }
             }
 
-            // ត្រួតពិនិត្យសិទ្ធិ បើជា BWH Department ឱ្យលាក់ប៊ូតុងបញ្ចូលស្តុកថ្មី
             if (checkIsBWHDepartment()) {
                 const addBtn = document.getElementById('btnAddStock');
                 if (addBtn) addBtn.style.display = 'none';
@@ -505,13 +525,23 @@
             const element = document.getElementById('pdfContent');
             const title = document.getElementById('pdfHeaderTitle');
             title.style.display = 'block';
+
+            element.classList.add('pdf-export-mode');
+
             html2pdf().from(element).set({
                 margin: 5,
                 filename: 'Duty_Unpaid_Inventory_Report.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-            }).save().then(() => { title.style.display = 'none'; });
+            }).save().then(() => { 
+                element.classList.remove('pdf-export-mode');
+                title.style.display = 'none'; 
+            }).catch(err => {
+                console.error('PDF Export Error:', err);
+                element.classList.remove('pdf-export-mode');
+                title.style.display = 'none';
+            });
         }
 
         function filterTable() {
