@@ -90,6 +90,7 @@
             background: #ef4444; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
         }
 
+        /* Style សម្រាប់ Button Disabled */
         button:disabled {
             background-color: #cbd5e1 !important;
             color: #94a3b8 !important;
@@ -121,34 +122,6 @@
         .form-control, .form-select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-family: 'Kantumruy Pro', sans-serif; outline: none; }
         .form-row { display: flex; gap: 15px; }
         .form-row .form-group { flex: 1; }
-
-        /* Styling សម្រាប់ពេល Print ឬ PDF គឺលាក់ Element ណាដែលមាន class no-print */
-        @media print {
-            .no-print {
-                display: none !important;
-            }
-        }
-
-        #pdfContent {
-            background: #ffffff;
-            padding: 10px;
-        }
-
-        #pdfContent table {
-            width: 100% !important;
-            font-size: 10px !important;
-        }
-
-        #pdfContent th, #pdfContent td {
-            padding: 6px 8px !important;
-            white-space: normal !important;
-            word-break: break-word;
-        }
-
-        #pdfContent .badge {
-            font-size: 9px !important;
-            padding: 2px 6px !important;
-        }
     </style>
 </head>
 <body>
@@ -199,7 +172,6 @@
                             <th>កាលបរិច្ឆេទចេញ</th>
                             <th>មន្ត្រីទទួលបន្ទុក</th>
                             <th>ស្ថានភាព</th>
-                            <!-- បានបន្ថែម class="no-print" ទីនេះ ដើម្បីលាក់ជួរឈរ "សកម្មភាព" ពេលទាញយក PDF -->
                             <th style="text-align: center;" class="no-print">សកម្មភាព</th>
                         </tr>
                     </thead>
@@ -390,6 +362,7 @@
             const deleteDisabledAttr = isBWHDepartment ? 'disabled' : '';
 
             data.forEach((item, index) => {
+                // ពិនិត្យមើលថាតើមាន លេខ Manifest រួចរាល់ហើយឬยัง (បើគ្មាន គឺ Enable ធម្មតា)
                 const isRegistered = item.manifest_number && item.manifest_number.trim() !== '';
                 
                 const editBtnStyle = isRegistered ? 'background: #cbd5e1; color: #64748b; cursor: not-allowed; pointer-events: none;' : '';
@@ -551,24 +524,14 @@
             title.style.display = 'block';
 
             const options = {
-                margin: [10, 8, 10, 8],
-                filename: `Customs_Permit_Report_${new Date().toISOString().slice(0, 10)}.pdf`,
+                margin: 5,
+                filename: 'Customs_Permit_Report.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true,
-                    logging: false,
-                    scrollX: 0,
-                    scrollY: 0
-                },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
             html2pdf().from(element).set(options).save().then(() => {
-                title.style.display = 'none';
-            }).catch(err => {
-                console.error('PDF Export Error:', err);
                 title.style.display = 'none';
             });
         }
