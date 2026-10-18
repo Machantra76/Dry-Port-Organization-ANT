@@ -272,6 +272,28 @@
             box-shadow: none !important;
         }
 
+        /* ស្ទីលសម្រាប់បង្រួម Font Size ពេលទាញយកជា PDF ឱ្យចេញពេញតារាងល្អ */
+        .pdf-export-mode {
+            width: 100% !important;
+        }
+        .pdf-export-mode table {
+            font-size: 8.5px !important;
+            width: 100% !important;
+            table-layout: fixed !important;
+        }
+        .pdf-export-mode th, .pdf-export-mode td {
+            padding: 5px 3px !important;
+            white-space: normal !important;
+            word-wrap: break-word !important;
+        }
+        .pdf-export-mode .badge {
+            font-size: 8px !important;
+            padding: 2px 6px !important;
+        }
+        .pdf-export-mode .no-print {
+            display: none !important;
+        }
+
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -379,22 +401,22 @@
 
         <div class="card" id="pdfContent">
             <div style="padding: 15px 20px; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: none;" id="pdfHeaderTitle">
-                <h3 style="margin: 0; color: var(--primary-color); font-size: 16px;">របាយការណ៍ឃ្លាំងទំនិញ និងយានយន្តពន្ធដារ (Bonded Warehouse Report)</h3>
+                <h3 style="margin: 0; color: var(--primary-color); font-size: 15px;">របាយការណ៍ឃ្លាំងទំនិញ និងយានយន្តពន្ធដារ (Bonded Warehouse Report)</h3>
             </div>
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
-                            <th>ល.រ</th>
-                            <th>លេខកុងតឺន័រ</th>
-                            <th>លេខតួឡាន (VIN)</th>
-                            <th>ឈ្មោះទំនិញ / ម៉ាកឡាន</th>
-                            <th>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន</th>
-                            <th>ប្រភេទ</th>
-                            <th>កាលបរិច្ឆេទចូល</th>
-                            <th>ចំនួនថ្ងៃ</th>
-                            <th>ស្ថានភាពគយ</th>
-                            <th style="text-align: center;" class="no-print">សកម្មភាព</th>
+                            <th style="width: 4%;">ល.រ</th>
+                            <th style="width: 11%;">លេខកុងតឺន័រ</th>
+                            <th style="width: 14%;">លេខតួឡាន (VIN)</th>
+                            <th style="width: 18%;">ឈ្មោះទំនិញ / ម៉ាកឡាន</th>
+                            <th style="width: 14%;">ម្ចាស់ទំនិញ / ក្រុមហ៊ុន</th>
+                            <th style="width: 8%;">ប្រភេទ</th>
+                            <th style="width: 10%;">កាលបរិច្ឆេទចូល</th>
+                            <th style="width: 9%;">ចំនួនថ្ងៃ</th>
+                            <th style="width: 12%;">ស្ថានភាពគយ</th>
+                            <th style="width: 0%; display: none;" class="no-print">សកម្មភាព</th>
                         </tr>
                     </thead>
                     <tbody id="bwhTableBody">
@@ -489,7 +511,7 @@
             if (isNaN(entryDate.getTime())) return 0;
 
             const status = (item.customs_status || item.status || '').toLowerCase();
-            let targetDate = new Date(); // កាលបរិច្ឆេទបច្ចុប្បន្ន
+            let targetDate = new Date();
             
             if (status.includes('បានបង់ពន្ធរួច') || status.includes('duty paid') || status.includes('released') || status.includes('out')) {
                 const updateRaw = item.updated_at || item.release_date || item.out_date;
@@ -538,7 +560,6 @@
                 let badgeClass = movementType === 'IN' ? 'badge-in' : 'badge-out';
                 let typeText = movementType === 'IN' ? 'ចូល (IN)' : 'ចេញ (OUT)';
                 
-                // 🛑 កាត់បង្ហាញត្រឹមថ្ងៃខែឆ្នាំ (YYYY-MM-DD)
                 let rawDate = item.record_date || item.date || item.created_at || item.in_date || '';
                 let recordDate = rawDate ? rawDate.split('T')[0].split(' ')[0] : '-';
                 
@@ -599,7 +620,6 @@
         async function renewRecord(id, currentTotalDays) {
             if (confirm(`តើអ្នកពិតជាចង់បន្តកាលបរិច្ឆេទថ្មីមែនទេ? (ចំនួនថ្ងៃសរុប ${currentTotalDays} ថ្ងៃ នឹងត្រូវរក្សាទុកជាប្រវត្តិថ្ងៃចាស់)`)) {
                 try {
-                    // 🛑 យកត្រឹមថ្ងៃខែឆ្នាំបច្ចុប្បន្ន (YYYY-MM-DD) មិនយកម៉ោង
                     const todayDate = new Date().toISOString().split('T')[0];
 
                     const res = await fetch(`/api/bwh-records/${id}/renew`, {
@@ -635,7 +655,6 @@
             const movement_type = document.getElementById('movementType').value;
             const customs_status = document.getElementById('customsStatus').value;
 
-            // 🛑 កំណត់យកត្រឹមថ្ងៃខែឆ្នាំ (YYYY-MM-DD)
             const todayDate = new Date().toISOString().split('T')[0];
 
             const payload = {
@@ -732,13 +751,17 @@
             document.getElementById('bwhModal').style.display = 'none';
         }
 
+        /* មុខងារ Export PDF ដែលបានបង្រួម Font size និងរៀបទំហំជួរឈរពេញលេញ */
         function exportToPDF() {
             const element = document.getElementById('pdfContent');
             const pdfTitle = document.getElementById('pdfHeaderTitle');
             pdfTitle.style.display = 'block';
 
+            // បន្ថែម Class បង្រួម Font
+            element.classList.add('pdf-export-mode');
+
             const options = {
-                margin:       5,
+                margin:       [6, 6, 6, 6],
                 filename:     'Bonded_Warehouse_Vehicle_Report.pdf',
                 image:        { type: 'jpeg', quality: 0.98 },
                 html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
@@ -746,6 +769,11 @@
             };
             
             html2pdf().from(element).set(options).save().then(() => {
+                element.classList.remove('pdf-export-mode');
+                pdfTitle.style.display = 'none';
+            }).catch(err => {
+                console.error('PDF Export Error:', err);
+                element.classList.remove('pdf-export-mode');
                 pdfTitle.style.display = 'none';
             });
         }
