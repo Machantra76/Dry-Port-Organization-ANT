@@ -99,30 +99,14 @@
             box-shadow: none !important;
         }
 
-        .card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color); width: 100%; }
-        .table-responsive { width: 100%; overflow-x: auto; }
+        .card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color); }
+        .table-responsive { overflow-x: auto; }
 
-        /* ការកំណត់ទំហំตារាង និងខ្នាត Width ជួរឈរនីមួយៗ ដើម្បីការពារការរញ៉េរញ៉ៃពេល Print PDF */
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 10px; table-layout: fixed; }
-        th, td { padding: 6px 8px; border-bottom: 1px solid var(--border-color); word-wrap: break-word; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
         th { background-color: #f8fafc; color: var(--primary-color); font-weight: 700; }
 
-        /* កំណត់ទំហំ Width តាមជួរឈរនីមួយៗ (សរុបស្មើ 100%) */
-        table th:nth-child(1), table td:nth-child(1) { width: 4%; text-align: center; } /* ល.រ */
-        table th:nth-child(2), table td:nth-child(2) { width: 6%; text-align: center; } /* ប្រភេទ */
-        table th:nth-child(3), table td:nth-child(3) { width: 8%; } /* លេខលិខិត */
-        table th:nth-child(4), table td:nth-child(4) { width: 8%; } /* Reg No */
-        table th:nth-child(5), table td:nth-child(5) { width: 6%; } /* Manifest */
-        table th:nth-child(6), table td:nth-child(6) { width: 7%; } /* កុងតឺន័រ */
-        table th:nth-child(7), table td:nth-child(7) { width: 9%; } /* VIN */
-        table th:nth-child(8), table td:nth-child(8) { width: 11%; } /* ឈ្មោះទំនិញ */
-        table th:nth-child(9), table td:nth-child(9) { width: 9%; } /* ក្រុមហ៊ុន */
-        table th:nth-child(10), table td:nth-child(10) { width: 9%; } /* ប្រភេទលិខិត */
-        table th:nth-child(11), table td:nth-child(11) { width: 7%; } /* កាលបរិច្ឆេទ */
-        table th:nth-child(12), table td:nth-child(12) { width: 8%; } /* មន្ត្រី */
-        table th:nth-child(13), table td:nth-child(13) { width: 8%; text-align: center; } /* ស្ថានភាព */
-
-        .badge { padding: 3px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; display: inline-block; }
+        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
         .badge-active { background-color: #d1fae5; color: #065f46; }
         .badge-type { background-color: #e0f2fe; color: #0369a1; font-weight: 700; }
 
@@ -188,7 +172,7 @@
                             <th>កាលបរិច្ឆេទចេញ</th>
                             <th>មន្ត្រីទទួលបន្ទុក</th>
                             <th>ស្ថានភាព</th>
-                            <th style="text-align: center; display: none;" class="pdf-action-th">សកម្មភាព</th>
+                            <th style="text-align: center;" class="no-print">សកម្មភាព</th>
                         </tr>
                     </thead>
                     <tbody id="permitTableBody">
@@ -378,6 +362,7 @@
             const deleteDisabledAttr = isBWHDepartment ? 'disabled' : '';
 
             data.forEach((item, index) => {
+                // ពិនិត្យមើលថាតើមាន លេខ Manifest រួចរាល់ហើយឬยัง (បើគ្មាន គឺ Enable ធម្មតា)
                 const isRegistered = item.manifest_number && item.manifest_number.trim() !== '';
                 
                 const editBtnStyle = isRegistered ? 'background: #cbd5e1; color: #64748b; cursor: not-allowed; pointer-events: none;' : '';
@@ -533,23 +518,17 @@
             document.getElementById('issueDate').value = new Date().toISOString().slice(0, 10);
         }
 
-        // មុខងារ exportToPDF ជាមួយ windowWidth 1200px ដើម្បីកុំឱ្យធ្លាក់ជួរ ឬរញ៉េរញ៉ៃ
         function exportToPDF() {
             const element = document.getElementById('pdfContent');
             const title = document.getElementById('pdfHeaderTitle');
             title.style.display = 'block';
 
             const options = {
-                margin:       [5, 5, 5, 5],
-                filename:     'Customs_Permit_Report.pdf',
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { 
-                    scale: 2, 
-                    useCORS: true, 
-                    letterRendering: true,
-                    windowWidth: 1200 
-                },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                margin: 5,
+                filename: 'Customs_Permit_Report.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
             html2pdf().from(element).set(options).save().then(() => {
