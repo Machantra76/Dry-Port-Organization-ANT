@@ -102,9 +102,10 @@
         .card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color); }
         .table-responsive { overflow-x: auto; }
 
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
-        th { background-color: #f8fafc; color: var(--primary-color); font-weight: 700; }
+        /* បានកែសម្រួល font-size និង word-break ដើម្បីការពារការដាច់កៀនពេល Print PDF */
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 11px; }
+        th, td { padding: 10px 12px; border-bottom: 1px solid var(--border-color); word-break: break-word; }
+        th { background-color: #f8fafc; color: var(--primary-color); font-weight: 700; white-space: nowrap; }
 
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
         .badge-active { background-color: #d1fae5; color: #065f46; }
@@ -362,7 +363,6 @@
             const deleteDisabledAttr = isBWHDepartment ? 'disabled' : '';
 
             data.forEach((item, index) => {
-                // ពិនិត្យមើលថាតើមាន លេខ Manifest រួចរាល់ហើយឬยัง (បើគ្មាន គឺ Enable ធម្មតា)
                 const isRegistered = item.manifest_number && item.manifest_number.trim() !== '';
                 
                 const editBtnStyle = isRegistered ? 'background: #cbd5e1; color: #64748b; cursor: not-allowed; pointer-events: none;' : '';
@@ -518,17 +518,18 @@
             document.getElementById('issueDate').value = new Date().toISOString().slice(0, 10);
         }
 
+        // មុខងារ exportToPDF ដែលបានកែសម្រួលទំហំ margin និង scale ត្រឹមត្រូវ
         function exportToPDF() {
             const element = document.getElementById('pdfContent');
             const title = document.getElementById('pdfHeaderTitle');
             title.style.display = 'block';
 
             const options = {
-                margin: 5,
-                filename: 'Customs_Permit_Report.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                margin:       [10, 10, 10, 10],
+                filename:     'Customs_Permit_Report.pdf',
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 1.5, useCORS: true, letterRendering: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
             html2pdf().from(element).set(options).save().then(() => {
