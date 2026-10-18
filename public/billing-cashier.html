@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>វិក្កយបត្រអាករ (Tax Invoice) - ANT Dry Port</title>
+    <title>ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រ - ANT Dry Port</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -45,6 +45,7 @@
             margin-bottom: 20px;
             flex-wrap: wrap;
             gap: 10px;
+            align-items: center;
         }
 
         .btn-primary {
@@ -60,6 +61,17 @@
 
         .btn-success {
             background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-weight: 600;
+        }
+
+        .btn-toggle {
+            background: #f59e0b;
             color: white;
             border: none;
             padding: 8px 16px;
@@ -91,7 +103,7 @@
             font-size: 11px;
         }
 
-        /* ស្ទីលសម្រាប់ទម្រង់ វិក្កយបត្រអាករ ដូច Excel */
+        /* ស្ទីលសម្រាប់ទម្រង់ វិក្កយបត្រ */
         .invoice-box {
             background: white;
             padding: 30px;
@@ -252,7 +264,7 @@
 
     <header class="no-print">
         <div class="header-title">
-            <h1 style="margin:0; font-size: 18px;">ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រអាករ - ANT Dry Port</h1>
+            <h1 style="margin:0; font-size: 18px;">ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រ - ANT Dry Port</h1>
         </div>
         <div>
             <a href="/" style="color: white; text-decoration: none; font-weight: 600;"><i class="fa-solid fa-house"></i> ទំព័រដើម</a>
@@ -261,23 +273,24 @@
 
     <div class="container">
         <div class="action-bar no-print">
-            <h3>ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE) & Database Sync</h3>
+            <h3 id="modeTitle">ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE)</h3>
             <div>
+                <button class="btn-toggle" onclick="toggleInvoiceMode()"><i class="fa-solid fa-sync"></i> ប្ដូរប្រភេទ: <span id="modeButtonText">វិក្កយបត្រធម្មតា (Commercial)</span></button>
                 <button class="btn-add-row no-print" onclick="addRow()"><i class="fa-solid fa-plus"></i> បន្ថែមជួរមុខទំនិញ</button>
                 <button class="btn-success" onclick="saveInvoiceToDB()"><i class="fa-solid fa-cloud-arrow-up"></i> រក្សាទុកចូល Server</button>
                 <button class="btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> បោះពុម្ព</button>
             </div>
         </div>
 
-        <!-- ផ្ទាំងវិក្កយបត្រតាមទម្រង់ Excel -->
+        <!-- ផ្ទាំងវិក្កយបត្រ -->
         <div class="invoice-box" id="invoiceBox">
             
-            <!-- Header វិក្កយបត្រ -->
+            <!-- Header វិក្កយបត្រ (ប្រែប្រួលតាម Mode) -->
             <div class="invoice-title-container">
-                <h2>វិក្កយបត្រអាករ</h2>
-                <h3>TAX INVOICE</h3>
+                <h2 id="invMainTitle">វិក្កយបត្រអាករ</h2>
+                <h3 id="invSubTitle">TAX INVOICE</h3>
                 <div class="company-name">ANT DRY PORT CO.,LTD (CAMBODIA) ឯ.ក</div>
-                <div>លេខអត្តសញ្ញាណកម្ម អាកប (VAT-TIN) ៖ K010-902503705</div>
+                <div id="vatTinSection">លេខអត្តសញ្ញាណកម្ម អាកប (VAT-TIN) ៖ K010-902503705</div>
                 <div class="address-text">អាសយដ្ឋាន ៖ ក្បាលដីលេខ ៤៥០ ផ្លូវបេតុង ភូមិត្រពាំងអញ្ចាញ សង្កាត់ប្រទះឡាង ខណ្ឌកំបូល រាជធានីភ្នំពេញ</div>
             </div>
 
@@ -340,7 +353,7 @@
                 </div>
             </div>
 
-            <!-- តារាងសេវាកម្ម (អាចបន្ថែមជួរបាន) -->
+            <!-- តារាងសេវាកម្ម -->
             <table class="invoice-table">
                 <thead>
                     <tr>
@@ -360,13 +373,13 @@
                 </tbody>
             </table>
 
-            <!-- តារាងសរុបប្រាក់ និងព័ត៌មានពន្ធ -->
+            <!-- តារាងសរុបប្រាក់ និងព័ត៌មានពន្ធ (ប្រែប្រួលតាម Mode) -->
             <table class="summary-table" style="margin-top: -1px;">
                 <tr>
                     <td colspan="7" class="text-right" style="font-weight: bold; width: 77%;">សរុប / Total</td>
                     <td class="text-right" style="width: 23%; font-weight: bold;">$ <span id="subTotalDisplay">0.00</span></td>
                 </tr>
-                <tr>
+                <tr id="vatRow">
                     <td style="width: 25%; font-weight: bold;">Exch Rate In Riel:</td>
                     <td style="width: 10%;">KHR</td>
                     <td style="width: 15%; font-weight: bold;" class="text-right"><input type="number" id="exchRate" style="width:100%; border:none; outline:none; font-weight:bold; text-align:right;" value="4085" oninput="calculateInvoice()"></td>
@@ -376,13 +389,13 @@
                 <tr>
                     <td style="font-weight: bold;">សរុបជាអក្សរ:</td>
                     <td colspan="2" style="font-style: italic; font-weight: bold; text-align:center;"><span id="khrTextDisplay">សូន្យរៀល</span></td>
-                    <td colspan="4" class="text-right" style="font-weight: bold;">សរុបួមជាដុល្លារ / Grand Total In USD</td>
+                    <td colspan="4" class="text-right" style="font-weight: bold;" id="grandTotalTextUSD">សរុបបូកជាដុល្លារ / Grand Total In USD</td>
                     <td class="text-right" style="font-weight: bold;">$ <span id="grandTotalUSDDisplay">0.00</span></td>
                 </tr>
                 <tr>
                     <td style="font-weight: bold;">The sum of USD:</td>
                     <td colspan="2" style="font-style: italic; font-weight: bold; text-align:center;"><span id="usdTextDisplay">Zero Dollars Only</span></td>
-                    <td colspan="4" class="text-right" style="font-weight: bold;">សរុបួមជាប្រាក់រៀល / Grand Total In KHR</td>
+                    <td colspan="4" class="text-right" style="font-weight: bold;" id="grandTotalTextKHR">សរុបបូកជាប្រាក់រៀល / Grand Total In KHR</td>
                     <td class="text-right" style="font-weight: bold;">KHR <span id="grandTotalKHRDisplay">0.00</span></td>
                 </tr>
             </table>
@@ -406,33 +419,16 @@
 
     <script>
         let isManualVAT = false;
+        let isTaxInvoiceMode = true; // True = Tax Invoice, False = Commercial Invoice (វិក្កយបត្រធម្មតា)
 
         const descriptionOptions = [
-            "Inbound",
-            "bonded storage charge",
-            "Showroom Storage",
-            "Lolo",
-            "Forklift",
-            "Loading",
-            "Permit to Showroom",
-            "Handling Inbound",
-            "Handling Outbound",
-            "Gate Fee 1.5T",
-            "Gate Fee 2.5T",
-            "Gate Fee 3.5-5T",
-            "Gate Fee 8-10T",
-            "Laden Con Storage",
-            "Empty Con",
-            "Cy Storage for Tractor",
-            "Cy For Escavator",
-            "RAM",
-            "Permit Transit",
-            "Clear",
-            "Dry port Facility",
-            "Gate Fee"
+            "Inbound", "bonded storage charge", "Showroom Storage", "Lolo", "Forklift",
+            "Loading", "Permit to Showroom", "Handling Inbound", "Handling Outbound",
+            "Gate Fee 1.5T", "Gate Fee 2.5T", "Gate Fee 3.5-5T", "Gate Fee 8-10T",
+            "Laden Con Storage", "Empty Con", "Cy Storage for Tractor", "Cy For Escavator",
+            "RAM", "Permit Transit", "Clear", "Dry port Facility", "Gate Fee"
         ];
 
-        // មុខងារទាញយកថ្ងៃខែ និងម៉ោងបច្ចុប្បន្នដោយស្វ័យប្រវត្តិ
         function getCurrentDateTime() {
             const now = new Date();
             const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -444,12 +440,39 @@
             const ampm = hours >= 12 ? 'PM' : 'AM';
             
             hours = hours % 12;
-            hours = hours ? hours : 12; // ម៉ោង ១២
+            hours = hours ? hours : 12;
 
             return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
         }
 
-        // បន្ថែមជួរថ្មីចូលតារាង
+        // ប្ដូររវាង Tax Invoice និង Invoice ធម្មតា (Commercial)
+        function toggleInvoiceMode() {
+            isTaxInvoiceMode = !isTaxInvoiceMode;
+            const vatRow = document.getElementById('vatRow');
+            const invMainTitle = document.getElementById('invMainTitle');
+            const invSubTitle = document.getElementById('invSubTitle');
+            const vatTinSection = document.getElementById('vatTinSection');
+            const modeTitle = document.getElementById('modeTitle');
+            const modeButtonText = document.getElementById('modeButtonText');
+
+            if (isTaxInvoiceMode) {
+                invMainTitle.innerText = "វិក្កយបត្រអាករ";
+                invSubTitle.innerText = "TAX INVOICE";
+                vatTinSection.style.display = "block";
+                vatRow.style.display = "";
+                modeTitle.innerText = "ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE)";
+                modeButtonText.innerText = "វិក្កយបត្រធម្មតា (Commercial)";
+            } else {
+                invMainTitle.innerText = "វិក្កយបត្រ";
+                invSubTitle.innerText = "INVOICE";
+                vatTinSection.style.display = "none";
+                vatRow.style.display = "none"; // លាក់ជួរ VAT ចោលសម្រាប់វិក្កយបត្រធម្មតា
+                modeTitle.innerText = "ទម្រង់វិក្កយបត្រធម្មតា (COMMERCIAL INVOICE)";
+                modeButtonText.innerText = "វិក្កយបត្រអាករ (Tax Invoice)";
+            }
+            calculateInvoice();
+        }
+
         function addRow(selectedDesc = "Gate Fee", size = "40HC", status = "Full", rate = 5.00, qty = 1, duration = 0) {
             const tbody = document.getElementById('invoiceTableBody');
             const rowCount = tbody.rows.length + 1;
@@ -479,7 +502,6 @@
             calculateInvoice();
         }
 
-        // លុបជួរចេញពីតារាង
         function removeRow(btn) {
             const row = btn.closest('tr');
             row.remove();
@@ -487,7 +509,6 @@
             calculateInvoice();
         }
 
-        // កែសម្រួល ល.រ (No) ឡើងវិញពេលមានការលុបជួរ
         function updateRowIndexes() {
             const rows = document.querySelectorAll('#invoiceTableBody tr');
             rows.forEach((row, index) => {
@@ -504,7 +525,6 @@
                 const qty = parseFloat(row.querySelector('.item-qty').value) || 1;
                 const duration = parseFloat(row.querySelector('.item-duration').value) || 0;
                 
-                // គណនា Rate * Qty * Duration (បើ Duration > 0)
                 let amount = rate * qty;
                 if (duration > 0) {
                     amount = rate * qty * duration;
@@ -517,25 +537,28 @@
             document.getElementById('subTotalDisplay').innerText = subtotal.toFixed(2);
 
             const exchRate = parseFloat(document.getElementById('exchRate').value) || 4085;
-
-            // គណនា VAT 10% ដោយស្វ័យប្រវត្តិ
             let vat = 0;
-            if (!isManualVAT) {
-                vat = subtotal * 0.10;
-                document.getElementById('vatInput').value = vat.toFixed(2);
+            let grandTotalUSD = subtotal;
+
+            if (isTaxInvoiceMode) {
+                // ប្រសិនបើជា Tax Invoice គឺគណនា VAT 10% បន្ថែម
+                if (!isManualVAT) {
+                    vat = subtotal * 0.10;
+                    document.getElementById('vatInput').value = vat.toFixed(2);
+                } else {
+                    vat = parseFloat(document.getElementById('vatInput').value) || 0;
+                }
+                grandTotalUSD = subtotal + vat;
             } else {
-                vat = parseFloat(document.getElementById('vatInput').value) || 0;
+                // ប្រសិនបើជា Invoice ធម្មតា គឺមិនគិត VAT ទេ Grand Total = Subtotal
+                document.getElementById('vatInput').value = "0.00";
             }
 
-            // Grand Total USD
-            const grandTotalUSD = subtotal + vat;
             document.getElementById('grandTotalUSDDisplay').innerText = grandTotalUSD.toFixed(2);
 
-            // Grand Total KHR
             const grandTotalKHR = grandTotalUSD * exchRate;
             document.getElementById('grandTotalKHRDisplay').innerText = grandTotalKHR.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-            // អាប់ដេតអក្សរអានទឹកប្រាក់
             document.getElementById('usdTextDisplay').innerText = numberToUSDWords(grandTotalUSD);
             document.getElementById('khrTextDisplay').innerText = numberToKhmerWords(Math.round(grandTotalKHR));
         }
@@ -545,9 +568,9 @@
             calculateInvoice();
         }
 
-        // មុខងាររក្សាទុកវិក្កយបត្រចូល Server / Database
         async function saveInvoiceToDB() {
             const invoiceData = {
+                invoice_type: isTaxInvoiceMode ? 'TAX_INVOICE' : 'COMMERCIAL_INVOICE',
                 invoice_no: document.getElementById('invoiceNo').value,
                 charge_to: document.getElementById('chargeTo').value,
                 seal_no: document.getElementById('sealNo').value,
@@ -571,7 +594,7 @@
                 })),
                 subtotal: parseFloat(document.getElementById('subTotalDisplay').innerText) || 0,
                 exch_rate: parseFloat(document.getElementById('exchRate').value) || 4085,
-                vat_amount: parseFloat(document.getElementById('vatInput').value) || 0,
+                vat_amount: isTaxInvoiceMode ? (parseFloat(document.getElementById('vatInput').value) || 0) : 0,
                 grand_total_usd: parseFloat(document.getElementById('grandTotalUSDDisplay').innerText) || 0,
                 grand_total_khr: parseFloat(document.getElementById('grandTotalKHRDisplay').innerText.replace(/,/g, '')) || 0
             };
@@ -595,11 +618,9 @@
             }
         }
 
-        // មុខងារបកប្រែលេខប្រាក់ដុល្លារទៅជាអក្សរអង់គ្លេស (USD Words)
         function numberToUSDWords(amount) {
             const dollars = Math.floor(amount);
             const cents = Math.round((amount - dollars) * 100);
-
             const units = ["", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"];
             const tens = ["", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety"];
 
@@ -620,7 +641,6 @@
             return str;
         }
 
-        // មុខងារបកប្រែលេខប្រាក់រៀលទៅជាអក្សរខ្មែរ (Khmer Words)
         function numberToKhmerWords(num) {
             if (num === 0) return "សូន្យរៀល";
             const khmerNumbers = ["សូន្យ", "មួយ", "ពីរ", "បី", "បួន", "ប្រាំ", "ប្រាំមួយ", "ប្រាំពីរ", "ប្រាំបី", "ប្រាំបួន"];
@@ -648,16 +668,11 @@
                 }
                 return n.toString();
             }
-
             return convertKhmer(num) + "រៀល";
         }
 
-        // ដំណើរការកំណត់ម៉ោង និងបង្កើតជួរដំបូងពេល Load ចូលទំព័រ
         document.addEventListener('DOMContentLoaded', () => {
-            // កំណត់ថ្ងៃខែ និងម៉ោងបច្ចុប្បន្នស្វ័យប្រវត្តិ
             document.getElementById('invDate').value = getCurrentDateTime();
-            
-            // បង្កើតជួរដំបូង
             addRow("Gate Fee", "40HC", "Full", 5.00, 1, 0);
         });
     </script>
