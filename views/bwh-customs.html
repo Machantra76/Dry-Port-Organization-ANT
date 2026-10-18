@@ -4,20 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH) - ANT Dry Port</title>
-    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary-color: #1e3c72;
             --secondary-color: #2a5298;
-            --bg-color: #f0f4f8;
+            --bg-color: #f8fafc;
             --card-bg: #ffffff;
-            --text-main: #333333;
+            --text-main: #1e293b;
             --border-color: #e2e8f0;
             --success-color: #10b981;
             --danger-color: #ef4444;
             --warning-color: #f59e0b;
+            --info-color: #0284c7;
         }
 
         body {
@@ -26,20 +27,22 @@
             color: var(--text-main);
             margin: 0;
             padding: 0;
+            -webkit-print-color-adjust: exact;
         }
 
         header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
-            padding: 20px 30px;
+            padding: 18px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
 
-        header h1 { margin: 0; font-size: 20px; }
-        header p { margin: 4px 0 0 0; font-size: 12px; color: #dbeafe; }
+        header h1 { margin: 0; font-size: 20px; font-weight: 700; }
+        header p { margin: 4px 0 0 0; font-size: 13px; color: #cbd5e1; }
 
         .user-info {
             display: flex;
@@ -48,114 +51,160 @@
             background: rgba(255, 255, 255, 0.15);
             padding: 8px 16px;
             border-radius: 8px;
-            font-size: 14px;
-            flex-wrap: wrap;
+            font-size: 13px;
         }
 
         .btn-back {
             background: rgba(255, 255, 255, 0.2);
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            padding: 6px 12px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 14px;
             border-radius: 6px;
             text-decoration: none;
             font-weight: 600;
             font-size: 13px;
             display: inline-flex;
             align-items: center;
-            gap: 5px;
+            gap: 6px;
+            transition: all 0.2s;
         }
         .btn-back:hover { background: white; color: var(--primary-color); }
 
-        .container { max-width: 1500px; margin: 30px auto; padding: 0 20px; }
+        .container { max-width: 1550px; margin: 25px auto; padding: 0 20px; }
 
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 16px 20px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+        }
+        .stat-card .stat-info h4 { margin: 0; font-size: 12px; color: #64748b; text-transform: uppercase; }
+        .stat-card .stat-info div { font-size: 22px; font-weight: 700; color: var(--primary-color); margin-top: 4px; }
+        .stat-card .stat-icon { font-size: 28px; opacity: 0.8; }
+
+        /* Action Bar */
         .action-bar {
-            display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 15px; flex-wrap: wrap;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 20px; 
+            gap: 15px; 
+            flex-wrap: wrap;
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
         }
 
+        .filter-group { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
         .search-box input {
-            padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; width: 320px; font-family: 'Kantumruy Pro', sans-serif; outline: none;
+            padding: 9px 14px; border: 1px solid var(--border-color); border-radius: 6px; width: 300px; font-family: 'Kantumruy Pro', sans-serif; outline: none; font-size: 13px;
+        }
+        .search-box input:focus { border-color: var(--secondary-color); }
+
+        .form-select-sm {
+            padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-family: 'Kantumruy Pro', sans-serif; outline: none; font-size: 13px; background-color: #fff;
         }
 
         .btn-primary {
-            background: var(--primary-color); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+            background: var(--primary-color); color: white; border: none; padding: 9px 16px; border-radius: 6px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; transition: background 0.2s;
         }
+        .btn-primary:hover { background: var(--secondary-color); }
+
+        .btn-report {
+            background: #0284c7; color: white; border: none; padding: 9px 18px; border-radius: 6px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; transition: background 0.2s;
+        }
+        .btn-report:hover { background: #0369a1; }
+
         .btn-warning {
-            background: var(--warning-color); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
+            background: #f59e0b; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
         }
         .btn-danger {
-            background: var(--danger-color); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
-        }
-        .btn-pdf {
-            background: #ef4444; color: white; border: none; padding: 10px 18px; border-radius: 8px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+            background: var(--danger-color); color: white; border: none; padding: 5px 10px; border-radius: 5px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
         }
 
         button:disabled {
-            background-color: #cbd5e1 !important;
-            color: #94a3b8 !important;
-            cursor: not-allowed !important;
-            opacity: 0.6 !important;
-            box-shadow: none !important;
+            background-color: #cbd5e1 !important; color: #94a3b8 !important; cursor: not-allowed !important; opacity: 0.7 !important;
         }
 
-        .card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color); }
+        .card { background: var(--card-bg); border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); overflow: hidden; border: 1px solid var(--border-color); }
         .table-responsive { overflow-x: auto; }
 
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
-        th { background-color: #f8fafc; color: var(--primary-color); font-weight: 700; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12.5px; }
+        th, td { padding: 11px 14px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+        th { background-color: #f8fafc; color: var(--primary-color); font-weight: 700; border-top: 1px solid var(--border-color); }
+        tbody tr:hover { background-color: #f1f5f9; }
 
-        .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
+        .badge { padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; display: inline-block; }
         .badge-active { background-color: #d1fae5; color: #065f46; }
-        .badge-type { background-color: #e0f2fe; color: #0369a1; font-weight: 700; }
+        .badge-type-i { background-color: #e0f2fe; color: #0369a1; font-weight: 700; }
+        .badge-type-t { background-color: #fef3c7; color: #92400e; font-weight: 700; }
+
+        /* Report Header for Printing */
+        .report-header-print {
+            display: none;
+            padding: 20px;
+            border-bottom: 2px solid var(--primary-color);
+            margin-bottom: 15px;
+        }
+        .report-header-print .top-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .report-title {
+            text-align: center;
+            margin-top: 10px;
+        }
+        .report-title h2 { margin: 0; font-size: 18px; color: var(--primary-color); }
+        .report-title p { margin: 3px 0 0 0; font-size: 11px; color: #64748b; }
 
         /* Modal */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000;
         }
         .modal-card {
-            background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 650px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-height: 90vh; overflow-y: auto;
+            background: white; padding: 25px 30px; border-radius: 12px; width: 100%; max-width: 700px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); max-height: 90vh; overflow-y: auto;
         }
-        .form-group { margin-bottom: 15px; text-align: left; }
-        .form-group label { display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px; color: #334155; }
-        .form-control, .form-select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-family: 'Kantumruy Pro', sans-serif; outline: none; }
+        .form-group { margin-bottom: 14px; text-align: left; }
+        .form-group label { display: block; font-weight: 600; font-size: 12.5px; margin-bottom: 5px; color: #334155; }
+        .form-control, .form-select { width: 100%; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-family: 'Kantumruy Pro', sans-serif; outline: none; font-size: 13px; }
+        .form-control:focus, .form-select:focus { border-color: var(--secondary-color); }
         .form-row { display: flex; gap: 15px; }
         .form-row .form-group { flex: 1; }
 
-        /* Styling សម្រាប់ពេល Print ឬ PDF គឺលាក់ Element ណាដែលមាន class no-print */
+        /* Printable styles */
         @media print {
-            .no-print {
-                display: none !important;
-            }
+            .no-print { display: none !important; }
+            body { background: white; }
+            .container { max-width: 100%; margin: 0; padding: 0; }
+            .card { border: none; box-shadow: none; }
+            .report-header-print { display: block !important; }
+            table { font-size: 10px !important; }
+            th, td { padding: 6px 8px !important; }
         }
 
-        #pdfContent {
-            background: #ffffff;
-            padding: 10px;
-        }
-
-        #pdfContent table {
-            width: 100% !important;
-            font-size: 10px !important;
-        }
-
-        #pdfContent th, #pdfContent td {
-            padding: 6px 8px !important;
-            white-space: normal !important;
-            word-break: break-word;
-        }
-
-        #pdfContent .badge {
-            font-size: 9px !important;
-            padding: 2px 6px !important;
-        }
+        #reportContent table { width: 100% !important; }
+        #reportContent th, #reportContent td { white-space: normal !important; word-break: break-word; }
     </style>
 </head>
 <body>
 
-    <header>
+    <header class="no-print">
         <div>
-            <h1>ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH)</h1>
+            <h1><i class="fa-solid fa-file-shield me-2"></i> ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH)</h1>
             <p>Relationship with Bonded Warehouse Records - ANT Dry Port</p>
         </div>
         <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
@@ -168,26 +217,84 @@
     </header>
 
     <div class="container">
-        <div class="action-bar no-print">
-            <div class="search-box">
-                <input type="text" id="searchInput" placeholder="ស្វែងរកលេខលិខិត, កុងតឺន័រ, លេខតួ ឬ Reg No..." onkeyup="filterTable()">
+
+        <!-- Stats Overview -->
+        <div class="stats-grid no-print">
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>លិខិតអនុញ្ញាតសរុប</h4>
+                    <div id="statTotal">0</div>
+                </div>
+                <i class="fa-solid fa-folder-open stat-icon" style="color: #0284c7;"></i>
             </div>
-            <div>
-                <button type="button" class="btn-pdf" onclick="exportToPDF()"><i class="fa-solid fa-file-pdf"></i> ទាញយក PDF</button>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>នាំចូល (Import - I)</h4>
+                    <div id="statImport">0</div>
+                </div>
+                <i class="fa-solid fa-file-import stat-icon" style="color: #10b981;"></i>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>ឆ្លងកាត់ (Transit - T)</h4>
+                    <div id="statTransit">0</div>
+                </div>
+                <i class="fa-solid fa-truck-fast stat-icon" style="color: #f59e0b;"></i>
+            </div>
+            <div class="stat-card">
+                <div class="stat-info">
+                    <h4>បានចុះបញ្ជី (Manifested)</h4>
+                    <div id="statRegistered">0</div>
+                </div>
+                <i class="fa-solid fa-circle-check stat-icon" style="color: #6366f1;"></i>
+            </div>
+        </div>
+
+        <!-- Action & Filter Bar -->
+        <div class="action-bar no-print">
+            <div class="filter-group">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="ស្វែងរកលេខលិខិត, កុងតឺន័រ, VIN, ក្រុមហ៊ុន..." onkeyup="filterTable()">
+                </div>
+                <select id="typeFilter" class="form-select-sm" onchange="filterTable()">
+                    <option value="">-- ប្រភេទទាំងអស់ (I/T) --</option>
+                    <option value="I">I - Import</option>
+                    <option value="T">T - Transit</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn-report" onclick="exportReport()"><i class="fa-solid fa-file-invoice"></i> REPORT</button>
                 <button type="button" class="btn-primary" onclick="openModal()"><i class="fa-solid fa-plus"></i> បញ្ចូលលិខិតអនុញ្ញាតថ្មី</button>
             </div>
         </div>
 
-        <div class="card" id="pdfContent">
-            <div style="padding: 15px 20px; background: #f8fafc; border-bottom: 1px solid var(--border-color); display: none;" id="pdfHeaderTitle">
-                <h3 style="margin: 0; color: var(--primary-color); font-size: 16px;">របាយការណ៍លិខិតអនុញ្ញាត និងឯកសារគយ (Customs Permit Report)</h3>
+        <!-- Report Container -->
+        <div class="card" id="reportContent">
+            
+            <!-- Official Report Header for PDF / Printing -->
+            <div class="report-header-print" id="reportHeader">
+                <div class="top-info">
+                    <div>
+                        <h3 style="margin: 0; color: var(--primary-color);">ANT DRY PORT / BONDED WAREHOUSE</h3>
+                        <span style="font-size: 11px; color: #475569;">នាយកដ្ឋានគ្រប់គ្រងឃ្លាំងពន្ធដារ និងឯកសារគយ</span>
+                    </div>
+                    <div style="text-align: right; font-size: 11px; color: #475569;">
+                        <div>ថ្ងៃខែឆ្នាំរបាយការណ៍៖ <span id="reportDate"></span></div>
+                        <div>អ្នកទាញយក៖ <span id="reportUser">មន្ត្រី BWH</span></div>
+                    </div>
+                </div>
+                <div class="report-title">
+                    <h2>របាយការណ៍លិខិតអនុញ្ញាត និងឯកសារគយ (Customs Permit Report)</h2>
+                    <p>ទិន្នន័យទំនាក់ទំនងជាមួយ Bonded Warehouse Records</p>
+                </div>
             </div>
+
             <div class="table-responsive">
                 <table>
                     <thead>
                         <tr>
                             <th>ល.រ</th>
-                            <th>ប្រភេទ (I/T)</th>
+                            <th>ប្រភេទ</th>
                             <th>លេខលិខិតអនុញ្ញាតគយ</th>
                             <th>លេខចុះបញ្ជីគយ (Reg No.)</th>
                             <th>លេខ Manifest</th>
@@ -199,26 +306,28 @@
                             <th>កាលបរិច្ឆេទចេញ</th>
                             <th>មន្ត្រីទទួលបន្ទុក</th>
                             <th>ស្ថានភាព</th>
-                            <!-- បានបន្ថែម class="no-print" ទីនេះ ដើម្បីលាក់ជួរឈរ "សកម្មភាព" ពេលទាញយក PDF -->
                             <th style="text-align: center;" class="no-print">សកម្មភាព</th>
                         </tr>
                     </thead>
                     <tbody id="permitTableBody">
-                        <!-- Loaded dynamically -->
+                        <!-- Dynamic Content -->
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal Form -->
     <div id="permitModal" class="modal-overlay">
         <div class="modal-card">
-            <h2 id="modalTitle"><i class="fa-solid fa-file-shield me-2"></i> បញ្ចូលលិខិតអនុញ្ញាតគយថ្មី</h2>
+            <h3 id="modalTitle" style="margin-top: 0; color: var(--primary-color); border-bottom: 1px solid var(--border-color); padding-bottom: 10px;">
+                <i class="fa-solid fa-file-shield me-2"></i> បញ្ចូលលិខិតអនុញ្ញាតគយថ្មី
+            </h3>
             <form id="permitForm" onsubmit="savePermit(event)">
                 <input type="hidden" id="editId">
-                <div class="form-group">
-                    <label>ទាញយកទិន្នន័យពី ឃ្លាំងពន្ធដារ (Link from BWH):</label>
+                
+                <div class="form-group" style="background: #f1f5f9; padding: 12px; border-radius: 8px;">
+                    <label style="color: var(--primary-color); font-weight: 700;">ទាញយកទិន្នន័យពី ឃ្លាំងពន្ធដារ (Link from BWH Record):</label>
                     <select id="bwhSelect" class="form-select" onchange="selectBwhRecord()" required>
                         <option value="">-- ជ្រើសរើសទំនិញ/យានយន្តពី BWH --</option>
                     </select>
@@ -252,22 +361,22 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label>លេខកុងតឺន័រ:</label>
-                        <input type="text" id="containerNo" class="form-control" readonly required>
+                        <input type="text" id="containerNo" class="form-control" style="background: #f8fafc;" readonly required>
                     </div>
                     <div class="form-group">
                         <label>លេខតួឡាន / VIN (Chassis No.):</label>
-                        <input type="text" id="vehicleVin" class="form-control" readonly placeholder="គ្មានលេខតួ">
+                        <input type="text" id="vehicleVin" class="form-control" style="background: #f8fafc;" readonly placeholder="គ្មានលេខតួ">
                     </div>
                 </div>
 
                 <div class="form-group">
                     <label>ឈ្មោះទំនិញ / ម៉ាកឡាន:</label>
-                    <input type="text" id="cargoName" class="form-control" readonly required>
+                    <input type="text" id="cargoName" class="form-control" style="background: #f8fafc;" readonly required>
                 </div>
 
                 <div class="form-group">
                     <label>ក្រុមហ៊ុន / ម្ចាស់ទំនិញ:</label>
-                    <input type="text" id="companyName" class="form-control" readonly required>
+                    <input type="text" id="companyName" class="form-control" style="background: #f8fafc;" readonly required>
                 </div>
 
                 <div class="form-group">
@@ -295,8 +404,8 @@
                     <textarea id="notes" class="form-control" rows="2" placeholder="ព័ត៌មានបន្ថែម..."></textarea>
                 </div>
 
-                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
-                    <button type="button" class="btn-primary" style="background: #cbd5e1; color: #334155;" onclick="closeModal()">បោះបង់</button>
+                <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <button type="button" class="btn-primary" style="background: #94a3b8;" onclick="closeModal()">បោះបង់</button>
                     <button type="submit" class="btn-primary" id="saveBtnText">រក្សាទុក</button>
                 </div>
             </form>
@@ -316,6 +425,7 @@
                     const displayName = currentUserInfo.full_name || currentUserInfo.username || 'មន្ត្រី';
                     const displayRole = currentUserInfo.role || currentUserInfo.dept_id || 'BWH';
                     document.getElementById('welcomeUser').innerHTML = `<i class="fa-solid fa-user me-1"></i> ${displayName} (${displayRole})`;
+                    document.getElementById('reportUser').innerText = displayName;
                 } catch (e) {
                     console.error("Error parsing user info:", e);
                 }
@@ -324,26 +434,24 @@
             loadPermits();
             loadBwhDropdown();
             document.getElementById('issueDate').value = new Date().toISOString().slice(0, 10);
+            document.getElementById('reportDate').innerText = new Date().toLocaleDateString('km-KH');
         });
 
         function checkIsBWHDepartment() {
             if (!currentUserInfo) return false;
             const deptId = (currentUserInfo.dept_id || '').toUpperCase();
             const userRole = (currentUserInfo.role || '').toUpperCase();
-            
-            if (deptId === 'BONDED_WH' || userRole === 'STAFF') {
-                return true;
-            }
-            return false;
+            return (deptId === 'BONDED_WH' || userRole === 'STAFF');
         }
 
         async function loadPermits() {
             try {
                 const res = await fetch('/api/customs-permits');
                 permitData = await res.json();
+                updateStats(permitData);
                 renderTable(permitData);
             } catch (err) {
-                console.error('Error:', err);
+                console.error('Error loading permits:', err);
             }
         }
 
@@ -353,12 +461,15 @@
                 bwhRecords = await res.json();
                 const select = document.getElementById('bwhSelect');
                 select.innerHTML = '<option value="">-- ជ្រើសរើសទំនិញ/យានយន្តពី BWH --</option>';
+                
                 bwhRecords.forEach(item => {
                     const identifier = item.vehicle_vin ? `VIN: ${item.vehicle_vin}` : (item.container_number || 'N/A');
-                    select.innerHTML += `<option value="${item.id}">${identifier} - ${item.cargo_name || item.cargo} (${item.owner_name || item.owner})</option>`;
+                    const cargo = item.cargo_name || item.cargo || 'ទំនិញ';
+                    const owner = item.owner_name || item.owner || 'មិនស្គាល់ម្ចាស់';
+                    select.innerHTML += `<option value="${item.id}">${identifier} | ${cargo} (${owner})</option>`;
                 });
             } catch (err) {
-                console.error('Error:', err);
+                console.error('Error loading BWH records:', err);
             }
         }
 
@@ -378,9 +489,17 @@
             }
         }
 
+        function updateStats(data) {
+            document.getElementById('statTotal').innerText = data.length;
+            document.getElementById('statImport').innerText = data.filter(d => d.doc_type === 'I').length;
+            document.getElementById('statTransit').innerText = data.filter(d => d.doc_type === 'T').length;
+            document.getElementById('statRegistered').innerText = data.filter(d => d.manifest_number && d.manifest_number.trim() !== '').length;
+        }
+
         function renderTable(data) {
             const tbody = document.getElementById('permitTableBody');
             tbody.innerHTML = '';
+            
             if (!data || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="14" style="text-align: center; color: #64748b; padding: 30px;">មិនមានទិន្នន័យលិខិតអនុញ្ញាតគយឡើយ</td></tr>`;
                 return;
@@ -391,14 +510,14 @@
 
             data.forEach((item, index) => {
                 const isRegistered = item.manifest_number && item.manifest_number.trim() !== '';
-                
-                const editBtnStyle = isRegistered ? 'background: #cbd5e1; color: #64748b; cursor: not-allowed; pointer-events: none;' : '';
+                const editBtnStyle = isRegistered ? 'background: #cbd5e1; color: #64748b; cursor: not-allowed;' : '';
                 const editBtnAttr = isRegistered ? 'disabled' : '';
+                const badgeClass = item.doc_type === 'T' ? 'badge-type-t' : 'badge-type-i';
 
                 tbody.innerHTML += `
                     <tr>
                         <td>${index + 1}</td>
-                        <td><span class="badge badge-type">${item.doc_type || 'I'}</span></td>
+                        <td><span class="badge ${badgeClass}">${item.doc_type || 'I'}</span></td>
                         <td><strong>${item.permit_number || '-'}</strong></td>
                         <td><span style="color: #0369a1; font-weight: 600;">${item.customs_reg_number || '-'}</span></td>
                         <td>${item.manifest_number || '-'}</td>
@@ -410,12 +529,12 @@
                         <td>${item.issue_date ? item.issue_date.slice(0, 10) : ''}</td>
                         <td>${item.officer_name || ''}</td>
                         <td><span class="badge badge-active">${item.status || 'Active'}</span></td>
-                        <td style="text-align: center; display: flex; gap: 5px; justify-content: center;" class="no-print">
+                        <td style="text-align: center;" class="no-print">
                             <button class="btn-warning" ${editBtnAttr} style="${editBtnStyle}" onclick="editPermit(${item.id})">
-                                <i class="fa-solid fa-pen-to-square"></i> ${isRegistered ? 'បានចុះបញ្ជីរួច' : 'កែរ-ចុះបញ្ជី'}
+                                <i class="fa-solid fa-pen-to-square"></i> ${isRegistered ? 'បានចុះបញ្ជី' : 'កែប្រែ'}
                             </button>
-                            <button class="btn-danger" ${deleteDisabledAttr} onclick="deletePermit(${item.id})" title="${isBWHDepartment ? 'មន្ត្រីឃ្លាំងពន្ធដារគ្មានសិទ្ធិលុបទេ' : 'លុប'}">
-                                <i class="fa-solid fa-trash"></i> លុប
+                            <button class="btn-danger" ${deleteDisabledAttr} onclick="deletePermit(${item.id})" title="${isBWHDepartment ? 'គ្មានសិទ្ធិលុបទេ' : 'លុប'}">
+                                <i class="fa-solid fa-trash"></i>
                             </button>
                         </td>
                     </tr>
@@ -470,14 +589,14 @@
                         });
                     }
 
-                    alert('បានរក្សាទុកលិខិតអនុញ្ញាតគយ និងចុះបញ្ជីដោយជោគជ័យ!');
+                    alert('បានរក្សាទុកលិខិតអនុញ្ញាតគយដោយជោគជ័យ!');
                     closeModal();
                     loadPermits();
                 } else {
                     alert('មានបញ្ហា៖ ' + result.error);
                 }
             } catch (err) {
-                console.error('Error:', err);
+                console.error('Error saving permit:', err);
             }
         }
 
@@ -487,7 +606,7 @@
 
             document.getElementById('editId').value = item.id;
             document.getElementById('modalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square me-2"></i> កែប្រែ និងចុះបញ្ជីលិខិតអនុញ្ញាតគយ`;
-            document.getElementById('saveBtnText').innerText = `កែរ-ចុះបញ្ជី`;
+            document.getElementById('saveBtnText').innerText = `រក្សាទុកការកែប្រែ`;
 
             document.getElementById('bwhSelect').value = item.bonded_record_id || '';
             document.getElementById('docType').value = item.doc_type || 'I';
@@ -523,7 +642,7 @@
                         alert('មានបញ្ហា៖ ' + (result.error || 'មិនអាចលុបបានទេ'));
                     }
                 } catch (err) {
-                    console.error('Error:', err);
+                    console.error('Error deleting:', err);
                 }
             }
         }
@@ -542,47 +661,50 @@
             document.getElementById('permitModal').style.display = 'none'; 
             document.getElementById('permitForm').reset(); 
             document.getElementById('editId').value = '';
-            document.getElementById('issueDate').value = new Date().toISOString().slice(0, 10);
         }
 
-        function exportToPDF() {
-            const element = document.getElementById('pdfContent');
-            const title = document.getElementById('pdfHeaderTitle');
-            title.style.display = 'block';
+        /* REPORT Generation Function */
+        function exportReport() {
+            const element = document.getElementById('reportContent');
+            const header = document.getElementById('reportHeader');
+            
+            header.style.display = 'block';
 
             const options = {
                 margin: [10, 8, 10, 8],
                 filename: `Customs_Permit_Report_${new Date().toISOString().slice(0, 10)}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true,
-                    logging: false,
-                    scrollX: 0,
-                    scrollY: 0
-                },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
                 pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
 
             html2pdf().from(element).set(options).save().then(() => {
-                title.style.display = 'none';
+                header.style.display = 'none';
             }).catch(err => {
-                console.error('PDF Export Error:', err);
-                title.style.display = 'none';
+                console.error('Report Generation Error:', err);
+                header.style.display = 'none';
             });
         }
 
         function filterTable() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = permitData.filter(i => 
-                (i.permit_number && i.permit_number.toLowerCase().includes(query)) || 
-                (i.customs_reg_number && i.customs_reg_number.toLowerCase().includes(query)) ||
-                (i.manifest_number && i.manifest_number.toLowerCase().includes(query)) ||
-                (i.container_number && i.container_number.toLowerCase().includes(query)) ||
-                (i.vehicle_vin && i.vehicle_vin.toLowerCase().includes(query)) ||
-                (i.company_name && i.company_name.toLowerCase().includes(query))
-            );
+            const typeVal = document.getElementById('typeFilter').value;
+
+            const filtered = permitData.filter(i => {
+                const matchesSearch = 
+                    (i.permit_number && i.permit_number.toLowerCase().includes(query)) || 
+                    (i.customs_reg_number && i.customs_reg_number.toLowerCase().includes(query)) ||
+                    (i.manifest_number && i.manifest_number.toLowerCase().includes(query)) ||
+                    (i.container_number && i.container_number.toLowerCase().includes(query)) ||
+                    (i.vehicle_vin && i.vehicle_vin.toLowerCase().includes(query)) ||
+                    (i.company_name && i.company_name.toLowerCase().includes(query));
+
+                const matchesType = typeVal === '' || i.doc_type === typeVal;
+
+                return matchesSearch && matchesType;
+            });
+
             renderTable(filtered);
         }
     </script>
