@@ -122,6 +122,34 @@
         .form-control, .form-select { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; box-sizing: border-box; font-family: 'Kantumruy Pro', sans-serif; outline: none; }
         .form-row { display: flex; gap: 15px; }
         .form-row .form-group { flex: 1; }
+
+        /* Styling ពិសេសសម្រាប់ពេល Print ឬ PDF */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        #pdfContent {
+            background: #ffffff;
+            padding: 10px;
+        }
+
+        #pdfContent table {
+            width: 100% !important;
+            font-size: 10px !important;
+        }
+
+        #pdfContent th, #pdfContent td {
+            padding: 6px 8px !important;
+            white-space: normal !important;
+            word-break: break-word;
+        }
+
+        #pdfContent .badge {
+            font-size: 9px !important;
+            padding: 2px 6px !important;
+        }
     </style>
 </head>
 <body>
@@ -362,7 +390,6 @@
             const deleteDisabledAttr = isBWHDepartment ? 'disabled' : '';
 
             data.forEach((item, index) => {
-                // ពិនិត្យមើលថាតើមាន លេខ Manifest រួចរាល់ហើយឬยัง (បើគ្មាន គឺ Enable ធម្មតា)
                 const isRegistered = item.manifest_number && item.manifest_number.trim() !== '';
                 
                 const editBtnStyle = isRegistered ? 'background: #cbd5e1; color: #64748b; cursor: not-allowed; pointer-events: none;' : '';
@@ -524,14 +551,24 @@
             title.style.display = 'block';
 
             const options = {
-                margin: 5,
-                filename: 'Customs_Permit_Report.pdf',
+                margin: [10, 8, 10, 8],
+                filename: `Customs_Permit_Report_${new Date().toISOString().slice(0, 10)}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                html2canvas: { 
+                    scale: 2, 
+                    useCORS: true,
+                    logging: false,
+                    scrollX: 0,
+                    scrollY: 0
+                },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
 
             html2pdf().from(element).set(options).save().then(() => {
+                title.style.display = 'none';
+            }).catch(err => {
+                console.error('PDF Export Error:', err);
                 title.style.display = 'none';
             });
         }
