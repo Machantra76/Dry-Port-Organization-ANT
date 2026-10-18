@@ -101,8 +101,8 @@
         .card { background: var(--card-bg); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid var(--border-color); }
         .table-responsive { overflow-x: auto; }
 
-        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-        th, td { padding: 12px 15px; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; table-layout: fixed; }
+        th, td { padding: 12px 10px; border-bottom: 1px solid var(--border-color); word-break: break-word; overflow: hidden; }
         th { background-color: #f8fafc; color: var(--primary-color); font-weight: 700; }
 
         .badge { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
@@ -122,7 +122,6 @@
         .form-row { display: flex; gap: 15px; }
         .form-row .form-group { flex: 1; }
 
-        /* Styling សម្រាប់ពេល Print ឬ PDF គឺលាក់ Element ណាដែលមាន class no-print */
         @media print {
             .no-print {
                 display: none !important;
@@ -134,20 +133,19 @@
             padding: 10px;
         }
 
-        #pdfContent table {
+        /* Styling បន្ថែមពេល Export ចេញជា PDF ឱ្យបង្រួមតារាងល្មមដាក់ត្រូវក្រដាស A4 Landscape */
+        .pdf-export-mode {
             width: 100% !important;
-            font-size: 10px !important;
         }
-
-        #pdfContent th, #pdfContent td {
-            padding: 6px 8px !important;
-            white-space: normal !important;
-            word-break: break-word;
+        .pdf-export-mode table {
+            font-size: 8.5px !important;
+            width: 100% !important;
         }
-
-        #pdfContent .badge {
-            font-size: 9px !important;
-            padding: 2px 6px !important;
+        .pdf-export-mode th, .pdf-export-mode td {
+            padding: 5px 4px !important;
+        }
+        .pdf-export-mode .no-print {
+            display: none !important;
         }
     </style>
 </head>
@@ -186,21 +184,20 @@
                 <table>
                     <thead>
                         <tr>
-                            <th>ល.រ</th>
-                            <th>ប្រភេទ (I/T)</th>
-                            <th>លេខលិខិតអនុញ្ញាតគយ</th>
-                            <th>លេខចុះបញ្ជីគយ (Reg No.)</th>
-                            <th>លេខ Manifest</th>
-                            <th>លេខកុងតឺន័រ</th>
-                            <th>លេខតួឡាន (VIN)</th>
-                            <th>ឈ្មោះទំនិញ / ម៉ាកឡាន</th>
-                            <th>ក្រុមហ៊ុន / ម្ចាស់ទំនិញ</th>
-                            <th>ប្រភេទលិខិតអនុញ្ញាត</th>
-                            <th>កាលបរិច្ឆេទចេញ</th>
-                            <th>មន្ត្រីទទួលបន្ទុក</th>
-                            <th>ស្ថានភាព</th>
-                            <!-- បានបន្ថែម class="no-print" ទីនេះ ដើម្បីលាក់ជួរឈរ "សកម្មភាព" ពេលទាញយក PDF -->
-                            <th style="text-align: center;" class="no-print">សកម្មភាព</th>
+                            <th style="width: 4%;">ល.រ</th>
+                            <th style="width: 6%;">ប្រភេទ</th>
+                            <th style="width: 10%;">លេខលិខិត</th>
+                            <th style="width: 9%;">Reg No.</th>
+                            <th style="width: 7%;">Manifest</th>
+                            <th style="width: 7%;">កុងតឺន័រ</th>
+                            <th style="width: 12%;">លេខតួ (VIN)</th>
+                            <th style="width: 13%;">ឈ្មោះទំនិញ</th>
+                            <th style="width: 10%;">ក្រុមហ៊ុន</th>
+                            <th style="width: 9%;">ប្រភេទលិខិត</th>
+                            <th style="width: 7%;">ថ្ងៃចេញ</th>
+                            <th style="width: 8%;">មន្ត្រី</th>
+                            <th style="width: 8%;">ស្ថានភាព</th>
+                            <th style="width: 0%; display: none;" class="print-only"></th>
                         </tr>
                     </thead>
                     <tbody id="permitTableBody">
@@ -550,8 +547,10 @@
             const title = document.getElementById('pdfHeaderTitle');
             title.style.display = 'block';
 
+            element.classList.add('pdf-export-mode');
+
             const options = {
-                margin: [10, 8, 10, 8],
+                margin: [8, 8, 8, 8],
                 filename: `Customs_Permit_Report_${new Date().toISOString().slice(0, 10)}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { 
@@ -561,14 +560,15 @@
                     scrollX: 0,
                     scrollY: 0
                 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
             };
 
             html2pdf().from(element).set(options).save().then(() => {
+                element.classList.remove('pdf-export-mode');
                 title.style.display = 'none';
             }).catch(err => {
                 console.error('PDF Export Error:', err);
+                element.classList.remove('pdf-export-mode');
                 title.style.display = 'none';
             });
         }
