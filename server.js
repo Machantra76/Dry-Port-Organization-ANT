@@ -1,16 +1,18 @@
 const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
+const cors = require('cors'); // បន្ថែមទីនេះ
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ការតភ្ជាប់ PostgreSQL Database (ឧ. Neon Database)
+// ការតភ្ជាប់ PostgreSQL Database
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/hr_db',
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
 });
 
+app.use(cors()); // ដាក់ប្រើប្រាស់ត្រង់នេះ
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
