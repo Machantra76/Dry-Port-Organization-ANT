@@ -480,7 +480,6 @@ async function initializeDatabase() {
         await client.query(`
             ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS days_in_bonded INT DEFAULT 0;
             ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);
-            -- 👉 ដាក់កូដបន្ថែមត្រង់នេះ ដើម្បីធានាថា Database មាន Column previous_days ស្រាប់
             ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS previous_days INT DEFAULT 0;
         `);
 
@@ -503,7 +502,7 @@ async function initializeDatabase() {
         `);
         await client.query(`ALTER TABLE duty_unpaid_inventory ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);`);
 
-        // ៣២. តារាងអ្នកប្រើប្រាស់ប្រព័ន្ធ (System Users & Roles) - បន្ថែម status column
+        // ៣២. តារាងអ្នកប្រើប្រាស់ប្រព័ន្ធ (System Users & Roles)
         await client.query(`
             CREATE TABLE IF NOT EXISTS system_users (
                 id SERIAL PRIMARY KEY,
@@ -522,7 +521,7 @@ async function initializeDatabase() {
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_permit_records (
                 id SERIAL PRIMARY KEY,
-                permit_number VARCHAR(100) UNIQUE NOT NULL,
+                permit_number VARCHAR(100) NOT NULL,
                 bonded_record_id INT REFERENCES bonded_warehouse_records(id) ON DELETE CASCADE,
                 container_number VARCHAR(100) NOT NULL,
                 vehicle_vin VARCHAR(100),
@@ -541,6 +540,7 @@ async function initializeDatabase() {
             );
         `);
 
+        await client.query(`ALTER TABLE customs_permit_records DROP CONSTRAINT IF EXISTS customs_permit_records_permit_number_key;`).catch(() => {});
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS customs_reg_number VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS manifest_number VARCHAR(100);`);
@@ -575,8 +575,28 @@ async function initializeDatabase() {
 }
 
 // ==========================================
-// API Route: Authentication (Login) - ពិនិត្យ status Active
+// API Routes: Authentication (Login) - គាំទ្រទាំង /api/login និង /api/auth/login
 // ==========================================
+app.post('/api/login', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const result = await pool.query('SELECT * FROM system_users WHERE username = $1 AND password = $2', [username, password]);
+        if (result.rows.length === 0) {
+            return res.status(401).json({ success: false, error: 'ឈ្មោះគណនី ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ!' });
+        }
+        
+        const user = result.rows[0];
+        if (user.status && user.status.toLowerCase() !== 'active') {
+            return res.status(403).json({ success: false, error: 'គណនីនេះត្រូវបានផ្អាក ឬបិទសិទ្ធិរួចហើយ!' });
+        }
+
+        res.json({ success: true, user });
+    } catch (err) {
+        console.error('Login error:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
 app.post('/api/auth/login', async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -586,8 +606,8 @@ app.post('/api/auth/login', async (req, res) => {
         }
         
         const user = result.rows[0];
-        if (user.status && user.status !== 'Active') {
-            return res.status(403).json({ success: false, error: 'គណនីនេះត្រូវបានផ្អាក ឬបិទសិទ្ធិរួចហើយ (បុគ្គលិកឈប់សម្រាកការងារ)!' });
+        if (user.status && user.status.toLowerCase() !== 'active') {
+            return res.status(403).json({ success: false, error: 'គណនីនេះត្រូវបានផ្អាក ឬបិទសិទ្ធិរួចហើយ!' });
         }
 
         res.json({ success: true, user });
@@ -598,9 +618,26 @@ app.post('/api/auth/login', async (req, res) => {
 });
 
 // ==========================================
-// API Route: Register (បង្កើត User ថ្មី)
+// API Routes: Register (បង្កើត User ថ្មី - កំណត់ Status ជា 'Active')
 // ==========================================
 app.post('/api/auth/register', async (req, res) => {
+    const { username, password, full_name, role, dept_id } = req.body;
+    try {
+        const query = `
+            INSERT INTO system_users (username, password, full_name, role, dept_id, status)
+            VALUES ($1, $2, $3, $4, $5, 'Active') RETURNING id, username, full_name, role, dept_id, status;
+        `;
+        const values = [username, password, full_name, role || 'STAFF', dept_id || 'HR_ADMIN'];
+        const result = await pool.query(query, values);
+
+        res.json({ success: true, message: 'បង្កើត User ដោយជោគជ័យ', user: result.rows[0] });
+    } catch (err) {
+        console.error('Register error:', err);
+        res.status(400).json({ success: false, error: 'ឈ្មោះគណនី (Username) នេះមានរួចហើយ ឬមានបញ្ហា!' });
+    }
+});
+
+app.post('/api/users', async (req, res) => {
     const { username, password, full_name, role, dept_id } = req.body;
     try {
         const query = `
@@ -662,12 +699,28 @@ app.put('/api/users/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
+
+app.put('/api/users/:id/status', async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        const query = 'UPDATE system_users SET status = $1 WHERE id = $2 RETURNING id, username, full_name, role, dept_id, status;';
+        const result = await pool.query(query, [status, id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញ User នេះទេ' });
+        }
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating user status:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
 // API សម្រាប់បន្តកាលបរិច្ឆេទថ្មី (Renew BWH Record) និងរក្សាទុកប្រវត្តិថ្ងៃចាស់
 app.put('/api/bwh-records/:id/renew', async (req, res) => {
     const { id } = req.params;
     const { record_date, current_days } = req.body;
     try {
-        // កែប្រែឈ្មោះ Table ទៅជា bonded_warehouse_records
         const query = `
             UPDATE bonded_warehouse_records 
             SET previous_days = COALESCE(previous_days, 0) + $1, 
@@ -681,8 +734,9 @@ app.put('/api/bwh-records/:id/renew', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
 // ==========================================
-// API Routes: Customs Permit & Document Control (BWH) - Updated
+// API Routes: Customs Permit & Document Control (BWH) - Updated (Duplicate Permit Fix)
 // ==========================================
 app.get('/api/customs-permits', async (req, res) => {
     try {
@@ -708,6 +762,16 @@ app.post('/api/customs-permits', async (req, res) => {
     } = req.body;
     
     try {
+        if (vehicle_vin && permit_number) {
+            const checkExist = await pool.query(
+                'SELECT id FROM customs_permit_records WHERE permit_number = $1 AND vehicle_vin = $2',
+                [permit_number, vehicle_vin]
+            );
+            if (checkExist.rows.length > 0) {
+                return res.status(400).json({ success: false, error: 'លេខលិខិតអនុញ្ញាត និងលេខតួឡាន (VIN) នេះមានរួចហើយក្នុងប្រព័ន្ធ!' });
+            }
+        }
+
         const query = `
             INSERT INTO customs_permit_records 
             (permit_number, bonded_record_id, container_number, vehicle_vin, customs_reg_number, manifest_number, doc_type, cargo_description, company_name, permit_type, issue_date, expiry_date, status, officer_name, notes)
@@ -734,7 +798,7 @@ app.post('/api/customs-permits', async (req, res) => {
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error saving customs permit:', err);
-        res.status(500).json({ error: 'Server error (លេខលិខិតអនុញ្ញាតអាចមានរួចហើយ)' });
+        res.status(500).json({ success: false, error: 'Server error: ' + err.message });
     }
 });
 
@@ -748,6 +812,7 @@ app.delete('/api/customs-permits/:id', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+
 app.put('/api/customs-permits/:id', async (req, res) => {
     const { id } = req.params;
     const { 
@@ -794,7 +859,7 @@ app.put('/api/customs-permits/:id', async (req, res) => {
 });
 
 // ==========================================
-// HTML Routes សម្រាប់បើកទំព័រ Views ផ្សេងៗ
+// HTML Routes សម្រាប់បើកទំព័រ Views ផ្សេងៗ (រក្សាទុកគ្រប់ Routes ទាំងអស់)
 // ==========================================
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
@@ -1020,6 +1085,7 @@ app.put('/api/bwh-records/:id', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+
 app.put('/api/bwh-records/:id/duty-status', async (req, res) => {
     const { id } = req.params;
     const { duty_status } = req.body;
@@ -1029,13 +1095,11 @@ app.put('/api/bwh-records/:id/duty-status', async (req, res) => {
         try {
             await client.query('BEGIN');
 
-            // ១. អាប់ដេតស្ថានភាពគយក្នុងតារាង bonded_warehouse_records
             await client.query(
                 'UPDATE bonded_warehouse_records SET customs_status = $1 WHERE id = $2',
                 [duty_status, id]
             );
 
-            // ២. ប្រសិនបើបានបង់ពន្ធរួច ធ្វើការលុបទិន្នន័យចេញពីតារាង duty_unpaid_inventory ស្វ័យប្រវត្ត
             const statusLower = (duty_status || '').toLowerCase();
             if (statusLower.includes('បានបង់ពន្ធរួច') || statusLower.includes('paid') || statusLower.includes('released')) {
                 await client.query('DELETE FROM duty_unpaid_inventory WHERE bonded_record_id = $1', [id]);
