@@ -142,33 +142,9 @@
         .badge-paid { background: #d1fae5; color: #065f46; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 700; }
         .badge-overdue { background: #fee2e2; color: #991b1b; padding: 4px 8px; border-radius: 4px; font-size: 13px; font-weight: 700; }
 
-        .action-link { color: #2563eb; text-decoration: none; font-weight: 600; cursor: pointer; margin-right: 5px; }
+        .action-link { color: #2563eb; text-decoration: none; font-weight: 600; cursor: pointer; }
         .action-link:hover { text-decoration: underline; }
         .invoice-header { display: none; text-align: center; margin-bottom: 20px; }
-
-        /* ស្ទីលសម្រាប់ប៊ូតុងសកម្មភាពក្នុងតារាងឱ្យមានរបៀបរៀបរយស្អាត */
-        .btn-action-group {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .btn-sm {
-            padding: 4px 10px;
-            font-size: 12px;
-            height: auto;
-            border-radius: 4px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 3px;
-        }
-        .btn-edit { background: #3b82f6; color: white; }
-        .btn-edit:hover { background: #2563eb; }
-        .btn-paid-status { background: #10b981; color: white; }
-        .btn-paid-status:hover { background: #059669; }
-        .btn-invoice { background: #8b5cf6; color: white; }
-        .btn-invoice:hover { background: #7c3aed; }
 
         @media print {
             body { background: white; padding: 0; }
@@ -191,13 +167,12 @@
             <hr>
         </div>
 
-        <h1 id="formTitleText">គណនេយ្យទទួល</h1>
-        <div class="eng-sub no-print" id="formSubTitleText">Accounts Receivable System & Tracking</div>
+        <h1>គណនេយ្យទទួល</h1>
+        <div class="eng-sub no-print">Accounts Receivable System & Tracking</div>
         
         <div class="section-box no-print">
-            <h3 id="formSectionTitle">កត់ត្រាគណនេយ្យទទួលថ្មី (Record New Receivable)</h3>
+            <h3>កត់ត្រាគណនេយ្យទទួលថ្មី (Record New Receivable)</h3>
             <form id="receivableForm">
-                <input type="hidden" id="edit_id" value="">
                 <div class="form-row">
                     <div>
                         <label>ឈ្មោះអតិថិជន / ដៃគូ (Customer / Partner Name):</label>
@@ -231,10 +206,7 @@
                         <input type="text" id="description" placeholder="ព័ត៌មានលម្អិត... (Details...)">
                     </div>
                 </div>
-                <div style="display: flex; gap: 10px; margin-top: 5px;">
-                    <button type="submit" class="submit-btn" id="submitBtnText">រក្សាទុកគណនេយ្យទទួល (Save Receivable)</button>
-                    <button type="button" id="cancelEditBtn" class="reset-btn" style="display: none; width: 150px;" onclick="cancelEdit()">បោះបង់ (Cancel)</button>
-                </div>
+                <button type="submit" class="submit-btn">រក្សាទុកគណនេយ្យទទួល (Save Receivable)</button>
             </form>
         </div>
 
@@ -305,13 +277,9 @@
                 today.setHours(0, 0, 0, 0);
 
                 data.forEach(item => {
-                    // จัดการ Format วันที่ให้ปลอดภัยกับ input date และการแสดงผล
-                    const rawInvDate = item.invoice_date ? item.invoice_date.split('T')[0] : '';
-                    const rawDueDate = item.due_date ? item.due_date.split('T')[0] : '';
-                    
-                    const invDate = rawInvDate ? new Date(rawInvDate).toLocaleDateString('km-KH') : '-';
-                    const dueDateVal = rawDueDate ? new Date(rawDueDate) : null;
-                    const dueDate = dueDateVal ? dueDateVal.toLocaleDateString('km-KH') : '-';
+                    const invDate = new Date(item.invoice_date).toLocaleDateString('km-KH');
+                    const dueDateVal = new Date(item.due_date);
+                    const dueDate = dueDateVal.toLocaleDateString('km-KH');
                     
                     let badgeClass = 'badge-pending';
                     let statusText = 'មិនទាន់ទូទាត់ (Pending)';
@@ -319,22 +287,18 @@
                     if (item.status === 'Paid') {
                         badgeClass = 'badge-paid';
                         statusText = 'បានទូទាត់ (Paid)';
-                    } else if (dueDateVal && dueDateVal < today) {
+                    } else if (dueDateVal < today) {
                         badgeClass = 'badge-overdue';
                         statusText = 'ហួសថ្ងៃកំណត់ (Overdue)';
                     }
 
-                    // สร้างปุ่มจัดการให้สวยงามและเป็นระเบียบ
                     let actionButtons = `
-                        <div class="btn-action-group">
-                            <button class="btn-sm btn-edit" onclick="editReceivable('${item.id}', '${encodeURIComponent(item.customer_name)}', '${item.amount}', '${rawInvDate}', '${rawDueDate}', '${item.status}', '${encodeURIComponent(item.description || '')}')">✏️ កែប្រែ</button>
-                            <button class="btn-sm btn-invoice" onclick="printInvoice('${item.id}', '${item.customer_name}', '${invDate}', '${dueDate}', '${item.amount}', '${statusText}', '${item.description || '-'}')">🧾 វិក្កយបត្រ</button>
+                        <a class="action-link" onclick="printInvoice('${item.id}', '${item.customer_name}', '${invDate}', '${dueDate}', '${item.amount}', '${statusText}', '${item.description || '-'}')">🧾 វិក្កយបត្រ</a>
                     `;
 
                     if (item.status !== 'Paid') {
-                        actionButtons += `<button class="btn-sm btn-paid-status" onclick="markAsPaid('${item.id}')">✅ បង់ប្រាក់រួច</button>`;
+                        actionButtons += ` | <a class="action-link" style="color: #10b981;" onclick="markAsPaid('${item.id}')">✅ បង់ប្រាក់រួច</a>`;
                     }
-                    actionButtons += `</div>`;
 
                     tbody.innerHTML += `<tr>
                         <td><strong>${item.customer_name}</strong></td>
@@ -350,35 +314,6 @@
                 console.error(err);
                 document.getElementById('receivableTableBody').innerHTML = '<tr><td colspan="7" style="text-align: center; color: red;">មានបញ្ហាក្នុងការទាញយកទិន្នន័យ (Error loading data)</td></tr>';
             }
-        }
-
-        function editReceivable(id, customer, amount, invDate, dueDate, status, desc) {
-            document.getElementById('edit_id').value = id;
-            document.getElementById('customer_name').value = decodeURIComponent(customer);
-            document.getElementById('amount').value = amount;
-            document.getElementById('invoice_date').value = invDate;
-            document.getElementById('due_date').value = dueDate;
-            document.getElementById('status').value = status;
-            document.getElementById('description').value = decodeURIComponent(desc) === '-' ? '' : decodeURIComponent(desc);
-
-            // เปลี่ยนข้อความหัวข้อและปุ่มให้รู้ว่ากำลังอยู่ในโหมดแก้ไข
-            document.getElementById('formTitleText').innerText = "កែប្រែគណនេយ្យទទួល (Edit Receivable)";
-            document.getElementById('formSectionTitle').innerText = "កែប្រែព័ត៌មានគណនេយ្យទទួល (Update Receivable Information)";
-            document.getElementById('submitBtnText').innerText = "រក្សាទុកការកែប្រែ (Update Changes)";
-            document.getElementById('cancelEditBtn').style.display = 'inline-block';
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function cancelEdit() {
-            document.getElementById('receivableForm').reset();
-            document.getElementById('edit_id').value = '';
-            document.getElementById('invoice_date').valueAsDate = new Date();
-
-            document.getElementById('formTitleText').innerText = "គណនេយ្យទទួល";
-            document.getElementById('formSectionTitle').innerText = "កត់ត្រាគណនេយ្យទទួលថ្មី (Record New Receivable)";
-            document.getElementById('submitBtnText').innerText = "រក្សាទុកគណនេយ្យទទួល (Save Receivable)";
-            document.getElementById('cancelEditBtn').style.display = 'none';
         }
 
         async function markAsPaid(receivableId) {
@@ -467,7 +402,6 @@
 
         document.getElementById('receivableForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const editId = document.getElementById('edit_id').value;
             const body = {
                 customer_name: document.getElementById('customer_name').value,
                 amount: document.getElementById('amount').value,
@@ -477,26 +411,23 @@
                 description: document.getElementById('description').value
             };
 
-            const url = editId ? `/api/receivables/${editId}` : '/api/receivables';
-            const method = editId ? 'PUT' : 'POST';
-
             try {
-                const res = await fetch(url, {
-                    method: method,
+                const res = await fetch('/api/receivables', {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body)
                 });
                 
                 if (res.ok) {
-                    alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានរក្សាទុកគណនេយ្យទទួលដោយជោគជ័យ!');
-                    cancelEdit();
+                    alert('បានរក្សាទុកគណនេយ្យទទួលដោយជោគជ័យ! (Successfully saved receivable!)');
+                    e.target.reset();
+                    document.getElementById('invoice_date').valueAsDate = new Date();
                     loadReceivables();
                 } else {
-                    alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ!');
+                    alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ! (Error saving data!)');
                 }
             } catch (error) {
                 console.error(error);
-                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
             }
         });
 
