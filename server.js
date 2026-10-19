@@ -668,6 +668,33 @@ app.get('/api/users', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+// API សម្រាប់ទាញយកស្ថិតិវិក្កយបត្រតាមឈ្មោះអ្នកបង់ប្រាក់ (Charge To)
+app.get('/api/invoices/stats', async (req, res) => {
+    const { customerName } = req.query;
+    if (!customerName) {
+        return res.status(400).json({ success: false, error: 'សូមបញ្ជាក់ឈ្មោះអតិថិជន (Charge To)' });
+    }
+
+    try {
+        const query = `
+            SELECT 
+                COUNT(*) as total_invoices,
+                COALESCE(SUM(grand_total_usd), 0) as total_amount_usd
+            FROM tax_invoices 
+            WHERE charge_to ILIKE $1
+        `;
+        const result = await pool.query(query, [`%${customerName}%`]);
+        
+        res.json({
+            success: true,
+            total_invoices: parseInt(result.rows[0].total_invoices) || 0,
+            total_amount_usd: parseFloat(result.rows[0].total_amount_usd) || 0
+        });
+    } catch (err) {
+        console.error('Error fetching customer invoice stats:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
 
 app.put('/api/users/:id', async (req, res) => {
     const { id } = req.params;
