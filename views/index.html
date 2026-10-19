@@ -531,7 +531,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ Server API!');
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server API!');
             }
         }
 
@@ -564,7 +564,7 @@
                 }
             } catch (err) {
                 console.error(err);
-                alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ Server API!');
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server API!');
             }
         }
 
@@ -665,7 +665,11 @@
 
             let filteredDepts = departments;
             if (user.role !== "ADMIN" && user.role !== "SUPERVISOR") {
-                filteredDepts = departments.filter(dept => dept.id === user.dept_id);
+                if (user.dept_id === "HR_ADMIN") {
+                    filteredDepts = departments.filter(dept => dept.id === "HR_ADMIN" || dept.id === "ACC_FIN");
+                } else {
+                    filteredDepts = departments.filter(dept => dept.id === user.dept_id);
+                }
             }
 
             filteredDepts.forEach(dept => {
