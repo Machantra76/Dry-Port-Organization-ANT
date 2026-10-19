@@ -542,6 +542,33 @@ async function initializeDatabase() {
             );
         `);
 
+        // ៣៤. តារាងគ្រប់គ្រងវិក្កយបត្រ (Tax & Commercial Invoices)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS tax_invoices (
+                id SERIAL PRIMARY KEY,
+                invoice_type VARCHAR(50) NOT NULL,
+                invoice_no VARCHAR(100) NOT NULL,
+                charge_to VARCHAR(255),
+                seal_no VARCHAR(100),
+                booking_no VARCHAR(100),
+                container_no VARCHAR(100),
+                remark TEXT,
+                inv_date VARCHAR(100),
+                truck_out VARCHAR(100),
+                truck_in VARCHAR(100),
+                owner VARCHAR(255),
+                booking_by VARCHAR(255),
+                size VARCHAR(50),
+                items JSONB,
+                subtotal NUMERIC(10, 2) DEFAULT 0,
+                exch_rate NUMERIC(10, 2) DEFAULT 4085,
+                vat_amount NUMERIC(10, 2) DEFAULT 0,
+                grand_total_usd NUMERIC(10, 2) DEFAULT 0,
+                grand_total_khr NUMERIC(12, 2) DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
         await client.query(`ALTER TABLE customs_permit_records DROP CONSTRAINT IF EXISTS customs_permit_records_permit_number_key;`).catch(() => {});
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS customs_reg_number VARCHAR(100);`);
@@ -668,7 +695,10 @@ app.get('/api/users', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
-// API សម្រាប់ទាញយកស្ថិតិវិក្កយបត្រតាមឈ្មោះអ្នកបង់ប្រាក់ (Charge To)
+
+// ==========================================
+// API Routes: ស្ថិតិវិក្កយបត្រ និងការរក្សាទុកវិក្កយបត្រ (Billing & Cashier Stats)
+// ==========================================
 app.get('/api/invoices/stats', async (req, res) => {
     const { customerName } = req.query;
     if (!customerName) {
@@ -683,7 +713,7 @@ app.get('/api/invoices/stats', async (req, res) => {
             FROM tax_invoices 
             WHERE charge_to ILIKE $1
         `;
-        const result = await pool.query(query, [`%${customerName}%`]);
+        const result = await pool.query(query, [`%${customerName.trim()}%`]);
         
         res.json({
             success: true,
@@ -692,6 +722,37 @@ app.get('/api/invoices/stats', async (req, res) => {
         });
     } catch (err) {
         console.error('Error fetching customer invoice stats:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+app.post('/api/tax-invoices', async (req, res) => {
+    const {
+        invoice_type, invoice_no, charge_to, seal_no, booking_no, container_no,
+        remark, inv_date, truck_out, truck_in, owner, booking_by, size,
+        items, subtotal, exch_rate, vat_amount, grand_total_usd, grand_total_khr
+    } = req.body;
+
+    try {
+        const query = `
+            INSERT INTO tax_invoices (
+                invoice_type, invoice_no, charge_to, seal_no, booking_no, container_no,
+                remark, inv_date, truck_out, truck_in, owner, booking_by, size,
+                items, subtotal, exch_rate, vat_amount, grand_total_usd, grand_total_khr
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+            RETURNING *;
+        `;
+        const values = [
+            invoice_type || 'TAX_INVOICE', invoice_no, charge_to, seal_no, booking_no, container_no,
+            remark, inv_date, truck_out, truck_in, owner, booking_by, size,
+            JSON.stringify(items || []), subtotal || 0, exch_rate || 4085, vat_amount || 0,
+            grand_total_usd || 0, grand_total_khr || 0
+        ];
+
+        const result = await pool.query(query, values);
+        res.json({ success: true, message: 'បានរក្សាទុកវិក្កយបត្រដោយជោគជ័យ!', data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving tax invoice:', err);
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
@@ -892,6 +953,10 @@ app.put('/api/customs-permits/:id', async (req, res) => {
 // ==========================================
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
+});
+
+app.get('/billing-cashier.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'billing-cashier.html'));
 });
 
 app.get('/views/hr-in-out.html', (req, res) => {
