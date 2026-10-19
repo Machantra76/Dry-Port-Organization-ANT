@@ -187,12 +187,13 @@
                         statusText = 'ហួសថ្ងៃកំណត់ (Overdue)';
                     }
 
-                    let actionButtons = `
-                        <a class="action-link" onclick="printInvoice('${item.id}', '${item.customer_name}', '${invDate}', '${dueDate}', '${item.amount}', '${statusText}', '${item.description || '-'}')">🧾 វិក្កយបត្រ</a>
-                    `;
+                    // 👉 បានលុបប៊ូតុង 🧾 វិក្កយបត្រ ចេញ ទុកតែប៊ូតុងបង់ប្រាក់រួច
+                    let actionButtons = '';
 
                     if (item.status !== 'Paid') {
-                        actionButtons += ` | <a class="action-link" style="color: #10b981;" onclick="markAsPaid('${item.id}')">✅ បង់ប្រាក់រួច</a>`;
+                        actionButtons = `<a class="action-link" style="color: #10b981;" onclick="markAsPaid('${item.id}')">✅ បង់ប្រាក់រួច</a>`;
+                    } else {
+                        actionButtons = `<span style="color: #64748b; font-size: 13px;">-</span>`;
                     }
 
                     tbody.innerHTML += `<tr>
@@ -211,89 +212,33 @@
             }
         }
 
-       async function markAsPaid(receivableId) {
-    if (confirm('តើអ្នកពិតជាចង់កំណត់ថាអតិថិជនបានទូទាត់ប្រាក់រួចហើយមែនទេ?')) {
-        try {
-            const response = await fetch(`/api/receivables/${receivableId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ status: 'Paid' })
-            });
+        async function markAsPaid(receivableId) {
+            if (confirm('តើអ្នកពិតជាចង់កំណត់ថាអតិថិជនបានទូទាត់ប្រាក់រួចហើយមែនទេ?')) {
+                try {
+                    const response = await fetch(`/api/receivables/${receivableId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: 'Paid' })
+                    });
 
-            const result = await response.json();
-            if (response.ok && result.success) {
-                alert('បានកែប្រែស្ថានភាពជា "បានទូទាត់" ដោយជោគជ័យ!');
-                loadReceivables(); // ទាញយកទិន្នន័យតារាង receivables មកបង្ហាញសាថ្មី
-            } else {
-                alert('មានបញ្ហាក្នុងការកែប្រែទិន្នន័យ៖ ' + (result.error || ''));
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        alert('បានកែប្រែស្ថានភាពជា "បានទូទាត់" ដោយជោគជ័យ!');
+                        loadReceivables(); 
+                    } else {
+                        alert('មានបញ្ហាក្នុងការកែប្រែទិន្នន័យ៖ ' + (result.error || ''));
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+                }
             }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
         }
-    }
-}
 
         function resetFilter() {
             document.getElementById('filter_from').value = '';
             document.getElementById('filter_to').value = '';
             loadReceivables();
-        }
-
-        function printInvoice(id, customer, invDate, dueDate, amount, status, desc) {
-            const invoiceNo = `INV-${new Date().getFullYear()}-${String(id).padStart(4, '0')}`;
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html>
-                <head>
-                    <title>វិក្កយបត្រគណនេយ្យទទួល - Accounts Receivable Invoice</title>
-                    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
-                    <style>
-                        body { font-family: 'Kantumruy Pro', sans-serif; padding: 40px; color: #333; }
-                        .invoice-box { max-width: 750px; margin: auto; padding: 40px; border: 1px solid #cbd5e1; box-shadow: 0 0 15px rgba(0,0,0,0.1); border-radius: 8px; background: #fff; }
-                        h2 { text-align: center; color: #1e3c72; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 0.5px; }
-                        .sub-title { text-align: center; color: #1e3c72; font-size: 20px; font-weight: 700; margin-top: 15px; margin-bottom: 5px; text-transform: uppercase; }
-                        .eng-sub-title { text-align: center; color: #64748b; font-size: 14px; font-weight: 600; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 0.5px; }
-                        .meta-info { display: flex; justify-content: space-between; margin-bottom: 25px; background: #f8fafc; padding: 15px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 14px; }
-                        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; font-size: 15px; }
-                        .label { font-weight: bold; color: #1e3c72; }
-                        .total-box { margin-top: 30px; text-align: right; font-size: 20px; font-weight: bold; color: #1e3c72; background: #e0f2fe; padding: 15px; border-radius: 6px; border: 1px solid #bae6fd; }
-                        .footer { margin-top: 60px; display: flex; justify-content: space-between; text-align: center; font-size: 14px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="invoice-box">
-                        <h2>ANT DRY PORT</h2>
-                        
-                        <div class="sub-title">វិក្កយបត្រគណនេយ្យទទួល</div>
-                        <div class="eng-sub-title">(ACCOUNTS RECEIVABLE INVOICE)</div>
-                        
-                        <div class="meta-info">
-                            <div><strong>លេខវិក្កយបត្រ (Invoice No.):</strong> ${invoiceNo}</div>
-                            <div><strong>កាលបរិច្ឆេទ (Date):</strong> ${invDate}</div>
-                        </div>
-
-                        <div class="info-row"><span class="label">អតិថិជន (Customer):</span> <span>${customer}</span></div>
-                        <div class="info-row"><span class="label">ថ្ងៃកំណត់បង់ប្រាក់ (Due Date):</span> <span>${dueDate}</span></div>
-                        <div class="info-row"><span class="label">ស្ថានភាព (Status):</span> <span>${status}</span></div>
-                        <div class="info-row"><span class="label">បរិយាយ (Description):</span> <span>${desc}</span></div>
-                        
-                        <div class="total-box">
-                            ទឹកប្រាក់សរុប (Total Amount Due): $${parseFloat(amount).toFixed(2)}
-                        </div>
-
-                        <div class="footer">
-                            <div><br><br>ហត្ថលេខាអ្នកចេញវិក្កយបត្រ<br>Issued By</div>
-                            <div><br><br>ហត្ថលេខាអតិថិជន<br>Customer's Signature</div>
-                        </div>
-                    </div>
-                    <script>
-                        window.onload = function() { window.print(); }
-                    <\/script>
-                </body>
-                </html>
-            `);
-            printWindow.document.close();
         }
 
         document.getElementById('receivableForm').addEventListener('submit', async (e) => {
