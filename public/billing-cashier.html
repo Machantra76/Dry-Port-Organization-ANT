@@ -301,8 +301,13 @@
                 <div>
                     <div class="info-row">
                         <span class="info-label">អ្នកបង់ប្រាក់/Charge To:</span>
-                        <span class="info-value"><input type="text" id="chargeTo" value=""></span>
+                        <span class="info-value"><input type="text" id="chargeTo" value="" onblur="fetchCustomerStats(this.value)"></span>
                     </div>
+                    <!-- កន្លែងបង្ហាញស្ថិតិប្រវត្តិវិក្កយបត្រសរុប -->
+                    <div id="customerStatsDisplay" style="font-size: 11px; color: #0284c7; margin-bottom: 6px; font-weight: 600; display: none;">
+                        <i class="fa-solid fa-circle-info"></i> ប្រវត្តិ៖ ធ្លាប់មាន <span id="statCount">0</span> វិក្កយបត្រ | សរុបទឹកប្រាក់: $<span id="statTotal">0.00</span>
+                    </div>
+
                     <div class="info-row">
                         <span class="info-label">Seal No:</span>
                         <span class="info-value"><input type="text" id="sealNo" value=""></span>
@@ -568,6 +573,27 @@
             calculateInvoice();
         }
 
+        // មុខងារទាញយកស្ថិតិប្រវត្តិវិក្កយបត្រតាម Charge To
+        async function fetchCustomerStats(customerName) {
+            if (!customerName.trim()) {
+                document.getElementById('customerStatsDisplay').style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${window.location.origin}/api/invoices/stats?customerName=${encodeURIComponent(customerName.trim())}`);
+                const result = await response.json();
+
+                if (result.success) {
+                    document.getElementById('statCount').innerText = result.total_invoices;
+                    document.getElementById('statTotal').innerText = result.total_amount_usd.toFixed(2);
+                    document.getElementById('customerStatsDisplay').style.display = 'block';
+                }
+            } catch (err) {
+                console.error('Error fetching stats:', err);
+            }
+        }
+
         async function saveInvoiceToDB() {
             const invoiceData = {
                 invoice_type: isTaxInvoiceMode ? 'TAX_INVOICE' : 'COMMERCIAL_INVOICE',
@@ -600,7 +626,7 @@
             };
 
             try {
-                const response = await fetch('/api/tax-invoices', {
+                const response = await fetch(`${window.location.origin}/api/tax-invoices`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(invoiceData)
