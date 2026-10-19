@@ -695,6 +695,58 @@ app.get('/api/users', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+// ==========================================
+// API Routes: គ្រប់គ្រងបញ្ជីវិក្កយបត្រ (Invoice List APIs)
+// ==========================================
+
+// ១. ទាញយកបញ្ជីវិក្កយបត្រទាំងអស់
+app.get('/api/tax-invoices', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM tax_invoices ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching tax invoices:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+// ២. ទាញយកវិក្កយបត្រមួយតាម ID
+app.get('/api/tax-invoices/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('SELECT * FROM tax_invoices WHERE id = $1', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញវិក្កយបត្រនេះទេ' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error fetching single invoice:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+// ៣. លុបវិក្កយបត្រតាម ID
+app.delete('/api/tax-invoices/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM tax_invoices WHERE id = $1 RETURNING *;', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញវិក្កយបត្រនេះទេ' });
+        }
+        res.json({ success: true, message: 'បានលុបវិក្កយបត្រដោយជោគជ័យ!' });
+    } catch (err) {
+        console.error('Error deleting invoice:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+// HTML Route សម្រាប់បើកទំព័រ invoice-list.html
+app.get('/invoice-list.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'invoice-list.html'));
+});
+app.get('/views/invoice-list.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'invoice-list.html'));
+});
 
 // ==========================================
 // API Routes: ស្ថិតិវិក្កយបត្រ និងការរក្សាទុកវិក្កយបត្រ (Billing & Cashier Stats)
