@@ -428,12 +428,13 @@
         let isManualVAT = false;
         let isTaxInvoiceMode = true; // True = Tax Invoice, False = Commercial Invoice (វិក្កយបត្រធម្មតា)
 
-        const descriptionOptions = [
+      const descriptionOptions = [
             "Inbound", "bonded storage charge", "Showroom Storage", "Lolo", "Forklift",
             "Loading", "Permit to Showroom", "Handling Inbound", "Handling Outbound",
             "Gate Fee 1.5T", "Gate Fee 2.5T", "Gate Fee 3.5-5T", "Gate Fee 8-10T",
             "Laden Con Storage", "Empty Con", "Cy Storage for Tractor", "Cy For Escavator",
-            "RAM", "Permit Transit", "Clear", "Dry port Facility", "Gate Fee"
+            "RAM", "Permit Transit", "Clear", "Dry port Facility", "Gate Fee",
+            "CLEARANCE CAR(ONE CONTAINER=1 CAR)", "SECOND CAR ONWARD"
         ];
 
         function getCurrentDateTime() {
