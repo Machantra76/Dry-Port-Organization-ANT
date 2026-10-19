@@ -38,19 +38,26 @@
             margin: 20px auto;
             padding: 0 15px;
         }
-
-       .action-bar {
+.action-bar {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
-            flex-wrap: nowrap; /* មិនអនុញ្ញាតឱ្យធ្លាក់ជួរផ្ដេសផ្ដាស */
-            gap: 12px;
             align-items: center;
+            max-width: 900px; /* កំណត់ប្រវែងស្មើគ្នា ១០០% ទៅនឹងប្រអប់ invoice-box */
+            margin: 0 auto 20px auto; /* រៀបចំឱ្យស្ថិតនៅចំកណ្តាលអេក្រង់ស្អាត */
+            flex-wrap: nowrap;
+            gap: 10px;
         }
+
         .action-bar h3 {
             margin: 0;
-            white-space: nowrap; /* មិនให้อក្សរចំណងជើងបាក់ជួរ */
+            white-space: nowrap;
             font-size: 16px;
+        }
+
+        .action-buttons-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
         }
         .action-buttons-group {
             display: flex;
@@ -284,7 +291,7 @@
     </header>
 
     <div class="container">
-      <div class="action-bar no-print">
+     <div class="action-bar no-print">
     <h3 id="modeTitle">ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE)</h3>
     <div class="action-buttons-group">
         <button class="btn-toggle" onclick="toggleInvoiceMode()"><i class="fa-solid fa-sync"></i> ប្ដូរប្រភេទ: <span id="modeButtonText">វិក្កយបត្រធម្មតា (Commercial)</span></button>
