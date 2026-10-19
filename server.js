@@ -2076,7 +2076,7 @@ app.put('/api/receivables/:id', async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     try {
-        // ១. ធ្វើការអាប់ដេតស្ថានភាពក្នុងតារាង accounts_receivable ជាមុនសិន
+        // ១. អាប់ដេតស្ថានភាពក្នុងតារាង accounts_receivable
         const query = `
             UPDATE accounts_receivable 
             SET status = $1 
@@ -2091,22 +2091,25 @@ app.put('/api/receivables/:id', async (req, res) => {
 
         const rec = result.rows[0];
 
-        // ២. ប្រសិនបើប្ដូរជា 'Paid' ធ្វើការអាប់ដេតតារាង tax_invoices
+        // ២. ប្រសិនបើប្ដូរជា 'Paid' ធ្វើការអាប់ដេតតារាង tax_invoices ទាំងតាម Invoice No និង តាមឈ្មោះអតិថិជន
         if (status === 'Paid') {
             const description = rec.description || '';
-            // ស្វែងរកលេខវិក្កយបត្រ (ឧ. INV-2026-003) នៅក្នុង Description
+            
+            // ទាញយកលេខវិក្កយបត្រគ្រប់ទម្រង់ពី Description (ឧ. INV-2026-005)
             const invMatch = description.match(/INV-\d{4}-\d+/i);
 
             if (invMatch) {
-                // បើមានលេខ Invoice គឺអាប់ដេតចំវិក្កយបត្រនោះតែមួយ
+                // បើមានលេខ Invoice ក្នុង Description គឺអាប់ដេតចំវិក្កយបត្រនោះភ្លាមៗ
                 await pool.query(
-                    "UPDATE tax_invoices SET payment_status = 'PAID' WHERE invoice_no = $1;",
+                    "UPDATE tax_invoices SET payment_status = 'PAID' WHERE invoice_no ILIKE $1;",
                     [invMatch[0]]
                 );
-            } else if (rec.customer_name) {
-                // បើអត់មានលេខ Invoice ទេ គឺអាប់ដេតតាមឈ្មោះអតិថិជន (charge_to)
+            } 
+            
+            if (rec.customer_name) {
+                // ព្រមទាំងអាប់ដេតតាមឈ្មោះអតិថិជន (Charge To) ផងដែរ ដើម្បីធានាថាត្រូវគ្នា១០០%
                 await pool.query(
-                    "UPDATE tax_invoices SET payment_status = 'PAID' WHERE LOWER(TRIM(charge_to)) = LOWER(TRIM($1));",
+                    "UPDATE tax_invoices SET payment_status = 'PAID' WHERE TRIM(LOWER(charge_to)) = TRIM(LOWER($1));",
                     [rec.customer_name]
                 );
             }
