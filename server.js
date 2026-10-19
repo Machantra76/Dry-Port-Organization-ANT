@@ -2076,7 +2076,7 @@ app.put('/api/receivables/:id', async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     try {
-        // ១. អាប់ដេតស្ថានភាពក្នុងតារាង accounts_receivable
+        // ១. អាប់ដេតស្ថានភាពក្នុងតារាង accounts_receivable ជាមុនសិន
         const query = `
             UPDATE accounts_receivable 
             SET status = $1 
@@ -2091,34 +2091,35 @@ app.put('/api/receivables/:id', async (req, res) => {
 
         const rec = result.rows[0];
 
-        // ២. ប្រសិនបើប្ដូរជា 'Paid' ធ្វើការអាប់ដេតតារាង tax_invoices ទាំងតាម Invoice No និង តាមឈ្មោះអតិថិជន
+        // ២. អាប់ដេតតារាង tax_invoices តាមរយៈ Try-Catch ដាច់ដោយឡែក ដើម្បីការពារ Server Error 500
         if (status === 'Paid') {
-            const description = rec.description || '';
-            
-            // ទាញយកលេខវិក្កយបត្រគ្រប់ទម្រង់ពី Description (ឧ. INV-2026-005)
-            const invMatch = description.match(/INV-\d{4}-\d+/i);
+            try {
+                const description = rec.description || '';
+                const invMatch = description.match(/INV-\d{4}-\d+/i);
 
-            if (invMatch) {
-                // បើមានលេខ Invoice ក្នុង Description គឺអាប់ដេតចំវិក្កយបត្រនោះភ្លាមៗ
-                await pool.query(
-                    "UPDATE tax_invoices SET payment_status = 'PAID' WHERE invoice_no ILIKE $1;",
-                    [invMatch[0]]
-                );
-            } 
-            
-            if (rec.customer_name) {
-                // ព្រមទាំងអាប់ដេតតាមឈ្មោះអតិថិជន (Charge To) ផងដែរ ដើម្បីធានាថាត្រូវគ្នា១០០%
-                await pool.query(
-                    "UPDATE tax_invoices SET payment_status = 'PAID' WHERE TRIM(LOWER(charge_to)) = TRIM(LOWER($1));",
-                    [rec.customer_name]
-                );
+                if (invMatch) {
+                    await pool.query(
+                        "UPDATE tax_invoices SET payment_status = 'PAID' WHERE invoice_no ILIKE $1;",
+                        [invMatch[0]]
+                    );
+                } 
+                
+                if (rec.customer_name) {
+                    await pool.query(
+                        "UPDATE tax_invoices SET payment_status = 'PAID' WHERE TRIM(LOWER(charge_to)) = TRIM(LOWER($1));",
+                        [rec.customer_name]
+                    );
+                }
+            } catch (invoiceErr) {
+                console.error('Warning: Could not update tax_invoices payment_status:', invoiceErr.message);
+                // មិនឱ្យរាំងស្ទះដល់การ update receivable ដើមឡើយ
             }
         }
 
         res.json({ success: true, data: rec });
     } catch (err) {
         console.error('Error updating receivable status:', err);
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែស្ថានភាពគណនេយ្យទទួល' });
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែស្ថានភាពគណនេយ្យទទួល: ' + err.message });
     }
 });
 // ==========================================
