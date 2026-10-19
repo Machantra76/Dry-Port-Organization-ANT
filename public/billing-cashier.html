@@ -39,13 +39,25 @@
             padding: 0 15px;
         }
 
-        .action-bar {
+       .action-bar {
             display: flex;
             justify-content: space-between;
             margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
+            flex-wrap: nowrap; /* មិនអនុញ្ញាតឱ្យធ្លាក់ជួរផ្ដេសផ្ដាស */
+            gap: 12px;
             align-items: center;
+        }
+        .action-bar h3 {
+            margin: 0;
+            white-space: nowrap; /* មិនให้อក្សរចំណងជើងបាក់ជួរ */
+            font-size: 16px;
+        }
+        .action-buttons-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: flex-end;
         }
 
         .btn-primary {
@@ -272,18 +284,16 @@
     </header>
 
     <div class="container">
-       <div class="action-bar no-print">
+      <div class="action-bar no-print">
     <h3 id="modeTitle">ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE)</h3>
-    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+    <div class="action-buttons-group">
         <button class="btn-toggle" onclick="toggleInvoiceMode()"><i class="fa-solid fa-sync"></i> ប្ដូរប្រភេទ: <span id="modeButtonText">វិក្កយបត្រធម្មតា (Commercial)</span></button>
-        <button class="btn-add-row no-print" onclick="addRow()"><i class="fa-solid fa-plus"></i> បន្ថែមជួរមុខទំនិញ</button>
-        <button class="btn-success" onclick="saveInvoiceToDB()"><i class="fa-solid fa-cloud-arrow-up"></i> រក្សាទុកចូល Server</button>
-        <!-- ប៊ូតុងបន្ថែមថ្មី៖ បញ្ជីវិក្កយបត្រ -->
-        <a href="/invoice-list.html" class="btn-primary" style="background: #8b5cf6; text-decoration: none; display: inline-flex; align-items: center; gap: 5px;"><i class="fa-solid fa-list-check"></i> បញ្ជីវិក្កយបត្រ (Invoice List)</a>
+        <button class="btn-add-row" onclick="addRow()"><i class="fa-solid fa-plus"></i> បន្ថែមជួរ</button>
+        <button class="btn-success" onclick="saveInvoiceToDB()"><i class="fa-solid fa-cloud-arrow-up"></i> រក្សាទុក</button>
+        <a href="/invoice-list.html" class="btn-primary" style="background: #8b5cf6; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px; border-radius: 6px; font-size: 13px;"><i class="fa-solid fa-list-check"></i> បញ្ជីវិក្កយបត្រ</a>
         <button class="btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> បោះពុម្ព</button>
     </div>
 </div>
-
         <!-- ផ្ទាំងវិក្កយបត្រ -->
         <div class="invoice-box" id="invoiceBox">
             
