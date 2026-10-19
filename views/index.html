@@ -404,6 +404,8 @@
     </div>
 
     <script>
+        const API_BASE = window.location.origin;
+
         const departmentNames = {
             "HR_ADMIN": "ធនធានមនុស្ស & រដ្ឋបាល",
             "ACC_FIN": "គណនេយ្យ & ហិរញ្ញវត្ថុ",
@@ -467,7 +469,6 @@
             "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ": { en: "Customs System Data Entry Management", url: "/views/doc-customs.html" },
             "អ្នកកាន់ឯកសារ": { en: "Document Controller / Handler", url: "/views/doc-handler.html" },
 
-            /* មុខងារសម្រាប់ Bonded Warehouse (BWH) */
             "ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)": { en: "Bonded Warehouse Cargo In/Out Control", url: "/views/bwh-inout.html" },
             "ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ": { en: "Duty-Unpaid Inventory Monitoring", url: "/views/bwh-inventory.html" },
             "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ": { en: "Customs Permit & Document Control (BWH)", url: "/views/bwh-customs.html" }
@@ -486,13 +487,12 @@
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
-            const loggedUser = JSON.parse(localStorage.getItem('ant_logged_user_info'));
+            const loggedUser = JSON.parse(sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info'));
             if (loggedUser) {
                 document.getElementById('authModal').style.display = 'none';
                 document.getElementById('userInfoDisplay').style.display = 'flex';
-                document.getElementById('welcomeText').innerText = `${loggedUser.full_name} (${loggedUser.role})`;
+                document.getElementById('welcomeText').innerText = `${loggedUser.full_name || loggedUser.username} (${loggedUser.role})`;
                 
-                // បង្ហាញប៊ូតុងបង្កើត និងគ្រប់គ្រង User เฉพาะ Admin តែប៉ុណ្ណោះ
                 if (loggedUser.role === 'ADMIN') {
                     document.getElementById('btnCreateUser').style.display = 'inline-block';
                     document.getElementById('btnManageUsers').style.display = 'inline-block';
@@ -511,7 +511,7 @@
             const password = document.getElementById('loginPassword').value.trim();
 
             try {
-                const response = await fetch('/api/auth/login', {
+                const response = await fetch(`${API_BASE}/api/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -519,13 +519,19 @@
 
                 const result = await response.json();
                 if (response.ok && result.success) {
+                    if (result.user.status === 'inactive') {
+                        alert("❌ គណនីនេះត្រូវបានអសកម្ម (Inactive) រួចហើយ មិនអាចចូលប្រើប្រាស់បានទេ!");
+                        return;
+                    }
                     localStorage.setItem('ant_logged_user_info', JSON.stringify(result.user));
+                    sessionStorage.setItem('ant_logged_user_info', JSON.stringify(result.user));
                     location.reload();
                 } else {
                     alert('បរាជ័យ៖ ' + (result.error || 'ឈ្មោះគណនី ឬពាក្យសម្ងាត់មិនត្រឹមត្រូវ!'));
                 }
             } catch (err) {
-                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+                console.error(err);
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server API!');
             }
         }
 
@@ -537,26 +543,28 @@
                 username: document.getElementById('regUsername').value.trim(),
                 password: document.getElementById('regPassword').value.trim(),
                 role: selectedRole,
-                dept_id: (selectedRole === 'ADMIN' || selectedRole === 'SUPERVISOR') ? 'ALL' : document.getElementById('regDept').value
+                dept_id: (selectedRole === 'ADMIN' || selectedRole === 'SUPERVISOR') ? 'ALL' : document.getElementById('regDept').value,
+                status: 'active'
             };
 
             try {
-                const response = await fetch('/api/auth/register', {
+                const response = await fetch(`${API_BASE}/api/users`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
                 const result = await response.json();
-                if (response.ok && result.success) {
-                    alert('បានបង្កើត User ថ្មីដោយជោគជ័យ!');
+                if (response.ok && (result.success || result.user)) {
+                    alert('បានបង្កើត User ថ្មីក្នុង Database ដោយជោគជ័យ!');
                     closeRegisterModal();
                     document.getElementById('registerForm').reset();
                 } else {
                     alert('បរាជ័យ៖ ' + (result.error || 'ឈ្មោះគណនីនេះមានរួចហើយ!'));
                 }
             } catch (err) {
-                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+                console.error(err);
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server API!');
             }
         }
 
@@ -572,8 +580,7 @@
             document.getElementById('loginCard').style.display = 'block';
         }
 
-        // បើកផ្ទាំងគ្រប់គ្រង User
-        async function openManageUsersModal() {
+        function openManageUsersModal() {
             document.getElementById('manageUsersModal').style.display = 'flex';
             loadUserList();
         }
@@ -582,23 +589,24 @@
             document.getElementById('manageUsersModal').style.display = 'none';
         }
 
-        // ទាញយកបញ្ជី User មកបង្ហាញក្នុងតារាង
         async function loadUserList() {
             try {
-                const response = await fetch('/api/users');
+                const response = await fetch(`${API_BASE}/api/users`);
                 const users = await response.json();
                 
                 const tbody = document.getElementById('userTableBody');
                 tbody.innerHTML = '';
 
-                users.forEach(u => {
-                    const isActive = u.status === 'Active' || !u.status;
-                    const deptKhmerName = departmentNames[u.dept_id] || u.dept_id;
+                const userList = Array.isArray(users) ? users : (users.data || []);
+
+                userList.forEach(u => {
+                    const isActive = u.status === 'active' || u.status === 'Active' || !u.status;
+                    const deptKhmerName = departmentNames[u.dept_id] || u.dept_id || 'គ្រប់ផ្នែក';
                     
                     tbody.innerHTML += `
                         <tr style="border-bottom: 1px solid #e2e8f0;">
                             <td style="padding: 10px; font-weight: 600;">${u.username}</td>
-                            <td style="padding: 10px;">${u.full_name}</td>
+                            <td style="padding: 10px;">${u.full_name || u.username}</td>
                             <td style="padding: 10px;">
                                 <span style="color: var(--primary-color); font-weight: 600;">${u.role}</span><br>
                                 <small style="color: #64748b;">${deptKhmerName}</small>
@@ -609,7 +617,7 @@
                                 </span>
                             </td>
                             <td style="padding: 10px; text-align: center;">
-                                <button onclick="toggleUserStatus(${u.id}, '${isActive ? 'Inactive' : 'Active'}')" style="padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-family: 'Kantumruy Pro'; font-size: 12px; background: ${isActive ? '#ef4444' : '#10b981'}; color: white;">
+                                <button onclick="toggleUserStatus('${u.id}', '${isActive ? 'inactive' : 'active'})" style="padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-family: 'Kantumruy Pro'; font-size: 12px; background: ${isActive ? '#ef4444' : '#10b981'}; color: white;">
                                     ${isActive ? 'បិទសិទ្ធិ (Inactive)' : 'បើកសិទ្ធិវិញ (Active)'}
                                 </button>
                             </td>
@@ -617,16 +625,16 @@
                     `;
                 });
             } catch (err) {
-                alert('មិនអាចទាញយកបញ្ជី User បានទេ!');
+                console.error(err);
+                alert('មិនអាចទាញយកបញ្ជី User ពី Database បានទេ!');
             }
         }
 
-        // ប្ដូរ Status របស់ User (Active <-> Inactive)
         async function toggleUserStatus(userId, newStatus) {
             if (!confirm(`តើអ្នកពិតជាចង់ប្ដូរស្ថានភាព User នេះទៅជា "${newStatus}" ដែរឬទេ?`)) return;
 
             try {
-                const response = await fetch(`/api/users/${userId}`, {
+                const response = await fetch(`${API_BASE}/api/users/${userId}/status`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: newStatus })
@@ -634,18 +642,20 @@
 
                 const result = await response.json();
                 if (response.ok && result.success) {
-                    alert('បានកែប្រែស្ថានភាព User ដោយជោគជ័យ!');
+                    alert('បានកែប្រែស្ថានភាព User ក្នុង Database ដោយជោគជ័យ!');
                     loadUserList();
                 } else {
                     alert('បរាជ័យ៖ ' + (result.error || 'មានបញ្ហាបច្ចេកទេស'));
                 }
             } catch (err) {
-                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+                console.error(err);
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server API!');
             }
         }
 
         function handleLogout() {
             localStorage.removeItem('ant_logged_user_info');
+            sessionStorage.removeItem('ant_logged_user_info');
             location.reload();
         }
 
