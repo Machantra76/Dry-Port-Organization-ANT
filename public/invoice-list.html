@@ -275,7 +275,7 @@
                 return;
             }
 
-            data.forEach((inv, index) => {
+           data.forEach((inv, index) => {
                 const amount = parseFloat(inv.grand_total_usd) || 0;
                 sumTotal += amount;
 
@@ -283,7 +283,8 @@
                 const isTax = inv.invoice_type === 'TAX_INVOICE';
                 const typeBadge = isTax ? `<span class="badge-tax">TAX INVOICE</span>` : `<span class="badge-com">COMMERCIAL</span>`;
 
-                const isPaid = inv.payment_status === 'PAID';
+                // 👉 ដាក់កូដនេះនៅទីនេះ ក្នុង loop របស់ renderInvoiceTable
+                const isPaid = (inv.payment_status || '').toUpperCase() === 'PAID';
                 const statusBadge = isPaid 
                     ? `<span class="badge-paid"><i class="fa-solid fa-circle-check"></i> បានសងប្រាក់រួច</span>`
                     : `<span class="badge-unpaid"><i class="fa-solid fa-clock"></i> មិនទាន់សង</span>`;
@@ -296,7 +297,7 @@
                     <td>${inv.container_no || '-'}</td>
                     <td>${inv.inv_date || '-'}</td>
                     <td style="text-align: right; font-weight: bold; color: #10b981;">$ ${amount.toFixed(2)}</td>
-                    <td style="text-align: center;">${statusBadge}</td>
+                    <td style="text-align: center;">${statusBadge}</td> <!-- 👉 យក variable statusBadge មកដាក់បង្ហាញត្រង់នេះ -->
                     <td style="text-align: center;">
                         <button class="btn btn-print" onclick="viewAndPrintInvoice(${inv.id})"><i class="fa-solid fa-print"></i></button>
                         <button class="btn btn-danger" onclick="deleteInvoice(${inv.id})"><i class="fa-solid fa-trash"></i></button>
@@ -304,7 +305,6 @@
                 `;
                 tbody.appendChild(tr);
             });
-
             document.getElementById('grandTotalSum').innerText = sumTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
 
