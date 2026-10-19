@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>បញ្ជីវិក្កយបត្រ - ANT Dry Port</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #1e3c72;
+            --secondary-color: #2a5298;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+        }
+
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1250px;
+            margin: 20px auto;
+            padding: 0 15px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-bar input, .filter-bar select {
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-size: 13px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-weight: 600;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .btn-info {
+            background: #0284c7;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        table th, table td {
+            border: 1px solid #e2e8f0;
+            padding: 10px;
+            text-align: left;
+        }
+
+        table th {
+            background-color: #f8fafc;
+            font-weight: 600;
+        }
+
+        .badge-tax {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge-com {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        /* Modal Preview */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            max-width: 850px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div>
+            <h1 style="margin:0; font-size: 18px;">ប្រព័ន្ធគ្រប់គ្រងវិក្កយបត្រ - ANT Dry Port</h1>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <a href="/billing-cashier.html" class="btn-primary"><i class="fa-solid fa-plus"></i> បង្កើតវិក្កយបត្រថ្មី</a>
+            <a href="/" class="btn-primary" style="background:#475569;"><i class="fa-solid fa-house"></i> ទំព័រដើម</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin:0;"><i class="fa-solid fa-list-check"></i> បញ្ជីប្រវត្តិវិក្កយបត្រទាំងអស់</h3>
+                <span id="totalInvoiceCount" style="font-weight: bold; color: #0284c7;">សរុប៖ 0 វិក្កយបត្រ</span>
+            </div>
+
+            <div class="filter-bar">
+                <input type="text" id="searchInput" placeholder="ស្វែងរក លេខវិក្កយបត្រ, អតិថិជន, លេខទូ..." style="width: 300px;" onkeyup="filterInvoices()">
+                <select id="typeFilter" onchange="filterInvoices()">
+                    <option value="ALL">-- គ្រប់ប្រភេទ --</option>
+                    <option value="TAX_INVOICE">Tax Invoice (អាករ)</option>
+                    <option value="COMMERCIAL_INVOICE">Commercial Invoice (ធម្មតា)</option>
+                </select>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">ល.រ</th>
+                        <th style="width: 12%;">ប្រភេទ</th>
+                        <th style="width: 13%;">លេខវិក្កយបត្រ</th>
+                        <th style="width: 20%;">អ្នកបង់ប្រាក់ (Charge To)</th>
+                        <th style="width: 15%;">លេខកុងតឺន័រ</th>
+                        <th style="width: 12%;">កាលបរិច្ឆេទ</th>
+                        <th style="width: 13%; text-align: right;">ទឹកប្រាក់ ($)</th>
+                        <th style="width: 10%; text-align: center;">សកម្មភាព</th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceTableBody">
+                    <tr><td colspan="8" style="text-align: center;">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let allInvoices = [];
+
+        async function loadInvoices() {
+            try {
+                const response = await fetch('/api/tax-invoices');
+                allInvoices = await response.json();
+                renderInvoiceTable(allInvoices);
+            } catch (err) {
+                console.error("Error loading invoices:", err);
+                document.getElementById('invoiceTableBody').innerHTML = `<tr><td colspan="8" style="text-align: center; color: red;">មិនអាចទាញយកទិន្នន័យបានទេ!</td></tr>`;
+            }
+        }
+
+        function renderInvoiceTable(data) {
+            const tbody = document.getElementById('invoiceTableBody');
+            tbody.innerHTML = '';
+
+            document.getElementById('totalInvoiceCount').innerText = `សរុប៖ ${data.length} វិក្កយបត្រ`;
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align: center;">គ្មានទិន្នន័យវិក្កយបត្រទេ</td></tr>`;
+                return;
+            }
+
+            data.forEach((inv, index) => {
+                const tr = document.createElement('tr');
+                const isTax = inv.invoice_type === 'TAX_INVOICE';
+                const badge = isTax ? `<span class="badge-tax">TAX INVOICE</span>` : `<span class="badge-com">COMMERCIAL</span>`;
+
+                tr.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${badge}</td>
+                    <td style="font-weight: bold; color: #1e3c72;">${inv.invoice_no || 'N/A'}</td>
+                    <td>${inv.charge_to || '-'}</td>
+                    <td>${inv.container_no || '-'}</td>
+                    <td>${inv.inv_date || '-'}</td>
+                    <td style="text-align: right; font-weight: bold; color: #10b981;">$ ${(parseFloat(inv.grand_total_usd) || 0).toFixed(2)}</td>
+                    <td style="text-align: center;">
+                        <button class="btn-danger" onclick="deleteInvoice(${inv.id})"><i class="fa-solid fa-trash"></i> លុប</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function filterInvoices() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            const selectedType = document.getElementById('typeFilter').value;
+
+            const filtered = allInvoices.filter(inv => {
+                const matchesSearch = 
+                    (inv.invoice_no && inv.invoice_no.toLowerCase().includes(searchTerm)) ||
+                    (inv.charge_to && inv.charge_to.toLowerCase().includes(searchTerm)) ||
+                    (inv.container_no && inv.container_no.toLowerCase().includes(searchTerm));
+
+                const matchesType = selectedType === 'ALL' || inv.invoice_type === selectedType;
+
+                return matchesSearch && matchesType;
+            });
+
+            renderInvoiceTable(filtered);
+        }
+
+        async function deleteInvoice(id) {
+            if (!confirm("តើអ្នកពិតជាចង់លុបវិក្កយបត្រនេះមែនទេ?")) return;
+
+            try {
+                const response = await fetch(`/api/tax-invoices/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                if (result.success) {
+                    alert('✅ ' + result.message);
+                    loadInvoices();
+                } else {
+                    alert('❌ បរាជ័យ៖ ' + result.error);
+                }
+            } catch (err) {
+                console.error("Error deleting invoice:", err);
+                alert('❌ មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadInvoices);
+    </script>
+</body>
+</html>
