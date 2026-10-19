@@ -2089,39 +2089,35 @@ app.put('/api/receivables/:id', async (req, res) => {
             return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យគណនេយ្យទទួលនេះទេ' });
         }
 
-        const receivableRecord = result.rows[0];
+        const rec = result.rows[0];
 
-        // ២. ធ្វើការតភ្ជាប់ទំនាក់ទំនង (Relationship) ទៅកាន់តារាង tax_invoices 
-        // ដើម្បីអាប់ដេត payment_status ឱ្យទៅជា 'PAID' ផងដែរ ពេលដែលអតិថិជនបានបង់ប្រាក់
+        // ២. ប្រសិនបើប្ដូរជា 'Paid' ធ្វើការអាប់ដេតតារាង tax_invoices
         if (status === 'Paid') {
-            const customerName = receivableRecord.customer_name;
-            const amount = receivableRecord.amount;
-            const description = receivableRecord.description || '';
+            const description = rec.description || '';
+            // ស្វែងរកលេខវិក្កយបត្រ (ឧ. INV-2026-003) នៅក្នុង Description
+            const invMatch = description.match(/INV-\d{4}-\d+/i);
 
-            // ករណីរកឃើញលេខវិក្កយបត្រ (INV-...) នៅក្នុងប្រអប់ description
-            const invNoMatch = description.match(/INV-\d+-\d+/) || description.match(/INV-\d{4}-\d+/);
-
-            if (invNoMatch) {
+            if (invMatch) {
+                // បើមានលេខ Invoice គឺអាប់ដេតចំវិក្កយបត្រនោះតែមួយ
                 await pool.query(
                     "UPDATE tax_invoices SET payment_status = 'PAID' WHERE invoice_no = $1;",
-                    [invNoMatch[0]]
+                    [invMatch[0]]
                 );
-            } else if (customerName) {
-                // ប្រសិនបើគ្មានលេខ INV ទេ ធ្វើការអាប់ដេតតាមឈ្មោះអតិថិជន (Charge To) និងទឹកប្រាក់សរុប (grand_total_usd)
+            } else if (rec.customer_name) {
+                // បើអត់មានលេខ Invoice ទេ គឺអាប់ដេតតាមឈ្មោះអតិថិជន (charge_to)
                 await pool.query(
-                    "UPDATE tax_invoices SET payment_status = 'PAID' WHERE charge_to = $1 AND grand_total_usd = $2;",
-                    [customerName, amount]
+                    "UPDATE tax_invoices SET payment_status = 'PAID' WHERE LOWER(TRIM(charge_to)) = LOWER(TRIM($1));",
+                    [rec.customer_name]
                 );
             }
         }
 
-        res.json({ success: true, data: receivableRecord });
+        res.json({ success: true, data: rec });
     } catch (err) {
         console.error('Error updating receivable status:', err);
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែស្ថានភាពគណនេយ្យទទួល' });
     }
 });
-
 // ==========================================
 // API Routes: ចំណាយ (Expenses)
 // ==========================================
