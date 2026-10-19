@@ -2076,6 +2076,7 @@ app.put('/api/receivables/:id', async (req, res) => {
     const { id } = req.params;
     const { status } = req.body;
     try {
+        // ១. ធ្វើការអាប់ដេតស្ថានភាពក្នុងតារាង accounts_receivable ជាមុនសិន
         const query = `
             UPDATE accounts_receivable 
             SET status = $1 
@@ -2088,7 +2089,33 @@ app.put('/api/receivables/:id', async (req, res) => {
             return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យគណនេយ្យទទួលនេះទេ' });
         }
 
-        res.json({ success: true, data: result.rows[0] });
+        const receivableRecord = result.rows[0];
+
+        // ២. ធ្វើការតភ្ជាប់ទំនាក់ទំនង (Relationship) ទៅកាន់តារាង tax_invoices 
+        // ដើម្បីអាប់ដេត payment_status ឱ្យទៅជា 'PAID' ផងដែរ ពេលដែលអតិថិជនបានបង់ប្រាក់
+        if (status === 'Paid') {
+            const customerName = receivableRecord.customer_name;
+            const amount = receivableRecord.amount;
+            const description = receivableRecord.description || '';
+
+            // ករណីរកឃើញលេខវិក្កយបត្រ (INV-...) នៅក្នុងប្រអប់ description
+            const invNoMatch = description.match(/INV-\d+-\d+/) || description.match(/INV-\d{4}-\d+/);
+
+            if (invNoMatch) {
+                await pool.query(
+                    "UPDATE tax_invoices SET payment_status = 'PAID' WHERE invoice_no = $1;",
+                    [invNoMatch[0]]
+                );
+            } else if (customerName) {
+                // ប្រសិនបើគ្មានលេខ INV ទេ ធ្វើការអាប់ដេតតាមឈ្មោះអតិថិជន (Charge To) និងទឹកប្រាក់សរុប (grand_total_usd)
+                await pool.query(
+                    "UPDATE tax_invoices SET payment_status = 'PAID' WHERE charge_to = $1 AND grand_total_usd = $2;",
+                    [customerName, amount]
+                );
+            }
+        }
+
+        res.json({ success: true, data: receivableRecord });
     } catch (err) {
         console.error('Error updating receivable status:', err);
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែស្ថានភាពគណនេយ្យទទួល' });
