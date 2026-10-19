@@ -211,27 +211,28 @@
             }
         }
 
-        async function markAsPaid(receivableId) {
-            if (confirm('តើអ្នកពិតជាចង់កំណត់ថាអតិថិជនបានទូទាត់ប្រាក់រួចហើយមែនទេ?')) {
-                try {
-                    const response = await fetch(`/api/receivables/${receivableId}`, {
-                        method: 'PUT',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ status: 'Paid' })
-                    });
+       async function markAsPaid(receivableId) {
+    if (confirm('តើអ្នកពិតជាចង់កំណត់ថាអតិថិជនបានទូទាត់ប្រាក់រួចហើយមែនទេ?')) {
+        try {
+            const response = await fetch(`/api/receivables/${receivableId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'Paid' })
+            });
 
-                    if (response.ok) {
-                        alert('បានកែប្រែស្ថានភាពជា "បានទូទាត់" ដោយជោគជ័យ!');
-                        loadReceivables();
-                    } else {
-                        alert('មានបញ្ហាក្នុងការកែប្រែទិន្នន័យ!');
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server!');
-                }
+            const result = await response.json();
+            if (response.ok && result.success) {
+                alert('បានកែប្រែស្ថានភាពជា "បានទូទាត់" ដោយជោគជ័យ!');
+                loadReceivables(); // ទាញយកទិន្នន័យតារាង receivables មកបង្ហាញសាថ្មី
+            } else {
+                alert('មានបញ្ហាក្នុងការកែប្រែទិន្នន័យ៖ ' + (result.error || ''));
             }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
         }
+    }
+}
 
         function resetFilter() {
             document.getElementById('filter_from').value = '';
