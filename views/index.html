@@ -666,7 +666,7 @@
             let filteredDepts = departments;
             if (user.role !== "ADMIN" && user.role !== "SUPERVISOR") {
                 if (user.dept_id === "HR_ADMIN") {
-                    filteredDepts = departments.filter(dept => dept.id === "HR_ADMIN" || dept.id === "ACC_FIN");
+                    filteredDepts = departments.filter(dept => dept.id === "HR_ADMIN" || dept.id === "ACC_FIN" || dept.id === "BONDED_WH");
                 } else {
                     filteredDepts = departments.filter(dept => dept.id === user.dept_id);
                 }
