@@ -38,12 +38,12 @@
             margin: 20px auto;
             padding: 0 15px;
         }
-.action-bar {
+        .action-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            max-width: 900px; /* កំណត់ប្រវែងស្មើគ្នា ១០០% ទៅនឹងប្រអប់ invoice-box */
-            margin: 0 auto 20px auto; /* រៀបចំឱ្យស្ថិតនៅចំកណ្តាលអេក្រង់ស្អាត */
+            max-width: 900px;
+            margin: 0 auto 20px auto;
             flex-wrap: nowrap;
             gap: 10px;
         }
@@ -54,11 +54,6 @@
             font-size: 16px;
         }
 
-        .action-buttons-group {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
         .action-buttons-group {
             display: flex;
             gap: 8px;
@@ -122,7 +117,6 @@
             font-size: 11px;
         }
 
-        /* ស្ទីលសម្រាប់ទម្រង់ វិក្កយបត្រ */
         .invoice-box {
             background: white;
             padding: 30px;
@@ -166,7 +160,6 @@
             margin: 10px 0 15px 0;
         }
 
-        /* ប្លង់ព័ត៌មានផ្នែកលើ (Fields Grid) */
         .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -199,7 +192,6 @@
             background: transparent;
         }
 
-        /* តារាងទំនិញ / សេវាកម្ម */
         .invoice-table {
             width: 100%;
             border-collapse: collapse;
@@ -221,7 +213,6 @@
         .text-left { text-align: left !important; }
         .text-right { text-align: right !important; }
 
-        /* ផ្នែកសរុបប្រាក់ */
         .summary-table {
             width: 100%;
             border-collapse: collapse;
@@ -233,7 +224,6 @@
             font-size: 12px;
         }
 
-        /* ហត្ថលេខា */
         .signature-container {
             display: flex;
             justify-content: space-between;
@@ -251,7 +241,6 @@
             height: 60px;
         }
 
-        /* ស្ទីលសម្រាប់ Print */
         @media print {
             body * {
                 visibility: hidden;
@@ -296,7 +285,7 @@
     <div class="action-buttons-group">
         <button class="btn-toggle" onclick="toggleInvoiceMode()"><i class="fa-solid fa-sync"></i> ប្ដូរប្រភេទ: <span id="modeButtonText">វិក្កយបត្រធម្មតា (Commercial)</span></button>
         <button class="btn-add-row" onclick="addRow()"><i class="fa-solid fa-plus"></i> បន្ថែមជួរ</button>
-        <button class="btn-success" onclick="saveInvoiceToDB()"><i class="fa-solid fa-cloud-arrow-up"></i> រក្សាទុក</button>
+        <button class="btn-success" id="saveBtn" onclick="saveInvoiceToDB()"><i class="fa-solid fa-cloud-arrow-up"></i> រក្សាទុក</button>
         <a href="/invoice-list.html" class="btn-primary" style="background: #8b5cf6; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; padding: 8px 14px; border-radius: 6px; font-size: 13px;"><i class="fa-solid fa-list-check"></i> បញ្ជីវិក្កយបត្រ</a>
         <button class="btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> បោះពុម្ព</button>
     </div>
@@ -304,7 +293,6 @@
         <!-- ផ្ទាំងវិក្កយបត្រ -->
         <div class="invoice-box" id="invoiceBox">
             
-            <!-- Header វិក្កយបត្រ (ប្រែប្រួលតាម Mode) -->
             <div class="invoice-title-container">
                 <h2 id="invMainTitle">វិក្កយបត្រអាករ</h2>
                 <h3 id="invSubTitle">TAX INVOICE</h3>
@@ -315,14 +303,12 @@
 
             <div class="header-divider"></div>
 
-            <!-- ព័ត៌មានអតិថិជន និងកុងតឺន័រ -->
             <div class="info-grid">
                 <div>
                     <div class="info-row">
                         <span class="info-label">អ្នកបង់ប្រាក់/Charge To:</span>
                         <span class="info-value"><input type="text" id="chargeTo" value="" onblur="fetchCustomerStats(this.value)"></span>
                     </div>
-                    <!-- កន្លែងបង្ហាញស្ថិតិប្រវត្តិវិក្កយបត្រសរុប -->
                     <div id="customerStatsDisplay" style="font-size: 11px; color: #0284c7; margin-bottom: 6px; font-weight: 600; display: none;">
                         <i class="fa-solid fa-circle-info"></i> ប្រវត្តិ៖ ធ្លាប់មាន <span id="statCount">0</span> វិក្កយបត្រ | សរុបទឹកប្រាក់: $<span id="statTotal">0.00</span>
                     </div>
@@ -377,7 +363,6 @@
                 </div>
             </div>
 
-            <!-- តារាងសេវាកម្ម -->
             <table class="invoice-table">
                 <thead>
                     <tr>
@@ -393,11 +378,9 @@
                     </tr>
                 </thead>
                 <tbody id="invoiceTableBody">
-                    <!-- Dynamic Rows added here -->
                 </tbody>
             </table>
 
-            <!-- តារាងសរុបប្រាក់ និងព័ត៌មានពន្ធ (ប្រែប្រួលតាម Mode) -->
             <table class="summary-table" style="margin-top: -1px;">
                 <tr>
                     <td colspan="7" class="text-right" style="font-weight: bold; width: 77%;">សរុប / Total</td>
@@ -424,7 +407,6 @@
                 </tr>
             </table>
 
-            <!-- ផ្នែកហត្ថលេខា -->
             <div class="signature-container">
                 <div>
                     <div class="signature-title">អ្នកទទួល / Receiver Name</div>
@@ -443,7 +425,9 @@
 
     <script>
         let isManualVAT = false;
-        let isTaxInvoiceMode = true; // True = Tax Invoice, False = Commercial Invoice (វិក្កយបត្រធម្មតា)
+        let isTaxInvoiceMode = true;
+        let isEditMode = false;
+        let editInvoiceId = null;
 
       const descriptionOptions = [
             "Inbound", "bonded storage charge", "Showroom Storage", "Lolo", "Forklift",
@@ -470,7 +454,6 @@
             return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
         }
 
-        // ប្ដូររវាង Tax Invoice និង Invoice ធម្មតា (Commercial)
         function toggleInvoiceMode() {
             isTaxInvoiceMode = !isTaxInvoiceMode;
             const vatRow = document.getElementById('vatRow');
@@ -491,7 +474,7 @@
                 invMainTitle.innerText = "វិក្កយបត្រ";
                 invSubTitle.innerText = "INVOICE";
                 vatTinSection.style.display = "none";
-                vatRow.style.display = "none"; // លាក់ជួរ VAT ចោលសម្រាប់វិក្កយបត្រធម្មតា
+                vatRow.style.display = "none";
                 modeTitle.innerText = "ទម្រង់វិក្កយបត្រធម្មតា (COMMERCIAL INVOICE)";
                 modeButtonText.innerText = "វិក្កយបត្រអាករ (Tax Invoice)";
             }
@@ -566,7 +549,6 @@
             let grandTotalUSD = subtotal;
 
             if (isTaxInvoiceMode) {
-                // ប្រសិនបើជា Tax Invoice គឺគណនា VAT 10% បន្ថែម
                 if (!isManualVAT) {
                     vat = subtotal * 0.10;
                     document.getElementById('vatInput').value = vat.toFixed(2);
@@ -575,7 +557,6 @@
                 }
                 grandTotalUSD = subtotal + vat;
             } else {
-                // ប្រសិនបើជា Invoice ធម្មតា គឺមិនគិត VAT ទេ Grand Total = Subtotal
                 document.getElementById('vatInput').value = "0.00";
             }
 
@@ -593,7 +574,6 @@
             calculateInvoice();
         }
 
-        // មុខងារទាញយកស្ថិតិប្រវត្តិវិក្កយបត្រតាម Charge To
         async function fetchCustomerStats(customerName) {
             if (!customerName.trim()) {
                 document.getElementById('customerStatsDisplay').style.display = 'none';
@@ -614,6 +594,7 @@
             }
         }
 
+        // មុខងាររក្សាទុក ឬ កែប្រែវិក្កយបត្រ (POST ឬ PUT)
         async function saveInvoiceToDB() {
             const invoiceData = {
                 invoice_type: isTaxInvoiceMode ? 'TAX_INVOICE' : 'COMMERCIAL_INVOICE',
@@ -645,22 +626,82 @@
                 grand_total_khr: parseFloat(document.getElementById('grandTotalKHRDisplay').innerText.replace(/,/g, '')) || 0
             };
 
+            let url = `${window.location.origin}/api/tax-invoices`;
+            let method = 'POST';
+
+            if (isEditMode && editInvoiceId) {
+                url = `${window.location.origin}/api/tax-invoices/${editInvoiceId}`;
+                method = 'PUT';
+            }
+
             try {
-                const response = await fetch(`${window.location.origin}/api/tax-invoices`, {
-                    method: 'POST',
+                const response = await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(invoiceData)
                 });
 
                 const result = await response.json();
                 if (response.ok && result.success) {
-                    alert('💾 ' + result.message);
+                    alert('💾 ' + (result.message || 'បានរក្សាទុកដោយជោគជ័យ'));
+                    window.location.href = '/invoice-list.html';
                 } else {
-                    alert('❌ បរាជ័យ៖ ' + (result.error || 'មានបញ្ហាក្នុងการរក្សាទុក'));
+                    alert('❌ បរាជ័យ៖ ' + (result.error || 'មានបញ្ហាក្នុងការរក្សាទុក'));
                 }
             } catch (err) {
                 console.error('Error:', err);
-                alert('❌ មិនអាចភ្ជាប់ទៅកាន់ Server បានទេ!');
+                alert('❌ មិនអាចភ្ជាប់ទៅកាន់ Server ได้ទេ!');
+            }
+        }
+
+        // មុខងារទាញយកទិន្នន័យចាស់មកបំពេញ Form ពេលស្ថិតក្នុង Mode កែប្រែ
+        async function fetchInvoiceForEdit(id) {
+            try {
+                const response = await fetch(`${window.location.origin}/api/tax-invoices/${id}`);
+                const inv = await response.json();
+
+                if (!inv || inv.error) {
+                    alert("រកមិនឃើញវិក្កយបត្រនេះទេ!");
+                    return;
+                }
+
+                // កំណត់ប្រភេទ Tax ឬ Commercial
+                if (inv.invoice_type === 'COMMERCIAL_INVOICE' && isTaxInvoiceMode) {
+                    toggleInvoiceMode();
+                }
+
+                document.getElementById('invoiceNo').value = inv.invoice_no || '';
+                document.getElementById('chargeTo').value = inv.charge_to || '';
+                document.getElementById('sealNo').value = inv.seal_no || '';
+                document.getElementById('bookingNo').value = inv.booking_no || '';
+                document.getElementById('containerNo').value = inv.container_no || '';
+                document.getElementById('remark').value = inv.remark || '';
+                document.getElementById('invDate').value = inv.inv_date || '';
+                document.getElementById('truckOut').value = inv.truck_out || '';
+                document.getElementById('truckIn').value = inv.truck_in || '';
+                document.getElementById('owner').value = inv.owner || '';
+                document.getElementById('bookingBy').value = inv.booking_by || '';
+                document.getElementById('size').value = inv.size || '';
+                document.getElementById('exchRate').value = inv.exch_rate || 4085;
+                document.getElementById('vatInput').value = inv.vat_amount || 0;
+
+                // បំពេញតារាង Items
+                const tbody = document.getElementById('invoiceTableBody');
+                tbody.innerHTML = '';
+                const items = typeof inv.items === 'string' ? JSON.parse(inv.items) : (inv.items || []);
+                
+                if (items.length > 0) {
+                    items.forEach(item => {
+                        addRow(item.description, item.size, item.status, item.rate, item.qty, item.duration);
+                    });
+                } else {
+                    addRow("Gate Fee", "40HC", "Full", 5.00, 1, 0);
+                }
+
+                calculateInvoice();
+            } catch (err) {
+                console.error("Error loading invoice for edit:", err);
+                alert("មានបញ្ហាក្នុងការទាញយកទិន្នន័យសម្រាប់កែប្រែ!");
             }
         }
 
@@ -706,7 +747,7 @@
                 if (n < 100000) {
                     return convertKhmer(Math.floor(n / 10000)) + "ម៉ឺន" + (n % 10000 !== 0 ? convertKhmer(n % 10000) : "");
                 }
-                if (n < 1000000) {
+                if (n < 100000) {
                     return convertKhmer(Math.floor(n / 100000)) + "សែន" + (n % 100000 !== 0 ? convertKhmer(n % 100000) : "");
                 }
                 if (n < 1000000000) {
@@ -718,8 +759,21 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('invDate').value = getCurrentDateTime();
-            addRow("Gate Fee", "40HC", "Full", 5.00, 1, 0);
+            const urlParams = new URLSearchParams(window.location.search);
+            editInvoiceId = urlParams.get('edit_id');
+
+            if (editInvoiceId) {
+                isEditMode = true;
+                document.getElementById('modeTitle').innerText = `កែប្រែវិក្កយបត្រ (Edit Invoice #${editInvoiceId})`;
+                const saveBtn = document.getElementById('saveBtn');
+                saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> រក្សាទុកការកែប្រែ`;
+                saveBtn.style.background = '#f59e0b';
+                
+                fetchInvoiceForEdit(editInvoiceId);
+            } else {
+                document.getElementById('invDate').value = getCurrentDateTime();
+                addRow("Gate Fee", "40HC", "Full", 5.00, 1, 0);
+            }
         });
     </script>
 </body>
