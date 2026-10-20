@@ -192,6 +192,26 @@
             background: transparent;
         }
 
+        /* ស្ទីលសម្រាប់ Note ឱ្យវា auto wrap ចុះក្រោមស្អាត */
+        .note-section {
+            margin-top: 15px;
+            border: 1px solid #000;
+            padding: 8px 10px;
+            font-size: 12px;
+        }
+
+        .note-section textarea {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-family: 'Kantumruy Pro', sans-serif;
+            font-size: 12px;
+            background: transparent;
+            resize: vertical;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
         .invoice-table {
             width: 100%;
             border-collapse: collapse;
@@ -298,7 +318,7 @@
                 <h3 id="invSubTitle">TAX INVOICE</h3>
                 <div class="company-name">ANT DRY PORT CO.,LTD (CAMBODIA) ឯ.ក</div>
                 <div id="vatTinSection">លេខអត្តសញ្ញាណកម្ម អាកប (VAT-TIN) ៖ K010-902503705</div>
-                <div class="address-text">អាសយដ្ឋាន ៖ ក្បាលដីលេខ ៤៥៦ ផ្លូវបេតុង ភូមិត្រពាំងអារក្ស សង្កាត់ឪឡោក ខណ្ឌកំបូល រាជធានីភ្នំពេញ</div>
+                <div class="address-text">អាសយដ្ឋាន ៖ ក្បាលដីលេខ ៤៥៦ ផ្លូវបេតុង ភូមិត្រពាំងអរក្ស សង្កាត់ឪឡោក ខណ្ឌកំបូល រាជធានីភ្នំពេញ</div>
                 <div class="address-text" style="margin-top: 2px;">Tel: (+855) 10 79 7777 | Email: antdryport@gmail.com</div>
             </div>
 
@@ -336,6 +356,11 @@
                     <div class="info-row">
                         <span class="info-label">Date:</span>
                         <span class="info-value"><input type="text" id="invDate" value=""></span>
+                    </div>
+                    <!-- Date Out ដាក់នៅក្រោម Date -->
+                    <div class="info-row">
+                        <span class="info-label">Date Out:</span>
+                        <span class="info-value"><input type="text" id="dateOut" value=""></span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Invoice No:</span>
@@ -407,6 +432,12 @@
                     <td class="text-right" style="font-weight: bold;">KHR <span id="grandTotalKHRDisplay">0.00</span></td>
                 </tr>
             </table>
+
+            <!-- Note ដាក់នៅក្រោមបន្ទាត់ The sum of USD: ជាមួយមុខងារ Auto-wrap -->
+            <div class="note-section">
+                <div style="font-weight: bold; margin-bottom: 2px;">Note:</div>
+                <textarea id="invoiceNote" rows="2" placeholder="បញ្ចូលកំណត់សម្គាល់បន្ថែមនៅទីនេះ..."></textarea>
+            </div>
 
             <div class="signature-container">
                 <div>
@@ -605,11 +636,13 @@
                 container_no: document.getElementById('containerNo').value,
                 remark: document.getElementById('remark').value,
                 inv_date: document.getElementById('invDate').value,
+                date_out: document.getElementById('dateOut').value, /* រក្សាទុក Date Out */
                 truck_out: document.getElementById('truckOut').value,
                 truck_in: document.getElementById('truckIn').value,
                 owner: document.getElementById('owner').value,
                 booking_by: document.getElementById('bookingBy').value,
                 size: document.getElementById('size').value,
+                note: document.getElementById('invoiceNote').value, /* រក្សាទុក Note */
                 items: Array.from(document.querySelectorAll('#invoiceTableBody tr')).map(row => ({
                     description: row.querySelector('.item-desc').value,
                     size: row.querySelector('.item-size').value,
@@ -675,6 +708,7 @@
                 document.getElementById('containerNo').value = inv.container_no || '';
                 document.getElementById('remark').value = inv.remark || '';
                 document.getElementById('invDate').value = inv.inv_date || '';
+                document.getElementById('dateOut').value = inv.date_out || ''; /* ទាញយក Date Out មកបង្ហាញ */
                 document.getElementById('truckOut').value = inv.truck_out || '';
                 document.getElementById('truckIn').value = inv.truck_in || '';
                 document.getElementById('owner').value = inv.owner || '';
@@ -682,6 +716,7 @@
                 document.getElementById('size').value = inv.size || '';
                 document.getElementById('exchRate').value = inv.exch_rate || 4085;
                 document.getElementById('vatInput').value = inv.vat_amount || 0;
+                document.getElementById('invoiceNote').value = inv.note || ''; /* ទាញយក Note មកបង្ហាញ */
 
                 const tbody = document.getElementById('invoiceTableBody');
                 tbody.innerHTML = '';
