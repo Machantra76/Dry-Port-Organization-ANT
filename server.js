@@ -841,6 +841,44 @@ app.put('/api/users/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
+// កែប្រែ / Update វិក្កយបត្រតាម ID
+app.put('/api/tax-invoices/:id', async (req, res) => {
+    const { id } = req.params;
+    const {
+        invoice_type, invoice_no, charge_to, seal_no, booking_no, container_no,
+        remark, inv_date, truck_out, truck_in, owner, booking_by, size,
+        items, subtotal, exch_rate, vat_amount, grand_total_usd, grand_total_khr
+    } = req.body;
+
+    try {
+        const query = `
+            UPDATE tax_invoices 
+            SET invoice_type = $1, invoice_no = $2, charge_to = $3, seal_no = $4, 
+                booking_no = $5, container_no = $6, remark = $7, inv_date = $8, 
+                truck_out = $9, truck_in = $10, owner = $11, booking_by = $12, 
+                size = $13, items = $14, subtotal = $15, exch_rate = $16, 
+                vat_amount = $17, grand_total_usd = $18, grand_total_khr = $19
+            WHERE id = $20 
+            RETURNING *;
+        `;
+        const values = [
+            invoice_type || 'TAX_INVOICE', invoice_no, charge_to, seal_no, booking_no, container_no,
+            remark, inv_date, truck_out, truck_in, owner, booking_by, size,
+            JSON.stringify(items || []), subtotal || 0, exch_rate || 4085, vat_amount || 0,
+            grand_total_usd || 0, grand_total_khr || 0, id
+        ];
+
+        const result = await pool.query(query, values);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញវិក្កយបត្រដែលត្រូវកែប្រែទេ' });
+        }
+
+        res.json({ success: true, message: 'បានកែប្រែវិក្កយបត្រដោយជោគជ័យ!', data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating tax invoice:', err);
+        res.status(500).json({ success: false, error: 'Server error: ' + err.message });
+    }
+});
 
 app.put('/api/users/:id/status', async (req, res) => {
     const { id } = req.params;
