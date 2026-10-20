@@ -502,9 +502,10 @@
             return `${month}/${day}/${year} ${hours}:${minutes} ${ampm}`;
         }
 
-        function toggleInvoiceMode() {
+      function toggleInvoiceMode() {
             isTaxInvoiceMode = !isTaxInvoiceMode;
             const vatRow = document.getElementById('vatRow');
+            const vatInput = document.getElementById('vatInput'); // បន្ថែមអថេរសម្រាប់ VAT Input
             const invMainTitle = document.getElementById('invMainTitle');
             const invSubTitle = document.getElementById('invSubTitle');
             const vatTinSection = document.getElementById('vatTinSection');
@@ -515,20 +516,21 @@
                 invMainTitle.innerText = "វិក្កយបត្រអាករ";
                 invSubTitle.innerText = "TAX INVOICE";
                 vatTinSection.style.display = "block";
-                vatRow.style.display = "";
+                vatRow.style.display = ""; // បង្ហាញជួរ VAT ធម្មតា
                 modeTitle.innerText = "ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE)";
                 modeButtonText.innerText = "វិក្កយបត្រធម្មតា (Commercial)";
             } else {
                 invMainTitle.innerText = "វិក្កយបត្រ";
                 invSubTitle.innerText = "INVOICE";
                 vatTinSection.style.display = "none";
-                vatRow.style.display = "none";
+                vatRow.style.display = ""; // ឱ្យជួរ Exch Rate នៅតែបង្ហាញដដែល
+                vatInput.value = "0.00";   // កំណត់ VAT ឱ្យស្មើ 0 ពេលជាវិក្កយបត្រធម្មតា
+                isManualVAT = false;
                 modeTitle.innerText = "ទម្រង់វិក្កយបត្រធម្មតា (COMMERCIAL INVOICE)";
                 modeButtonText.innerText = "វិក្កយបត្រអាករ (Tax Invoice)";
             }
             calculateInvoice();
         }
-
         function addRow(selectedDesc = "Gate Fee", size = "40HC", status = "Full", rate = 5.00, qty = 1, duration = 0) {
             const tbody = document.getElementById('invoiceTableBody');
             const rowCount = tbody.rows.length + 1;
