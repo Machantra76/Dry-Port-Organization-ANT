@@ -195,7 +195,7 @@
         }
 
         /* ស្ទីលសម្រាប់ Note ឱ្យវា auto wrap ចុះក្រោមស្អាត */
-        .note-section {
+      .note-section {
             margin-top: 15px;
             border: 1px solid #000;
             padding: 8px 10px;
@@ -204,12 +204,13 @@
 
         .note-section textarea {
             width: 100%;
+            min-height: 60px; /* កំណត់កម្ពស់អប្បបរមាឱ្យធំទូលាយ */
             border: none;
             outline: none;
             font-family: 'Kantumruy Pro', sans-serif;
             font-size: 12px;
             background: transparent;
-            resize: vertical;
+            resize: vertical; /* អនុញ្ញាតឱ្យអ្នកប្រើប្រាស់អូសពង្រីកប្រអប់ចុះក្រោមបានបន្ថែម */
             white-space: pre-wrap;
             word-wrap: break-word;
         }
@@ -451,7 +452,7 @@
             <!-- Note ដាក់នៅក្រោមបន្ទាត់ The sum of USD: ជាមួយមុខងារ Auto-wrap -->
             <div class="note-section">
                 <div style="font-weight: bold; margin-bottom: 2px;">Note:</div>
-                <textarea id="invoiceNote" rows="2" placeholder="បញ្ចូលកំណត់សម្គាល់បន្ថែមនៅទីនេះ..."></textarea>
+                <textarea id="invoiceNote" rows="5" placeholder="បញ្ចូលកំណត់សម្គាល់បន្ថែមនៅទីនេះ..."></textarea>
             </div>
 
             <div class="signature-container">
