@@ -117,14 +117,16 @@
             font-size: 11px;
         }
 
-        .invoice-box {
+      .invoice-box {
             background: white;
-            padding: 30px;
+            padding: 20px;
             border: 1px solid #ccc;
-            max-width: 900px;
+            max-width: 100% !important; /* កុំឱ្យកំណត់កូតក្រិនពេក */
+            width: 100%;
+            box-sizing: border-box;
             margin: 0 auto;
             color: #000;
-            font-size: 13px;
+            font-size: 12px;
         }
 
         .invoice-title-container {
@@ -261,10 +263,10 @@
             height: 60px;
         }
 
-       @media print {
+     @media print {
             @page {
                 size: A4;
-                margin: 5mm; /* កាត់បន្ថយគម្លាតជុំវិញក្រដាស A4 ឱ្យសល់តិច ដើម្បីដាក់បានគ្រប់ចំនួន */
+                margin: 8mm; /* ទុកគម្លាតគែមសងខាងល្មមស្អាត */
             }
             body * {
                 visibility: hidden;
@@ -276,19 +278,18 @@
                 position: absolute;
                 left: 0;
                 top: 0;
-                width: 100%;
+                width: 100% !important;
+                max-width: 100% !important;
                 border: none;
-                padding: 10px !important; /* បង្រួម Padding ក្នុងប្រអប់វិក្កយបត្រពេលព្រីន */
-                font-size: 11px !important; /* បង្រួមទំហំអក្សរបន្តិចបន្តួចមិនឱ្យហៀរក្រដាស */
+                padding: 5px !important;
+                font-size: 11px !important;
+                box-sizing: border-box;
+            }
+            .info-grid {
+                gap: 10px !important; /* កាត់បន្ថយគម្លាតឆ្វេងស្តាំនៃ info ឱ្យចូលក្នុងបន្តិច */
             }
             .invoice-table th, .invoice-table td, .summary-table td {
-                padding: 3px 6px !important; /* បង្រួមគម្លាតតារាងឱ្យជិតគ្នាបន្តិច */
-            }
-            .signature-container {
-                margin-top: 15px !important; /* បង្រួមកម្ពស់កន្លែងហត្ថលេខា */
-            }
-            .signature-space {
-                height: 40px !important; /* បង្រួមកម្ពស់កន្លែងចុះហត្ថលេខា */
+                padding: 4px 6px !important;
             }
             .no-print {
                 display: none !important;
