@@ -554,11 +554,13 @@ async function initializeDatabase() {
                 container_no VARCHAR(100),
                 remark TEXT,
                 inv_date VARCHAR(100),
+                date_out VARCHAR(100), -- ជួរឈរ Date Out
                 truck_out VARCHAR(100),
                 truck_in VARCHAR(100),
                 owner VARCHAR(255),
                 booking_by VARCHAR(255),
                 size VARCHAR(50),
+                note TEXT,             -- ជួរឈរ Note
                 items JSONB,
                 subtotal NUMERIC(10, 2) DEFAULT 0,
                 exch_rate NUMERIC(10, 2) DEFAULT 4085,
@@ -568,6 +570,10 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+
+        // បន្ថែម Column ទាំងនេះស្វ័យប្រវត្តក្នុងករណីតារាងមានរួចស្រេច
+        await client.query(`ALTER TABLE tax_invoices ADD COLUMN IF NOT EXISTS date_out VARCHAR(100);`);
+        await client.query(`ALTER TABLE tax_invoices ADD COLUMN IF NOT EXISTS note TEXT;`);
 
         await client.query(`ALTER TABLE customs_permit_records DROP CONSTRAINT IF EXISTS customs_permit_records_permit_number_key;`).catch(() => {});
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);`);
@@ -781,7 +787,7 @@ app.get('/api/invoices/stats', async (req, res) => {
 app.post('/api/tax-invoices', async (req, res) => {
     const {
         invoice_type, invoice_no, charge_to, seal_no, booking_no, container_no,
-        remark, inv_date, truck_out, truck_in, owner, booking_by, size,
+        remark, inv_date, date_out, truck_out, truck_in, owner, booking_by, size, note,
         items, subtotal, exch_rate, vat_amount, grand_total_usd, grand_total_khr
     } = req.body;
 
@@ -789,14 +795,14 @@ app.post('/api/tax-invoices', async (req, res) => {
         const query = `
             INSERT INTO tax_invoices (
                 invoice_type, invoice_no, charge_to, seal_no, booking_no, container_no,
-                remark, inv_date, truck_out, truck_in, owner, booking_by, size,
+                remark, inv_date, date_out, truck_out, truck_in, owner, booking_by, size, note,
                 items, subtotal, exch_rate, vat_amount, grand_total_usd, grand_total_khr
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
             RETURNING *;
         `;
         const values = [
             invoice_type || 'TAX_INVOICE', invoice_no, charge_to, seal_no, booking_no, container_no,
-            remark, inv_date, truck_out, truck_in, owner, booking_by, size,
+            remark, inv_date, date_out || null, truck_out, truck_in, owner, booking_by, size, note || null,
             JSON.stringify(items || []), subtotal || 0, exch_rate || 4085, vat_amount || 0,
             grand_total_usd || 0, grand_total_khr || 0
         ];
@@ -805,10 +811,9 @@ app.post('/api/tax-invoices', async (req, res) => {
         res.json({ success: true, message: 'បានរក្សាទុកវិក្កយបត្រដោយជោគជ័យ!', data: result.rows[0] });
     } catch (err) {
         console.error('Error saving tax invoice:', err);
-        res.status(500).json({ success: false, error: 'Server error' });
+        res.status(500).json({ success: false, error: 'Server error: ' + err.message });
     }
 });
-
 app.put('/api/users/:id', async (req, res) => {
     const { id } = req.params;
     const { status, password, full_name, role, dept_id } = req.body;
@@ -846,7 +851,7 @@ app.put('/api/tax-invoices/:id', async (req, res) => {
     const { id } = req.params;
     const {
         invoice_type, invoice_no, charge_to, seal_no, booking_no, container_no,
-        remark, inv_date, truck_out, truck_in, owner, booking_by, size,
+        remark, inv_date, date_out, truck_out, truck_in, owner, booking_by, size, note,
         items, subtotal, exch_rate, vat_amount, grand_total_usd, grand_total_khr
     } = req.body;
 
@@ -854,16 +859,16 @@ app.put('/api/tax-invoices/:id', async (req, res) => {
         const query = `
             UPDATE tax_invoices 
             SET invoice_type = $1, invoice_no = $2, charge_to = $3, seal_no = $4, 
-                booking_no = $5, container_no = $6, remark = $7, inv_date = $8, 
-                truck_out = $9, truck_in = $10, owner = $11, booking_by = $12, 
-                size = $13, items = $14, subtotal = $15, exch_rate = $16, 
-                vat_amount = $17, grand_total_usd = $18, grand_total_khr = $19
-            WHERE id = $20 
+                booking_no = $5, container_no = $6, remark = $7, inv_date = $8, date_out = $9,
+                truck_out = $10, truck_in = $11, owner = $12, booking_by = $13, 
+                size = $14, note = $15, items = $16, subtotal = $17, exch_rate = $18, 
+                vat_amount = $19, grand_total_usd = $20, grand_total_khr = $21
+            WHERE id = $22 
             RETURNING *;
         `;
         const values = [
             invoice_type || 'TAX_INVOICE', invoice_no, charge_to, seal_no, booking_no, container_no,
-            remark, inv_date, truck_out, truck_in, owner, booking_by, size,
+            remark, inv_date, date_out || null, truck_out, truck_in, owner, booking_by, size, note || null,
             JSON.stringify(items || []), subtotal || 0, exch_rate || 4085, vat_amount || 0,
             grand_total_usd || 0, grand_total_khr || 0, id
         ];
