@@ -261,7 +261,11 @@
             height: 60px;
         }
 
-        @media print {
+       @media print {
+            @page {
+                size: A4;
+                margin: 5mm; /* កាត់បន្ថយគម្លាតជុំវិញក្រដាស A4 ឱ្យសល់តិច ដើម្បីដាក់បានគ្រប់ចំនួន */
+            }
             body * {
                 visibility: hidden;
             }
@@ -274,7 +278,17 @@
                 top: 0;
                 width: 100%;
                 border: none;
-                padding: 0;
+                padding: 10px !important; /* បង្រួម Padding ក្នុងប្រអប់វិក្កយបត្រពេលព្រីន */
+                font-size: 11px !important; /* បង្រួមទំហំអក្សរបន្តិចបន្តួចមិនឱ្យហៀរក្រដាស */
+            }
+            .invoice-table th, .invoice-table td, .summary-table td {
+                padding: 3px 6px !important; /* បង្រួមគម្លាតតារាងឱ្យជិតគ្នាបន្តិច */
+            }
+            .signature-container {
+                margin-top: 15px !important; /* បង្រួមកម្ពស់កន្លែងហត្ថលេខា */
+            }
+            .signature-space {
+                height: 40px !important; /* បង្រួមកម្ពស់កន្លែងចុះហត្ថលេខា */
             }
             .no-print {
                 display: none !important;
