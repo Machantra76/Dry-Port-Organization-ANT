@@ -299,6 +299,7 @@
                 <div class="company-name">ANT DRY PORT CO.,LTD (CAMBODIA) ឯ.ក</div>
                 <div id="vatTinSection">លេខអត្តសញ្ញាណកម្ម អាកប (VAT-TIN) ៖ K010-902503705</div>
                 <div class="address-text">អាសយដ្ឋាន ៖ ក្បាលដីលេខ ៤៥៦ ផ្លូវបេតុង ភូមិត្រពាំងអរក្ស សង្កាត់ឪឡោក ខណ្ឌកំបូល រាជធានីភ្នំពេញ</div>
+                <div class="address-text" style="margin-top: 2px;">Tel: (+855) 10 79 7777 | Email: antdryport@gmail.com</div>
             </div>
 
             <div class="header-divider"></div>
@@ -594,7 +595,6 @@
             }
         }
 
-        // មុខងាររក្សាទុក ឬ កែប្រែវិក្កយបត្រ (POST ឬ PUT)
         async function saveInvoiceToDB() {
             const invoiceData = {
                 invoice_type: isTaxInvoiceMode ? 'TAX_INVOICE' : 'COMMERCIAL_INVOICE',
@@ -650,11 +650,10 @@
                 }
             } catch (err) {
                 console.error('Error:', err);
-                alert('❌ មិនអាចភ្ជាប់ទៅកាន់ Server ได้ទេ!');
+                alert('❌ មិនអាចភ្ជាប់ទៅកាន់ Server បានទេ!');
             }
         }
 
-        // មុខងារទាញយកទិន្នន័យចាស់មកបំពេញ Form ពេលស្ថិតក្នុង Mode កែប្រែ
         async function fetchInvoiceForEdit(id) {
             try {
                 const response = await fetch(`${window.location.origin}/api/tax-invoices/${id}`);
@@ -665,7 +664,6 @@
                     return;
                 }
 
-                // កំណត់ប្រភេទ Tax ឬ Commercial
                 if (inv.invoice_type === 'COMMERCIAL_INVOICE' && isTaxInvoiceMode) {
                     toggleInvoiceMode();
                 }
@@ -685,7 +683,6 @@
                 document.getElementById('exchRate').value = inv.exch_rate || 4085;
                 document.getElementById('vatInput').value = inv.vat_amount || 0;
 
-                // បំពេញតារាង Items
                 const tbody = document.getElementById('invoiceTableBody');
                 tbody.innerHTML = '';
                 const items = typeof inv.items === 'string' ? JSON.parse(inv.items) : (inv.items || []);
@@ -728,40 +725,41 @@
             return str;
         }
 
-       function numberToKhmerWords(num) {
-    num = Math.round(Math.abs(parseFloat(num) || 0));
-    if (num === 0) return "សូន្យរៀល";
+        function numberToKhmerWords(num) {
+            num = Math.round(Math.abs(parseFloat(num) || 0));
+            if (num === 0) return "សូន្យរៀល";
 
-    const khmerNumbers = ["សូន្យ", "មួយ", "ពីរ", "បី", "បួន", "ប្រាំ", "ប្រាំមួយ", "ប្រាំពីរ", "ប្រាំបី", "ប្រាំបួន"];
-    const tenStr = ["", "ដប់", "ម្ភៃ", "សាមសិប", "សែសិប", "ហាសិប", "ហុកសិប", "ចិត្តសិប", "ប៉ែតសិប", "កៅសិប"];
+            const khmerNumbers = ["សូន្យ", "មួយ", "ពីរ", "បី", "បួន", "ប្រាំ", "ប្រាំមួយ", "ប្រាំពីរ", "ប្រាំបី", "ប្រាំបួន"];
+            const tenStr = ["", "ដប់", "ម្ភៃ", "សាមសិប", "សែសិប", "ហាសិប", "ហុកសិប", "ចិត្តសិប", "ប៉ែតសិប", "កៅសិប"];
 
-    function convertKhmer(n) {
-        n = Math.floor(n);
-        if (n <= 0) return "";
-        if (n < 10) return khmerNumbers[n];
-        if (n < 100) {
-            return tenStr[Math.floor(n / 10)] + (n % 10 !== 0 ? khmerNumbers[n % 10] : "");
-        }
-        if (n < 1000) {
-            return khmerNumbers[Math.floor(n / 100)] + "រយ" + (n % 100 !== 0 ? convertKhmer(n % 100) : "");
-        }
-        if (n < 10000) {
-            return khmerNumbers[Math.floor(n / 1000)] + "ពាន់" + (n % 1000 !== 0 ? convertKhmer(n % 1000) : "");
-        }
-        if (n < 100000) {
-            return convertKhmer(Math.floor(n / 10000)) + "ម៉ឺន" + (n % 10000 !== 0 ? convertKhmer(n % 10000) : "");
-        }
-        if (n < 1000000) {
-            return convertKhmer(Math.floor(n / 100000)) + "សែន" + (n % 100000 !== 0 ? convertKhmer(n % 100000) : "");
-        }
-        if (n < 1000000000) {
-            return convertKhmer(Math.floor(n / 1000000)) + "លាន" + (n % 1000000 !== 0 ? convertKhmer(n % 1000000) : "");
-        }
-        return n.toLocaleString('km-KH');
-    }
+            function convertKhmer(n) {
+                n = Math.floor(n);
+                if (n <= 0) return "";
+                if (n < 10) return khmerNumbers[n];
+                if (n < 100) {
+                    return tenStr[Math.floor(n / 10)] + (n % 10 !== 0 ? khmerNumbers[n % 10] : "");
+                }
+                if (n < 1000) {
+                    return khmerNumbers[Math.floor(n / 100)] + "រយ" + (n % 100 !== 0 ? convertKhmer(n % 100) : "");
+                }
+                if (n < 10000) {
+                    return khmerNumbers[Math.floor(n / 1000)] + "ពាន់" + (n % 1000 !== 0 ? convertKhmer(n % 1000) : "");
+                }
+                if (n < 100000) {
+                    return convertKhmer(Math.floor(n / 10000)) + "ម៉ឺន" + (n % 10000 !== 0 ? convertKhmer(n % 10000) : "");
+                }
+                if (n < 1000000) {
+                    return convertKhmer(Math.floor(n / 100000)) + "សែន" + (n % 100000 !== 0 ? convertKhmer(n % 100000) : "");
+                }
+                if (n < 1000000000) {
+                    return convertKhmer(Math.floor(n / 1000000)) + "លាន" + (n % 1000000 !== 0 ? convertKhmer(n % 1000000) : "");
+                }
+                return n.toLocaleString('km-KH');
+            }
 
-    return convertKhmer(num) + "រៀល";
-}
+            return convertKhmer(num) + "រៀល";
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const urlParams = new URLSearchParams(window.location.search);
             editInvoiceId = urlParams.get('edit_id');
