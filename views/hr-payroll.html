@@ -215,12 +215,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label id="attendanceLabel">ថ្ងៃវត្តមាន / អវត្តមាន (វត្តមានពេញតាមខែ):</label>
+                        <label id="attendanceLabel">ថ្ងៃវត្តមាន / អវត្តមាន (ស្វ័យប្រវត្តិតามខែ):</label>
                         <div style="display: flex; gap: 10px;">
                             <input type="number" id="present_days" placeholder="វត្តមាន (ថ្ងៃ)" style="background: #f0fdf4;" oninput="calculateFromManualAttendance()">
                             <input type="number" id="absent_days" placeholder="អវត្តមាន (ថ្ងៃ)" style="background: #fef2f2;" oninput="calculateFromManualAttendance()">
                         </div>
-                        <small id="absentInfo" style="color: #0284c7; display: block; margin-top: 4px;">សូមជ្រើសរើសខែ ដើម្បីកំណត់ចំនួនថ្ងៃក្នុងខែស្វ័យប្រវត្តិ...</small>
+                        <small id="absentInfo" style="color: #0284c7; display: block; margin-top: 4px;">អាចវាយបញ្ចូលដៃ ឬរង់ចាំទាញស្វ័យប្រវត្តិ...</small>
                     </div>
 
                     <div class="form-group">
@@ -334,10 +334,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
-        // មុខងារស្វែងរកចំនួនថ្ងៃសរុបក្នុងខែជ្រើសរើស (២៨, ២៩, ៣០ ឬ ៣១ថ្ងៃ)
         function getDaysInSelectedMonth() {
             const payMonth = document.getElementById('pay_month').value;
-            if (!payMonth) return 30; // ដើម default ២៨/៣០
+            if (!payMonth) return 30;
             const [year, month] = payMonth.split('-').map(Number);
             return new Date(year, month, 0).getDate();
         }
@@ -357,6 +356,7 @@
             const prevDebt = parseFloat(document.getElementById('previous_debt').value) || 0;
             const newDebt = parseFloat(document.getElementById('new_debt').value) || 0;
             
+            // គណនាប្រាក់ជំពាក់នៅសល់ឱ្យបានត្រឹមត្រូវ (ជំពាក់ចាស់ + ជំពាក់ថ្មី - ប្រាក់ត្រូវកាត់)
             let totalRemainingDebt = (prevDebt + newDebt) - deduct;
             if (totalRemainingDebt < 0) totalRemainingDebt = 0;
             document.getElementById('remaining_debt_preview').value = '$' + totalRemainingDebt.toFixed(2);
@@ -365,7 +365,6 @@
             document.getElementById('net_salary_preview').value = '$' + net.toFixed(2);
         }
 
-        // គណនាកាត់ប្រាក់ខែស្វ័យប្រវត្តិ ផ្អែកលើចំនួនថ្ងៃសរុបនៃខែនោះ (២៨, ៣០, ៣១ ថ្ងៃ)
         function calculateFromManualAttendance() {
             const absentDays = parseFloat(document.getElementById('absent_days').value) || 0;
             const baseSalary = parseFloat(document.getElementById('base_salary').value) || 0;
