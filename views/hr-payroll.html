@@ -19,7 +19,7 @@
             color: #334155; 
         }
         .container { 
-            max-width: 1300px; 
+            max-width: 1400px; 
             margin: 0 auto; 
             background: white; 
             padding: 40px; 
@@ -66,7 +66,6 @@
             gap: 10px;
         }
         
-        /* រៀបចំ Grid Form ឱ្យមានរបៀប និងដកឃ្លាស្អាត */
         .form-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -156,6 +155,7 @@
 
         .badge-net { background: #d1fae5; color: #065f46; padding: 5px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
         .badge-debt { background: #fee2e2; color: #991b1b; padding: 5px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+        .badge-att { background: #e0f2fe; color: #0369a1; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; }
         
         .footer-note { margin-top: 25px; font-size: 13px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 15px; }
 
@@ -168,10 +168,10 @@
             .print-header-title { display: block !important; text-align: center; margin-bottom: 20px; }
             .print-header-title h2 { color: #1e3c72; font-size: 22px; font-weight: 700; margin: 0; }
             .print-header-title p { color: #64748b; font-size: 13px; text-transform: uppercase; margin: 5px 0 0 0; font-weight: 600; letter-spacing: 0.5px; }
-            table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; font-size: 12px !important; margin-top: 10px !important; }
+            table { width: 100% !important; border-collapse: collapse !important; border: 1px solid #000 !important; font-size: 11px !important; margin-top: 10px !important; }
             th { background: #1e3c72 !important; color: white !important; border: 1px solid #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            td { border: 1px solid #ddd !important; padding: 8px 4px !important; }
-            .badge-net, .badge-debt { background: none !important; color: #000 !important; font-weight: bold; padding: 0 !important; }
+            td { border: 1px solid #ddd !important; padding: 6px 3px !important; }
+            .badge-net, .badge-debt, .badge-att { background: none !important; color: #000 !important; font-weight: bold; padding: 0 !important; }
         }
         .print-header-title { display: none; }
     </style>
@@ -215,6 +215,15 @@
                     </div>
 
                     <div class="form-group">
+                        <label>ថ្ងៃវត្តមាន / អវត្តមាន (Attendance / Absent Days):</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="present_days" placeholder="វត្តមាន (ថ្ងៃ)" style="background: #f0fdf4;" readonly>
+                            <input type="number" id="absent_days" placeholder="អវត្តមាន (ថ្ងៃ)" style="background: #fef2f2;" readonly>
+                        </div>
+                        <small id="absentInfo" style="color: #0284c7; display: block; margin-top: 4px;">ស្កែនមេដៃ៖ កំពុងរង់ចាំកូដបុគ្គលិក...</small>
+                    </div>
+
+                    <div class="form-group">
                         <label>ប្រាក់ខែគោល ($ Base Salary):</label>
                         <input type="number" id="base_salary" required step="0.01" placeholder="ឧ. 300" oninput="calculateNet()">
                     </div>
@@ -225,9 +234,13 @@
                     </div>
 
                     <div class="form-group">
-                        <label>ប្រាក់ត្រូវកាត់ ($ Deduction):</label>
+                        <label>ប្រាក់ថែមម៉ោង/ថ្ងៃបន្ថែម ($ OT / Extra Work):</label>
+                        <input type="number" id="ot_amount" step="0.01" value="0" placeholder="ឧ. 20" oninput="calculateNet()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>ប្រាក់ត្រូវកាត់ ($ Deduction - គណនាពីអវត្តមាន):</label>
                         <input type="number" id="deduction" step="0.01" value="0" placeholder="ឧ. 10" oninput="calculateNet()">
-                        <small id="absentInfo" style="color: #64748b; display: block; margin-top: 4px;"></small>
                     </div>
 
                     <div class="form-group">
@@ -246,11 +259,10 @@
                     </div>
 
                     <div class="form-group full-width">
-                        <label>ប្រាក់ខែទទួលបានសុទ្ធ ($ Net Salary):</label>
+                        <label>ប្រាក់ខែទទួលបានសុទ្ធ ($ Net Salary = Base + Allow + OT - Deduct):</label>
                         <input type="text" id="net_salary_preview" class="preview-box" readonly style="color: #065f46; font-size: 18px;" value="$0.00">
                     </div>
 
-                    <!-- 🆕 បន្ថែមប្រអប់ចំណាំ / កត់សម្គាល់ (Note) -->
                     <div class="form-group full-width">
                         <label>ចំណាំ / កត់សម្គាល់បន្ថែម (Note):</label>
                         <textarea id="note" rows="2" placeholder="បញ្ចូលចំណាំផ្សេងៗ (ឧ. កាត់ថ្លៃខូចខាត, បើកមុនថ្ងៃ...)"></textarea>
@@ -291,23 +303,25 @@
             <table>
                 <thead>
                     <tr>
-                        <th>សាខា (Branch)</th>
-                        <th>ខែ (Month)</th>
-                        <th>កូដ (PIN)</th>
-                        <th>ឈ្មោះបុគ្គលិក (Full Name)</th>
+                        <th>សាខា</th>
+                        <th>ខែ</th>
+                        <th>កូដ</th>
+                        <th>ឈ្មោះបុគ្គលិក</th>
+                        <th>វត្តមាន/អវត្តមាន</th>
                         <th>ប្រាក់ខែគោល</th>
                         <th>បន្ថែម</th>
+                        <th>OT</th>
                         <th>កាត់</th>
                         <th>ជំពាក់ចាស់</th>
                         <th>ជំពាក់ថ្មី</th>
                         <th>ជំពាក់សល់</th>
-                        <th>ប្រាក់ខែទទួលបានសុទ្ធ (Net Salary)</th>
-                        <th>ចំណាំ (Note)</th>
-                        <th class="action-col">សកម្មភាព (Action)</th>
+                        <th>ប្រាក់ខែសុទ្ធ</th>
+                        <th>ចំណាំ</th>
+                        <th class="action-col">សកម្មភាព</th>
                     </tr>
                 </thead>
                 <tbody id="payrollTableBody">
-                    <tr><td colspan="13" style="text-align: center; color: #64748b; padding: 20px;">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                    <tr><td colspan="15" style="text-align: center; color: #64748b; padding: 20px;">កំពុងទាញយកទិន្នន័យ...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -323,6 +337,7 @@
         function calculateNet() {
             const base = parseFloat(document.getElementById('base_salary').value) || 0;
             const allow = parseFloat(document.getElementById('allowance').value) || 0;
+            const ot = parseFloat(document.getElementById('ot_amount').value) || 0;
             const deduct = parseFloat(document.getElementById('deduction').value) || 0; 
             
             const prevDebt = parseFloat(document.getElementById('previous_debt').value) || 0;
@@ -332,7 +347,7 @@
             if (totalRemainingDebt < 0) totalRemainingDebt = 0;
             document.getElementById('remaining_debt_preview').value = '$' + totalRemainingDebt.toFixed(2);
 
-            const net = (base + allow) - deduct;
+            const net = (base + allow + ot) - deduct;
             document.getElementById('net_salary_preview').value = '$' + net.toFixed(2);
         }
 
@@ -349,14 +364,18 @@
                     if (res.ok) {
                         const data = await res.json();
                         document.getElementById('full_name').value = data.full_name;
+                        document.getElementById('present_days').value = data.present_days;
+                        document.getElementById('absent_days').value = data.absent_days;
                         
                         const baseSalary = parseFloat(document.getElementById('base_salary').value) || 0;
                         const dailyRate = baseSalary / 26;
                         const calculatedDeduction = data.absent_days * dailyRate;
 
                         document.getElementById('deduction').value = calculatedDeduction.toFixed(2);
-                        document.getElementById('absentInfo').innerText = `រកឃើញអវត្តមាន៖ ${data.absent_days}ថ្ងៃ (គណនាកាត់ស្វ័យប្រវត្ត)`;
+                        document.getElementById('absentInfo').innerText = `ស្កែនមេដៃ៖ មកធ្វើការ ${data.present_days}ថ្ងៃ | អវត្តមាន ${data.absent_days}ថ្ងៃ (គណនាកាត់ស្វ័យប្រវត្តិ)`;
                         calculateNet();
+                    } else {
+                        document.getElementById('absentInfo').innerText = 'ស្កែនមេដៃ៖ មិនទាន់មានប្រវត្តិនៃការស្កែនក្នុងខែនេះទេ';
                     }
                 } catch (err) {
                     console.error('Error fetching attendance data:', err);
@@ -393,7 +412,7 @@
                 });
 
                 if (!filteredList || filteredList.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យប្រាក់បៀវត្សរ៍សម្រាប់សាខានេះនៅឡើយទេ</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="15" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យប្រាក់បៀវត្សរ៍សម្រាប់សាខានេះនៅឡើយទេ</td></tr>';
                     return;
                 }
 
@@ -403,19 +422,22 @@
                     const deduct = parseFloat(item.deduction || 0);
                     const baseSalary = parseFloat(item.base_salary || 0);
                     const allowance = parseFloat(item.allowance || 0);
+                    const ot = parseFloat(item.ot_amount || 0);
 
                     let remainingDebt = (prevDebt + newDebt) - deduct;
                     if (remainingDebt < 0) remainingDebt = 0;
 
-                    const netSalary = (baseSalary + allowance) - deduct;
+                    const netSalary = (baseSalary + allowance + ot) - deduct;
 
                     const row = `<tr>
                         <td><strong>${item.branch || 'ANT DRY PORT'}</strong></td>
                         <td><strong>${item.pay_month}</strong></td>
                         <td>${item.employee_code}</td>
                         <td>${item.full_name}</td>
+                        <td><span class="badge-att">${item.present_days ?? 26} មក / ${item.absent_days ?? 0} ឈប់</span></td>
                         <td>$${baseSalary.toFixed(2)}</td>
                         <td>$${allowance.toFixed(2)}</td>
+                        <td>$${ot.toFixed(2)}</td>
                         <td>$${deduct.toFixed(2)}</td>
                         <td>$${prevDebt.toFixed(2)}</td>
                         <td>$${newDebt.toFixed(2)}</td>
@@ -446,10 +468,13 @@
             document.getElementById('pay_month').value = item.pay_month;
             document.getElementById('base_salary').value = item.base_salary;
             document.getElementById('allowance').value = item.allowance;
+            document.getElementById('ot_amount').value = item.ot_amount || 0;
             document.getElementById('deduction').value = item.deduction;
             document.getElementById('previous_debt').value = item.previous_debt;
             document.getElementById('new_debt').value = item.new_debt;
             document.getElementById('note').value = item.note || '';
+            document.getElementById('present_days').value = item.present_days ?? 26;
+            document.getElementById('absent_days').value = item.absent_days ?? 0;
 
             calculateNet();
             document.getElementById('saveBtn').innerText = 'កែប្រែទិន្នន័យ (Update Payroll)';
@@ -463,9 +488,10 @@
             const editId = document.getElementById('edit_id').value;
             const base = parseFloat(document.getElementById('base_salary').value) || 0;
             const allow = parseFloat(document.getElementById('allowance').value) || 0;
+            const ot = parseFloat(document.getElementById('ot_amount').value) || 0;
             const deduct = parseFloat(document.getElementById('deduction').value) || 0;
             
-            const netSalary = (base + allow) - deduct;
+            const netSalary = (base + allow + ot) - deduct;
 
             const payload = {
                 branch: document.getElementById('branch').value,
@@ -473,12 +499,15 @@
                 full_name: document.getElementById('full_name').value,
                 base_salary: base,
                 allowance: allow,
+                ot_amount: ot,
                 deduction: deduct,
                 previous_debt: document.getElementById('previous_debt').value,
                 new_debt: document.getElementById('new_debt').value,
                 net_salary: netSalary,
                 pay_month: document.getElementById('pay_month').value,
-                note: document.getElementById('note').value
+                note: document.getElementById('note').value,
+                present_days: document.getElementById('present_days').value || 26,
+                absent_days: document.getElementById('absent_days').value || 0
             };
 
             try {
@@ -500,7 +529,6 @@
                     document.getElementById('saveBtn').style.background = 'linear-gradient(135deg, #059669 0%, #10b981 100%)';
                     document.getElementById('net_salary_preview').value = '$0.00';
                     document.getElementById('remaining_debt_preview').value = '$0.00';
-                    document.getElementById('note').value = '';
                     loadPayroll();
                 } else {
                     alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
