@@ -64,6 +64,7 @@ async function initializeDatabase() {
         `);
 
         // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)
+       // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records) - បានបន្ថែម Column វត្តមាន និង OT
         await client.query(`
             CREATE TABLE IF NOT EXISTS payroll_records (
                 id SERIAL PRIMARY KEY,
@@ -72,15 +73,24 @@ async function initializeDatabase() {
                 full_name VARCHAR(150) NOT NULL,
                 base_salary NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 allowance NUMERIC(10, 2) NOT NULL DEFAULT 0,
+                ot_amount NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 deduction NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 previous_debt NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 new_debt NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 net_salary NUMERIC(10, 2) NOT NULL DEFAULT 0,
                 pay_month VARCHAR(50) NOT NULL,
+                present_days INT DEFAULT 26,
+                absent_days INT DEFAULT 0,
+                note TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
 
+        // បន្ថែម Column ស្វ័យប្រវត្តិន្ដក្នុងករណីតារាងមានរួចស្រេច
+        await client.query(`ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS ot_amount NUMERIC(10, 2) NOT NULL DEFAULT 0;`);
+        await client.query(`ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS present_days INT DEFAULT 26;`);
+        await client.query(`ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS absent_days INT DEFAULT 0;`);
+        await client.query(`ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS note TEXT;`);
         // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)
         await client.query(`
             CREATE TABLE IF NOT EXISTS revenues (
@@ -1991,21 +2001,24 @@ app.get('/api/payroll', async (req, res) => {
 });
 
 app.post('/api/payroll', async (req, res) => {
-    const { branch, employee_code, full_name, base_salary, allowance, deduction, previous_debt, new_debt, pay_month, note } = req.body;
+    const { branch, employee_code, full_name, base_salary, allowance, ot_amount, deduction, previous_debt, new_debt, pay_month, note, present_days, absent_days } = req.body;
     try {
         const bSalary = parseFloat(base_salary) || 0;
         const allow = parseFloat(allowance) || 0;
+        const ot = parseFloat(ot_amount) || 0;
         const deduct = parseFloat(deduction) || 0; 
         const pDebt = parseFloat(previous_debt) || 0;
         const nDebt = parseFloat(new_debt) || 0;
         
-        const net_salary = (bSalary + allow) - deduct;
+        const net_salary = (bSalary + allow + ot) - deduct;
 
         const query = `
-            INSERT INTO payroll_records (branch, employee_code, full_name, base_salary, allowance, deduction, previous_debt, new_debt, net_salary, pay_month, note) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *;
+            INSERT INTO payroll_records (branch, employee_code, full_name, base_salary, allowance, ot_amount, deduction, previous_debt, new_debt, net_salary, pay_month, note, present_days, absent_days) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING *;
         `;
-        const result = await pool.query(query, [branch || 'ANT DRY PORT', employee_code, full_name, bSalary, allow, deduct, pDebt, nDebt, net_salary, pay_month, note || null]);
+        const result = await pool.query(query, [
+            branch || 'ANT DRY PORT', employee_code, full_name, bSalary, allow, ot, deduct, pDebt, nDebt, net_salary, pay_month, note || null, parseInt(present_days) || 26, parseInt(absent_days) || 0
+        ]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error saving payroll:', err);
@@ -2015,24 +2028,28 @@ app.post('/api/payroll', async (req, res) => {
 
 app.put('/api/payroll/:id', async (req, res) => {
     const { id } = req.params;
-    const { branch, employee_code, full_name, base_salary, allowance, deduction, previous_debt, new_debt, pay_month, note } = req.body;
+    const { branch, employee_code, full_name, base_salary, allowance, ot_amount, deduction, previous_debt, new_debt, pay_month, note, present_days, absent_days } = req.body;
     try {
         const bSalary = parseFloat(base_salary) || 0;
         const allow = parseFloat(allowance) || 0;
+        const ot = parseFloat(ot_amount) || 0;
         const deduct = parseFloat(deduction) || 0; 
         const pDebt = parseFloat(previous_debt) || 0;
         const nDebt = parseFloat(new_debt) || 0;
         
-        const net_salary = (bSalary + allow) - deduct;
+        const net_salary = (bSalary + allow + ot) - deduct;
 
         const query = `
             UPDATE payroll_records 
             SET branch = $1, employee_code = $2, full_name = $3, base_salary = $4, allowance = $5, 
-                deduction = $6, previous_debt = $7, new_debt = $8, net_salary = $9, pay_month = $10, note = $11
-            WHERE id = $12 
+                ot_amount = $6, deduction = $7, previous_debt = $8, new_debt = $9, net_salary = $10, 
+                pay_month = $11, note = $12, present_days = $13, absent_days = $14
+            WHERE id = $15 
             RETURNING *;
         `;
-        const values = [branch || 'ANT DRY PORT', employee_code, full_name, bSalary, allow, deduct, pDebt, nDebt, net_salary, pay_month, note || null, id];
+        const values = [
+            branch || 'ANT DRY PORT', employee_code, full_name, bSalary, allow, ot, deduct, pDebt, nDebt, net_salary, pay_month, note || null, parseInt(present_days) || 26, parseInt(absent_days) || 0, id
+        ];
         const result = await pool.query(query, values);
         
         if (result.rows.length === 0) {
