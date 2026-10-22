@@ -214,13 +214,14 @@
                         <input type="text" id="full_name" required placeholder="ឧ. សុខ សុភា">
                     </div>
 
+                    <!-- 🆕 អាចវាយបញ្ចូលដៃ ឬទាញស្វ័យប្រវត្តិពីស្កែនមេដៃបាន -->
                     <div class="form-group">
                         <label>ថ្ងៃវត្តមាន / អវត្តមាន (Attendance / Absent Days):</label>
                         <div style="display: flex; gap: 10px;">
-                            <input type="number" id="present_days" placeholder="វត្តមាន (ថ្ងៃ)" style="background: #f0fdf4;" readonly>
-                            <input type="number" id="absent_days" placeholder="អវត្តមាន (ថ្ងៃ)" style="background: #fef2f2;" readonly>
+                            <input type="number" id="present_days" placeholder="វត្តមាន (ថ្ងៃ)" style="background: #f0fdf4;" oninput="calculateFromManualAttendance()">
+                            <input type="number" id="absent_days" placeholder="អវត្តមាន (ថ្ងៃ)" style="background: #fef2f2;" oninput="calculateFromManualAttendance()">
                         </div>
-                        <small id="absentInfo" style="color: #0284c7; display: block; margin-top: 4px;">ស្កែនមេដៃ៖ កំពុងរង់ចាំកូដបុគ្គលិក...</small>
+                        <small id="absentInfo" style="color: #0284c7; display: block; margin-top: 4px;">ស្កែនមេដៃ៖ អាចវាយបញ្ចូលដៃ ឬរង់ចាំទាញស្វ័យប្រវត្តិ...</small>
                     </div>
 
                     <div class="form-group">
@@ -351,6 +352,18 @@
             document.getElementById('net_salary_preview').value = '$' + net.toFixed(2);
         }
 
+        // 🆕 មុខងារគណនាកាត់ប្រាក់ខែស្វ័យប្រវត្តិពេលវាយបញ្ចូលថ្ងៃអវត្តមានដោយដៃ
+        function calculateFromManualAttendance() {
+            const absentDays = parseFloat(document.getElementById('absent_days').value) || 0;
+            const baseSalary = parseFloat(document.getElementById('base_salary').value) || 0;
+            
+            const dailyRate = baseSalary / 26; // គណនា ១ថ្ងៃ = ប្រាក់ខែគោល / ២៦ថ្ងៃ
+            const calculatedDeduction = absentDays * dailyRate;
+
+            document.getElementById('deduction').value = calculatedDeduction.toFixed(2);
+            calculateNet();
+        }
+
         async function checkAttendanceAndDeduction() {
             const empCode = document.getElementById('employee_code').value;
             const payMonth = document.getElementById('pay_month').value;
@@ -367,15 +380,7 @@
                         document.getElementById('present_days').value = data.present_days;
                         document.getElementById('absent_days').value = data.absent_days;
                         
-                        const baseSalary = parseFloat(document.getElementById('base_salary').value) || 0;
-                        const dailyRate = baseSalary / 26;
-                        const calculatedDeduction = data.absent_days * dailyRate;
-
-                        document.getElementById('deduction').value = calculatedDeduction.toFixed(2);
-                        document.getElementById('absentInfo').innerText = `ស្កែនមេដៃ៖ មកធ្វើការ ${data.present_days}ថ្ងៃ | អវត្តមាន ${data.absent_days}ថ្ងៃ (គណនាកាត់ស្វ័យប្រវត្តិ)`;
-                        calculateNet();
-                    } else {
-                        document.getElementById('absentInfo').innerText = 'ស្កែនមេដៃ៖ មិនទាន់មានប្រវត្តិនៃការស្កែនក្នុងខែនេះទេ';
+                        calculateFromManualAttendance();
                     }
                 } catch (err) {
                     console.error('Error fetching attendance data:', err);
