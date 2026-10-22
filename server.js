@@ -1968,6 +1968,10 @@ app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => 
         }
         const employee = empResult.rows[0];
 
+        // គណនាចំនួនថ្ងៃសរុបពិតប្រាកដក្នុងខែនោះ (២៨, ២៩, ៣០ ឬ ៣១ថ្ងៃ)
+        const [year, month] = pay_month.split('-').map(Number);
+        const standardWorkingDays = new Date(year, month, 0).getDate(); 
+
         const attendanceResult = await pool.query(`
             SELECT COUNT(DISTINCT work_date) as present_days 
             FROM attendance_logs 
@@ -1975,13 +1979,13 @@ app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => 
         `, [employee_code, pay_month]);
 
         const presentDays = parseInt(attendanceResult.rows[0].present_days) || 0;
-        const standardWorkingDays = 26;
         let absentDays = standardWorkingDays - presentDays;
         if (absentDays < 0) absentDays = 0;
 
         res.json({
             employee_code: employee.employee_code,
             full_name: employee.full_name,
+            total_days_in_month: standardWorkingDays,
             present_days: presentDays,
             absent_days: absentDays
         });
@@ -1990,7 +1994,6 @@ app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => 
         res.status(500).json({ error: 'មានបញ្ហាក្នុងការគណនាវត្តមាន' });
     }
 });
-
 app.get('/api/payroll', async (req, res) => {
     try {
         const result = await pool.query("SELECT * FROM payroll_records ORDER BY id DESC");
