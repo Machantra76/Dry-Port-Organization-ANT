@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> </title>
+    <title>ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍ - HR & Payroll</title>
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -86,7 +86,7 @@
             color: #1e293b; 
             margin-bottom: 8px; 
         }
-        input, select { 
+        input, select, textarea { 
             width: 100%; 
             padding: 12px 16px; 
             border: 1.5px solid #cbd5e1; 
@@ -97,7 +97,7 @@
             box-sizing: border-box;
             transition: border-color 0.2s;
         }
-        input:focus, select:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+        input:focus, select:focus, textarea:focus { border-color: #2563eb; outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
         
         input[type="month"], select#branch, select#filterBranch {
             font-size: 15px;
@@ -250,6 +250,12 @@
                         <input type="text" id="net_salary_preview" class="preview-box" readonly style="color: #065f46; font-size: 18px;" value="$0.00">
                     </div>
 
+                    <!-- 🆕 បន្ថែមប្រអប់ចំណាំ / កត់សម្គាល់ (Note) -->
+                    <div class="form-group full-width">
+                        <label>ចំណាំ / កត់សម្គាល់បន្ថែម (Note):</label>
+                        <textarea id="note" rows="2" placeholder="បញ្ចូលចំណាំផ្សេងៗ (ឧ. កាត់ថ្លៃខូចខាត, បើកមុនថ្ងៃ...)"></textarea>
+                    </div>
+
                     <div class="submit-btn-wrapper">
                         <button type="submit" id="saveBtn" class="submit-btn">រក្សាទុកទិន្នន័យប្រាក់ខែ (Save Payroll)</button>
                     </div>
@@ -296,11 +302,12 @@
                         <th>ជំពាក់ថ្មី</th>
                         <th>ជំពាក់សល់</th>
                         <th>ប្រាក់ខែទទួលបានសុទ្ធ (Net Salary)</th>
+                        <th>ចំណាំ (Note)</th>
                         <th class="action-col">សកម្មភាព (Action)</th>
                     </tr>
                 </thead>
                 <tbody id="payrollTableBody">
-                    <tr><td colspan="12" style="text-align: center; color: #64748b; padding: 20px;">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                    <tr><td colspan="13" style="text-align: center; color: #64748b; padding: 20px;">កំពុងទាញយកទិន្នន័យ...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -386,7 +393,7 @@
                 });
 
                 if (!filteredList || filteredList.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="12" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យប្រាក់បៀវត្សរ៍សម្រាប់សាខានេះនៅឡើយទេ</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="13" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យប្រាក់បៀវត្សរ៍សម្រាប់សាខានេះនៅឡើយទេ</td></tr>';
                     return;
                 }
 
@@ -414,6 +421,7 @@
                         <td>$${newDebt.toFixed(2)}</td>
                         <td><span class="badge-debt">$${remainingDebt.toFixed(2)}</span></td>
                         <td><span class="badge-net">$${netSalary.toFixed(2)}</span></td>
+                        <td>${item.note || '-'}</td>
                         <td class="action-col">
                             <button onclick="editPayroll(${item.id})" style="background: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-family: 'Kantumruy Pro';">
                                 <i class="fa-solid fa-pen-to-square"></i> កែប្រែ
@@ -441,6 +449,7 @@
             document.getElementById('deduction').value = item.deduction;
             document.getElementById('previous_debt').value = item.previous_debt;
             document.getElementById('new_debt').value = item.new_debt;
+            document.getElementById('note').value = item.note || '';
 
             calculateNet();
             document.getElementById('saveBtn').innerText = 'កែប្រែទិន្នន័យ (Update Payroll)';
@@ -468,7 +477,8 @@
                 previous_debt: document.getElementById('previous_debt').value,
                 new_debt: document.getElementById('new_debt').value,
                 net_salary: netSalary,
-                pay_month: document.getElementById('pay_month').value
+                pay_month: document.getElementById('pay_month').value,
+                note: document.getElementById('note').value
             };
 
             try {
@@ -490,6 +500,7 @@
                     document.getElementById('saveBtn').style.background = 'linear-gradient(135deg, #059669 0%, #10b981 100%)';
                     document.getElementById('net_salary_preview').value = '$0.00';
                     document.getElementById('remaining_debt_preview').value = '$0.00';
+                    document.getElementById('note').value = '';
                     loadPayroll();
                 } else {
                     alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
