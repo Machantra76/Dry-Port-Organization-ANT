@@ -201,7 +201,7 @@
                     
                     <div class="form-group">
                         <label>ខែឆ្នាំប្រាក់បៀវត្សរ៍ (Pay Month):</label>
-                        <input type="month" id="pay_month" required>
+                        <input type="month" id="pay_month" required onchange="updateDaysInMonthInfo()">
                     </div>
 
                     <div class="form-group">
@@ -215,12 +215,12 @@
                     </div>
 
                     <div class="form-group">
-                        <label>ថ្ងៃវត្តមាន / អវត្តមាន (ស្ដង់ដារ ៣០ថ្ងៃ):</label>
+                        <label id="attendanceLabel">ថ្ងៃវត្តមាន / អវត្តមាន (វត្តមានពេញតាមខែ):</label>
                         <div style="display: flex; gap: 10px;">
                             <input type="number" id="present_days" placeholder="វត្តមាន (ថ្ងៃ)" style="background: #f0fdf4;" oninput="calculateFromManualAttendance()">
                             <input type="number" id="absent_days" placeholder="អវត្តមាន (ថ្ងៃ)" style="background: #fef2f2;" oninput="calculateFromManualAttendance()">
                         </div>
-                        <small id="absentInfo" style="color: #0284c7; display: block; margin-top: 4px;">អាចវាយបញ្ចូលដៃ ឬរង់ចាំទាញស្វ័យប្រវត្តិ...</small>
+                        <small id="absentInfo" style="color: #0284c7; display: block; margin-top: 4px;">សូមជ្រើសរើសខែ ដើម្បីកំណត់ចំនួនថ្ងៃក្នុងខែស្វ័យប្រវត្តិ...</small>
                     </div>
 
                     <div class="form-group">
@@ -327,13 +327,27 @@
         </div>
 
         <div class="footer-note">
-            <p><strong>ចំណាំ៖</strong> ប្រព័ន្ធទាញទិន្នន័យអវត្តមានពីការស្កែនមេដៃមកគណនាកាត់ប្រាក់ខែដោយស្វ័យប្រវត្ត (ផ្អែកលើ ៣០ថ្ងៃ) និងគណនាប្រាក់ជំពាក់សរុប។</p>
+            <p><strong>ចំណាំ៖</strong> ប្រព័ន្ធទាញទិន្នន័យអវត្តមានពីការស្កែនមេដៃមកគណនាកាត់ប្រាក់ខែដោយស្វ័យប្រវត្ត (ផ្អែកលើចំនួនថ្ងៃពិតនៃខែនីមួយៗ ២៨, ៣០ ឬ ៣១ថ្ងៃ) និងគណនាប្រាក់ជំពាក់សរុប។</p>
         </div>
     </div>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
+        // មុខងារស្វែងរកចំនួនថ្ងៃសរុបក្នុងខែជ្រើសរើស (២៨, ២៩, ៣០ ឬ ៣១ថ្ងៃ)
+        function getDaysInSelectedMonth() {
+            const payMonth = document.getElementById('pay_month').value;
+            if (!payMonth) return 30; // ដើម default ២៨/៣០
+            const [year, month] = payMonth.split('-').map(Number);
+            return new Date(year, month, 0).getDate();
+        }
+
+        function updateDaysInMonthInfo() {
+            const totalDays = getDaysInSelectedMonth();
+            document.getElementById('attendanceLabel').innerText = `ថ្ងៃវត្តមាន / អវត្តមាន (ខែនេះមាន ${totalDays}ថ្ងៃ):`;
+            calculateFromManualAttendance();
+        }
+
         function calculateNet() {
             const base = parseFloat(document.getElementById('base_salary').value) || 0;
             const allow = parseFloat(document.getElementById('allowance').value) || 0;
@@ -351,12 +365,13 @@
             document.getElementById('net_salary_preview').value = '$' + net.toFixed(2);
         }
 
-        // គណនាកាត់ប្រាក់ខែផ្អែកលើ ៣០ថ្ងៃពេញ
+        // គណនាកាត់ប្រាក់ខែស្វ័យប្រវត្តិ ផ្អែកលើចំនួនថ្ងៃសរុបនៃខែនោះ (២៨, ៣០, ៣១ ថ្ងៃ)
         function calculateFromManualAttendance() {
             const absentDays = parseFloat(document.getElementById('absent_days').value) || 0;
             const baseSalary = parseFloat(document.getElementById('base_salary').value) || 0;
+            const totalDaysInMonth = getDaysInSelectedMonth();
             
-            const dailyRate = baseSalary / 30; // ដូរពី ២៦ មកជា ៣០ថ្ងៃពេញ
+            const dailyRate = baseSalary / totalDaysInMonth; 
             const calculatedDeduction = absentDays * dailyRate;
 
             document.getElementById('deduction').value = calculatedDeduction.toFixed(2);
@@ -379,7 +394,7 @@
                         document.getElementById('present_days').value = data.present_days;
                         document.getElementById('absent_days').value = data.absent_days;
                         
-                        calculateFromManualAttendance();
+                        updateDaysInMonthInfo();
                     }
                 } catch (err) {
                     console.error('Error fetching attendance data:', err);
@@ -388,8 +403,11 @@
         }
 
         document.getElementById('employee_code').addEventListener('blur', checkAttendanceAndDeduction);
-        document.getElementById('pay_month').addEventListener('change', checkAttendanceAndDeduction);
-        document.getElementById('base_salary').addEventListener('input', checkAttendanceAndDeduction);
+        document.getElementById('pay_month').addEventListener('change', () => {
+            updateDaysInMonthInfo();
+            checkAttendanceAndDeduction();
+        });
+        document.getElementById('base_salary').addEventListener('input', calculateFromManualAttendance);
 
         let payrollDataList = [];
 
@@ -438,7 +456,7 @@
                         <td><strong>${item.pay_month}</strong></td>
                         <td>${item.employee_code}</td>
                         <td>${item.full_name}</td>
-                        <td><span class="badge-att">${item.present_days ?? 30} មក / ${item.absent_days ?? 0} ឈប់</span></td>
+                        <td><span class="badge-att">${item.present_days ?? '-'} មក / ${item.absent_days ?? 0} ឈប់</span></td>
                         <td>$${baseSalary.toFixed(2)}</td>
                         <td>$${allowance.toFixed(2)}</td>
                         <td>$${ot.toFixed(2)}</td>
@@ -477,9 +495,10 @@
             document.getElementById('previous_debt').value = item.previous_debt;
             document.getElementById('new_debt').value = item.new_debt;
             document.getElementById('note').value = item.note || '';
-            document.getElementById('present_days').value = item.present_days ?? 30;
+            document.getElementById('present_days').value = item.present_days ?? '';
             document.getElementById('absent_days').value = item.absent_days ?? 0;
 
+            updateDaysInMonthInfo();
             calculateNet();
             document.getElementById('saveBtn').innerText = 'កែប្រែទិន្នន័យ (Update Payroll)';
             document.getElementById('saveBtn').style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
@@ -496,6 +515,7 @@
             const deduct = parseFloat(document.getElementById('deduction').value) || 0;
             
             const netSalary = (base + allow + ot) - deduct;
+            const totalDaysInMonth = getDaysInSelectedMonth();
 
             const payload = {
                 branch: document.getElementById('branch').value,
@@ -510,7 +530,7 @@
                 net_salary: netSalary,
                 pay_month: document.getElementById('pay_month').value,
                 note: document.getElementById('note').value,
-                present_days: document.getElementById('present_days').value || 30,
+                present_days: document.getElementById('present_days').value || totalDaysInMonth,
                 absent_days: document.getElementById('absent_days').value || 0
             };
 
