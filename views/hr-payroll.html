@@ -214,14 +214,13 @@
                         <input type="text" id="full_name" required placeholder="ឧ. សុខ សុភា">
                     </div>
 
-                    <!-- 🆕 អាចវាយបញ្ចូលដៃ ឬទាញស្វ័យប្រវត្តិពីស្កែនមេដៃបាន -->
                     <div class="form-group">
-                        <label>ថ្ងៃវត្តមាន / អវត្តមាន (Attendance / Absent Days):</label>
+                        <label>ថ្ងៃវត្តមាន / អវត្តមាន (ស្ដង់ដារ ៣០ថ្ងៃ):</label>
                         <div style="display: flex; gap: 10px;">
                             <input type="number" id="present_days" placeholder="វត្តមាន (ថ្ងៃ)" style="background: #f0fdf4;" oninput="calculateFromManualAttendance()">
                             <input type="number" id="absent_days" placeholder="អវត្តមាន (ថ្ងៃ)" style="background: #fef2f2;" oninput="calculateFromManualAttendance()">
                         </div>
-                        <small id="absentInfo" style="color: #0284c7; display: block; margin-top: 4px;">ស្កែនមេដៃ៖ អាចវាយបញ្ចូលដៃ ឬរង់ចាំទាញស្វ័យប្រវត្តិ...</small>
+                        <small id="absentInfo" style="color: #0284c7; display: block; margin-top: 4px;">អាចវាយបញ្ចូលដៃ ឬរង់ចាំទាញស្វ័យប្រវត្តិ...</small>
                     </div>
 
                     <div class="form-group">
@@ -328,7 +327,7 @@
         </div>
 
         <div class="footer-note">
-            <p><strong>ចំណាំ៖</strong> ប្រព័ន្ធទាញទិន្នន័យអវត្តមានពីការស្កែនមេដៃមកគណនាកាត់ប្រាក់ខែដោយស្វ័យប្រវត្ត និងគណនាប្រាក់ជំពាក់សរុប។</p>
+            <p><strong>ចំណាំ៖</strong> ប្រព័ន្ធទាញទិន្នន័យអវត្តមានពីការស្កែនមេដៃមកគណនាកាត់ប្រាក់ខែដោយស្វ័យប្រវត្ត (ផ្អែកលើ ៣០ថ្ងៃ) និងគណនាប្រាក់ជំពាក់សរុប។</p>
         </div>
     </div>
 
@@ -352,12 +351,12 @@
             document.getElementById('net_salary_preview').value = '$' + net.toFixed(2);
         }
 
-        // 🆕 មុខងារគណនាកាត់ប្រាក់ខែស្វ័យប្រវត្តិពេលវាយបញ្ចូលថ្ងៃអវត្តមានដោយដៃ
+        // គណនាកាត់ប្រាក់ខែផ្អែកលើ ៣០ថ្ងៃពេញ
         function calculateFromManualAttendance() {
             const absentDays = parseFloat(document.getElementById('absent_days').value) || 0;
             const baseSalary = parseFloat(document.getElementById('base_salary').value) || 0;
             
-            const dailyRate = baseSalary / 26; // គណនា ១ថ្ងៃ = ប្រាក់ខែគោល / ២៦ថ្ងៃ
+            const dailyRate = baseSalary / 30; // ដូរពី ២៦ មកជា ៣០ថ្ងៃពេញ
             const calculatedDeduction = absentDays * dailyRate;
 
             document.getElementById('deduction').value = calculatedDeduction.toFixed(2);
@@ -439,7 +438,7 @@
                         <td><strong>${item.pay_month}</strong></td>
                         <td>${item.employee_code}</td>
                         <td>${item.full_name}</td>
-                        <td><span class="badge-att">${item.present_days ?? 26} មក / ${item.absent_days ?? 0} ឈប់</span></td>
+                        <td><span class="badge-att">${item.present_days ?? 30} មក / ${item.absent_days ?? 0} ឈប់</span></td>
                         <td>$${baseSalary.toFixed(2)}</td>
                         <td>$${allowance.toFixed(2)}</td>
                         <td>$${ot.toFixed(2)}</td>
@@ -478,7 +477,7 @@
             document.getElementById('previous_debt').value = item.previous_debt;
             document.getElementById('new_debt').value = item.new_debt;
             document.getElementById('note').value = item.note || '';
-            document.getElementById('present_days').value = item.present_days ?? 26;
+            document.getElementById('present_days').value = item.present_days ?? 30;
             document.getElementById('absent_days').value = item.absent_days ?? 0;
 
             calculateNet();
@@ -511,7 +510,7 @@
                 net_salary: netSalary,
                 pay_month: document.getElementById('pay_month').value,
                 note: document.getElementById('note').value,
-                present_days: document.getElementById('present_days').value || 26,
+                present_days: document.getElementById('present_days').value || 30,
                 absent_days: document.getElementById('absent_days').value || 0
             };
 
