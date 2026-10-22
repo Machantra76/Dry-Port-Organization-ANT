@@ -1946,6 +1946,9 @@ app.put('/api/inventory/:id', async (req, res) => {
 // ==========================================
 // API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)
 // ==========================================
+// ==========================================
+// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll) - គាំទ្រ Note
+// ==========================================
 app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => {
     const { employee_code, pay_month } = req.params;
     try {
@@ -1988,7 +1991,7 @@ app.get('/api/payroll', async (req, res) => {
 });
 
 app.post('/api/payroll', async (req, res) => {
-    const { branch, employee_code, full_name, base_salary, allowance, deduction, previous_debt, new_debt, pay_month } = req.body;
+    const { branch, employee_code, full_name, base_salary, allowance, deduction, previous_debt, new_debt, pay_month, note } = req.body;
     try {
         const bSalary = parseFloat(base_salary) || 0;
         const allow = parseFloat(allowance) || 0;
@@ -1999,10 +2002,10 @@ app.post('/api/payroll', async (req, res) => {
         const net_salary = (bSalary + allow) - deduct;
 
         const query = `
-            INSERT INTO payroll_records (branch, employee_code, full_name, base_salary, allowance, deduction, previous_debt, new_debt, net_salary, pay_month) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
+            INSERT INTO payroll_records (branch, employee_code, full_name, base_salary, allowance, deduction, previous_debt, new_debt, net_salary, pay_month, note) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *;
         `;
-        const result = await pool.query(query, [branch || 'ANT DRY PORT', employee_code, full_name, bSalary, allow, deduct, pDebt, nDebt, net_salary, pay_month]);
+        const result = await pool.query(query, [branch || 'ANT DRY PORT', employee_code, full_name, bSalary, allow, deduct, pDebt, nDebt, net_salary, pay_month, note || null]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error saving payroll:', err);
@@ -2012,7 +2015,7 @@ app.post('/api/payroll', async (req, res) => {
 
 app.put('/api/payroll/:id', async (req, res) => {
     const { id } = req.params;
-    const { branch, employee_code, full_name, base_salary, allowance, deduction, previous_debt, new_debt, pay_month } = req.body;
+    const { branch, employee_code, full_name, base_salary, allowance, deduction, previous_debt, new_debt, pay_month, note } = req.body;
     try {
         const bSalary = parseFloat(base_salary) || 0;
         const allow = parseFloat(allowance) || 0;
@@ -2025,11 +2028,11 @@ app.put('/api/payroll/:id', async (req, res) => {
         const query = `
             UPDATE payroll_records 
             SET branch = $1, employee_code = $2, full_name = $3, base_salary = $4, allowance = $5, 
-                deduction = $6, previous_debt = $7, new_debt = $8, net_salary = $9, pay_month = $10
-            WHERE id = $11 
+                deduction = $6, previous_debt = $7, new_debt = $8, net_salary = $9, pay_month = $10, note = $11
+            WHERE id = $12 
             RETURNING *;
         `;
-        const values = [branch || 'ANT DRY PORT', employee_code, full_name, bSalary, allow, deduct, pDebt, nDebt, net_salary, pay_month, id];
+        const values = [branch || 'ANT DRY PORT', employee_code, full_name, bSalary, allow, deduct, pDebt, nDebt, net_salary, pay_month, note || null, id];
         const result = await pool.query(query, values);
         
         if (result.rows.length === 0) {
@@ -2042,7 +2045,6 @@ app.put('/api/payroll/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យប្រាក់បៀវត្សរ៍' });
     }
 });
-
 // ==========================================
 // API Routes: ប្រាក់ចំណូល (Revenues)
 // ==========================================
