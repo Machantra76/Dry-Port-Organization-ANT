@@ -856,6 +856,44 @@ app.put('/api/users/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
+// កែប្រែប្រាក់ចំណូល (Update Revenue)
+app.put('/api/revenues/:id', async (req, res) => {
+    const { id } = req.params;
+    const { revenue_date, category, description, amount, received_by } = req.body;
+    try {
+        const query = `
+            UPDATE revenues 
+            SET revenue_date = $1, category = $2, description = $3, amount = $4, received_by = $5
+            WHERE id = $6 
+            RETURNING *;
+        `;
+        const result = await pool.query(query, [revenue_date, category, description, parseFloat(amount) || 0, received_by, id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យប្រាក់ចំណូលនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating revenue:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យប្រាក់ចំណូល' });
+    }
+});
+
+// លុបប្រាក់ចំណូល (Delete Revenue)
+app.delete('/api/revenues/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM revenues WHERE id = $1 RETURNING *;', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យប្រាក់ចំណូលនេះទេ' });
+        }
+        res.json({ success: true, message: 'បានលុបទិន្នន័យដោយជោគជ័យ' });
+    } catch (err) {
+        console.error('Error deleting revenue:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការលុបទិន្នន័យ' });
+    }
+});
 // កែប្រែ / Update វិក្កយបត្រតាម ID
 app.put('/api/tax-invoices/:id', async (req, res) => {
     const { id } = req.params;
