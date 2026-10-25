@@ -157,7 +157,7 @@
     </div>
 
     <script>
-        let currentUserRole = 'Admin'; // អាចផ្លាស់ប្តូរតាមប្រព័ន្ធរបស់អ្នក
+        let currentUserRole = 'Staff'; // កំណត់ជា Staff (បើជា Admin អាចប្ដូរជា 'Admin')[cite: 3]
 
         async function loadReceivables() {
             const from = document.getElementById('filter_from').value;
@@ -209,6 +209,7 @@
                         actionButtons += `<a class="action-link action-pay" onclick="markAsPaid('${item.id}')">✅ បង់ប្រាក់</a>`;
                     }
 
+                    // ប៊ូតុង កែ និង លុប គឺបង្ហាញเฉพาะ Admin ប៉ុណ្ណោះ បើ Staff គឺលុបចេញទាំងស្រុង[cite: 3]
                     if (currentUserRole === 'Admin') {
                         actionButtons += `
                             <a class="action-link" onclick="editReceivable('${item.id}', '${item.customer_name}', '${item.amount}', '${item.invoice_date ? item.invoice_date.split('T')[0] : ''}', '${item.due_date ? item.due_date.split('T')[0] : ''}', '${item.status}', '${item.description || ''}')">✏️ កែ</a>
@@ -262,6 +263,7 @@
         }
 
         function editReceivable(id, customer_name, amount, invoice_date, due_date, status, description) {
+            if (currentUserRole !== 'Admin') return; // ការពារបន្ថែមសម្រាប់ Staff
             document.getElementById('editId').value = id;
             document.getElementById('customer_name').value = customer_name;
             document.getElementById('amount').value = amount;
@@ -272,10 +274,11 @@
 
             document.getElementById('formTitle').textContent = 'កែប្រែគណនេយ្យទទួល (Edit Receivable)';
             document.getElementById('submitBtn').textContent = '💾 រក្សាទុកការកែប្រែ (Update Receivable)';
-            window.scrollTo({ top: { top: 0, behavior: 'smooth' } });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         async function deleteReceivable(id) {
+            if (currentUserRole !== 'Admin') return; // ការពារបន្ថែមសម្រាប់ Staff
             if (!confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) return;
 
             try {
@@ -326,7 +329,7 @@
                     body: JSON.stringify(body)
                 });
                 
-                    if (res.ok) {
+                if (res.ok) {
                     alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានរក្សាទុកគណនេយ្យទទួលដោយជោគជ័យ!');
                     e.target.reset();
                     document.getElementById('editId').value = '';
