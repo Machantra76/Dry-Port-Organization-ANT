@@ -856,6 +856,49 @@ app.put('/api/users/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
+// ==========================================
+// API Routes: កែប្រែ និងលុបចំណាយ (Update & Delete Expenses)
+// ==========================================
+
+// កែប្រែទិន្នន័យចំណាយតាម ID (PUT)
+app.put('/api/expenses/:id', async (req, res) => {
+    const { id } = req.params;
+    const { expense_date, category, description, amount, paid_to } = req.body;
+    try {
+        const query = `
+            UPDATE expenses 
+            SET expense_date = $1, category = $2, description = $3, amount = $4, paid_to = $5
+            WHERE id = $6 
+            RETURNING *;
+        `;
+        const values = [expense_date, category, description || null, parseFloat(amount) || 0, paid_to, id];
+        const result = await pool.query(query, values);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យចំណាយនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating expense:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យចំណាយ: ' + err.message });
+    }
+});
+
+// លុបទិន្នន័យចំណាយតាម ID (DELETE)
+app.delete('/api/expenses/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('DELETE FROM expenses WHERE id = $1 RETURNING *;', [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យចំណាយនេះទេ' });
+        }
+        res.json({ success: true, message: 'បានលុបទិន្នន័យចំណាយដោយជោគជ័យ' });
+    } catch (err) {
+        console.error('Error deleting expense:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការលុបទិន្នន័យចំណាយ' });
+    }
+});
 // កែប្រែទិន្នន័យគណនេយ្យទទួលទាំងស្រុង (Update Receivable Details for Edit)
 app.put('/api/receivables/:id', async (req, res) => {
     const { id } = req.params;
