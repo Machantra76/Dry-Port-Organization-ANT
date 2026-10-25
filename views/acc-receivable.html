@@ -151,21 +151,8 @@
     </div>
 
     <script>
-        // ពិនិត្យសិទ្ធិ Admin (អាចប្រើដើម្បីតេស្តដោយដាក់ localStorage.setItem('user', JSON.stringify({role: 'ADMIN'})))
-        function checkAdminRole() {
-            try {
-                const userStr = localStorage.getItem('user');
-                if (userStr) {
-                    const user = JSON.parse(userStr);
-                    if (user.role && user.role.toUpperCase() === 'ADMIN') {
-                        return true;
-                    }
-                }
-            } catch (e) {
-                console.error("Error reading role:", e);
-            }
-            return false;
-        }
+        // កំណត់សិទ្ធិលំនាំតាមប្រព័ន្ធប្រាក់ចំណូល
+        let currentUserRole = 'Admin'; // អាចផ្លាស់ប្តូរជា dynamic តាម API response
 
         async function loadReceivables() {
             const from = document.getElementById('filter_from').value;
@@ -179,19 +166,25 @@
             try {
                 const response = await fetch(url);
                 const data = await response.json();
+                
+                // ប្រសិនបើ API មានផ្ដល់មកនូវ userRole
+                if (data.userRole) {
+                    currentUserRole = data.userRole;
+                }
+
+                const receivables = data.receivables || data;
                 const tbody = document.getElementById('receivableTableBody');
                 tbody.innerHTML = '';
                 
-                if (!Array.isArray(data) || data.length === 0) {
+                if (!Array.isArray(receivables) || receivables.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #64748b;">មិនមានទិន្នន័យគណនេយ្យទទួលក្នុងកំឡុងពេលនេះទេ</td></tr>';
                     return;
                 }
                 
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                const isAdmin = checkAdminRole(); // ពិនិត្យថាតើជា Admin ឬអត់
 
-                data.forEach(item => {
+                receivables.forEach(item => {
                     const invDate = item.invoice_date ? new Date(item.invoice_date).toLocaleDateString('km-KH') : '';
                     const dueDateVal = item.due_date ? new Date(item.due_date) : null;
                     const dueDate = dueDateVal ? dueDateVal.toLocaleDateString('km-KH') : '';
@@ -212,8 +205,8 @@
                         actionButtons += `<a class="action-link" style="color: #10b981;" onclick="markAsPaid('${item.id}')">✅ បង់ប្រាក់</a>`;
                     }
 
-                    // បង្ហាញប៊ូតុង កែ និង លុប ំពោះតែ Admin ប៉ុណ្ណោះ
-                    if (isAdmin) {
+                    // បង្ហាញប៊ូតុង កែ និង លុប សម្រាប់តែ Admin ប៉ុណ្ណោះ
+                    if (currentUserRole === 'Admin') {
                         actionButtons += `
                             <a class="action-link" onclick="editReceivable('${item.id}', '${item.customer_name}', '${item.amount}', '${item.invoice_date ? item.invoice_date.split('T')[0] : ''}', '${item.due_date ? item.due_date.split('T')[0] : ''}', '${item.status}', '${item.description || ''}')">✏️ កែ</a>
                             <a class="action-link action-delete" onclick="deleteReceivable('${item.id}')">🗑️ លុប</a>
