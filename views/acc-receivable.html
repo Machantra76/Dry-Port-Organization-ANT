@@ -151,6 +151,7 @@
     </div>
 
     <script>
+        // ពិនិត្យសិទ្ធិ Admin (អាចប្រើដើម្បីតេស្តដោយដាក់ localStorage.setItem('user', JSON.stringify({role: 'ADMIN'})))
         function checkAdminRole() {
             try {
                 const userStr = localStorage.getItem('user');
@@ -188,7 +189,7 @@
                 
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
-                const isAdmin = checkAdminRole();
+                const isAdmin = checkAdminRole(); // ពិនិត្យថាតើជា Admin ឬអត់
 
                 data.forEach(item => {
                     const invDate = item.invoice_date ? new Date(item.invoice_date).toLocaleDateString('km-KH') : '';
@@ -211,6 +212,7 @@
                         actionButtons += `<a class="action-link" style="color: #10b981;" onclick="markAsPaid('${item.id}')">✅ បង់ប្រាក់</a>`;
                     }
 
+                    // បង្ហាញប៊ូតុង កែ និង លុប ំពោះតែ Admin ប៉ុណ្ណោះ
                     if (isAdmin) {
                         actionButtons += `
                             <a class="action-link" onclick="editReceivable('${item.id}', '${item.customer_name}', '${item.amount}', '${item.invoice_date ? item.invoice_date.split('T')[0] : ''}', '${item.due_date ? item.due_date.split('T')[0] : ''}', '${item.status}', '${item.description || ''}')">✏️ កែ</a>
