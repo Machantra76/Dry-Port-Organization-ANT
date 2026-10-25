@@ -127,25 +127,13 @@
         }
         .submit-btn:hover { background: #059669; }
         
-        /* ប៊ូតុងទី១: ពណ៌ខៀវស្រស់ (Search / Filter) */
-        .filter-btn {
-            background: #2563eb;
-            color: white;
-        }
+        .filter-btn { background: #2563eb; color: white; }
         .filter-btn:hover { background: #1d4ed8; }
 
-        /* ប៊ូតុងទី២: ពណ៌ប្រផេះដិត (Reset) */
-        .reset-btn {
-            background: #475569;
-            color: white;
-        }
+        .reset-btn { background: #475569; color: white; }
         .reset-btn:hover { background: #334155; }
 
-        /* ប៊ូតុងទី៣: ពណ៌ទឹកក្រូច / លឿងទុំ (Print / PDF) */
-        .print-btn {
-            background: #d97706;
-            color: white;
-        }
+        .print-btn { background: #d97706; color: white; }
         .print-btn:hover { background: #b45309; }
 
         table {
@@ -184,8 +172,11 @@
             text-decoration: none;
             font-weight: 600;
             cursor: pointer;
+            margin-right: 8px;
         }
         .action-link:hover { text-decoration: underline; }
+        .action-delete { color: #dc2626; }
+        .action-delete:hover { color: #b91c1c; }
 
         .invoice-header {
             display: none;
@@ -194,32 +185,13 @@
         }
 
         @media print {
-            body {
-                background: white;
-                padding: 0;
-            }
-            .no-print {
-                display: none !important;
-            }
-            .container {
-                box-shadow: none;
-                padding: 0;
-                max-width: 100%;
-            }
-            .invoice-header {
-                display: block;
-            }
-            table {
-                border: 1px solid #000;
-            }
-            th {
-                background: #eee !important;
-                color: #000 !important;
-                border: 1px solid #000;
-            }
-            td {
-                border: 1px solid #000;
-            }
+            body { background: white; padding: 0; }
+            .no-print { display: none !important; }
+            .container { box-shadow: none; padding: 0; max-width: 100%; }
+            .invoice-header { display: block; }
+            table { border: 1px solid #000; }
+            th { background: #eee !important; color: #000 !important; border: 1px solid #000; }
+            td { border: 1px solid #000; }
         }
     </style>
 </head>
@@ -236,10 +208,11 @@
         <h1>គណនេយ្យប្រាក់ចំណូល</h1>
         <div class="eng-sub no-print">Revenue Accounting, Filter & Invoice System</div>
         
-        <!-- Form សម្រាប់បញ្ចូលទិន្នន័យ -->
+        <!-- Form សម្រាប់បញ្ចូលទិន្នន័យ (บังคับกรอกทุกช่องด้วย attribute required) -->
         <div class="section-box no-print">
-            <h3>កត់ត្រាប្រាក់ចំណូលថ្មី (Record New Revenue)</h3>
+            <h3 id="formTitle">កត់ត្រាប្រាក់ចំណូលថ្មី (Record New Revenue)</h3>
             <form id="revenueForm">
+                <input type="hidden" id="editId">
                 <div class="form-row">
                     <div>
                         <label>កាលបរិច្ឆេទទទួលបាន (Revenue Date):</label>
@@ -255,17 +228,17 @@
                             <option value="ចំណូលផ្សេងៗ (Other Income)">ចំណូលផ្សេងៗ (Other Income)</option>
                             <option value="លូលូ (LOLO)">លូលូ (LOLO)</option>
                             <option value="លើកដាក់ (lift ON)">លើកដាក់ (lift ON)</option>
-                             <option value="លើកចុះ (lift Off)">លើកចុះ (lift Off)</option>
-                             <option value="Gate Fee (Gate Fee)">Gate Fee (Gate Fee)</option>
-                             <option value="Loading (Loading)">លើកឡើង (Loading)</option>
-                             <option value="លើកដាក់ចុះ (lift On/Out)">លើកដាក់ចុះ (lift On/Out)</option>
+                            <option value="លើកចុះ (lift Off)">លើកចុះ (lift Off)</option>
+                            <option value="Gate Fee (Gate Fee)">Gate Fee (Gate Fee)</option>
+                            <option value="Loading (Loading)">លើកឡើង (Loading)</option>
+                            <option value="លើកដាក់ចុះ (lift On/Out)">លើកដាក់ចុះ (lift On/Out)</option>
                         </select>
                     </div>
                 </div>
                 <div class="form-row">
                     <div>
                         <label>បរិមាណទឹកប្រាក់ ($) (Amount):</label>
-                        <input type="number" id="amount" required step="0.01" placeholder="ឧ. 1500.00 (Ex. 1500.00)">
+                        <input type="number" id="amount" required step="0.01" min="0.01" placeholder="ឧ. 1500.00 (Ex. 1500.00)">
                     </div>
                     <div>
                         <label>អ្នកទទួលប្រាក់ (Received By):</label>
@@ -273,10 +246,10 @@
                     </div>
                 </div>
                 <div>
-                    <label>Container​ No/លេខឡាន / កំណត់សម្គាល់ :</label>
-                    <textarea id="description" placeholder="ព័ត៌មានលម្អិត... (Details...)"></textarea>
+                    <label>Container​ No/លេខឡាន / កំណត់សម្គាល់ (Description):</label>
+                    <textarea id="description" required placeholder="ព័ត៌មានលម្អិត... (Details...)"></textarea>
                 </div>
-                <button type="submit" class="submit-btn">រក្សាទុកប្រាក់ចំណូល (Save Revenue)</button>
+                <button type="submit" class="submit-btn" id="submitBtn">រក្សាទុកប្រាក់ចំណូល (Save Revenue)</button>
             </form>
         </div>
 
@@ -323,6 +296,9 @@
     </div>
 
     <script>
+        // តម្លើងតម្លៃ Role របស់អ្នកប្រើប្រាស់ (អាចប្តូរជា dynamic តាម session របស់អ្នក backend)
+        let currentUserRole = 'Admin'; // ឧទាហរណ៍៖ 'Admin' ឬ 'Staff'
+
         async function loadRevenues() {
             const from = document.getElementById('filter_from').value;
             const to = document.getElementById('filter_to').value;
@@ -335,16 +311,33 @@
             try {
                 const response = await fetch(url);
                 const data = await response.json();
+                
+                // ទាញយក Role ពី API បើមាន (ផ្អែកលើระบบ Login របស់អ្នក)
+                if (data.userRole) {
+                    currentUserRole = data.userRole;
+                }
+
+                const revenues = data.revenues || data; // ស្របតាមទម្រង់ API response
                 const tbody = document.getElementById('revenueTableBody');
                 tbody.innerHTML = '';
                 
-                if (data.length === 0) {
+                if (!Array.isArray(revenues) || revenues.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b;">មិនមានទិន្នន័យប្រាក់ចំណូលក្នុងអំឡុងពេលនេះទេ (No revenue data found)</td></tr>';
                     return;
                 }
                 
-                data.forEach(item => {
+                revenues.forEach(item => {
                     const formattedDate = new Date(item.revenue_date).toLocaleDateString('km-KH');
+                    
+                    // បង្កើតប៊ូតុង កែ និង លុប សម្រាប់តែ Admin ប៉ុណ្ណោះ
+                    let adminActions = '';
+                    if (currentUserRole === 'Admin') {
+                        adminActions = `
+                            <a class="action-link" onclick="editRevenue('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || ''}', '${item.received_by}', '${item.amount}')">✏️ កែ</a>
+                            <a class="action-link action-delete" onclick="deleteRevenue('${item.id}')">🗑️ លុប</a>
+                        `;
+                    }
+
                     tbody.innerHTML += `<tr>
                         <td>${formattedDate}</td>
                         <td><strong>${item.category}</strong></td>
@@ -352,7 +345,8 @@
                         <td>${item.received_by}</td>
                         <td><span class="badge-revenue">+$${parseFloat(item.amount).toFixed(2)}</span></td>
                         <td class="no-print">
-                           <a class="action-link" onclick="printInvoice('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || '-'}', '${item.received_by}', '${item.amount}')">🧾 បោះពុម្ពវិក្កយបត្រ (Invoice)</a>
+                           <a class="action-link" onclick="printInvoice('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || '-'}', '${item.received_by}', '${item.amount}')">🧾 វិក្កយបត្រ</a>
+                           ${adminActions}
                         </td>
                     </tr>`;
                 });
@@ -368,64 +362,91 @@
             loadRevenues();
         }
 
+        // មុខងារសម្រាប់បំពេញទិន្នន័យចូល Form ដើម្បីកែប្រែ (Edit)
+        function editRevenue(id, date, category, desc, receiver, amount) {
+            document.getElementById('editId').value = id;
+            document.getElementById('revenue_date').value = date;
+            document.getElementById('category').value = category;
+            document.getElementById('amount').value = amount;
+            document.getElementById('received_by').value = receiver;
+            document.getElementById('description').value = desc;
+
+            document.getElementById('formTitle').textContent = 'កែប្រែព័ត៌មានប្រាក់ចំណូល (Edit Revenue)';
+            document.getElementById('submitBtn').textContent = '💾 រក្សាទុកការកែប្រែ (Update Revenue)';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // មុខងារលុបទិន្នន័យ (Delete)
+        async function deleteRevenue(id) {
+            if (!confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ? (Are you sure to delete?)')) return;
+
+            try {
+                const res = await fetch(`/api/revenues/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    alert('បានលុបដោយជោគជ័យ! (Deleted successfully!)');
+                    loadRevenues();
+                } else {
+                    alert('បរាជ័យក្នុងការលុប! (Failed to delete!)');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ Server!');
+            }
+        }
+
         function printInvoice(id, date, category, desc, receiver, amount) {
-    // កែច្នៃកាលបរិច្ឆេទឱ្យចេញជាទម្រង់ MM/DD/YYYY ស្អាត
-    const formattedDate = date ? new Date(date).toLocaleDateString('en-US') : date;
-    const invoiceNo = `INV-${new Date(date).getFullYear()}-${String(id).padStart(4, '0')}`;
-    
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(`
-        <html>
-        <head>
-            <title>វិក្កយបត្រប្រាក់ចំណូល - Revenue Invoice</title>
-            <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
-            <style>
-                body { font-family: 'Kantumruy Pro', sans-serif; padding: 30px; color: #333; }
-                .invoice-box { max-width: 700px; margin: auto; padding: 35px; border: 1px solid #cbd5e1; box-shadow: 0 0 15px rgba(0,0,0,0.1); border-radius: 8px; background: #fff; }
-                .company-name { text-align: center; color: #1e3c72; font-size: 24px; font-weight: bold; margin-bottom: 2px; }
-                .invoice-title { text-align: center; color: #1e3c72; font-size: 22px; font-weight: bold; margin: 20px 0 15px 0; text-transform: uppercase; letter-spacing: 0.5px; }
-                .invoice-meta { display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 14px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; }
-                .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; font-size: 15px; }
-                .label { font-weight: bold; color: #1e3c72; }
-                .total-box { margin-top: 25px; text-align: right; font-size: 18px; font-weight: bold; color: #065f46; background: #d1fae5; padding: 12px 15px; border-radius: 6px; border: 1px solid #a7f3d0; }
-                .footer { margin-top: 50px; display: flex; justify-content: space-between; text-align: center; font-size: 14px; }
-            </style>
-        </head>
-        <body>
-            <div class="invoice-box">
-                <div class="company-name">ANT DRY PORT</div>
-                
-                <div class="invoice-title">វិក្កយបត្រទទួលប្រាក់<br><span style="font-size: 14px; color: #64748b; font-weight: normal;">OFFICIAL REVENUE INVOICE</span></div>
-                
-                <div class="invoice-meta">
-                    <div><strong>លេខវិក្កយបត្រ (Invoice No):</strong> ${invoiceNo}</div>
-                    <div><strong>កាលបរិច្ឆេទ (Date):</strong> ${formattedDate}</div> <!-- ប្រើប្រាស់អថេរដែលកាត់តម្រឹមរួច -->
-                </div>
+            const formattedDate = date ? new Date(date).toLocaleDateString('en-US') : date;
+            const invoiceNo = `INV-${new Date(date).getFullYear()}-${String(id).padStart(4, '0')}`;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>វិក្កយបត្រប្រាក់ចំណូល - Revenue Invoice</title>
+                    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+                    <style>
+                        body { font-family: 'Kantumruy Pro', sans-serif; padding: 30px; color: #333; }
+                        .invoice-box { max-width: 700px; margin: auto; padding: 35px; border: 1px solid #cbd5e1; box-shadow: 0 0 15px rgba(0,0,0,0.1); border-radius: 8px; background: #fff; }
+                        .company-name { text-align: center; color: #1e3c72; font-size: 24px; font-weight: bold; margin-bottom: 2px; }
+                        .invoice-title { text-align: center; color: #1e3c72; font-size: 22px; font-weight: bold; margin: 20px 0 15px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+                        .invoice-meta { display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 14px; background: #f8fafc; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0; }
+                        .info-row { display: flex; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; font-size: 15px; }
+                        .label { font-weight: bold; color: #1e3c72; }
+                        .total-box { margin-top: 25px; text-align: right; font-size: 18px; font-weight: bold; color: #065f46; background: #d1fae5; padding: 12px 15px; border-radius: 6px; border: 1px solid #a7f3d0; }
+                        .footer { margin-top: 50px; display: flex; justify-content: space-between; text-align: center; font-size: 14px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="invoice-box">
+                        <div class="company-name">ANT DRY PORT</div>
+                        <div class="invoice-title">វិក្កយបត្រទទួលប្រាក់<br><span style="font-size: 14px; color: #64748b; font-weight: normal;">OFFICIAL REVENUE INVOICE</span></div>
+                        <div class="invoice-meta">
+                            <div><strong>លេខវិក្កយបត្រ (Invoice No):</strong> ${invoiceNo}</div>
+                            <div><strong>កាលបរិច្ឆេទ (Date):</strong> ${formattedDate}</div>
+                        </div>
+                        <div class="info-row"><span class="label">ប្រភេទចំណូល (Category):</span> <span>${category}</span></div>
+                        <div class="info-row"><span class="label">Container​ No/លេខឡាន:</span> <span>${desc}</span></div>
+                        <div class="info-row"><span class="label">អ្នកទទួលប្រាក់ (Received By):</span> <span>${receiver}</span></div>
+                        <div class="total-box">ទឹកប្រាក់សរុប (Total Amount): $${parseFloat(amount).toFixed(2)}</div>
+                        <div class="footer">
+                            <div><br><br>..................................................<br>ហត្ថលេខាអ្នកបង់ប្រាក់<br>Payer's Signature</div>
+                            <div><br><br>..................................................<br>ហត្ថលេខាអ្នកទទួលប្រាក់<br>Receiver's Signature</div>
+                        </div>
+                    </div>
+                    <script>
+                        window.onload = function() { window.print(); }
+                    <\/script>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
 
-                <div class="info-row"><span class="label">ប្រភេទចំណូល (Category):</span> <span>${category}</span></div>
-                <div class="info-row"><span class="label">Container​ No/លេខឡាន:</span> <span>${desc}</span></div>
-                <div class="info-row"><span class="label">អ្នកទទួលប្រាក់ (Received By):</span> <span>${receiver}</span></div>
-                
-                <div class="total-box">
-                    ទឹកប្រាក់សរុប (Total Amount): $${parseFloat(amount).toFixed(2)}
-                </div>
-
-                <div class="footer">
-                    <div><br><br>..................................................<br>ហត្ថលេខាអ្នកបង់ប្រាក់<br>Payer's Signature</div>
-                    <div><br><br>..................................................<br>ហត្ថលេខាអ្នកទទួលប្រាក់<br>Receiver's Signature</div>
-                </div>
-            </div>
-            <script>
-                window.onload = function() { window.print(); }
-            <\/script>
-        </body>
-        </html>
-    `);
-    printWindow.document.close();
-}
-
+        // Form Submit (รองรับทั้งการสร้างใหม่และการอាប់เดត)
         document.getElementById('revenueForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const editId = document.getElementById('editId').value;
+            
             const body = {
                 revenue_date: document.getElementById('revenue_date').value,
                 category: document.getElementById('category').value,
@@ -435,22 +456,34 @@
             };
 
             try {
-                const res = await fetch('/api/revenues', {
-                    method: 'POST',
+                let url = '/api/revenues';
+                let method = 'POST';
+
+                if (editId) {
+                    url += `/${editId}`;
+                    method = 'PUT';
+                }
+
+                const res = await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body)
                 });
                 
                 if (res.ok) {
-                    alert('បានរក្សាទុកប្រាក់ចំណូលដោយជោគជ័យ! (Successfully saved revenue!)');
+                    alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានរក្សាទុកប្រាក់ចំណូលដោយជោគជ័យ!');
                     e.target.reset();
+                    document.getElementById('editId').value = '';
+                    document.getElementById('formTitle').textContent = 'កត់ត្រាប្រាក់ចំណូលថ្មី (Record New Revenue)';
+                    document.getElementById('submitBtn').textContent = 'រក្សាទុកប្រាក់ចំណូល (Save Revenue)';
                     document.getElementById('revenue_date').valueAsDate = new Date();
                     loadRevenues();
                 } else {
-                    alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ! (Error saving data!)');
+                    alert('មានបញ្ហាក្នុងការរក្សាទុកទិន្នន័យ!');
                 }
             } catch (error) {
                 console.error(error);
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ Server!');
             }
         });
 
