@@ -167,16 +167,32 @@
             font-size: 13px;
             font-weight: 700;
         }
+        
+        /* រៀបចំ Container សម្រាប់ប៊ូតុងសកម្មភាពឱ្យមានរបៀបរៀបរយមិនរញ៉េរញ៉ៃ */
+        .action-container {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: nowrap;
+        }
         .action-link {
             color: #2563eb;
             text-decoration: none;
             font-weight: 600;
             cursor: pointer;
-            margin-right: 8px;
+            font-size: 13px;
+            background: #eff6ff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #bfdbfe;
+            white-space: nowrap;
+            transition: all 0.2s;
         }
-        .action-link:hover { text-decoration: underline; }
-        .action-delete { color: #dc2626; }
-        .action-delete:hover { color: #b91c1c; }
+        .action-link:hover { background: #dbeafe; text-decoration: none; }
+        .action-invoice { color: #0284c7; background: #f0f9ff; border-color: #bae6fd; }
+        .action-invoice:hover { background: #e0f2fe; }
+        .action-delete { color: #dc2626; background: #fef2f2; border-color: #fecaca; }
+        .action-delete:hover { background: #fee2e2; }
 
         .invoice-header {
             display: none;
@@ -208,7 +224,7 @@
         <h1>គណនេយ្យប្រាក់ចំណូល</h1>
         <div class="eng-sub no-print">Revenue Accounting, Filter & Invoice System</div>
         
-        <!-- Form សម្រាប់បញ្ចូលទិន្នន័យ (บังคับกรอกทุกช่องด้วย attribute required) -->
+        <!-- Form សម្រាប់បញ្ចូលទិន្នន័យ -->
         <div class="section-box no-print">
             <h3 id="formTitle">កត់ត្រាប្រាក់ចំណូលថ្មី (Record New Revenue)</h3>
             <form id="revenueForm">
@@ -285,7 +301,7 @@
                         <th>Container​ No/លេខឡាន </th>
                         <th>អ្នកទទួល (Receiver)</th>
                         <th>ទឹកប្រាក់ ($) (Amount)</th>
-                        <th class="no-print">សកម្មភាព (Actions)</th>
+                        <th class="no-print" style="width: 170px;">សកម្មភាព (Actions)</th>
                     </tr>
                 </thead>
                 <tbody id="revenueTableBody">
@@ -296,8 +312,8 @@
     </div>
 
     <script>
-        // តម្លើងតម្លៃ Role របស់អ្នកប្រើប្រាស់ (អាចប្តូរជា dynamic តាម session របស់អ្នក backend)
-        let currentUserRole = 'Admin'; // ឧទាហរណ៍៖ 'Admin' ឬ 'Staff'
+        // តម្លើងតម្លៃ Role របស់អ្នកប្រើប្រាស់ (អាចកែប្រែជា dynamic តាម API/Session របស់អ្នក)
+        let currentUserRole = 'Staff'; // កំណត់លំនាំដើមជា Staff (បើជា Admin អាចប្តូរជា 'Admin')
 
         async function loadRevenues() {
             const from = document.getElementById('filter_from').value;
@@ -312,12 +328,12 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 
-                // ទាញយក Role ពី API បើមាន (ផ្អែកលើระบบ Login របស់អ្នក)
+                // ទាញយក Role ពី API បើមាន
                 if (data.userRole) {
                     currentUserRole = data.userRole;
                 }
 
-                const revenues = data.revenues || data; // ស្របតាមទម្រង់ API response
+                const revenues = data.revenues || data; 
                 const tbody = document.getElementById('revenueTableBody');
                 tbody.innerHTML = '';
                 
@@ -329,10 +345,14 @@
                 revenues.forEach(item => {
                     const formattedDate = new Date(item.revenue_date).toLocaleDateString('km-KH');
                     
-                    // បង្កើតប៊ូតុង កែ និង លុប សម្រាប់តែ Admin ប៉ុណ្ណោះ
-                    let adminActions = '';
-                    if (currentUserRole === 'Admin') {
-                        adminActions = `
+                    // ប៊ូតុងវិក្កយបត្រមានសម្រាប់គ្រប់គ្នា
+                    let actionButtons = `
+                        <a class="action-link action-invoice" onclick="printInvoice('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || '-'}', '${item.received_by}', '${item.amount}')">🧾 វិក្កយបត្រ</a>
+                    `;
+                    
+                    // បន្ថែមប៊ូតុង កែ និង លុប សម្រាប់តែ Admin ប៉ុណ្ណោះ (ប្រសិនបើ Role ជា Staff វានឹងមិនបង្ហាញឡើយ)
+                    if (currentUserRole && currentUserRole.toLowerCase() === 'admin') {
+                        actionButtons += `
                             <a class="action-link" onclick="editRevenue('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || ''}', '${item.received_by}', '${item.amount}')">✏️ កែ</a>
                             <a class="action-link action-delete" onclick="deleteRevenue('${item.id}')">🗑️ លុប</a>
                         `;
@@ -345,8 +365,7 @@
                         <td>${item.received_by}</td>
                         <td><span class="badge-revenue">+$${parseFloat(item.amount).toFixed(2)}</span></td>
                         <td class="no-print">
-                           <a class="action-link" onclick="printInvoice('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || '-'}', '${item.received_by}', '${item.amount}')">🧾 វិក្កយបត្រ</a>
-                           ${adminActions}
+                           <div class="action-container">${actionButtons}</div>
                         </td>
                     </tr>`;
                 });
@@ -442,7 +461,7 @@
             printWindow.document.close();
         }
 
-        // Form Submit (รองรับทั้งการสร้างใหม่และการอាប់เดត)
+        // Form Submit
         document.getElementById('revenueForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const editId = document.getElementById('editId').value;
