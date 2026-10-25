@@ -214,6 +214,14 @@
     <div class="container">
         <a href="/" class="back-btn no-print">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
         
+        <!-- ប៊ូតុងជំនួយសម្រាប់តេស្តប្ដូររវាង Admin និង Staff (អាចលុបចេញវិញពេលដាក់ឱ្យដំណើរការจริง) -->
+        <div class="no-print" style="background: #e2e8f0; padding: 10px; border-radius: 6px; margin-bottom: 15px; display: flex; gap: 10px; align-items: center;">
+            <span style="font-weight: bold; font-size: 13px;">ប៊ូតុងតេស្តសិទ្ធិ (Test Role Switcher):</span>
+            <button type="button" onclick="setRole('Admin')" style="background: #1e3c72; color: white; height: 32px; padding: 0 12px; font-size: 12px;">ដូរជា Admin</button>
+            <button type="button" onclick="setRole('Staff')" style="background: #475569; color: white; height: 32px; padding: 0 12px; font-size: 12px;">ដូរជា Staff</button>
+            <span id="currentRoleDisplay" style="font-size: 13px; font-weight: bold; color: #059669; margin-left: auto;"></span>
+        </div>
+
         <div class="invoice-header">
             <h2>ANT DRY PORT</h2>
             <h3>របាយការណ៍ប្រាក់ចំណូល (REVENUE REPORT & INVOICE)</h3>
@@ -309,7 +317,18 @@
     </div>
 
     <script>
-        // មុខងារពិនិត្យរកមើលសិទ្ធិ (Role) របស់អ្នកប្រើប្រាស់ពិតប្រាកដពី localStorage
+        // មុខងារដូរ Role សម្រាប់ងាយស្រួលតេស្ត
+        function setRole(role) {
+            localStorage.setItem('user', JSON.stringify({ role: role }));
+            updateRoleDisplay();
+            loadRevenues();
+        }
+
+        function updateRoleDisplay() {
+            const role = getUserRole();
+            document.getElementById('currentRoleDisplay').textContent = `សិទ្ធិបច្ចុប្បន្ន (Current Role): ${role}`;
+        }
+
         function getUserRole() {
             try {
                 const userStr = localStorage.getItem('user');
@@ -322,7 +341,7 @@
             } catch (e) {
                 console.error("Error reading user role:", e);
             }
-            return 'Staff'; // កំណត់លំនាំដើមជា Staff ប្រសិនបើរកមិនឃើញ
+            return 'Admin'; // បើគ្មានទិន្នន័យក្នុង localStorage ដាក់ Admin ទុកជាលំនាំដើម
         }
 
         async function loadRevenues() {
@@ -338,7 +357,7 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 
-                // យក Role ពី API ផ្ដល់មក ឬពី localStorage
+                // ពិនិត្យ Role ពី API ឬ localStorage
                 let currentUserRole = data.userRole || getUserRole();
 
                 const revenues = data.revenues || data; 
@@ -350,15 +369,16 @@
                     return;
                 }
                 
+                updateRoleDisplay();
+
                 revenues.forEach(item => {
                     const formattedDate = new Date(item.revenue_date).toLocaleDateString('km-KH');
                     
-                    // ប៊ូតុងវិក្កយបត្រមានសម្រាប់គ្រប់គ្នា
                     let actionButtons = `
                         <a class="action-link action-invoice" onclick="printInvoice('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || '-'}', '${item.received_by}', '${item.amount}')">🧾 វិក្កយបត្រ</a>
                     `;
                     
-                    // ពិនិត្យមើលថាតើជា Admin ពិតប្រាកដដែរឬទេ (បើជា staff វានឹងរំលងកូដនេះ មិនបង្ហាញប៊ូតុង កែ និង លុប ទេ)
+                    // លក្ខខណ្ឌផ្ទៀងផ្ទាត់ច្បាស់លាស់៖ បើ Role មិនមែនជា Admin ទេ នឹងមិនបង្ហាញប៊ូតុង កែ និង លុប ឡើយ
                     if (currentUserRole.toLowerCase() === 'admin') {
                         actionButtons += `
                             <a class="action-link" onclick="editRevenue('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || ''}', '${item.received_by}', '${item.amount}')">✏️ កែ</a>
