@@ -151,7 +151,6 @@
     </div>
 
     <script>
-        // ពិនិត្យមើល Role របស់អ្នកប្រើប្រាស់ពី localStorage
         function checkAdminRole() {
             try {
                 const userStr = localStorage.getItem('user');
@@ -212,7 +211,6 @@
                         actionButtons += `<a class="action-link" style="color: #10b981;" onclick="markAsPaid('${item.id}')">✅ បង់ប្រាក់</a>`;
                     }
 
-                    // បន្ថែមប៊ូតុង កែ និង លុប សម្រាប់តែ Admin ប៉ុណ្ណោះ
                     if (isAdmin) {
                         actionButtons += `
                             <a class="action-link" onclick="editReceivable('${item.id}', '${item.customer_name}', '${item.amount}', '${item.invoice_date ? item.invoice_date.split('T')[0] : ''}', '${item.due_date ? item.due_date.split('T')[0] : ''}', '${item.status}', '${item.description || ''}')">✏️ កែ</a>
