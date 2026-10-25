@@ -178,6 +178,14 @@
         .action-delete { color: #dc2626; }
         .action-delete:hover { color: #b91c1c; }
 
+        /* CSS សម្រាប់ប៊ូតុង កែ និង លុប ដែលត្រូវ Disable សម្រាប់ Staff */
+        .action-link.disabled {
+            color: #94a3b8 !important;
+            cursor: not-allowed !important;
+            pointer-events: none;
+            text-decoration: none;
+        }
+
         .invoice-header {
             display: none;
             text-align: center;
@@ -208,7 +216,7 @@
         <h1>គណនេយ្យប្រាក់ចំណូល</h1>
         <div class="eng-sub no-print">Revenue Accounting, Filter & Invoice System</div>
         
-        <!-- Form សម្រាប់បញ្ចូលទិន្នន័យ (บังคับกรอกทุกช่องด้วย attribute required) -->
+        <!-- Form សម្រាប់បញ្ចូលទិន្នន័យ -->
         <div class="section-box no-print">
             <h3 id="formTitle">កត់ត្រាប្រាក់ចំណូលថ្មី (Record New Revenue)</h3>
             <form id="revenueForm">
@@ -312,7 +320,7 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 
-                // ទាញយក Role ពី API បើមាន (ផ្អែកលើระบบ Login របស់អ្នក)
+                // ទាញយក Role ពី API បើមាន (ផ្អែកលើប្រព័ន្ធ Login របស់អ្នក)
                 if (data.userRole) {
                     currentUserRole = data.userRole;
                 }
@@ -329,12 +337,17 @@
                 revenues.forEach(item => {
                     const formattedDate = new Date(item.revenue_date).toLocaleDateString('km-KH');
                     
-                    // បង្កើតប៊ូតុង កែ និង លុប សម្រាប់តែ Admin ប៉ុណ្ណោះ
+                    // កំណត់សកម្មភាពប៊ូតុង កែ និង លុប ផ្អែកលើ Role (បើ Admin ប្រើបាន បើ Staff ដាក់ Disable តែប៊ូតុង កែ និង លុប)
                     let adminActions = '';
-                    if (currentUserRole === 'Admin') {
+                    if (currentUserRole.toLowerCase() === 'admin') {
                         adminActions = `
                             <a class="action-link" onclick="editRevenue('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || ''}', '${item.received_by}', '${item.amount}')">✏️ កែ</a>
                             <a class="action-link action-delete" onclick="deleteRevenue('${item.id}')">🗑️ លុប</a>
+                        `;
+                    } else {
+                        adminActions = `
+                            <span class="action-link disabled">✏️ កែ</span>
+                            <span class="action-link disabled">🗑️ លុប</span>
                         `;
                     }
 
@@ -442,7 +455,7 @@
             printWindow.document.close();
         }
 
-        // Form Submit (รองรับทั้งการสร้างใหม่และการอាប់เดត)
+        // Form Submit (รองรับทั้งการสร้างใหม่และการอាប់เดต)
         document.getElementById('revenueForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const editId = document.getElementById('editId').value;
@@ -492,3 +505,4 @@
     </script>
 </body>
 </html>
+[cite: 1]
