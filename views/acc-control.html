@@ -60,11 +60,6 @@
             box-sizing: border-box;
         }
         textarea { resize: vertical; height: 38px; }
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
         .btn-submit {
             background: #10b981;
             color: white;
@@ -74,25 +69,12 @@
             font-weight: 600;
             cursor: pointer;
             font-family: 'Kantumruy Pro', sans-serif;
-            flex: 1;
+            margin-top: 20px;
+            width: 100%;
             font-size: 15px;
             transition: background 0.3s;
         }
         .btn-submit:hover { background: #059669; }
-        .btn-cancel {
-            background: #64748b;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            font-family: 'Kantumruy Pro', sans-serif;
-            font-size: 15px;
-            display: none;
-            transition: background 0.3s;
-        }
-        .btn-cancel:hover { background: #475569; }
         table {
             width: 100%;
             border-collapse: collapse;
@@ -120,21 +102,6 @@
             border-bottom: 2px solid #cbd5e1;
             padding-bottom: 8px;
         }
-        /* Style សម្រាប់ Action Buttons ក្នុងតារាង */
-        .btn-action {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            font-size: 12px;
-            font-family: 'Kantumruy Pro', sans-serif;
-            cursor: pointer;
-            font-weight: 600;
-            margin-right: 5px;
-            transition: opacity 0.2s;
-        }
-        .btn-action:hover { opacity: 0.85; }
-        .btn-edit { background: #f59e0b; color: white; }
-        .btn-delete { background: #ef4444; color: white; }
     </style>
 </head>
 <body>
@@ -144,11 +111,10 @@
         <h1>ការគ្រប់គ្រងថវិកា / ចំណាយ</h1>
         <div class="eng-sub">Budget & Expense Control Management</div>
 
-        <!-- ទម្រង់កត់ត្រាចំណាយថ្មី / កែប្រែ -->
+        <!-- ទម្រង់កត់ត្រាចំណាយថ្មី -->
         <div class="section-box">
-            <h3 id="formTitle">កត់ត្រាចំណាយថ្មី (Record New Expense)</h3>
+            <h3>កត់ត្រាបانចំណាយថ្មី (Record New Expense)</h3>
             <form id="expenseForm" onsubmit="saveExpense(event)">
-                <input type="hidden" id="expense_id">
                 <div class="form-grid">
                     <div class="form-group">
                         <label>កាលបរិច្ឆេទចំណាយ (Date):</label>
@@ -177,10 +143,7 @@
                     <label>បរិយាយ / មូលហេតុ (Description):</label>
                     <textarea id="description" placeholder="ពិពណ៌នាបន្ថែមពីចំណាយ..."></textarea>
                 </div>
-                <div class="btn-group">
-                    <button type="submit" id="btnSubmit" class="btn-submit">💾 រក្សាទុកចំណាយ (Save Expense)</button>
-                    <button type="button" id="btnCancel" class="btn-cancel" onclick="resetForm()">✖ បោះបង់ (Cancel)</button>
-                </div>
+                <button type="submit" class="btn-submit">💾 រក្សាទុកចំណាយ (Save Expense)</button>
             </form>
         </div>
 
@@ -196,35 +159,31 @@
                         <th>បរិយាយ (Description)</th>
                         <th>អ្នកទទួល (Paid To)</th>
                         <th>ទឹកប្រាក់ ($)</th>
-                        <th style="text-align: center; width: 140px;">សកម្មភាព (Actions)</th>
                     </tr>
                 </thead>
                 <tbody id="expenseTableBody">
-                    <tr><td colspan="7" style="text-align: center; color: #64748b;">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                    <tr><td colspan="6" style="text-align: center; color: #64748b;">កំពុងទាញយកទិន្នន័យ...</td></tr>
                 </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        let expensesCache = [];
         document.getElementById('expense_date').valueAsDate = new Date();
 
         async function loadExpenses() {
             try {
                 const response = await fetch('/api/expenses');
                 const data = await response.json();
-                expensesCache = data;
                 const tbody = document.getElementById('expenseTableBody');
                 tbody.innerHTML = '';
 
                 if (data.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #64748b;">គ្មានទិន្នន័យចំណាយនៅឡើយទេ</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b;">គ្មានទិន្នន័យចំណាយនៅឡើយទេ</td></tr>';
                     return;
                 }
 
                 data.forEach((item, index) => {
-                    const formattedDate = item.expense_date ? item.expense_date.split('T')[0] : '';
                     const row = `
                         <tr>
                             <td>${index + 1}</td>
@@ -233,10 +192,6 @@
                             <td>${item.description || '-'}</td>
                             <td>${item.paid_to}</td>
                             <td style="font-weight: 700; color: #dc2626;">-$${parseFloat(item.amount).toLocaleString('en-US', {minimumFractionDigits: 2})}</td>
-                            <td style="text-align: center;">
-                                <button class="btn-action btn-edit" onclick="editExpense('${item.id}')">✏️ កែរ</button>
-                                <button class="btn-action btn-delete" onclick="deleteExpense('${item.id}')">🗑️ លុប</button>
-                            </td>
                         </tr>
                     `;
                     tbody.innerHTML += row;
@@ -249,7 +204,6 @@
 
         async function saveExpense(event) {
             event.preventDefault();
-            const id = document.getElementById('expense_id').value;
             const payload = {
                 expense_date: document.getElementById('expense_date').value,
                 category: document.getElementById('category').value,
@@ -258,74 +212,25 @@
                 description: document.getElementById('description').value
             };
 
-            const url = id ? `/api/expenses/${id}` : '/api/expenses';
-            const method = id ? 'PUT' : 'POST';
-
             try {
-                const response = await fetch(url, {
-                    method: method,
+                const response = await fetch('/api/expenses', {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 const result = await response.json();
-                if (result.success || response.ok) {
-                    alert(id ? 'បានកែប្រែទិន្នន័យចំណាយដោយជោគជ័យ!' : 'បានកត់ត្រាចំណាយដោយជោគជ័យ!');
-                    resetForm();
+                if (result.success) {
+                    alert('បានកត់ត្រាចំណាយដោយជោគជ័យ!');
+                    document.getElementById('expenseForm').reset();
+                    document.getElementById('expense_date').valueAsDate = new Date();
                     loadExpenses();
                 } else {
-                    alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                    alert('កំហុស៖ ' + result.error);
                 }
             } catch (err) {
                 console.error(err);
                 alert('មិនអាចបញ្ជូនទិន្នន័យទៅកាន់ Server បានទេ');
             }
-        }
-
-        function editExpense(id) {
-            const item = expensesCache.find(e => e.id == id);
-            if (!item) return;
-
-            document.getElementById('expense_id').value = item.id;
-            document.getElementById('expense_date').value = item.expense_date ? item.expense_date.split('T')[0] : '';
-            document.getElementById('category').value = item.category;
-            document.getElementById('amount').value = item.amount;
-            document.getElementById('paid_to').value = item.paid_to;
-            document.getElementById('description').value = item.description || '';
-
-            document.getElementById('formTitle').innerText = 'កែប្រែទិន្នន័យចំណាយ (Edit Expense)';
-            document.getElementById('btnSubmit').innerText = '🔄 ធ្វើបច្ចុប្បន្នភាព (Update Expense)';
-            document.getElementById('btnCancel').style.display = 'inline-block';
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        async function deleteExpense(id) {
-            if (!confirm('តើអ្នកពិតជាចង់លុបកំណត់ត្រាចំណាយនេះមែនទេ?')) return;
-
-            try {
-                const response = await fetch(`/api/expenses/${id}`, {
-                    method: 'DELETE'
-                });
-                const result = await response.json();
-                if (result.success || response.ok) {
-                    alert('បានលុបទិន្នន័យដោយជោគជ័យ!');
-                    loadExpenses();
-                } else {
-                    alert('កំហុសក្នុងការលុប៖ ' + (result.error || 'មិនអាចលុបបានទេ'));
-                }
-            } catch (err) {
-                console.error(err);
-                alert('មិនអាចតភ្ជាប់ទៅកាន់ Server ដើម្បីលុបទិន្នន័យបានទេ');
-            }
-        }
-
-        function resetForm() {
-            document.getElementById('expenseForm').reset();
-            document.getElementById('expense_id').value = '';
-            document.getElementById('expense_date').valueAsDate = new Date();
-            document.getElementById('formTitle').innerText = 'កត់ត្រាចំណាយថ្មី (Record New Expense)';
-            document.getElementById('btnSubmit').innerText = '💾 រក្សាទុកចំណាយ (Save Expense)';
-            document.getElementById('btnCancel').style.display = 'none';
         }
 
         loadExpenses();
