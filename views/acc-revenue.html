@@ -178,7 +178,7 @@
         .action-delete { color: #dc2626; }
         .action-delete:hover { color: #b91c1c; }
 
-        /* CSS សម្រាប់ប៊ូតុង កែ និង លុប ដែលត្រូវ Disable សម្រាប់ Staff */
+        /* Style សម្រាប់ប៊ូតុង កែ និង លុប ដែលត្រូវបាន Disable សម្រាប់ Staff */
         .action-link.disabled {
             color: #94a3b8 !important;
             cursor: not-allowed !important;
@@ -304,8 +304,28 @@
     </div>
 
     <script>
-        // តម្លើងតម្លៃ Role របស់អ្នកប្រើប្រាស់ (អាចប្តូរជា dynamic តាម session របស់អ្នក backend)
-        let currentUserRole = 'Admin'; // ឧទាហរណ៍៖ 'Admin' ឬ 'Staff'
+        // កំណត់ Role របស់អ្នកប្រើប្រាស់ (អាចប្តូរជា 'Staff' ដើម្បីតេស្តមើលការ Disable)
+        let currentUserRole = 'Admin'; // ឧទាហរណ៍៖ 'Admin' ឬ 'Staff'[cite: 1]
+
+        // Function សម្រាប់បង្កើតប៊ូតុងសកម្មភាព (Actions) តាម Role
+        function renderActionButtons(item) {
+            const printBtn = `<a class="action-link" onclick="printInvoice('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || '-'}', '${item.received_by}', '${item.amount}')">🧾 វិក្កយបត្រ</a>`;
+
+            if (currentUserRole.toLowerCase() === 'admin') {
+                return `
+                    ${printBtn}
+                    <a class="action-link" onclick="editRevenue('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || ''}', '${item.received_by}', '${item.amount}')">✏️ កែ</a>
+                    <a class="action-link action-delete" onclick="deleteRevenue('${item.id}')">🗑️ លុប</a>
+                `;
+            } else {
+                // បើជា Staff គឺបង្ហាញប៊ូតុង កែ និង លុប ជាលក្ខណៈ Disable (ចុចមិនកើត)[cite: 1]
+                return `
+                    ${printBtn}
+                    <span class="action-link disabled" title="អ្នកមិនមានសិទ្ធិកែប្រែទេ">✏️ កែ</span>
+                    <span class="action-link disabled" title="អ្នកមិនមានសិទ្ធិលុបទេ">🗑️ លុប</span>
+                `;
+            }
+        }
 
         async function loadRevenues() {
             const from = document.getElementById('filter_from').value;
@@ -320,12 +340,11 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 
-                // ទាញយក Role ពី API បើមាន (ផ្អែកលើប្រព័ន្ធ Login របស់អ្នក)
                 if (data.userRole) {
                     currentUserRole = data.userRole;
                 }
 
-                const revenues = data.revenues || data; // ស្របតាមទម្រង់ API response
+                const revenues = data.revenues || data;
                 const tbody = document.getElementById('revenueTableBody');
                 tbody.innerHTML = '';
                 
@@ -336,20 +355,6 @@
                 
                 revenues.forEach(item => {
                     const formattedDate = new Date(item.revenue_date).toLocaleDateString('km-KH');
-                    
-                    // កំណត់សកម្មភាពប៊ូតុង កែ និង លុប ផ្អែកលើ Role (បើ Admin ប្រើបាន បើ Staff ដាក់ Disable តែប៊ូតុង កែ និង លុប)
-                    let adminActions = '';
-                    if (currentUserRole.toLowerCase() === 'admin') {
-                        adminActions = `
-                            <a class="action-link" onclick="editRevenue('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || ''}', '${item.received_by}', '${item.amount}')">✏️ កែ</a>
-                            <a class="action-link action-delete" onclick="deleteRevenue('${item.id}')">🗑️ លុប</a>
-                        `;
-                    } else {
-                        adminActions = `
-                            <span class="action-link disabled">✏️ កែ</span>
-                            <span class="action-link disabled">🗑️ លុប</span>
-                        `;
-                    }
 
                     tbody.innerHTML += `<tr>
                         <td>${formattedDate}</td>
@@ -358,8 +363,7 @@
                         <td>${item.received_by}</td>
                         <td><span class="badge-revenue">+$${parseFloat(item.amount).toFixed(2)}</span></td>
                         <td class="no-print">
-                           <a class="action-link" onclick="printInvoice('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || '-'}', '${item.received_by}', '${item.amount}')">🧾 វិក្កយបត្រ</a>
-                           ${adminActions}
+                           ${renderActionButtons(item)}
                         </td>
                     </tr>`;
                 });
@@ -377,6 +381,10 @@
 
         // មុខងារសម្រាប់បំពេញទិន្នន័យចូល Form ដើម្បីកែប្រែ (Edit)
         function editRevenue(id, date, category, desc, receiver, amount) {
+            if (currentUserRole.toLowerCase() !== 'admin') {
+                alert('អ្នកមិនមានសិទ្ធិកែប្រែទិន្នន័យនេះទេ!');
+                return;
+            }
             document.getElementById('editId').value = id;
             document.getElementById('revenue_date').value = date;
             document.getElementById('category').value = category;
@@ -391,6 +399,10 @@
 
         // មុខងារលុបទិន្នន័យ (Delete)
         async function deleteRevenue(id) {
+            if (currentUserRole.toLowerCase() !== 'admin') {
+                alert('អ្នកមិនមានសិទ្ធិលុបទិន្នន័យនេះទេ!');
+                return;
+            }
             if (!confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ? (Are you sure to delete?)')) return;
 
             try {
@@ -505,4 +517,3 @@
     </script>
 </body>
 </html>
-[cite: 1]
