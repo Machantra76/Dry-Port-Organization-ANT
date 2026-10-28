@@ -446,7 +446,7 @@
                     <input type="text" id="cargoName" class="form-control" placeholder="ឧ. Toyota Camry 2025 / គ្រឿងអេឡិចត្រូនិក" required>
                 </div>
                 <div class="form-group">
-                    <label>ម្ចាស់ទំនិញ / ក្រុមហ៊ុន (Owner / Importer):</label>
+                    <label>ម្ចាស់ទំនិញ ឬ ក្រុមហ៊ុន (Owner / Importer):</label>
                     <input type="text" id="cargoOwner" class="form-control" placeholder="ឧ. ក្រុមហ៊ុន អេអិនធី ឡូជីស្ទិក" required>
                 </div>
                 <div class="form-group">
@@ -588,7 +588,8 @@
                     historyText = `<br><span style="font-size: 10px; color: #0284c7; font-weight: 600;">(រួមថ្ងៃចាស់: ${previousDays} ថ្ងៃ)</span>`;
                 }
 
-                let renewButton = `<button class="btn-action btn-renew" onclick="renewRecord(${item.id}, ${totalDays})" title="បន្តកាលបរិច្ឆេទថ្មី"><i class="fa-solid fa-rotate-right"></i> បន្តថ្មី</button>`;
+                // បើបានបង់ពន្ធរួច (Duty Paid / Released) ដាក់ attribute disabled លើប៊ូតុងបន្តថ្មី
+                let renewButton = `<button class="btn-action btn-renew" ${isPaid ? 'disabled' : ''} onclick="renewRecord(${item.id}, ${totalDays})" title="${isPaid ? 'ទំនិញបានបង់ពន្ធរួច មិនបាច់បន្តកាលបរិច្ឆេទទេ' : 'បន្តកាលបរិច្ឆេទថ្មី'}"><i class="fa-solid fa-rotate-right"></i> បន្តថ្មី</button>`;
 
                 let row = `
                     <tr>
