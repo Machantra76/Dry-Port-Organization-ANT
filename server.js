@@ -711,6 +711,26 @@ app.get('/api/users', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+app.get('/api/run-cron', async (req, res) => {
+    try {
+        const nowUTC = new Date();
+        const localTimeStr = nowUTC.toLocaleString('en-GB', { timeZone: 'Asia/Phnom_Penh' });
+        
+        console.log(`⏰ [Cron Triggered] Server UTC Time: ${nowUTC.toISOString()}`);
+        console.log(`🇰🇭 [Cron Triggered] Local (Phnom Penh) Time: ${localTimeStr}`);
+
+        const result = await processPendingSchedules();
+        
+        // 🌟 កែត្រឹម Return JSON ខ្លីៗ គ្រប់គ្រាន់ មិនឱ្យធំពេកទេ
+        res.json({ 
+            success: true, 
+            processedCount: result.count,
+            successCount: result.success
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 // ==========================================
 // API Routes: គ្រប់គ្រងបញ្ជីវិក្កយបត្រ (Invoice List APIs)
 // ==========================================
