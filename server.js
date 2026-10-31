@@ -661,7 +661,15 @@ app.post('/api/auth/login', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
-
+// 🌟 Self-Ping ដើម្បីការពារកុំឱ្យ Render Free Tier ចូលទៅកាន់ដំណាក់កាល Sleep បណ្តោះអាសន្ន
+const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL; // Render ផ្ដល់ជូនស្វ័យប្រវត្តិ
+if (RENDER_EXTERNAL_URL) {
+    setInterval(() => {
+        axios.get(`${RENDER_EXTERNAL_URL}/api/run-cron`)
+            .then(() => console.log('🔄 [Self-Ping] Server triggered successfully!'))
+            .catch(err => console.error('⚠️ [Self-Ping Error]:', err.message));
+    }, 10 * 60 * 1000); // រៀងរាល់ ១០ នាទីម្ដង
+}
 // ==========================================
 // API Routes: Register (បង្កើត User ថ្មី - កំណត់ Status ជា 'Active')
 // ==========================================
