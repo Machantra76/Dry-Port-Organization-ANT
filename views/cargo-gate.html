@@ -153,6 +153,13 @@
             background-color: #1e293b;
             color: white;
         }
+        .progress-container {
+            height: 18px;
+            border-radius: 9px;
+            background-color: #e9ecef;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
         @media print {
             .no-print { display: none !important; }
             body { background: white; }
@@ -178,16 +185,16 @@
         <form id="cargoGateForm">
             <input type="hidden" id="edit_id"> <!-- ប្រើសម្រាប់សម្គាល់ពេលកែប្រែ -->
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">លេខកូដទំនិញ</label>
                     <input type="text" class="form-control" id="cargo_code" placeholder="ឧ. CG-2026-001" required>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">លេខកុងតឺន័រ/BL</label>
                     <input type="text" class="form-control" id="container_number" placeholder="ឧ. TGHU1234567">
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">មាត់ច្រក / ផែដើម (Port of Loading / Gate)</label>
+                <div class="col-md-4">
+                    <label class="form-label">មាត់ច្រក / ផែដើម (Port of Loading)</label>
                     <select class="form-select" id="gate_type" required>
                         <optgroup label="🇰🇭 Cambodia Ports & Gates">
                             <option value="Gate-In (SHV)">ចូល ផែព្រះសីហនុ (SHV)</option>
@@ -224,23 +231,33 @@
                         </optgroup>
                     </select>
                 </div>
-                <div class="col-md-6">
+                <!-- 🌟 បន្ថែម Field ផែទម្លាក់ទំនិញ (Port of Discharge) -->
+                <div class="col-md-4">
+                    <label class="form-label">ផែទម្លាក់ទំនិញ (Port of Discharge)</label>
+                    <select class="form-select" id="port_discharge" required>
+                        <option value="Sihanoukville Port (SHV)">ផែក្រុងព្រះសីហនុ (SHV Port)</option>
+                        <option value="Phnom Penh Autonomous Port (PNH)">ផែស្វយ័តភ្នំពេញ (PNH Port)</option>
+                        <option value="Ho Chi Minh Port (VN)">ផែ ហូជីមិញ (VN Port)</option>
+                        <option value="Laem Chabang Port (TH)">ផែ លែមឆាបាង (TH Port)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
                     <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង ETA</label>
                     <input type="datetime-local" class="form-control" id="gate_date" required>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">ម្ចាស់ទំនិញ</label>
                     <input type="text" class="form-control" id="owner_name" placeholder="ឧ. Mr. Kosal" required>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">ចំនួន Container</label>
                     <input type="text" class="form-control" id="container_qty" placeholder="ឧ. 1 Ctn" required>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">ឈ្មោះក្រុមហ៊ុនដឹកជញ្ជូន</label>
                     <input type="text" class="form-control" id="company_name" placeholder="ឧ. ក្រុមហ៊ុន ឡូជីស្ទិក">
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">ស្ថានភាព</label>
                     <select class="form-select" id="status">
                         <option value="កំពុង Loading">កំពុង Loading</option>
@@ -308,11 +325,11 @@
                         <th class="table-custom-header">ល.រ</th>
                         <th class="table-custom-header">កូដទំនិញ</th>
                         <th class="table-custom-header">កុងតឺន័រ/BL</th>
-                        <th class="table-custom-header">មាត់ច្រក / ផែដើម</th>
+                        <th class="table-custom-header">ផែដើម (POL) & ផែគោលដៅ (POD)</th>
                         <th class="table-custom-header">កាលបរិច្ឆេទ & ម៉ោង ETA</th>
+                        <th class="table-custom-header" style="min-width: 140px;">ទីតាំងលើសមុទ្រ (Progress)</th>
                         <th class="table-custom-header">ម្ចាស់ទំនិញ</th>
                         <th class="table-custom-header">ចំនួន Container</th>
-                        <th class="table-custom-header">ក្រុមហ៊ុនដឹកជញ្ជូន</th>
                         <th class="table-custom-header">ស្ថានភាព</th>
                         <th class="table-custom-header no-print">សកម្មភាព</th>
                     </tr>
@@ -338,7 +355,8 @@
             <div class="modal-body">
                 <p><strong>កូដទំនិញ:</strong> <span id="modal_cargo_code" class="text-primary"></span></p>
                 <p><strong>លេខកុងតឺន័រ/BL:</strong> <span id="modal_container_number"></span></p>
-                <p><strong>មាត់ច្រក / ផែដើម:</strong> <span id="modal_gate_type"></span></p>
+                <p><strong>ផែដើម (POL):</strong> <span id="modal_gate_type"></span></p>
+                <p><strong>ផែគោលដៅ (POD):</strong> <span id="modal_port_discharge" class="text-success fw-bold"></span></p>
                 <p><strong>កាលបរិច្ឆេទ & ម៉ោង ETA:</strong> <span id="modal_gate_date"></span></p>
                 <p><strong>ម្ចាស់ទំនិញ:</strong> <span id="modal_owner_name"></span></p>
                 <p><strong>ចំនួន Container:</strong> <span id="modal_container_qty"></span></p>
@@ -381,6 +399,12 @@
         e.preventDefault();
 
         const editId = document.getElementById('edit_id').value;
+        const notesValue = document.getElementById('notes').value;
+        const podValue = document.getElementById('port_discharge').value;
+
+        // រក្សាទុក Port of Discharge ចូលក្នុង notes ឬ payload
+        const fullNotes = `POD: ${podValue} | ${notesValue}`;
+
         const data = {
             cargo_code: document.getElementById('cargo_code').value,
             container_number: document.getElementById('container_number').value,
@@ -390,7 +414,7 @@
             container_qty: document.getElementById('container_qty').value,
             company_name: document.getElementById('company_name').value,
             status: document.getElementById('status').value,
-            notes: document.getElementById('notes').value
+            notes: fullNotes
         };
 
         try {
@@ -422,7 +446,35 @@
         }
     });
 
-    // ទាញយកទិន្នន័យមកបង្ហាញក្នុងតារាង និងត្រងតាមលក្ខខណ្ឌ (พร้อมระบบ Auto เปลี่ยนสถานะเป็น "បានមកដល់ផែ SHV" ตามថ្ងៃ)
+    // 🌟 មុខងារគណនាភាគរយនៃការធ្វើដំណើរនៅលើសមុទ្រ (Sea Transit Progress Calculator)
+    function calculateSeaProgress(gateType, etaDateStr) {
+        if (!etaDateStr) return { percent: 0, statusLabel: 'N/A' };
+        
+        const now = new Date();
+        const eta = new Date(etaDateStr);
+        
+        // ប៉ាន់ស្មានរយៈពេលធ្វើដំណើរតាមផ្លូវសមុទ្រ (Transit Days)
+        let totalTransitDays = 7; // Default 7 ថ្ងៃ
+        if (gateType.includes('China')) totalTransitDays = 9;
+        else if (gateType.includes('Korea')) totalTransitDays = 12;
+        else if (gateType.includes('Thailand')) totalTransitDays = 2;
+        else if (gateType.includes('Vietnam')) totalTransitDays = 3;
+        else if (gateType.includes('Europe')) totalTransitDays = 28;
+
+        const etd = new Date(eta.getTime() - (totalTransitDays * 24 * 60 * 60 * 1000));
+        
+        if (now >= eta) return { percent: 100, statusLabel: 'បានមកដល់ផែ' };
+        if (now <= etd) return { percent: 10, statusLabel: 'កំពុងចេញដំណើរ' };
+
+        const totalTime = eta.getTime() - etd.getTime();
+        const elapsedTime = now.getTime() - etd.getTime();
+        let percent = Math.round((elapsedTime / totalTime) * 100);
+        percent = Math.max(10, Math.min(99, percent));
+
+        return { percent: percent, statusLabel: `${percent}% លើសមុទ្រ` };
+    }
+
+    // ទាញយកទិន្នន័យមកបង្ហាញក្នុងតារាង និងត្រងតាមលក្ខខណ្ឌ
     async function loadCargoGates() {
         try {
             const response = await fetch('/api/fleet/cargo-gates');
@@ -432,14 +484,12 @@
             const fromDateVal = document.getElementById('filterFrom').value;
             const toDateVal = document.getElementById('filterTo').value;
 
-            // យកថ្ងៃខែឆ្នាំបច្ចុប្បន្ន (YYYY-MM-DD)
             const todayObj = new Date();
             const todayStr = todayObj.getFullYear() + '-' + 
                              String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + 
                              String(todayObj.getDate()).padStart(2, '0');
 
             let filteredData = data.map(item => {
-                // 🌟 Auto ប្ដូរស្ថានភាពទៅជា "បានមកដល់ផែ SHV" ប្រសិនបើដល់ ឬហួសថ្ងៃ ETA
                 if (item.gate_date) {
                     const itemDateStr = item.gate_date.split('T')[0];
                     if (itemDateStr <= todayStr) {
@@ -490,6 +540,16 @@
                     }
                 }
 
+                // កាត់យក Port of Discharge ពីកំណត់សម្គាល់
+                let podText = 'SHV Port';
+                if (item.notes && item.notes.includes('POD:')) {
+                    const parts = item.notes.split('|');
+                    podText = parts[0].replace('POD:', '').trim();
+                }
+
+                // គណនា Progress ទីតាំងលើសមុទ្រ
+                const progressInfo = calculateSeaProgress(item.gate_type || '', item.gate_date);
+
                 // ពណ៌ badge សម្រាប់មាត់ច្រក ឬផែដើម
                 const gateType = item.gate_type || '';
                 let badgeClass = 'bg-primary';
@@ -500,7 +560,7 @@
                 else if (gateType.includes('Europe')) badgeClass = 'bg-secondary';
                 else if (gateType.includes('Gate-In')) badgeClass = 'bg-success';
                 
-                // 🌟 ពណ៌ស្ថានភាព៖ បើ "បានមកដល់ផែ SHV" ឬ "ទូរ CY (SHV)" ឱ្យលោតពណ៌បៃតង bg-success ស្វ័យប្រវត្តិ
+                // ពណ៌ស្ថានភាព
                 let statusBadgeClass = 'bg-secondary';
                 const currentStatus = item.status || '';
                 if (currentStatus === 'បានមកដល់ផែ SHV' || currentStatus === 'ទូរ CY (SHV)') {
@@ -516,11 +576,21 @@
                         <td>${index + 1}</td>
                         <td class="fw-bold text-primary">${item.cargo_code || '-'}</td>
                         <td>${item.container_number || '-'}</td>
-                        <td><span class="badge ${badgeClass}">${gateType}</span></td>
+                        <td>
+                            <div><span class="badge ${badgeClass}">${gateType}</span></div>
+                            <div class="small text-muted mt-1"><i class="fa-solid fa-arrow-down"></i> ${podText}</div>
+                        </td>
                         <td>${formattedDate}</td>
+                        <td>
+                            <div class="progress progress-container">
+                                <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: ${progressInfo.percent}%;">
+                                    ${progressInfo.percent}%
+                                </div>
+                            </div>
+                            <span class="small text-secondary d-block mt-1">${progressInfo.statusLabel}</span>
+                        </td>
                         <td>${item.owner_name || '-'}</td>
                         <td>${item.container_qty || '-'}</td>
-                        <td>${item.company_name || '-'}</td>
                         <td><span class="badge ${statusBadgeClass}">${currentStatus}</span></td>
                         <td class="no-print">
                             <div class="d-flex justify-content-center gap-1">
@@ -558,15 +628,24 @@
             }
         }
 
+        let podText = 'Sihanoukville Port (SHV)';
+        let cleanNotes = item.notes || '';
+        if (cleanNotes.includes('POD:')) {
+            const parts = cleanNotes.split('|');
+            podText = parts[0].replace('POD:', '').trim();
+            cleanNotes = parts.slice(1).join('|').trim();
+        }
+
         document.getElementById('modal_cargo_code').innerText = item.cargo_code || '-';
         document.getElementById('modal_container_number').innerText = item.container_number || '-';
         document.getElementById('modal_gate_type').innerText = item.gate_type || '-';
+        document.getElementById('modal_port_discharge').innerText = podText;
         document.getElementById('modal_gate_date').innerText = formattedDate;
         document.getElementById('modal_owner_name').innerText = item.owner_name || '-';
         document.getElementById('modal_container_qty').innerText = item.container_qty || '-';
         document.getElementById('modal_company_name').innerText = item.company_name || '-';
         document.getElementById('modal_status').innerText = item.status || '-';
-        document.getElementById('modal_notes').innerText = item.notes || 'គ្មានកំណត់សម្គាល់';
+        document.getElementById('modal_notes').innerText = cleanNotes || 'គ្មានកំណត់សម្គាល់';
 
         const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
         detailModal.show();
@@ -582,6 +661,15 @@
         document.getElementById('container_number').value = item.container_number || '';
         document.getElementById('gate_type').value = item.gate_type || '';
         
+        let cleanNotes = item.notes || '';
+        if (cleanNotes.includes('POD:')) {
+            const parts = cleanNotes.split('|');
+            const podValue = parts[0].replace('POD:', '').trim();
+            document.getElementById('port_discharge').value = podValue;
+            cleanNotes = parts.slice(1).join('|').trim();
+        }
+        document.getElementById('notes').value = cleanNotes;
+
         if (item.gate_date) {
             const dt = new Date(item.gate_date);
             if (!isNaN(dt.getTime())) {
@@ -598,7 +686,6 @@
         document.getElementById('container_qty').value = item.container_qty || '';
         document.getElementById('company_name').value = item.company_name || '';
         document.getElementById('status').value = item.status || '';
-        document.getElementById('notes').value = item.notes || '';
 
         document.getElementById('formTitle').innerText = 'កែប្រែព័ត៌មានការចូល/ចេញទំនិញ';
         document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកការកែប្រែ';
