@@ -1102,7 +1102,33 @@ app.put('/api/bwh-records/:id/renew', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
-// 🌟 1. API សម្រាប់កែប្រែទិន្នន័យ (PUT)
+// 🌟 API សម្រាប់ទាញយកទិន្នន័យ Cargo Gates ទាំងអស់ (GET)
+app.get('/api/fleet/cargo-gates', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM cargo_gates ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('❌ [Cargo Gate Get Error]:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// 🌟 API សម្រាប់កត់ត្រាទិន្នន័យថ្មី (POST)
+app.post('/api/fleet/cargo-gates', async (req, res) => {
+    const { cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes } = req.body;
+    try {
+        await pool.query(
+            `INSERT INTO cargo_gates (cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+            [cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes]
+        );
+        res.json({ success: true, message: 'បានរក្សាទុកទិន្នន័យដោយជោគជ័យ!' });
+    } catch (err) {
+        console.error('❌ [Cargo Gate Insert Error]:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// 🌟 API សម្រាប់កែប្រែទិន្នន័យ (PUT)
 app.put('/api/fleet/cargo-gates/:id', async (req, res) => {
     const { id } = req.params;
     const { cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes } = req.body;
@@ -1118,7 +1144,7 @@ app.put('/api/fleet/cargo-gates/:id', async (req, res) => {
     }
 });
 
-// 🌟 2. API សម្រាប់លុបទិន្នន័យ (DELETE)
+// 🌟 API សម្រាប់លុបទិន្នន័យ (DELETE)
 app.delete('/api/fleet/cargo-gates/:id', async (req, res) => {
     const { id } = req.params;
     try {
