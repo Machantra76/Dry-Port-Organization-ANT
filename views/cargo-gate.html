@@ -330,12 +330,21 @@
     let allCargoData = [];
 
     document.addEventListener('DOMContentLoaded', () => {
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        document.getElementById('gate_date').value = now.toISOString().slice(0, 16);
-
+        setLocalDateTime();
         loadCargoGates();
     });
+
+    // កំណត់ម៉ោងបច្ចុប្បន្នឱ្យត្រូវតាម Local Time ក្នុង Input datetime-local
+    function setLocalDateTime() {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        
+        document.getElementById('gate_date').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+    }
 
     // បញ្ជូនទិន្នន័យបញ្ចូលថ្មី ឬ កែប្រែ
     document.getElementById('cargoGateForm').addEventListener('submit', async (e) => {
@@ -404,7 +413,7 @@
                 }
 
                 if (fromDateVal || toDateVal) {
-                    const itemDate = new Date(item.gate_date).toISOString().split('T')[0];
+                    const itemDate = item.gate_date ? new Date(item.gate_date).toISOString().split('T')[0] : '';
                     if (fromDateVal && itemDate < fromDateVal) matchesDate = false;
                     if (toDateVal && itemDate > toDateVal) matchesDate = false;
                 }
@@ -423,9 +432,31 @@
             }
 
             filteredData.forEach((item, index) => {
-                const formattedDate = item.gate_date ? new Date(item.gate_date).toLocaleString('km-KH') : '-';
+                // ຈັດទម្រង់ម៉ោងកាលបរិច្ឆេទឱ្យបានត្រឹមត្រូវស្របតាម Local Time
+                let formattedDate = '-';
+                if (item.gate_date) {
+                    const d = new Date(item.gate_date);
+                    if (!isNaN(d.getTime())) {
+                        formattedDate = d.toLocaleString('km-KH', { 
+                            year: 'numeric', month: '2-digit', day: '2-digit', 
+                            hour: '2-digit', minute: '2-digit', hour12: true 
+                        });
+                    }
+                }
+
                 const badgeClass = item.gate_type && item.gate_type.includes('In') ? 'bg-success' : 'bg-primary';
                 
+                // 🌟 កែពណ៌ស្ថានភាព៖ បើ "ទូរ CY (SHV)" ឬ "បានមកដល់ផែ SHV" ឱ្យលោតពណ៌បៃតង (bg-success)
+                let statusBadgeClass = 'bg-secondary';
+                const currentStatus = item.status || '';
+                if (currentStatus === 'ទូរ CY (SHV)' || currentStatus === 'បានមកដល់ផែ SHV') {
+                    statusBadgeClass = 'bg-success';
+                } else if (currentStatus === 'កំពុង Loading') {
+                    statusBadgeClass = 'bg-warning text-dark';
+                } else if (currentStatus.includes('Cambodia') || currentStatus.includes('VN')) {
+                    statusBadgeClass = 'bg-info text-dark';
+                }
+
                 const row = `
                     <tr>
                         <td>${index + 1}</td>
@@ -436,7 +467,7 @@
                         <td>${item.owner_name || '-'}</td>
                         <td>${item.container_qty || '-'}</td>
                         <td>${item.company_name || '-'}</td>
-                        <td><span class="badge bg-secondary">${item.status || '-'}</span></td>
+                        <td><span class="badge ${statusBadgeClass}">${currentStatus}</span></td>
                         <td class="no-print">
                             <div class="d-flex justify-content-center gap-1">
                                 <button class="btn btn-sm btn-outline-info" title="មើលព័ត៌មានលម្អិត" onclick="showDetails(${index})">
@@ -465,10 +496,18 @@
         const item = allCargoData[index];
         if (!item) return;
 
+        let formattedDate = '-';
+        if (item.gate_date) {
+            const d = new Date(item.gate_date);
+            if (!isNaN(d.getTime())) {
+                formattedDate = d.toLocaleString('km-KH');
+            }
+        }
+
         document.getElementById('modal_cargo_code').innerText = item.cargo_code || '-';
         document.getElementById('modal_container_number').innerText = item.container_number || '-';
         document.getElementById('modal_gate_type').innerText = item.gate_type || '-';
-        document.getElementById('modal_gate_date').innerText = item.gate_date ? new Date(item.gate_date).toLocaleString('km-KH') : '-';
+        document.getElementById('modal_gate_date').innerText = formattedDate;
         document.getElementById('modal_owner_name').innerText = item.owner_name || '-';
         document.getElementById('modal_container_qty').innerText = item.container_qty || '-';
         document.getElementById('modal_company_name').innerText = item.company_name || '-';
@@ -479,7 +518,7 @@
         detailModal.show();
     }
 
-    // ត្រៀមទិន្នន័យសម្រាប់កែប្រែ
+    // ត្រៀមទិន្នន័យសម្រាប់កែប្រែ (Fix ម៉ោងឱ្យត្រូវពេល Edit មិនឱ្យរអាក់រអួល)
     function editCargo(index) {
         const item = allCargoData[index];
         if (!item) return;
@@ -488,11 +527,19 @@
         document.getElementById('cargo_code').value = item.cargo_code || '';
         document.getElementById('container_number').value = item.container_number || '';
         document.getElementById('gate_type').value = item.gate_type || '';
+        
         if (item.gate_date) {
             const dt = new Date(item.gate_date);
-            dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
-            document.getElementById('gate_date').value = dt.toISOString().slice(0, 16);
+            if (!isNaN(dt.getTime())) {
+                const year = dt.getFullYear();
+                const month = String(dt.getMonth() + 1).padStart(2, '0');
+                const day = String(dt.getDate()).padStart(2, '0');
+                const hours = String(dt.getHours()).padStart(2, '0');
+                const minutes = String(dt.getMinutes()).padStart(2, '0');
+                document.getElementById('gate_date').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
         }
+
         document.getElementById('owner_name').value = item.owner_name || '';
         document.getElementById('container_qty').value = item.container_qty || '';
         document.getElementById('company_name').value = item.company_name || '';
@@ -533,9 +580,7 @@
         document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យខ្លោងទ្វារ';
         document.getElementById('cancelEditBtn').style.display = 'none';
 
-        const now = new Date();
-        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-        document.getElementById('gate_date').value = now.toISOString().slice(0, 16);
+        setLocalDateTime();
     }
 
     // សម្អាត Filter និង Search
