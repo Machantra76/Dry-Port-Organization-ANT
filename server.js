@@ -1077,6 +1077,33 @@ app.put('/api/bwh-records/:id/renew', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+// 🌟 1. API សម្រាប់កែប្រែទិន្នន័យ (PUT)
+app.put('/api/fleet/cargo-gates/:id', async (req, res) => {
+    const { id } = req.params;
+    const { cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes } = req.body;
+    try {
+        await pool.query(
+            `UPDATE cargo_gates SET cargo_code = $1, container_number = $2, gate_type = $3, gate_date = $4, owner_name = $5, container_qty = $6, company_name = $7, status = $8, notes = $9 WHERE id = $10`,
+            [cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes, id]
+        );
+        res.json({ success: true, message: 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' });
+    } catch (err) {
+        console.error('❌ [Cargo Gate Update Error]:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// 🌟 2. API សម្រាប់លុបទិន្នន័យ (DELETE)
+app.delete('/api/fleet/cargo-gates/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM cargo_gates WHERE id = $1', [id]);
+        res.json({ success: true, message: 'បានលុបដោយជោគជ័យ!' });
+    } catch (err) {
+        console.error('❌ [Cargo Gate Delete Error]:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 
 // ==========================================
 // API Routes: Customs Permit & Document Control (BWH) - Updated (Duplicate Permit Fix)
