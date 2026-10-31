@@ -180,31 +180,32 @@
         <form id="cargoGateForm">
             <div class="row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">លេខកូដទំនិញ / កុងតឺន័រ</label>
+                    <label class="form-label">លេខកូដទំនិញ </label>
                     <input type="text" class="form-control" id="cargo_code" placeholder="ឧ. CG-2026-001" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">លេខកុងតឺន័រ (បើមាន)</label>
+                    <label class="form-label">លេខកុងតឺន័រ/BL</label>
                     <input type="text" class="form-control" id="container_number" placeholder="ឧ. TGHU1234567">
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">ប្រភេទខ្លោងទ្វារ</label>
+                    <label class="form-label">មាត់ច្រក</label>
                     <select class="form-select" id="gate_type" required>
-                        <option value="Gate-In">ចូល (Gate-In)</option>
-                        <option value="Gate-Out">ចេញ (Gate-Out)</option>
+                        <option value="Gate-In">ចូល (SHV)</option>
+                        <option value="Gate-Out">ចូល (VN)</option>
+                         <option value="Gate-Out">ចូល (PNH02)</option>
                     </select>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង</label>
+                    <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង ETA</label>
                     <input type="datetime-local" class="form-control" id="gate_date" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">ស្លាកលេខរថយន្ត</label>
-                    <input type="text" class="form-control" id="truck_plate_number" placeholder="ឧ. ភ្នំពេញ 3A-1234" required>
+                    <label class="form-label">ម្ចាស់ទំនីញ</label>
+                    <input type="text" class="form-control" id="truck_plate_number" placeholder="ឧ.Mr Kosal" required>
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">ឈ្មោះអ្នកបើកបរ</label>
-                    <input type="text" class="form-control" id="driver_name" placeholder="ឧ. សុខ សុភា" required>
+                    <label class="form-label">ចំនួយ​ Continerបរ</label>
+                    <input type="text" class="form-control" id="driver_name" placeholder="ឧ. ចំនួយ 1 Ctn" required>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">ឈ្មោះក្រុមហ៊ុនដឹកជញ្ជូន</label>
@@ -213,8 +214,12 @@
                 <div class="col-md-6">
                     <label class="form-label">ស្ថានភាព</label>
                     <select class="form-select" id="status">
-                        <option value="Completed">បានបញ្ចប់</option>
-                        <option value="Pending">កំពុងរង់ចាំ</option>
+                        <option value="Completed">កំពង loading</option>
+                        <option value="Pending">បានចេញមក Cambodia </option>
+                        <option value="Pending">បានមកដល់ផែ SHV </option>
+                        <option value="Pending">ទូរបានមកដល VN </option>
+                        <option value="Pending">ទូរនៅលើកាប៉ាល (On boad) </option>
+                        <option value="Pending">ទូរ CY (SHV) </option>
                     </select>
                 </div>
                 <div class="col-12">
