@@ -187,14 +187,41 @@
                     <input type="text" class="form-control" id="container_number" placeholder="ឧ. TGHU1234567">
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">មាត់ច្រក (Gate / Port)</label>
+                    <label class="form-label">មាត់ច្រក / ផែដើម (Port of Loading / Gate)</label>
                     <select class="form-select" id="gate_type" required>
-                        <option value="Gate-In (SHV)">ចូល ផែព្រះសីហនុ (SHV)</option>
-                        <option value="Gate-Out (VN)">ចេញ វៀតណាម (VN)</option>
-                        <option value="Gate-Out (PNH02)">ចេញ ភ្នំពេញ (PNH02)</option>
-                        <option value="Port (China - Shanghai/Shenzhen)">នាំចូលពី ចិន (Shanghai/Shenzhen)</option>
-                        <option value="Port (Thailand - Laem Chabang)">នាំចូលពី ថៃ (Laem Chabang)</option>
-                        <option value="Port (Singapore Hub)">ឆ្លងកាត់ សិង្ហបុរី (Singapore Hub)</option>
+                        <optgroup label="🇰🇭 Cambodia Ports & Gates">
+                            <option value="Gate-In (SHV)">ចូល ផែព្រះសីហនុ (SHV)</option>
+                            <option value="Gate-Out (VN)">ចេញ វៀតណាម (VN)</option>
+                            <option value="Gate-Out (PNH02)">ចេញ ភ្នំពេញ (PNH02)</option>
+                        </optgroup>
+                        <optgroup label="🇨🇳 China Ports (ចិន)">
+                            <option value="China - Shanghai">Shanghai Port (សៀងហៃ)</option>
+                            <option value="China - Shenzhen">Shenzhen Port (សិនជិន)</option>
+                            <option value="China - Ningbo">Ningbo Port (នីងបូ)</option>
+                            <option value="China - Guangzhou">Guangzhou Port (ក្វាងចូវ)</option>
+                            <option value="China - Qingdao">Qingdao Port (ឈីងតៅ)</option>
+                        </optgroup>
+                        <optgroup label="🇰🇷 South Korea Ports (កូរ៉េខាងត្បូង)">
+                            <option value="Korea - Busan">Busan Port (ពូសាន់)</option>
+                            <option value="Korea - Incheon">Incheon Port (អ៊ីនឆុន)</option>
+                        </optgroup>
+                        <optgroup label="🇹🇭 Thailand Ports (ថៃ)">
+                            <option value="Thailand - Laem Chabang">Laem Chabang Port (លែមឆាបាង)</option>
+                            <option value="Thailand - Bangkok">Bangkok Port (បាងកក)</option>
+                        </optgroup>
+                        <optgroup label="🇻🇳 Vietnam Ports (វៀតណាម)">
+                            <option value="Vietnam - Ho Chi Minh (Cat Lai)">Ho Chi Minh - Cat Lai (ហូជីមិញ)</option>
+                            <option value="Vietnam - Hai Phong">Hai Phong Port (ហាយហ្វុង)</option>
+                        </optgroup>
+                        <optgroup label="🇪🇺 Europe Ports (អឺរ៉ុប)">
+                            <option value="Europe - Rotterdam (Netherlands)">Rotterdam Port (ហូឡង់)</option>
+                            <option value="Europe - Hamburg (Germany)">Hamburg Port (អាល្លឺម៉ង់)</option>
+                            <option value="Europe - Antwerp (Belgium)">Antwerp Port (បែលហ្ស៊ិក)</option>
+                        </optgroup>
+                        <optgroup label="🇸🇬 Singapore & Others (សិង្ហបុរី និងផ្សេងៗ)">
+                            <option value="Singapore - PSA Hub">Singapore Port Hub (សិង្ហបុរី)</option>
+                            <option value="Malaysia - Port Klang">Port Klang (ម៉ាឡេស៊ី)</option>
+                        </optgroup>
                     </select>
                 </div>
                 <div class="col-md-6">
@@ -281,7 +308,7 @@
                         <th class="table-custom-header">ល.រ</th>
                         <th class="table-custom-header">កូដទំនិញ</th>
                         <th class="table-custom-header">កុងតឺន័រ/BL</th>
-                        <th class="table-custom-header">មាត់ច្រក</th>
+                        <th class="table-custom-header">មាត់ច្រក / ផែដើម</th>
                         <th class="table-custom-header">កាលបរិច្ឆេទ & ម៉ោង ETA</th>
                         <th class="table-custom-header">ម្ចាស់ទំនិញ</th>
                         <th class="table-custom-header">ចំនួន Container</th>
@@ -311,7 +338,7 @@
             <div class="modal-body">
                 <p><strong>កូដទំនិញ:</strong> <span id="modal_cargo_code" class="text-primary"></span></p>
                 <p><strong>លេខកុងតឺន័រ/BL:</strong> <span id="modal_container_number"></span></p>
-                <p><strong>មាត់ច្រក:</strong> <span id="modal_gate_type"></span></p>
+                <p><strong>មាត់ច្រក / ផែដើម:</strong> <span id="modal_gate_type"></span></p>
                 <p><strong>កាលបរិច្ឆេទ & ម៉ោង ETA:</strong> <span id="modal_gate_date"></span></p>
                 <p><strong>ម្ចាស់ទំនិញ:</strong> <span id="modal_owner_name"></span></p>
                 <p><strong>ចំនួន Container:</strong> <span id="modal_container_qty"></span></p>
@@ -463,7 +490,15 @@
                     }
                 }
 
-                const badgeClass = item.gate_type && item.gate_type.includes('In') ? 'bg-success' : 'bg-primary';
+                // ពណ៌ badge សម្រាប់មាត់ច្រក ឬផែដើម
+                const gateType = item.gate_type || '';
+                let badgeClass = 'bg-primary';
+                if (gateType.includes('China')) badgeClass = 'bg-danger';
+                else if (gateType.includes('Korea')) badgeClass = 'bg-dark';
+                else if (gateType.includes('Thailand')) badgeClass = 'bg-warning text-dark';
+                else if (gateType.includes('Vietnam')) badgeClass = 'bg-info text-dark';
+                else if (gateType.includes('Europe')) badgeClass = 'bg-secondary';
+                else if (gateType.includes('Gate-In')) badgeClass = 'bg-success';
                 
                 // 🌟 ពណ៌ស្ថានភាព៖ បើ "បានមកដល់ផែ SHV" ឬ "ទូរ CY (SHV)" ឱ្យលោតពណ៌បៃតង bg-success ស្វ័យប្រវត្តិ
                 let statusBadgeClass = 'bg-secondary';
@@ -472,7 +507,7 @@
                     statusBadgeClass = 'bg-success';
                 } else if (currentStatus === 'កំពុង Loading') {
                     statusBadgeClass = 'bg-warning text-dark';
-                } else if (currentStatus.includes('Cambodia') || currentStatus.includes('VN') || currentStatus.includes('China')) {
+                } else if (currentStatus.includes('Cambodia') || currentStatus.includes('VN') || currentStatus.includes('China') || currentStatus.includes('Korea')) {
                     statusBadgeClass = 'bg-info text-dark';
                 }
 
@@ -481,7 +516,7 @@
                         <td>${index + 1}</td>
                         <td class="fw-bold text-primary">${item.cargo_code || '-'}</td>
                         <td>${item.container_number || '-'}</td>
-                        <td><span class="badge ${badgeClass}">${item.gate_type || '-'}</span></td>
+                        <td><span class="badge ${badgeClass}">${gateType}</span></td>
                         <td>${formattedDate}</td>
                         <td>${item.owner_name || '-'}</td>
                         <td>${item.container_qty || '-'}</td>
