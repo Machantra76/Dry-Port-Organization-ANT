@@ -580,6 +580,32 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        async function initDatabase() {
+    try {
+        // ... Tables ផ្សេងៗដែលមានស្រាប់ ...
+
+        // 🌟 បន្ថែម Code នេះដើម្បីបង្កើត Table cargo_gates ស្វ័យប្រវត្តិ
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS cargo_gates (
+                id SERIAL PRIMARY KEY,
+                cargo_code VARCHAR(100),
+                container_number VARCHAR(100),
+                gate_type VARCHAR(100),
+                gate_date TIMESTAMP WITH TIME ZONE,
+                owner_name VARCHAR(150),
+                container_qty VARCHAR(50),
+                company_name VARCHAR(150),
+                status VARCHAR(100),
+                notes TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        console.log('✅ [Database] បានតភ្ជាប់ និងបង្កើត Tables រួចរាល់!');
+    } catch (err) {
+        console.error('❌ [Database Error]:', err.message);
+    }
+}
 
         // បន្ថែម Column ទាំងនេះស្វ័យប្រវត្តក្នុងករណីតារាងមានរួចស្រេច
         await client.query(`ALTER TABLE tax_invoices ADD COLUMN IF NOT EXISTS date_out VARCHAR(100);`);
