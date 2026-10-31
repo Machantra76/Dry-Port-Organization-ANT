@@ -392,7 +392,7 @@
         }
     });
 
-    // ទាញយកទិន្នន័យមកបង្ហាញក្នុងតារាង និងត្រងតាមលក្ខខណ្ឌ
+    // ទាញយកទិន្នន័យមកបង្ហាញក្នុងតារាង និងត្រងតាមលក្ខខណ្ឌ (พร้อมระบบ Auto เปลี่ยนสถานะเป็น "បានមកដល់ផែ SHV" តាមថ្ងៃ)
     async function loadCargoGates() {
         try {
             const response = await fetch('/api/fleet/cargo-gates');
@@ -402,7 +402,24 @@
             const fromDateVal = document.getElementById('filterFrom').value;
             const toDateVal = document.getElementById('filterTo').value;
 
-            let filteredData = data.filter(item => {
+            // យកថ្ងៃខែឆ្នាំបច្ចុប្បន្ន (YYYY-MM-DD)
+            const todayObj = new Date();
+            const todayStr = todayObj.getFullYear() + '-' + 
+                             String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + 
+                             String(todayObj.getDate()).padStart(2, '0');
+
+            let filteredData = data.map(item => {
+                // 🌟 Auto ប្ដូរស្ថានភាពទៅជា "បានមកដល់ផែ SHV" ប្រសិនបើដល់ ឬហួសថ្ងៃ ETA
+                if (item.gate_date) {
+                    const itemDateStr = item.gate_date.split('T')[0];
+                    if (itemDateStr <= todayStr) {
+                        if (!item.status || item.status === 'កំពុង Loading' || item.status === 'បានចេញមក Cambodia') {
+                            item.status = 'បានមកដល់ផែ SHV';
+                        }
+                    }
+                }
+                return item;
+            }).filter(item => {
                 let matchesSearch = true;
                 let matchesDate = true;
 
@@ -413,7 +430,7 @@
                 }
 
                 if (fromDateVal || toDateVal) {
-                    const itemDate = item.gate_date ? new Date(item.gate_date).toISOString().split('T')[0] : '';
+                    const itemDate = item.gate_date ? item.gate_date.split('T')[0] : '';
                     if (fromDateVal && itemDate < fromDateVal) matchesDate = false;
                     if (toDateVal && itemDate > toDateVal) matchesDate = false;
                 }
@@ -432,7 +449,6 @@
             }
 
             filteredData.forEach((item, index) => {
-                // ຈັດទម្រង់ម៉ោងកាលបរិច្ឆេទឱ្យបានត្រឹមត្រូវស្របតាម Local Time
                 let formattedDate = '-';
                 if (item.gate_date) {
                     const d = new Date(item.gate_date);
@@ -446,10 +462,10 @@
 
                 const badgeClass = item.gate_type && item.gate_type.includes('In') ? 'bg-success' : 'bg-primary';
                 
-                // 🌟 កែពណ៌ស្ថានភាព៖ បើ "ទូរ CY (SHV)" ឬ "បានមកដល់ផែ SHV" ឱ្យលោតពណ៌បៃតង (bg-success)
+                // 🌟 ពណ៌ស្ថានភាព៖ បើ "បានមកដល់ផែ SHV" ឬ "ទូរ CY (SHV)" ឱ្យលោតពណ៌បៃតង bg-success ស្វ័យប្រវត្តិ
                 let statusBadgeClass = 'bg-secondary';
                 const currentStatus = item.status || '';
-                if (currentStatus === 'ទូរ CY (SHV)' || currentStatus === 'បានមកដល់ផែ SHV') {
+                if (currentStatus === 'បានមកដល់ផែ SHV' || currentStatus === 'ទូរ CY (SHV)') {
                     statusBadgeClass = 'bg-success';
                 } else if (currentStatus === 'កំពុង Loading') {
                     statusBadgeClass = 'bg-warning text-dark';
@@ -518,7 +534,7 @@
         detailModal.show();
     }
 
-    // ត្រៀមទិន្នន័យសម្រាប់កែប្រែ (Fix ម៉ោងឱ្យត្រូវពេល Edit មិនឱ្យរអាក់រអួល)
+    // ត្រៀមទិន្នន័យសម្រាប់កែប្រែ
     function editCargo(index) {
         const item = allCargoData[index];
         if (!item) return;
