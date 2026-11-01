@@ -119,68 +119,46 @@
             margin-bottom: 20px;
         }
         .btn-action-custom {
-            padding: 9px 16px;
-            font-size: 0.85rem;
+            padding: 9px 18px;
+            font-size: 0.9rem;
             font-weight: 500;
-            border-radius: 8px;
+            border-radius: 6px;
             display: inline-flex;
             align-items: center;
-            justify-content: center;
             gap: 6px;
             border: none;
             transition: all 0.2s;
         }
-        /* 🌟 ពណ៌ថ្មីសម្រាប់ប៊ូតុងទាំង ៣ */
         .btn-filter {
-            background-color: #0284c7;
+            background-color: #2563eb;
             color: white;
         }
         .btn-filter:hover {
-            background-color: #0369a1;
+            background-color: #1d4ed8;
             color: white;
         }
         .btn-reset {
-            background-color: #f59e0b;
+            background-color: #64748b;
             color: white;
         }
         .btn-reset:hover {
-            background-color: #d97706;
+            background-color: #475569;
             color: white;
         }
         .btn-print {
-            background-color: #7c3aed;
+            background-color: #334155;
             color: white;
         }
         .btn-print:hover {
-            background-color: #6d28d9;
+            background-color: #1e293b;
             color: white;
         }
-        /* 🌟 Styling សម្រាប់ Progress Bar និងរូបកាប៉ាលរត់ */
         .progress-container {
-            height: 22px;
-            border-radius: 11px;
-            background-color: #e2e8f0;
-            position: relative;
-            overflow: visible;
-            margin-bottom: 5px;
-        }
-        .progress-bar-custom {
-            height: 100%;
-            border-radius: 11px;
-            background: linear-gradient(135deg, #0ea5e9, #2563eb);
-            transition: width 0.6s ease;
-        }
-        .ship-icon {
-            position: absolute;
-            top: -4px;
-            transform: translateX(-50%);
-            color: #1e3a8a;
-            font-size: 1rem;
-            transition: left 0.6s ease;
-            background: #ffffff;
-            border-radius: 50%;
-            padding: 1px 3px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            height: 18px;
+            border-radius: 9px;
+            background-color: #e9ecef;
+            font-size: 0.75rem;
+            font-weight: 600;
         }
         @media print {
             .no-print { display: none !important; }
@@ -317,6 +295,7 @@
                     <label class="form-label">ស្វែងរកលេខកុងតឺន័រ/កូដទំនិញ</label>
                     <input type="text" class="form-control" id="searchContainer" placeholder="បញ្ចូលលេខកុងតឺន័រ ឬកូដ...">
                 </div>
+                <!-- 🌟 បន្ថែម Select ត្រងតាម ផែទម្លាក់ទំនិញ (Port of Discharge Filter) -->
                 <div class="col-md-2">
                     <label class="form-label">ផែទម្លាក់ទំនិញ (POD)</label>
                     <select class="form-select" id="filterPod" onchange="loadCargoGates()">
@@ -335,15 +314,14 @@
                     <label class="form-label">ដល់ថ្ងៃទី</label>
                     <input type="date" class="form-control" id="filterTo">
                 </div>
-                <!-- 🌟 ប៊ូតុងទាំង ៣ រៀបចំបានស្អាត និងស្មើគ្នា -->
                 <div class="col-md-3 d-flex gap-2 justify-content-end flex-wrap">
-                    <button class="btn btn-action-custom btn-filter flex-fill" onclick="loadCargoGates()">
+                    <button class="btn btn-action-custom btn-filter" onclick="loadCargoGates()">
                         <i class="fa-solid fa-magnifying-glass"></i> ស្វែងរក
                     </button>
-                    <button class="btn btn-action-custom btn-reset flex-fill" onclick="resetFilter()">
+                    <button class="btn btn-action-custom btn-reset" onclick="resetFilter()">
                         <i class="fa-solid fa-rotate-right"></i> កំណត់ឡើងវិញ
                     </button>
-                    <button class="btn btn-action-custom btn-print flex-fill" onclick="window.print()">
+                    <button class="btn btn-action-custom btn-print" onclick="window.print()">
                         <i class="fa-solid fa-print"></i> បោះពុម្ព PDF
                     </button>
                 </div>
@@ -360,7 +338,7 @@
                         <th class="table-custom-header">កុងតឺន័រ/BL</th>
                         <th class="table-custom-header">ផែដើម (POL) & ផែគោលដៅ (POD)</th>
                         <th class="table-custom-header">កាលបរិច្ឆេទ & ម៉ោង ETA</th>
-                        <th class="table-custom-header" style="min-width: 160px;">ទីតាំងលើសមុទ្រ (Progress)</th>
+                        <th class="table-custom-header" style="min-width: 140px;">ទីតាំងលើសមុទ្រ (Progress)</th>
                         <th class="table-custom-header">ម្ចាស់ទំនិញ</th>
                         <th class="table-custom-header">ចំនួន Container</th>
                         <th class="table-custom-header">ស្ថានភាព</th>
@@ -495,17 +473,17 @@
         const etd = new Date(eta.getTime() - (totalTransitDays * 24 * 60 * 60 * 1000));
         
         if (now >= eta) return { percent: 100, statusLabel: 'បានមកដល់ផែ' };
-        if (now <= etd) return { percent: 5, statusLabel: 'កំពុងចេញដំណើរ' };
+        if (now <= etd) return { percent: 10, statusLabel: 'កំពុងចេញដំណើរ' };
 
         const totalTime = eta.getTime() - etd.getTime();
         const elapsedTime = now.getTime() - etd.getTime();
         let percent = Math.round((elapsedTime / totalTime) * 100);
-        percent = Math.max(5, Math.min(99, percent));
+        percent = Math.max(10, Math.min(99, percent));
 
         return { percent: percent, statusLabel: `${percent}% លើសមុទ្រ` };
     }
 
-    // ទាញយកទិន្នន័យមកបង្ហាញក្នុងតារាង និងត្រងតាមលក្ខខណ្ឌ
+    // ទាញយកទិន្នន័យមកបង្ហាញក្នុងតារាង និងត្រងតាមលក្ខខណ្ឌ (រួមទាំង Filter POD)
     async function loadCargoGates() {
         try {
             const response = await fetch('/api/fleet/cargo-gates');
@@ -536,12 +514,14 @@
                 let matchesPod = true;
                 let matchesDate = true;
 
+                // ត្រងតាម Search ស្វែងរកលេខកុងតឺន័រ ឬកូដ
                 if (searchVal) {
                     const containerNo = (item.container_number || '').toLowerCase();
                     const cargoCode = (item.cargo_code || '').toLowerCase();
                     matchesSearch = containerNo.includes(searchVal) || cargoCode.includes(searchVal);
                 }
 
+                // 🌟 ត្រងតាម ផែទម្លាក់ទំនិញ (Port of Discharge)
                 if (filterPodVal) {
                     let itemPod = 'Sihanoukville Port (SHV)';
                     if (item.notes && item.notes.includes('POD:')) {
@@ -551,6 +531,7 @@
                     if (itemPod !== filterPodVal) matchesPod = false;
                 }
 
+                // ត្រងតាមកាលបរិច្ឆេទ
                 if (fromDateVal || toDateVal) {
                     const itemDate = item.gate_date ? item.gate_date.split('T')[0] : '';
                     if (fromDateVal && itemDate < fromDateVal) matchesDate = false;
@@ -621,12 +602,11 @@
                         <td>${formattedDate}</td>
                         <td>
                             <div class="progress progress-container">
-                                <div class="progress-bar-custom" style="width: ${progressInfo.percent}%;"></div>
-                                <div class="ship-icon" style="left: ${progressInfo.percent}%;" title="${progressInfo.percent}%">
-                                    <i class="fa-solid fa-ship"></i>
+                                <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: ${progressInfo.percent}%;">
+                                    ${progressInfo.percent}%
                                 </div>
                             </div>
-                            <span class="small text-secondary d-block mt-1 fw-bold">${progressInfo.statusLabel}</span>
+                            <span class="small text-secondary d-block mt-1">${progressInfo.statusLabel}</span>
                         </td>
                         <td>${item.owner_name || '-'}</td>
                         <td>${item.container_qty || '-'}</td>
