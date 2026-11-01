@@ -153,12 +153,32 @@
             background-color: #1e293b;
             color: white;
         }
+        /* 🌟 Styling សម្រាប់ Progress Bar និងរូបកាប៉ាលរត់ */
         .progress-container {
-            height: 18px;
-            border-radius: 9px;
-            background-color: #e9ecef;
-            font-size: 0.75rem;
-            font-weight: 600;
+            height: 22px;
+            border-radius: 11px;
+            background-color: #e2e8f0;
+            position: relative;
+            overflow: visible;
+            margin-bottom: 5px;
+        }
+        .progress-bar-custom {
+            height: 100%;
+            border-radius: 11px;
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            transition: width 0.6s ease;
+        }
+        .ship-icon {
+            position: absolute;
+            top: -4px;
+            transform: translateX(-50%);
+            color: #1e3a8a;
+            font-size: 1rem;
+            transition: left 0.6s ease;
+            background: #ffffff;
+            border-radius: 50%;
+            padding: 1px 3px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         @media print {
             .no-print { display: none !important; }
@@ -231,7 +251,7 @@
                         </optgroup>
                     </select>
                 </div>
-                <!-- 🌟 បន្ថែម Field ផែទម្លាក់ទំនិញ (Port of Discharge) -->
+                <!-- ផែទម្លាក់ទំនិញ (Port of Discharge) -->
                 <div class="col-md-4">
                     <label class="form-label">ផែទម្លាក់ទំនិញ (Port of Discharge)</label>
                     <select class="form-select" id="port_discharge" required>
@@ -296,6 +316,16 @@
                     <input type="text" class="form-control" id="searchContainer" placeholder="បញ្ចូលលេខកុងតឺន័រ ឬកូដ...">
                 </div>
                 <div class="col-md-2">
+                    <label class="form-label">ផែទម្លាក់ទំនិញ (POD)</label>
+                    <select class="form-select" id="filterPod" onchange="loadCargoGates()">
+                        <option value="">-- ទាំងអស់ --</option>
+                        <option value="Sihanoukville Port (SHV)">SHV Port</option>
+                        <option value="Phnom Penh Autonomous Port (PNH)">PNH Port</option>
+                        <option value="Ho Chi Minh Port (VN)">VN Port</option>
+                        <option value="Laem Chabang Port (TH)">TH Port</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
                     <label class="form-label">ចាប់ពីថ្ងៃទី</label>
                     <input type="date" class="form-control" id="filterFrom">
                 </div>
@@ -303,7 +333,7 @@
                     <label class="form-label">ដល់ថ្ងៃទី</label>
                     <input type="date" class="form-control" id="filterTo">
                 </div>
-                <div class="col-md-5 d-flex gap-2 justify-content-end flex-wrap">
+                <div class="col-md-3 d-flex gap-2 justify-content-end flex-wrap">
                     <button class="btn btn-action-custom btn-filter" onclick="loadCargoGates()">
                         <i class="fa-solid fa-magnifying-glass"></i> ស្វែងរក
                     </button>
@@ -327,7 +357,7 @@
                         <th class="table-custom-header">កុងតឺន័រ/BL</th>
                         <th class="table-custom-header">ផែដើម (POL) & ផែគោលដៅ (POD)</th>
                         <th class="table-custom-header">កាលបរិច្ឆេទ & ម៉ោង ETA</th>
-                        <th class="table-custom-header" style="min-width: 140px;">ទីតាំងលើសមុទ្រ (Progress)</th>
+                        <th class="table-custom-header" style="min-width: 160px;">ទីតាំងលើសមុទ្រ (Progress)</th>
                         <th class="table-custom-header">ម្ចាស់ទំនិញ</th>
                         <th class="table-custom-header">ចំនួន Container</th>
                         <th class="table-custom-header">ស្ថានភាព</th>
@@ -402,7 +432,6 @@
         const notesValue = document.getElementById('notes').value;
         const podValue = document.getElementById('port_discharge').value;
 
-        // រក្សាទុក Port of Discharge ចូលក្នុង notes ឬ payload
         const fullNotes = `POD: ${podValue} | ${notesValue}`;
 
         const data = {
@@ -446,15 +475,14 @@
         }
     });
 
-    // 🌟 មុខងារគណនាភាគរយនៃការធ្វើដំណើរនៅលើសមុទ្រ (Sea Transit Progress Calculator)
+    // មុខងារគណនាភាគរយនៃការធ្វើដំណើរនៅលើសមុទ្រ
     function calculateSeaProgress(gateType, etaDateStr) {
         if (!etaDateStr) return { percent: 0, statusLabel: 'N/A' };
         
         const now = new Date();
         const eta = new Date(etaDateStr);
         
-        // ប៉ាន់ស្មានរយៈពេលធ្វើដំណើរតាមផ្លូវសមុទ្រ (Transit Days)
-        let totalTransitDays = 7; // Default 7 ថ្ងៃ
+        let totalTransitDays = 7;
         if (gateType.includes('China')) totalTransitDays = 9;
         else if (gateType.includes('Korea')) totalTransitDays = 12;
         else if (gateType.includes('Thailand')) totalTransitDays = 2;
@@ -464,12 +492,12 @@
         const etd = new Date(eta.getTime() - (totalTransitDays * 24 * 60 * 60 * 1000));
         
         if (now >= eta) return { percent: 100, statusLabel: 'បានមកដល់ផែ' };
-        if (now <= etd) return { percent: 10, statusLabel: 'កំពុងចេញដំណើរ' };
+        if (now <= etd) return { percent: 5, statusLabel: 'កំពុងចេញដំណើរ' };
 
         const totalTime = eta.getTime() - etd.getTime();
         const elapsedTime = now.getTime() - etd.getTime();
         let percent = Math.round((elapsedTime / totalTime) * 100);
-        percent = Math.max(10, Math.min(99, percent));
+        percent = Math.max(5, Math.min(99, percent));
 
         return { percent: percent, statusLabel: `${percent}% លើសមុទ្រ` };
     }
@@ -481,6 +509,7 @@
             const data = await response.json();
             
             const searchVal = document.getElementById('searchContainer').value.trim().toLowerCase();
+            const filterPodVal = document.getElementById('filterPod').value;
             const fromDateVal = document.getElementById('filterFrom').value;
             const toDateVal = document.getElementById('filterTo').value;
 
@@ -501,6 +530,7 @@
                 return item;
             }).filter(item => {
                 let matchesSearch = true;
+                let matchesPod = true;
                 let matchesDate = true;
 
                 if (searchVal) {
@@ -509,13 +539,22 @@
                     matchesSearch = containerNo.includes(searchVal) || cargoCode.includes(searchVal);
                 }
 
+                if (filterPodVal) {
+                    let itemPod = 'Sihanoukville Port (SHV)';
+                    if (item.notes && item.notes.includes('POD:')) {
+                        const parts = item.notes.split('|');
+                        itemPod = parts[0].replace('POD:', '').trim();
+                    }
+                    if (itemPod !== filterPodVal) matchesPod = false;
+                }
+
                 if (fromDateVal || toDateVal) {
                     const itemDate = item.gate_date ? item.gate_date.split('T')[0] : '';
                     if (fromDateVal && itemDate < fromDateVal) matchesDate = false;
                     if (toDateVal && itemDate > toDateVal) matchesDate = false;
                 }
 
-                return matchesSearch && matchesDate;
+                return matchesSearch && matchesPod && matchesDate;
             });
 
             allCargoData = filteredData; 
@@ -540,17 +579,14 @@
                     }
                 }
 
-                // កាត់យក Port of Discharge ពីកំណត់សម្គាល់
                 let podText = 'SHV Port';
                 if (item.notes && item.notes.includes('POD:')) {
                     const parts = item.notes.split('|');
                     podText = parts[0].replace('POD:', '').trim();
                 }
 
-                // គណនា Progress ទីតាំងលើសមុទ្រ
                 const progressInfo = calculateSeaProgress(item.gate_type || '', item.gate_date);
 
-                // ពណ៌ badge សម្រាប់មាត់ច្រក ឬផែដើម
                 const gateType = item.gate_type || '';
                 let badgeClass = 'bg-primary';
                 if (gateType.includes('China')) badgeClass = 'bg-danger';
@@ -560,7 +596,6 @@
                 else if (gateType.includes('Europe')) badgeClass = 'bg-secondary';
                 else if (gateType.includes('Gate-In')) badgeClass = 'bg-success';
                 
-                // ពណ៌ស្ថានភាព
                 let statusBadgeClass = 'bg-secondary';
                 const currentStatus = item.status || '';
                 if (currentStatus === 'បានមកដល់ផែ SHV' || currentStatus === 'ទូរ CY (SHV)') {
@@ -571,6 +606,7 @@
                     statusBadgeClass = 'bg-info text-dark';
                 }
 
+                // 🌟 បន្ថែម Tag រូបកាប៉ាល (<i class="fa-solid fa-ship"></i>) ឱ្យរត់តាមភាគរយ
                 const row = `
                     <tr>
                         <td>${index + 1}</td>
@@ -583,11 +619,12 @@
                         <td>${formattedDate}</td>
                         <td>
                             <div class="progress progress-container">
-                                <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" role="progressbar" style="width: ${progressInfo.percent}%;">
-                                    ${progressInfo.percent}%
+                                <div class="progress-bar-custom" style="width: ${progressInfo.percent}%;"></div>
+                                <div class="ship-icon" style="left: ${progressInfo.percent}%;" title="${progressInfo.percent}%">
+                                    <i class="fa-solid fa-ship"></i>
                                 </div>
                             </div>
-                            <span class="small text-secondary d-block mt-1">${progressInfo.statusLabel}</span>
+                            <span class="small text-secondary d-block mt-1 fw-bold">${progressInfo.statusLabel}</span>
                         </td>
                         <td>${item.owner_name || '-'}</td>
                         <td>${item.container_qty || '-'}</td>
@@ -727,6 +764,7 @@
     // សម្អាត Filter និង Search
     function resetFilter() {
         document.getElementById('searchContainer').value = '';
+        document.getElementById('filterPod').value = '';
         document.getElementById('filterFrom').value = '';
         document.getElementById('filterTo').value = '';
         loadCargoGates();
