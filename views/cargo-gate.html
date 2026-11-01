@@ -255,14 +255,13 @@
                         <option value="Laem Chabang Port (TH)">ផែ លែមឆាបាង (TH Port)</option>
                     </select>
                 </div>
-                <!-- 🌟 បន្ថែម Field ឈ្មោះនាវា (Vessel) និង លេខជើងនាវា (Voyage) -->
                 <div class="col-md-4">
                     <label class="form-label">ឈ្មោះនាវា (Vessel Name)</label>
-                    <input type="text" class="form-control" id="vessel_name" placeholder="ឧ. EVER GIVEN / SITC HAI PHONG">
+                    <input type="text" class="form-control" id="vessel_name" placeholder="ឧ. MAERSK VERACRUZ">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">លេខជើងនាវា (Voyage No.)</label>
-                    <input type="text" class="form-control" id="voyage_number" placeholder="ឧ. V-2601E">
+                    <input type="text" class="form-control" id="voyage_number" placeholder="ឧ. 644N">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង ETA</label>
@@ -280,14 +279,15 @@
                     <label class="form-label">Shipping Line</label>
                     <input type="text" class="form-control" id="company_name" placeholder="ឧ. ក្រុមហ៊ុន ឡូជីស្ទិក">
                 </div>
+                <!-- 🌟 បន្ថែម Status (Berthing & Departed) តាមសំណើ -->
                 <div class="col-md-4">
                     <label class="form-label">ស្ថានភាព</label>
                     <select class="form-select" id="status">
                         <option value="កំពុង Loading">កំពុង Loading</option>
-                        <option value="បានចេញមក Cambodia">បានចេញមក Cambodia</option>
-                        <option value="បានមកដល់ផែ SHV">បានមកដល់ផែ SHV</option>
-                        <option value="ទូរបានមកដល់ VN">ទូរបានមកដល់ VN</option>
                         <option value="ទូរនៅលើកាប៉ាល (On board)">ទូរនៅលើកាប៉ាល (On board)</option>
+                        <option value="Berthing">Berthing (កំពុងចូលចត)</option>
+                        <option value="Departed">Departed (បានចាកចេញ)</option>
+                        <option value="បានមកដល់ផែ SHV">បានមកដល់ផែ SHV</option>
                         <option value="ទូរ CY (SHV)">ទូរ CY (SHV)</option>
                     </select>
                 </div>
@@ -315,8 +315,8 @@
         <div class="filter-action-bar no-print">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <label class="form-label">ស្វែងរកលេខកុងតឺន័រ/កូដទំនិញ/នាវា</label>
-                    <input type="text" class="form-control" id="searchContainer" placeholder="បញ្ចូលលេខកុងតឺន័រ ឬឈ្មោះនាវា...">
+                    <label class="form-label">ស្វែងរកកុងតឺន័រ/កូដ/នាវា</label>
+                    <input type="text" class="form-control" id="searchContainer" placeholder="បញ្ចូលលេខ ឬឈ្មោះនាវា...">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">ផែទម្លាក់ទំនិញ (POD)</label>
@@ -398,7 +398,6 @@
                 <p><strong>កំណត់សម្គាល់:</strong> <span id="modal_notes" class="text-muted"></span></p>
             </div>
             <div class="modal-footer">
-                <!-- 🌟 ប៊ូតុង Live Tracking ក្នុង Modal -->
                 <a href="#" id="modal_tracking_btn" target="_blank" class="btn btn-info btn-sm text-white" style="display:none;">
                     <i class="fa-solid fa-map-location-dot me-1"></i> មើលទីតាំងនាវា (Live Map)
                 </a>
@@ -456,12 +455,9 @@
 
         document.getElementById('gate_date').value = `${year}-${month}-${day}T${hours}:${minutes}`;
 
-        let autoStatus = "ទូរនៅលើកាប៉ាល (On board)";
-        if (transitDays === 1) autoStatus = "កំពុង Loading";
-        document.getElementById('status').value = autoStatus;
+        document.getElementById('status').value = "ទូរនៅលើកាប៉ាល (On board)";
     }
 
-    // បញ្ជូនទិន្នន័យ (រួមទាំង Vessel និង Voyage)
     document.getElementById('cargoGateForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -471,7 +467,6 @@
         const vesselVal = document.getElementById('vessel_name').value.trim();
         const voyVal = document.getElementById('voyage_number').value.trim();
 
-        // រៀបចំទុកដាក់ Vessel & Voy ក្នុង Notes ជាមួយ Format ជាស្តង់ដារ
         const fullNotes = `POD: ${podValue} | Vessel: ${vesselVal || 'N/A'} | Voy: ${voyVal || 'N/A'} | ${notesValue}`;
 
         const data = {
@@ -551,17 +546,7 @@
             const fromDateVal = document.getElementById('filterFrom').value;
             const toDateVal = document.getElementById('filterTo').value;
 
-            const now = new Date();
-
-            let filteredData = data.map(item => {
-                if (item.gate_date) {
-                    const eta = new Date(item.gate_date);
-                    if (now >= eta) {
-                        item.status = 'បានមកដល់ផែ SHV';
-                    }
-                }
-                return item;
-            }).filter(item => {
+            let filteredData = data.filter(item => {
                 let matchesSearch = true;
                 let matchesPod = true;
                 let matchesDate = true;
@@ -613,7 +598,6 @@
                     }
                 }
 
-                // ស្រង់ទិន្នន័យ POD, Vessel, Voy ពី Notes
                 let podText = 'SHV Port';
                 let vesselText = '-';
                 let voyText = '-';
@@ -637,17 +621,19 @@
                 else if (gateType.includes('Thailand')) badgeClass = 'bg-warning text-dark';
                 else if (gateType.includes('Vietnam')) badgeClass = 'bg-info text-dark';
                 
+                // 🌟 កំណត់ពណ៌ Badge តាម Status ថ្មី (Berthing & Departed)
                 let statusBadgeClass = 'bg-secondary';
                 const currentStatus = item.status || '';
-                if (currentStatus.includes('បានមកដល់') || currentStatus.includes('CY')) {
+                if (currentStatus === 'Berthing') {
+                    statusBadgeClass = 'bg-warning text-dark';
+                } else if (currentStatus === 'Departed') {
+                    statusBadgeClass = 'bg-dark text-white';
+                } else if (currentStatus.includes('បានមកដល់') || currentStatus.includes('CY')) {
                     statusBadgeClass = 'bg-success';
                 } else if (currentStatus === 'កំពុង Loading') {
-                    statusBadgeClass = 'bg-warning text-dark';
-                } else {
                     statusBadgeClass = 'bg-info text-dark';
                 }
 
-                // Link ទៅកាន់ VesselFinder / MarineTraffic ស្វ័យប្រវត្តិដើម្បីមើល Map
                 let trackingUrl = `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(vesselText)}`;
                 if (vesselText === '-' || !vesselText) {
                     trackingUrl = `https://www.vesselfinder.com`;
@@ -679,7 +665,6 @@
                         <td><span class="badge ${statusBadgeClass}">${currentStatus}</span></td>
                         <td class="no-print">
                             <div class="d-flex justify-content-center gap-1">
-                                <!-- 🌟 ប៊ូតុងចុចមើល Location លើផែនទីសមុទ្រ -->
                                 <a href="${trackingUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="មើលទីតាំងនាវាលើផែនទីសមុទ្រ (Live Map)">
                                     <i class="fa-solid fa-map-location-dot"></i>
                                 </a>
@@ -704,7 +689,6 @@
         }
     }
 
-    // បង្ហាញព័ត៌មានលម្អិតក្នុង Modal
     function showDetails(index) {
         const item = allCargoData[index];
         if (!item) return;
@@ -728,7 +712,7 @@
                 if (p.startsWith('Vessel:')) vesselText = p.replace('Vessel:', '').trim();
                 if (p.startsWith('Voy:')) voyText = p.replace('Voy:', '').trim();
             });
-            cleanNotes = parts.slice(3).join('|').trim(); // ដកផ្នែក metadata ចេញយកតែ notes សុទ្ធ
+            cleanNotes = parts.slice(3).join('|').trim();
         }
 
         document.getElementById('modal_cargo_code').innerText = item.cargo_code || '-';
@@ -743,7 +727,6 @@
         document.getElementById('modal_status').innerText = item.status || '-';
         document.getElementById('modal_notes').innerText = cleanNotes || 'គ្មានកំណត់សម្គាល់';
 
-        // បើក Link Tracking ក្នុង Modal Footer 
         const trackingBtn = document.getElementById('modal_tracking_btn');
         if (vesselText && vesselText !== '-') {
             trackingBtn.href = `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(vesselText)}`;
@@ -756,7 +739,6 @@
         detailModal.show();
     }
 
-    // ត្រៀមទិន្នន័យសម្រាប់កែប្រែ
     function editCargo(index) {
         const item = allCargoData[index];
         if (!item) return;
