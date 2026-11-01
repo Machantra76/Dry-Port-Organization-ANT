@@ -130,32 +130,13 @@
             border: none;
             transition: all 0.2s;
         }
-        /* 🌟 ពណ៌ថ្មីសម្រាប់ប៊ូតុងទាំង ៣ */
-        .btn-filter {
-            background-color: #0284c7;
-            color: white;
-        }
-        .btn-filter:hover {
-            background-color: #0369a1;
-            color: white;
-        }
-        .btn-reset {
-            background-color: #f59e0b;
-            color: white;
-        }
-        .btn-reset:hover {
-            background-color: #d97706;
-            color: white;
-        }
-        .btn-print {
-            background-color: #7c3aed;
-            color: white;
-        }
-        .btn-print:hover {
-            background-color: #6d28d9;
-            color: white;
-        }
-        /* 🌟 Styling សម្រាប់ Progress Bar បែបផ្ទៃទឹកសមុទ្រ និងរូបកាប៉ាលរត់ */
+        .btn-filter { background-color: #0284c7; color: white; }
+        .btn-filter:hover { background-color: #0369a1; color: white; }
+        .btn-reset { background-color: #f59e0b; color: white; }
+        .btn-reset:hover { background-color: #d97706; color: white; }
+        .btn-print { background-color: #7c3aed; color: white; }
+        .btn-print:hover { background-color: #6d28d9; color: white; }
+        
         .progress-container {
             height: 24px;
             border-radius: 12px;
@@ -216,7 +197,7 @@
     <div class="section-card no-print">
         <div class="section-card-title" id="formTitle">កត់ត្រាការចូល/ចេញទំនិញថ្មី</div>
         <form id="cargoGateForm">
-            <input type="hidden" id="edit_id"> <!-- ប្រើសម្រាប់សម្គាល់ពេលកែប្រែ -->
+            <input type="hidden" id="edit_id">
             <div class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label">លេខកូដទំនិញ</label>
@@ -274,6 +255,15 @@
                         <option value="Laem Chabang Port (TH)">ផែ លែមឆាបាង (TH Port)</option>
                     </select>
                 </div>
+                <!-- 🌟 បន្ថែម Field ឈ្មោះនាវា (Vessel) និង លេខជើងនាវា (Voyage) -->
+                <div class="col-md-4">
+                    <label class="form-label">ឈ្មោះនាវា (Vessel Name)</label>
+                    <input type="text" class="form-control" id="vessel_name" placeholder="ឧ. EVER GIVEN / SITC HAI PHONG">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">លេខជើងនាវា (Voyage No.)</label>
+                    <input type="text" class="form-control" id="voyage_number" placeholder="ឧ. V-2601E">
+                </div>
                 <div class="col-md-4">
                     <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង ETA</label>
                     <input type="datetime-local" class="form-control" id="gate_date" required>
@@ -283,7 +273,7 @@
                     <input type="text" class="form-control" id="owner_name" placeholder="ឧ. Mr. Kosal" required>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">ចំនួន Container/Size</label>
+                    <label class="form-label">ចំនួន Container</label>
                     <input type="text" class="form-control" id="container_qty" placeholder="ឧ. 1 Ctn" required>
                 </div>
                 <div class="col-md-4">
@@ -325,8 +315,8 @@
         <div class="filter-action-bar no-print">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <label class="form-label">ស្វែងរកលេខកុងតឺន័រ/កូដទំនិញ</label>
-                    <input type="text" class="form-control" id="searchContainer" placeholder="បញ្ចូលលេខកុងតឺន័រ ឬកូដ...">
+                    <label class="form-label">ស្វែងរកលេខកុងតឺន័រ/កូដទំនិញ/នាវា</label>
+                    <input type="text" class="form-control" id="searchContainer" placeholder="បញ្ចូលលេខកុងតឺន័រ ឬឈ្មោះនាវា...">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label">ផែទម្លាក់ទំនិញ (POD)</label>
@@ -346,7 +336,6 @@
                     <label class="form-label">ដល់ថ្ងៃទី</label>
                     <input type="date" class="form-control" id="filterTo">
                 </div>
-                <!-- 🌟 ប៊ូតុងទាំង ៣ រៀបចំបានស្អាត និងស្មើគ្នា -->
                 <div class="col-md-3 d-flex gap-2 justify-content-end flex-wrap">
                     <button class="btn btn-action-custom btn-filter flex-fill" onclick="loadCargoGates()">
                         <i class="fa-solid fa-magnifying-glass"></i> ស្វែងរក
@@ -369,18 +358,17 @@
                         <th class="table-custom-header">ល.រ</th>
                         <th class="table-custom-header">កូដទំនិញ</th>
                         <th class="table-custom-header">កុងតឺន័រ/BL</th>
-                        <th class="table-custom-header">ផែដើម (POL) & ផែគោលដៅ (POD)</th>
-                        <th class="table-custom-header">កាលបរិច្ឆេទ & ម៉ោង ETA</th>
-                        <th class="table-custom-header" style="min-width: 170px;">ទីតាំងលើសមុទ្រ (Progress)</th>
-                        <th class="table-custom-header">ម្ចាស់ទំនិញ</th>
-                        <th class="table-custom-header">ចំនួន Container/SIZE</th>
+                        <th class="table-custom-header">នាវា (Vessel / Voy)</th>
+                        <th class="table-custom-header">ផែដើម & គោលដៅ</th>
+                        <th class="table-custom-header">កាលបរិច្ឆេទ ETA</th>
+                        <th class="table-custom-header" style="min-width: 170px;">ទីតាំងលើសមុទ្រ</th>
                         <th class="table-custom-header">ស្ថានភាព</th>
                         <th class="table-custom-header no-print">សកម្មភាព</th>
                     </tr>
                 </thead>
                 <tbody id="cargoGateTableBody">
                     <tr>
-                        <td colspan="10" class="text-center text-muted py-4">កំពុងទាញយកទិន្នន័យ...</td>
+                        <td colspan="9" class="text-center text-muted py-4">កំពុងទាញយកទិន្នន័យ...</td>
                     </tr>
                 </tbody>
             </table>
@@ -399,16 +387,21 @@
             <div class="modal-body">
                 <p><strong>កូដទំនិញ:</strong> <span id="modal_cargo_code" class="text-primary"></span></p>
                 <p><strong>លេខកុងតឺន័រ/BL:</strong> <span id="modal_container_number"></span></p>
+                <p><strong>ឈ្មោះនាវា (Vessel/Voy):</strong> <span id="modal_vessel_info" class="fw-bold text-dark"></span></p>
                 <p><strong>ផែដើម (POL):</strong> <span id="modal_gate_type"></span></p>
                 <p><strong>ផែគោលដៅ (POD):</strong> <span id="modal_port_discharge" class="text-success fw-bold"></span></p>
                 <p><strong>កាលបរិច្ឆេទ & ម៉ោង ETA:</strong> <span id="modal_gate_date"></span></p>
                 <p><strong>ម្ចាស់ទំនិញ:</strong> <span id="modal_owner_name"></span></p>
-                <p><strong>ចំនួន Container/Size:</strong> <span id="modal_container_qty"></span></p>
+                <p><strong>ចំនួន Container:</strong> <span id="modal_container_qty"></span></p>
                 <p><strong>Shipping Line:</strong> <span id="modal_company_name"></span></p>
                 <p><strong>ស្ថានភាព:</strong> <span id="modal_status"></span></p>
                 <p><strong>កំណត់សម្គាល់:</strong> <span id="modal_notes" class="text-muted"></span></p>
             </div>
             <div class="modal-footer">
+                <!-- 🌟 ប៊ូតុង Live Tracking ក្នុង Modal -->
+                <a href="#" id="modal_tracking_btn" target="_blank" class="btn btn-info btn-sm text-white" style="display:none;">
+                    <i class="fa-solid fa-map-location-dot me-1"></i> មើលទីតាំងនាវា (Live Map)
+                </a>
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">បិទ</button>
             </div>
         </div>
@@ -425,12 +418,10 @@
         setLocalDateTime();
         loadCargoGates();
 
-        // 🌟 Auto-calculate ETA និង Status ពេលប្តូរផែដើម (POL)
         document.getElementById('gate_type').addEventListener('change', autoCalculateETA);
         document.getElementById('port_discharge').addEventListener('change', autoCalculateETA);
     });
 
-    // កំណត់ម៉ោងបច្ចុប្បន្ន និងគណនា ETA ស្វ័យប្រវត្តិ
     function setLocalDateTime() {
         const now = new Date();
         const year = now.getFullYear();
@@ -443,7 +434,6 @@
         autoCalculateETA();
     }
 
-    // មុខងារ Auto Calculate ETA & Status
     function autoCalculateETA() {
         const gateType = document.getElementById('gate_type').value;
         const now = new Date();
@@ -471,15 +461,18 @@
         document.getElementById('status').value = autoStatus;
     }
 
-    // បញ្ជូនទិន្នន័យបញ្ចូលថ្មី ឬ កែប្រែ
+    // បញ្ជូនទិន្នន័យ (រួមទាំង Vessel និង Voyage)
     document.getElementById('cargoGateForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const editId = document.getElementById('edit_id').value;
         const notesValue = document.getElementById('notes').value;
         const podValue = document.getElementById('port_discharge').value;
+        const vesselVal = document.getElementById('vessel_name').value.trim();
+        const voyVal = document.getElementById('voyage_number').value.trim();
 
-        const fullNotes = `POD: ${podValue} | ${notesValue}`;
+        // រៀបចំទុកដាក់ Vessel & Voy ក្នុង Notes ជាមួយ Format ជាស្តង់ដារ
+        const fullNotes = `POD: ${podValue} | Vessel: ${vesselVal || 'N/A'} | Voy: ${voyVal || 'N/A'} | ${notesValue}`;
 
         const data = {
             cargo_code: document.getElementById('cargo_code').value,
@@ -522,7 +515,6 @@
         }
     });
 
-    // មុខងារគណនាភាគរយនៃការធ្វើដំណើរនៅលើសមុទ្រ
     function calculateSeaProgress(gateType, etaDateStr) {
         if (!etaDateStr) return { percent: 0, statusLabel: 'N/A' };
         
@@ -549,7 +541,6 @@
         return { percent: percent, statusLabel: `${percent}% លើសមុទ្រ` };
     }
 
-    // ទាញយកទិន្នន័យមកបង្ហាញក្នុងតារាង និង Auto Update Status
     async function loadCargoGates() {
         try {
             const response = await fetch('/api/fleet/cargo-gates');
@@ -578,7 +569,8 @@
                 if (searchVal) {
                     const containerNo = (item.container_number || '').toLowerCase();
                     const cargoCode = (item.cargo_code || '').toLowerCase();
-                    matchesSearch = containerNo.includes(searchVal) || cargoCode.includes(searchVal);
+                    const notes = (item.notes || '').toLowerCase();
+                    matchesSearch = containerNo.includes(searchVal) || cargoCode.includes(searchVal) || notes.includes(searchVal);
                 }
 
                 if (filterPodVal) {
@@ -605,7 +597,7 @@
             tbody.innerHTML = '';
 
             if (!Array.isArray(filteredData) || filteredData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">ពុំមានទិន្នន័យខ្លោងទ្វារដែលត្រូវស្វែងរកទេ</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">ពុំមានទិន្នន័យខ្លោងទ្វារដែលត្រូវស្វែងរកទេ</td></tr>`;
                 return;
             }
 
@@ -621,22 +613,29 @@
                     }
                 }
 
+                // ស្រង់ទិន្នន័យ POD, Vessel, Voy ពី Notes
                 let podText = 'SHV Port';
-                if (item.notes && item.notes.includes('POD:')) {
+                let vesselText = '-';
+                let voyText = '-';
+
+                if (item.notes) {
                     const parts = item.notes.split('|');
-                    podText = parts[0].replace('POD:', '').trim();
+                    parts.forEach(part => {
+                        let p = part.trim();
+                        if (p.startsWith('POD:')) podText = p.replace('POD:', '').trim();
+                        if (p.startsWith('Vessel:')) vesselText = p.replace('Vessel:', '').trim();
+                        if (p.startsWith('Voy:')) voyText = p.replace('Voy:', '').trim();
+                    });
                 }
 
                 const progressInfo = calculateSeaProgress(item.gate_type || '', item.gate_date);
-
                 const gateType = item.gate_type || '';
+                
                 let badgeClass = 'bg-primary';
                 if (gateType.includes('China')) badgeClass = 'bg-danger';
                 else if (gateType.includes('Korea')) badgeClass = 'bg-dark';
                 else if (gateType.includes('Thailand')) badgeClass = 'bg-warning text-dark';
                 else if (gateType.includes('Vietnam')) badgeClass = 'bg-info text-dark';
-                else if (gateType.includes('Europe')) badgeClass = 'bg-secondary';
-                else if (gateType.includes('Gate-In')) badgeClass = 'bg-success';
                 
                 let statusBadgeClass = 'bg-secondary';
                 const currentStatus = item.status || '';
@@ -648,11 +647,21 @@
                     statusBadgeClass = 'bg-info text-dark';
                 }
 
+                // Link ទៅកាន់ VesselFinder / MarineTraffic ស្វ័យប្រវត្តិដើម្បីមើល Map
+                let trackingUrl = `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(vesselText)}`;
+                if (vesselText === '-' || !vesselText) {
+                    trackingUrl = `https://www.vesselfinder.com`;
+                }
+
                 const row = `
                     <tr>
                         <td>${index + 1}</td>
                         <td class="fw-bold text-primary">${item.cargo_code || '-'}</td>
                         <td>${item.container_number || '-'}</td>
+                        <td>
+                            <div class="fw-bold text-dark"><i class="fa-solid fa-ship text-info me-1"></i> ${vesselText}</div>
+                            <div class="small text-muted">Voy: ${voyText}</div>
+                        </td>
                         <td>
                             <div><span class="badge ${badgeClass}">${gateType}</span></div>
                             <div class="small text-muted mt-1"><i class="fa-solid fa-arrow-down"></i> ${podText}</div>
@@ -667,11 +676,13 @@
                             </div>
                             <span class="small text-secondary d-block mt-1 fw-bold">${progressInfo.statusLabel}</span>
                         </td>
-                        <td>${item.owner_name || '-'}</td>
-                        <td>${item.container_qty || '-'}</td>
                         <td><span class="badge ${statusBadgeClass}">${currentStatus}</span></td>
                         <td class="no-print">
                             <div class="d-flex justify-content-center gap-1">
+                                <!-- 🌟 ប៊ូតុងចុចមើល Location លើផែនទីសមុទ្រ -->
+                                <a href="${trackingUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="មើលទីតាំងនាវាលើផែនទីសមុទ្រ (Live Map)">
+                                    <i class="fa-solid fa-map-location-dot"></i>
+                                </a>
                                 <button class="btn btn-sm btn-outline-info" title="មើលព័ត៌មានលម្អិត" onclick="showDetails(${index})">
                                     <i class="fa-solid fa-eye"></i>
                                 </button>
@@ -689,7 +700,7 @@
             });
         } catch (err) {
             console.error('Error loading cargo gates:', err);
-            document.getElementById('cargoGateTableBody').innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            document.getElementById('cargoGateTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
         }
     }
 
@@ -701,21 +712,28 @@
         let formattedDate = '-';
         if (item.gate_date) {
             const d = new Date(item.gate_date);
-            if (!isNaN(d.getTime())) {
-                formattedDate = d.toLocaleString('km-KH');
-            }
+            if (!isNaN(d.getTime())) formattedDate = d.toLocaleString('km-KH');
         }
 
         let podText = 'Sihanoukville Port (SHV)';
+        let vesselText = '-';
+        let voyText = '-';
         let cleanNotes = item.notes || '';
-        if (cleanNotes.includes('POD:')) {
-            const parts = cleanNotes.split('|');
-            podText = parts[0].replace('POD:', '').trim();
-            cleanNotes = parts.slice(1).join('|').trim();
+
+        if (item.notes) {
+            const parts = item.notes.split('|');
+            parts.forEach(part => {
+                let p = part.trim();
+                if (p.startsWith('POD:')) podText = p.replace('POD:', '').trim();
+                if (p.startsWith('Vessel:')) vesselText = p.replace('Vessel:', '').trim();
+                if (p.startsWith('Voy:')) voyText = p.replace('Voy:', '').trim();
+            });
+            cleanNotes = parts.slice(3).join('|').trim(); // ដកផ្នែក metadata ចេញយកតែ notes សុទ្ធ
         }
 
         document.getElementById('modal_cargo_code').innerText = item.cargo_code || '-';
         document.getElementById('modal_container_number').innerText = item.container_number || '-';
+        document.getElementById('modal_vessel_info').innerText = `${vesselText} (Voy: ${voyText})`;
         document.getElementById('modal_gate_type').innerText = item.gate_type || '-';
         document.getElementById('modal_port_discharge').innerText = podText;
         document.getElementById('modal_gate_date').innerText = formattedDate;
@@ -724,6 +742,15 @@
         document.getElementById('modal_company_name').innerText = item.company_name || '-';
         document.getElementById('modal_status').innerText = item.status || '-';
         document.getElementById('modal_notes').innerText = cleanNotes || 'គ្មានកំណត់សម្គាល់';
+
+        // បើក Link Tracking ក្នុង Modal Footer 
+        const trackingBtn = document.getElementById('modal_tracking_btn');
+        if (vesselText && vesselText !== '-') {
+            trackingBtn.href = `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(vesselText)}`;
+            trackingBtn.style.display = 'inline-block';
+        } else {
+            trackingBtn.style.display = 'none';
+        }
 
         const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
         detailModal.show();
@@ -739,13 +766,23 @@
         document.getElementById('container_number').value = item.container_number || '';
         document.getElementById('gate_type').value = item.gate_type || '';
         
+        let vesselText = '';
+        let voyText = '';
         let cleanNotes = item.notes || '';
-        if (cleanNotes.includes('POD:')) {
-            const parts = cleanNotes.split('|');
-            const podValue = parts[0].replace('POD:', '').trim();
-            document.getElementById('port_discharge').value = podValue;
-            cleanNotes = parts.slice(1).join('|').trim();
+
+        if (item.notes) {
+            const parts = item.notes.split('|');
+            parts.forEach(part => {
+                let p = part.trim();
+                if (p.startsWith('POD:')) document.getElementById('port_discharge').value = p.replace('POD:', '').trim();
+                if (p.startsWith('Vessel:')) vesselText = p.replace('Vessel:', '').trim();
+                if (p.startsWith('Voy:')) voyText = p.replace('Voy:', '').trim();
+            });
+            cleanNotes = parts.slice(3).join('|').trim();
         }
+        
+        document.getElementById('vessel_name').value = vesselText !== 'N/A' ? vesselText : '';
+        document.getElementById('voyage_number').value = voyText !== 'N/A' ? voyText : '';
         document.getElementById('notes').value = cleanNotes;
 
         if (item.gate_date) {
@@ -772,7 +809,6 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // លុបទិន្នន័យ
     async function deleteCargo(id) {
         if (!confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) return;
 
@@ -791,7 +827,6 @@
         }
     }
 
-    // បោះបង់ការកែប្រែ
     function cancelEdit() {
         document.getElementById('cargoGateForm').reset();
         document.getElementById('edit_id').value = '';
@@ -802,7 +837,6 @@
         setLocalDateTime();
     }
 
-    // សម្អាត Filter និង Search
     function resetFilter() {
         document.getElementById('searchContainer').value = '';
         document.getElementById('filterPod').value = '';
