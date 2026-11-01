@@ -119,38 +119,40 @@
             margin-bottom: 20px;
         }
         .btn-action-custom {
-            padding: 9px 18px;
-            font-size: 0.9rem;
+            padding: 9px 16px;
+            font-size: 0.85rem;
             font-weight: 500;
-            border-radius: 6px;
+            border-radius: 8px;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 6px;
             border: none;
             transition: all 0.2s;
         }
+        /* 🌟 ពណ៌ថ្មីសម្រាប់ប៊ូតុងទាំង ៣ */
         .btn-filter {
-            background-color: #2563eb;
+            background-color: #0284c7;
             color: white;
         }
         .btn-filter:hover {
-            background-color: #1d4ed8;
+            background-color: #0369a1;
             color: white;
         }
         .btn-reset {
-            background-color: #64748b;
+            background-color: #f59e0b;
             color: white;
         }
         .btn-reset:hover {
-            background-color: #475569;
+            background-color: #d97706;
             color: white;
         }
         .btn-print {
-            background-color: #334155;
+            background-color: #7c3aed;
             color: white;
         }
         .btn-print:hover {
-            background-color: #1e293b;
+            background-color: #6d28d9;
             color: white;
         }
         /* 🌟 Styling សម្រាប់ Progress Bar និងរូបកាប៉ាលរត់ */
@@ -333,14 +335,15 @@
                     <label class="form-label">ដល់ថ្ងៃទី</label>
                     <input type="date" class="form-control" id="filterTo">
                 </div>
+                <!-- 🌟 ប៊ូតុងទាំង ៣ រៀបចំបានស្អាត និងស្មើគ្នា -->
                 <div class="col-md-3 d-flex gap-2 justify-content-end flex-wrap">
-                    <button class="btn btn-action-custom btn-filter" onclick="loadCargoGates()">
+                    <button class="btn btn-action-custom btn-filter flex-fill" onclick="loadCargoGates()">
                         <i class="fa-solid fa-magnifying-glass"></i> ស្វែងរក
                     </button>
-                    <button class="btn btn-action-custom btn-reset" onclick="resetFilter()">
+                    <button class="btn btn-action-custom btn-reset flex-fill" onclick="resetFilter()">
                         <i class="fa-solid fa-rotate-right"></i> កំណត់ឡើងវិញ
                     </button>
-                    <button class="btn btn-action-custom btn-print" onclick="window.print()">
+                    <button class="btn btn-action-custom btn-print flex-fill" onclick="window.print()">
                         <i class="fa-solid fa-print"></i> បោះពុម្ព PDF
                     </button>
                 </div>
@@ -606,7 +609,6 @@
                     statusBadgeClass = 'bg-info text-dark';
                 }
 
-                // 🌟 បន្ថែម Tag រូបកាប៉ាល (<i class="fa-solid fa-ship"></i>) ឱ្យរត់តាមភាគរយ
                 const row = `
                     <tr>
                         <td>${index + 1}</td>
