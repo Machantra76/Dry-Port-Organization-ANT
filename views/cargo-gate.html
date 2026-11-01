@@ -155,32 +155,43 @@
             background-color: #6d28d9;
             color: white;
         }
-        /* 🌟 Styling សម្រាប់ Progress Bar និងរូបកាប៉ាលរត់ */
+        /* 🌟 Styling សម្រាប់ Progress Bar បែបផ្ទៃទឹកសមុទ្រ និងរូបកាប៉ាលរត់ */
         .progress-container {
-            height: 22px;
-            border-radius: 11px;
-            background-color: #e2e8f0;
+            height: 24px;
+            border-radius: 12px;
+            background: linear-gradient(to right, #e2e8f0, #cbd5e1);
             position: relative;
-            overflow: visible;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 5px;
         }
-        .progress-bar-custom {
+        .progress-bar-ocean {
             height: 100%;
-            border-radius: 11px;
-            background: linear-gradient(135deg, #0ea5e9, #2563eb);
+            border-radius: 12px;
+            background: linear-gradient(90deg, #0284c7, #0284c7, #0369a1);
+            background-size: 200% 100%;
+            animation: waveMotion 3s linear infinite;
             transition: width 0.6s ease;
+        }
+        @keyframes waveMotion {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
         }
         .ship-icon {
             position: absolute;
-            top: -4px;
+            top: -2px;
             transform: translateX(-50%);
-            color: #1e3a8a;
-            font-size: 1rem;
+            color: #ffffff;
+            font-size: 1.1rem;
             transition: left 0.6s ease;
-            background: #ffffff;
+            background: #0284c7;
             border-radius: 50%;
-            padding: 1px 3px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
         @media print {
             .no-print { display: none !important; }
@@ -360,7 +371,7 @@
                         <th class="table-custom-header">កុងតឺន័រ/BL</th>
                         <th class="table-custom-header">ផែដើម (POL) & ផែគោលដៅ (POD)</th>
                         <th class="table-custom-header">កាលបរិច្ឆេទ & ម៉ោង ETA</th>
-                        <th class="table-custom-header" style="min-width: 160px;">ទីតាំងលើសមុទ្រ (Progress)</th>
+                        <th class="table-custom-header" style="min-width: 170px;">ទីតាំងលើសមុទ្រ (Progress)</th>
                         <th class="table-custom-header">ម្ចាស់ទំនិញ</th>
                         <th class="table-custom-header">ចំនួន Container</th>
                         <th class="table-custom-header">ស្ថានភាព</th>
@@ -413,9 +424,13 @@
     document.addEventListener('DOMContentLoaded', () => {
         setLocalDateTime();
         loadCargoGates();
+
+        // 🌟 Auto-calculate ETA និង Status ពេលប្តូរផែដើម (POL)
+        document.getElementById('gate_type').addEventListener('change', autoCalculateETA);
+        document.getElementById('port_discharge').addEventListener('change', autoCalculateETA);
     });
 
-    // កំណត់ម៉ោងបច្ចុប្បន្នឱ្យត្រូវតាម Local Time ក្នុង Input datetime-local
+    // កំណត់ម៉ោងបច្ចុប្បន្ន និងគណនា ETA ស្វ័យប្រវត្តិ
     function setLocalDateTime() {
         const now = new Date();
         const year = now.getFullYear();
@@ -425,6 +440,35 @@
         const minutes = String(now.getMinutes()).padStart(2, '0');
         
         document.getElementById('gate_date').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        autoCalculateETA();
+    }
+
+    // មុខងារ Auto Calculate ETA & Status
+    function autoCalculateETA() {
+        const gateType = document.getElementById('gate_type').value;
+        const now = new Date();
+        
+        let transitDays = 7;
+        if (gateType.includes('China')) transitDays = 9;
+        else if (gateType.includes('Korea')) transitDays = 12;
+        else if (gateType.includes('Thailand')) transitDays = 2;
+        else if (gateType.includes('Vietnam')) transitDays = 3;
+        else if (gateType.includes('Europe')) transitDays = 28;
+        else if (gateType.includes('Gate-In')) transitDays = 1;
+
+        const etaDate = new Date(now.getTime() + (transitDays * 24 * 60 * 60 * 1000));
+        
+        const year = etaDate.getFullYear();
+        const month = String(etaDate.getMonth() + 1).padStart(2, '0');
+        const day = String(etaDate.getDate()).padStart(2, '0');
+        const hours = String(etaDate.getHours()).padStart(2, '0');
+        const minutes = String(etaDate.getMinutes()).padStart(2, '0');
+
+        document.getElementById('gate_date').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+        let autoStatus = "ទូរនៅលើកាប៉ាល (On board)";
+        if (transitDays === 1) autoStatus = "កំពុង Loading";
+        document.getElementById('status').value = autoStatus;
     }
 
     // បញ្ជូនទិន្នន័យបញ្ចូលថ្មី ឬ កែប្រែ
@@ -494,8 +538,8 @@
 
         const etd = new Date(eta.getTime() - (totalTransitDays * 24 * 60 * 60 * 1000));
         
-        if (now >= eta) return { percent: 100, statusLabel: 'បានមកដល់ផែ' };
-        if (now <= etd) return { percent: 5, statusLabel: 'កំពុងចេញដំណើរ' };
+        if (now >= eta) return { percent: 100, statusLabel: 'បានមកដល់ផែ (100%)' };
+        if (now <= etd) return { percent: 5, statusLabel: 'រៀបចំចេញដំណើរ (5%)' };
 
         const totalTime = eta.getTime() - etd.getTime();
         const elapsedTime = now.getTime() - etd.getTime();
@@ -505,7 +549,7 @@
         return { percent: percent, statusLabel: `${percent}% លើសមុទ្រ` };
     }
 
-    // ទាញយកទិន្នន័យមកបង្ហាញក្នុងតារាង និងត្រងតាមលក្ខខណ្ឌ
+    // ទាញយកទិន្នន័យមកបង្ហាញក្នុងតារាង និង Auto Update Status
     async function loadCargoGates() {
         try {
             const response = await fetch('/api/fleet/cargo-gates');
@@ -516,18 +560,13 @@
             const fromDateVal = document.getElementById('filterFrom').value;
             const toDateVal = document.getElementById('filterTo').value;
 
-            const todayObj = new Date();
-            const todayStr = todayObj.getFullYear() + '-' + 
-                             String(todayObj.getMonth() + 1).padStart(2, '0') + '-' + 
-                             String(todayObj.getDate()).padStart(2, '0');
+            const now = new Date();
 
             let filteredData = data.map(item => {
                 if (item.gate_date) {
-                    const itemDateStr = item.gate_date.split('T')[0];
-                    if (itemDateStr <= todayStr) {
-                        if (!item.status || item.status === 'កំពុង Loading' || item.status === 'បានចេញមក Cambodia') {
-                            item.status = 'បានមកដល់ផែ SHV';
-                        }
+                    const eta = new Date(item.gate_date);
+                    if (now >= eta) {
+                        item.status = 'បានមកដល់ផែ SHV';
                     }
                 }
                 return item;
@@ -601,11 +640,11 @@
                 
                 let statusBadgeClass = 'bg-secondary';
                 const currentStatus = item.status || '';
-                if (currentStatus === 'បានមកដល់ផែ SHV' || currentStatus === 'ទូរ CY (SHV)') {
+                if (currentStatus.includes('បានមកដល់') || currentStatus.includes('CY')) {
                     statusBadgeClass = 'bg-success';
                 } else if (currentStatus === 'កំពុង Loading') {
                     statusBadgeClass = 'bg-warning text-dark';
-                } else if (currentStatus.includes('Cambodia') || currentStatus.includes('VN') || currentStatus.includes('China') || currentStatus.includes('Korea')) {
+                } else {
                     statusBadgeClass = 'bg-info text-dark';
                 }
 
@@ -621,7 +660,7 @@
                         <td>${formattedDate}</td>
                         <td>
                             <div class="progress progress-container">
-                                <div class="progress-bar-custom" style="width: ${progressInfo.percent}%;"></div>
+                                <div class="progress-bar-ocean" style="width: ${progressInfo.percent}%;"></div>
                                 <div class="ship-icon" style="left: ${progressInfo.percent}%;" title="${progressInfo.percent}%">
                                     <i class="fa-solid fa-ship"></i>
                                 </div>
