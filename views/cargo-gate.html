@@ -777,6 +777,23 @@
         const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
         detailModal.show();
     }
+    // យកព័ត៌មាន User ដែលបាន Login រួច
+    const loggedUser = JSON.parse(sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info')) || { username: 'Guest', full_name: 'guest' };
+    const userDisplayInfo = `${loggedUser.full_name} (${loggedUser.username})`;
+
+    // បញ្ជូនទៅកាន់ Server ពេលរក្សាទុក
+    const logData = {
+        username: userDisplayInfo,
+        action_type: editId ? 'UPDATE_CARGO_GATE' : 'CREATE_CARGO_GATE',
+        details: `Cargo Code: ${data.cargo_code} | Container: ${data.container_number || 'N/A'} | Cargo ID: ${editId || 'New'}`
+    };
+
+    // Trigger API บันทึก Activity Log
+    await fetch('/api/fleet/activity-logs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(logData)
+    });
 
     // 🌟 មុខងារសម្រាប់បង្ហាញ Activity Log Modal
     async function showActivityLog(cargoId, cargoCode) {
