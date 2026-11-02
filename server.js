@@ -1174,6 +1174,22 @@ app.delete('/api/fleet/cargo-gates/:id', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
+// 🌟 API សម្រាប់ទាញយក Activity Logs តាម Cargo ID
+app.get('/api/fleet/cargo-gates/:id/activities', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const query = `
+            SELECT * FROM cargo_activities 
+            WHERE cargo_id = $1 
+            ORDER BY created_at DESC, id DESC;
+        `;
+        const result = await pool.query(query, [id]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('❌ [Cargo Activities Get Error]:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 // ==========================================
 // API Routes: Customs Permit & Document Control (BWH) - Updated (Duplicate Permit Fix)
 // ==========================================
