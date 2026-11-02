@@ -590,6 +590,33 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS customs_reg_number VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS manifest_number VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS doc_type VARCHAR(10);`);
+        // 1. បង្កើត Table សម្រាប់កត់ត្រា Activity Logs ក្នុង Database (SQLite/PostgreSQL)
+db.run(`
+    CREATE TABLE IF NOT EXISTS activity_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        action_type TEXT NOT NULL,
+        details TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    )
+`);
+
+// 2. API សម្រាប់ទាញយក Activity Logs ទាំងអស់
+app.get('/api/fleet/activity-logs', (req, res) => {
+    const query = `SELECT * FROM activity_logs ORDER BY id DESC LIMIT 50`;
+    db.all(query, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// 3. Helper Function សម្រាប់កត់ត្រា Log ចូល Database ស្វ័យប្រវត្តិ
+function saveActivityLog(username, actionType, details) {
+    const query = `INSERT INTO activity_logs (username, action_type, details) VALUES (?, ?, ?)`;
+    db.run(query, [username || 'បុគ្គលិកប្រតិបត្តិការ', actionType, details], (err) => {
+        if (err) console.error('Error saving activity log:', err.message);
+    });
+}
 
         // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត (ប្រសិនបើទិន្នន័យទទេ)
         const checkUser = await client.query('SELECT COUNT(*) FROM system_users');
