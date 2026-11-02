@@ -529,6 +529,17 @@ async function initializeDatabase() {
             );
         `);
         await client.query(`ALTER TABLE system_users ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Active';`);
+        // តារាងកត់ត្រាប្រវត្តិសកម្មភាព Cargo Gates (Activity Logs)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS cargo_gate_activities (
+                id SERIAL PRIMARY KEY,
+                cargo_id INT REFERENCES cargo_gates(id) ON DELETE CASCADE,
+                action VARCHAR(100) NOT NULL,
+                user_name VARCHAR(150) DEFAULT 'System',
+                details TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
 
         // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH)
         await client.query(`
@@ -1174,22 +1185,35 @@ app.delete('/api/fleet/cargo-gates/:id', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
-// 🌟 API សម្រាប់ទាញយក Activity Logs តាម Cargo ID
+// ទាញយកប្រវត្តិសកម្មភាពតាម Cargo ID
 app.get('/api/fleet/cargo-gates/:id/activities', async (req, res) => {
     const { id } = req.params;
     try {
         const query = `
-            SELECT * FROM cargo_activities 
+            SELECT id, action, user_name, details, 
+                   TO_CHAR(created_at, 'DD/MM/YYYY HH12:MI AM') as created_at 
+            FROM cargo_gate_activities 
             WHERE cargo_id = $1 
-            ORDER BY created_at DESC, id DESC;
+            ORDER BY id DESC;
         `;
         const result = await pool.query(query, [id]);
         res.json(result.rows);
     } catch (err) {
-        console.error('❌ [Cargo Activities Get Error]:', err.message);
+        console.error('Error fetching cargo activities:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
+// ឧទាហរណ៍ក្នុង POST /api/fleet/cargo-gates
+const insertResult = await pool.query(
+    `INSERT INTO cargo_gates (...) VALUES (...) RETURNING id`, [...]
+);
+const newCargoId = insertResult.rows[0].id;
+
+// កត់ត្រា Activity
+await pool.query(
+    `INSERT INTO cargo_gate_activities (cargo_id, action, user_name, details) VALUES ($1, $2, $3, $4)`,
+    [newCargoId, 'CREATED', 'System Admin', 'បានបង្កើតទិន្នន័យខ្លោងទ្វារថ្មី']
+);
 // ==========================================
 // API Routes: Customs Permit & Document Control (BWH) - Updated (Duplicate Permit Fix)
 // ==========================================
