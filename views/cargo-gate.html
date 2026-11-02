@@ -525,11 +525,15 @@
             let changes = [];
 
             if (oldItem) {
-                if (oldItem.status !== data.status) {
-                    changes.push(`ស្ថានភាព៖ "${oldItem.status || 'N/A'}" ➔ "${data.status}"`);
+                // ពិនិត្យមើលរាល់ Field សំខាន់ៗទាំងអស់បន្ថែម
+                if (oldItem.cargo_code !== data.cargo_code) {
+                    changes.push(`កូដទំនិញ៖ "${oldItem.cargo_code || 'N/A'}" ➔ "${data.cargo_code}"`);
                 }
                 if (oldItem.container_number !== data.container_number) {
                     changes.push(`កុងតឺន័រ៖ "${oldItem.container_number || 'N/A'}" ➔ "${data.container_number}"`);
+                }
+                if (oldItem.status !== data.status) {
+                    changes.push(`ស្ថានភាព៖ "${oldItem.status || 'N/A'}" ➔ "${data.status}"`);
                 }
                 if (oldItem.gate_type !== data.gate_type) {
                     changes.push(`ផែដើម៖ "${oldItem.gate_type || 'N/A'}" ➔ "${data.gate_type}"`);
@@ -537,12 +541,16 @@
                 if (oldItem.owner_name !== data.owner_name) {
                     changes.push(`ម្ចាស់ទំនិញ៖ "${oldItem.owner_name || 'N/A'}" ➔ "${data.owner_name}"`);
                 }
+                if (oldItem.container_qty !== data.container_qty) {
+                    changes.push(`ចំនួន Container៖ "${oldItem.container_qty || 'N/A'}" ➔ "${data.container_qty}"`);
+                }
             }
 
             if (changes.length > 0) {
                 changeDetails = `បានកែប្រែ៖ ${changes.join(' | ')}`;
             } else {
-                changeDetails = `បានធ្វើបច្ចុប្បន្នភាពទិន្នន័យ (គ្មានការផ្លាស់ប្តូរ Field សំខាន់ៗ)`;
+                // បើសិនជាគ្មានការផ្លាស់ប្តូរ Field ណាមួយសោះ ប៉ុន្តែมีการចុច Update
+                changeDetails = `បានចុចអាប់ដេតទិន្នន័យ (កូដទំនិញ: ${data.cargo_code}, ស្ថានភាព: ${data.status})`;
             }
         } else {
             changeDetails = `បានបង្កើតថ្មី - កូដទំនិញ: ${data.cargo_code} | កុងតឺន័រ: ${data.container_number || 'N/A'} | ស្ថានភាព: ${data.status}`;
