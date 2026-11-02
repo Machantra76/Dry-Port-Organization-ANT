@@ -279,7 +279,7 @@
                     <label class="form-label">Shipping Line</label>
                     <input type="text" class="form-control" id="company_name" placeholder="ឧ. ក្រុមហ៊ុន ឡូជីស្ទិក">
                 </div>
-                <!-- 🌟 បន្ថែម Status (Berthing & Departed) តាមសំណើ -->
+                <!-- Status -->
                 <div class="col-md-4">
                     <label class="form-label">ស្ថានភាព</label>
                     <select class="form-select" id="status">
@@ -401,6 +401,43 @@
                 <a href="#" id="modal_tracking_btn" target="_blank" class="btn btn-info btn-sm text-white" style="display:none;">
                     <i class="fa-solid fa-map-location-dot me-1"></i> មើលទីតាំងនាវា (Live Map)
                 </a>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">បិទ</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal សម្រាប់បង្ហាញប្រវត្តិសកម្មភាព (Activity Logs) -->
+<div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white">
+                <h5 class="modal-title" id="activityModalLabel">
+                    <i class="fa-solid fa-clock-rotate-left me-2"></i> ប្រវត្តិសកម្មភាព - <span id="activity_cargo_code"></span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped table-bordered text-center">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ល.រ</th>
+                                <th>កាលបរិច្ឆេទ/ម៉ោង</th>
+                                <th>សកម្មភាព</th>
+                                <th>អ្នកធ្វើប្រតិបត្តិការ</th>
+                                <th>ព័ត៌មានលម្អិត</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activityTableBody">
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">កំពុងទាញយកទិន្នន័យ...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">បិទ</button>
             </div>
         </div>
@@ -621,7 +658,6 @@
                 else if (gateType.includes('Thailand')) badgeClass = 'bg-warning text-dark';
                 else if (gateType.includes('Vietnam')) badgeClass = 'bg-info text-dark';
                 
-                // 🌟 កំណត់ពណ៌ Badge តាម Status ថ្មី (Berthing & Departed)
                 let statusBadgeClass = 'bg-secondary';
                 const currentStatus = item.status || '';
                 if (currentStatus === 'Berthing') {
@@ -670,6 +706,9 @@
                                 </a>
                                 <button class="btn btn-sm btn-outline-info" title="មើលព័ត៌មានលម្អិត" onclick="showDetails(${index})">
                                     <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" title="មើលប្រវត្តិសកម្មភាព (Activity Log)" onclick="showActivityLog('${item.id}', '${item.cargo_code || ''}')">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
                                 </button>
                                 <button class="btn btn-sm btn-outline-warning" title="កែប្រែ" onclick="editCargo(${index})">
                                     <i class="fa-solid fa-pen-to-square"></i>
@@ -737,6 +776,48 @@
 
         const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
         detailModal.show();
+    }
+
+    // 🌟 មុខងារសម្រាប់បង្ហាញ Activity Log Modal
+    async function showActivityLog(cargoId, cargoCode) {
+        document.getElementById('activity_cargo_code').innerText = cargoCode || 'N/A';
+        const tbody = document.getElementById('activityTableBody');
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">កំពុងទាញយកទិន្នន័យ...</td></tr>`;
+
+        const activityModal = new bootstrap.Modal(document.getElementById('activityModal'));
+        activityModal.show();
+
+        try {
+            const response = await fetch(`/api/fleet/cargo-gates/${cargoId}/activities`);
+            
+            if (response.ok) {
+                const activities = await response.json();
+                tbody.innerHTML = '';
+                
+                if (!Array.isArray(activities) || activities.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">មិនទាន់មានប្រវត្តិសកម្មភាពនៅឡើយទេ</td></tr>`;
+                    return;
+                }
+
+                activities.forEach((act, idx) => {
+                    const row = `
+                        <tr>
+                            <td>${idx + 1}</td>
+                            <td>${act.created_at || '-'}</td>
+                            <td><span class="badge bg-info text-dark">${act.action || '-'}</span></td>
+                            <td>${act.user_name || 'System'}</td>
+                            <td>${act.details || '-'}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">មិនទាន់មាន API ប្រវត្តិសកម្មភាពនៅឡើយទេ (ឬពុំទាន់មានទិន្នន័យ)</td></tr>`;
+            }
+        } catch (err) {
+            console.error('Error loading activity logs:', err);
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">មិនអាចទាញយកទិន្នន័យប្រវត្តិសកម្មភាពបានទេ</td></tr>`;
+        }
     }
 
     function editCargo(index) {
