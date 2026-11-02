@@ -35,7 +35,7 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-     
+
         // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS attendance_logs (
@@ -186,7 +186,6 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-      
 
         // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs)
         await client.query(`
@@ -529,17 +528,6 @@ async function initializeDatabase() {
             );
         `);
         await client.query(`ALTER TABLE system_users ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Active';`);
-        // តារាងកត់ត្រាប្រវត្តិសកម្មភាព Cargo Gates (Activity Logs)
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS cargo_gate_activities (
-                id SERIAL PRIMARY KEY,
-                cargo_id INT REFERENCES cargo_gates(id) ON DELETE CASCADE,
-                action VARCHAR(100) NOT NULL,
-                user_name VARCHAR(150) DEFAULT 'System',
-                details TEXT,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
 
         // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH)
         await client.query(`
@@ -592,7 +580,6 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-         
    
         // បន្ថែម Column ទាំងនេះស្វ័យប្រវត្តក្នុងករណីតារាងមានរួចស្រេច
         await client.query(`ALTER TABLE tax_invoices ADD COLUMN IF NOT EXISTS date_out VARCHAR(100);`);
@@ -603,17 +590,7 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS customs_reg_number VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS manifest_number VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS doc_type VARCHAR(10);`);
-       // ៣៥. តារាងប្រវត្តិសកម្មភាព Cargo Gates (Activity Logs)
-        await client.query(`
-            CREATE TABLE IF NOT EXISTS cargo_activities (
-                id SERIAL PRIMARY KEY,
-                cargo_id INT,
-                action VARCHAR(50),
-                user_name VARCHAR(100),
-                details TEXT,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
+      
 
         // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត (ប្រសិនបើទិន្នន័យទទេ)
         const checkUser = await client.query('SELECT COUNT(*) FROM system_users');
@@ -1185,35 +1162,6 @@ app.delete('/api/fleet/cargo-gates/:id', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
-// ទាញយកប្រវត្តិសកម្មភាពតាម Cargo ID
-app.get('/api/fleet/cargo-gates/:id/activities', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const query = `
-            SELECT id, action, user_name, details, 
-                   TO_CHAR(created_at, 'DD/MM/YYYY HH12:MI AM') as created_at 
-            FROM cargo_gate_activities 
-            WHERE cargo_id = $1 
-            ORDER BY id DESC;
-        `;
-        const result = await pool.query(query, [id]);
-        res.json(result.rows);
-    } catch (err) {
-        console.error('Error fetching cargo activities:', err);
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-// ឧទាហរណ៍ក្នុង POST /api/fleet/cargo-gates
-const insertResult = await pool.query(
-    `INSERT INTO cargo_gates (...) VALUES (...) RETURNING id`, [...]
-);
-const newCargoId = insertResult.rows[0].id;
-
-// កត់ត្រា Activity
-await pool.query(
-    `INSERT INTO cargo_gate_activities (cargo_id, action, user_name, details) VALUES ($1, $2, $3, $4)`,
-    [newCargoId, 'CREATED', 'System Admin', 'បានបង្កើតទិន្នន័យខ្លោងទ្វារថ្មី']
-);
 // ==========================================
 // API Routes: Customs Permit & Document Control (BWH) - Updated (Duplicate Permit Fix)
 // ==========================================
