@@ -645,6 +645,32 @@ function saveActivityLog(username, actionType, details) {
         client.release();
     }
 }
+// 1. API សម្រាប់ដឹងថា User ណាកំពុង Login (ផ្អែកលើ Session ឬ Token របស់បង)
+app.get('/api/auth/me', (req, res) => {
+    if (req.session && req.session.user) {
+        res.json(req.session.user); // ឧទាហរណ៍: { username: "Kosal", role: "Admin" }
+    } else {
+        res.status(401).json({ error: 'Unauthorized' });
+    }
+});
+
+// 2. API សម្រាប់ទាញយក Activity Logs ពី Database
+app.get('/api/fleet/activity-logs', (req, res) => {
+    db.all(`SELECT * FROM activity_logs ORDER BY id DESC LIMIT 50`, [], (err, rows) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(rows);
+    });
+});
+
+// 3. API សម្រាប់កត់ត្រា Activity Log ថ្មីចូល Cloud DB
+app.post('/api/fleet/activity-logs', (req, res) => {
+    const { username, action_type, details } = req.body;
+    const query = `INSERT INTO activity_logs (username, action_type, details) VALUES (?, ?, ?)`;
+    db.run(query, [username || 'បុគ្គលិកប្រតិបត្តិការ', action_type, details], function(err) {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ success: true, id: this.lastID });
+    });
+});
 
 // ==========================================
 // API Routes: Authentication (Login) - គាំទ្រទាំង /api/login និង /api/auth/login
