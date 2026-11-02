@@ -525,7 +525,7 @@
         document.getElementById('gate_date').value = `${year}-${month}-${day}T${hour}:${minute}`;
     }
 
-    // 🌟 ការដាក់ស្នើទិន្នន័យ (Submit/Edit) ព្រមទាំងប្រៀបធៀបការកែប្រែជាក់ស្តែងសម្រាប់ Activity Log
+    // 🌟 ការដាក់ស្នើទិន្នន័យ (Submit/Edit) ដោយរក្សាថ្ងៃម៉ោងពិតប្រាកដដែលបានជ្រើសរើសដោយដៃ
     document.getElementById('cargoGateForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -534,6 +534,7 @@
         const podValue = document.getElementById('port_discharge').value;
         const vesselVal = document.getElementById('vessel_name').value.trim();
         const voyVal = document.getElementById('voyage_number').value.trim();
+        const rawDateVal = document.getElementById('gate_date').value;
 
         const fullNotes = `POD: ${podValue} | Vessel: ${vesselVal || 'N/A'} | Voy: ${voyVal || 'N/A'} | ${notesValue}`;
 
@@ -541,7 +542,8 @@
             cargo_code: document.getElementById('cargo_code').value,
             container_number: document.getElementById('container_number').value,
             gate_type: document.getElementById('gate_type').value,
-            gate_date: document.getElementById('gate_date').value,
+            // 🌟 ផ្ញើតម្លៃថ្ងៃ និងម៉ោងផ្ទាល់ដោយមិនប្តូរទៅ UTC ធ្វើឱ្យលែងខុសថ្ងៃខែ
+            gate_date: rawDateVal ? new Date(rawDateVal).toISOString() : null,
             owner_name: document.getElementById('owner_name').value,
             container_qty: document.getElementById('container_qty').value,
             company_name: document.getElementById('company_name').value,
