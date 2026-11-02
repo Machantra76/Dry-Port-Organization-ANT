@@ -64,7 +64,6 @@ async function initializeDatabase() {
         `);
 
         // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)
-       // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records) - បានបន្ថែម Column វត្តមាន និង OT
         await client.query(`
             CREATE TABLE IF NOT EXISTS payroll_records (
                 id SERIAL PRIMARY KEY,
@@ -86,11 +85,11 @@ async function initializeDatabase() {
             );
         `);
 
-        // បន្ថែម Column ស្វ័យប្រវត្តិន្ដក្នុងករណីតារាងមានរួចស្រេច
         await client.query(`ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS ot_amount NUMERIC(10, 2) NOT NULL DEFAULT 0;`);
         await client.query(`ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS present_days INT DEFAULT 26;`);
         await client.query(`ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS absent_days INT DEFAULT 0;`);
         await client.query(`ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS note TEXT;`);
+
         // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)
         await client.query(`
             CREATE TABLE IF NOT EXISTS revenues (
@@ -342,7 +341,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២១. តារាងប្រព័ន្ធ WMS / OMS (Warehouse & Order Management Systems)
+        // ២១. តារាងប្រព័ន្ធ WMS / OMS
         await client.query(`
             CREATE TABLE IF NOT EXISTS wms_oms_records (
                 id SERIAL PRIMARY KEY,
@@ -355,7 +354,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២២. តារាងគ្រប់គ្រង CCTV និង Network (IT Infrastructure)
+        // ២២. តារាងគ្រប់គ្រង CCTV និង Network
         await client.query(`
             CREATE TABLE IF NOT EXISTS it_cctv_networks (
                 id SERIAL PRIMARY KEY,
@@ -441,7 +440,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management)
+        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_system_data (
                 id SERIAL PRIMARY KEY,
@@ -495,7 +494,7 @@ async function initializeDatabase() {
             ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS previous_days INT DEFAULT 0;
         `);
 
-        // ៣១. តារាងត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory Monitoring)
+        // ៣១. តារាងត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ
         await client.query(`
             CREATE TABLE IF NOT EXISTS duty_unpaid_inventory (
                 id SERIAL PRIMARY KEY,
@@ -529,7 +528,7 @@ async function initializeDatabase() {
         `);
         await client.query(`ALTER TABLE system_users ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Active';`);
 
-        // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH)
+        // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_permit_records (
                 id SERIAL PRIMARY KEY,
@@ -564,13 +563,13 @@ async function initializeDatabase() {
                 container_no VARCHAR(100),
                 remark TEXT,
                 inv_date VARCHAR(100),
-                date_out VARCHAR(100), -- ជួរឈរ Date Out
+                date_out VARCHAR(100),
                 truck_out VARCHAR(100),
                 truck_in VARCHAR(100),
                 owner VARCHAR(255),
                 booking_by VARCHAR(255),
                 size VARCHAR(50),
-                note TEXT,             -- ជួរឈរ Note
+                note TEXT,
                 items JSONB,
                 subtotal NUMERIC(10, 2) DEFAULT 0,
                 exch_rate NUMERIC(10, 2) DEFAULT 4085,
@@ -581,7 +580,6 @@ async function initializeDatabase() {
             );
         `);
    
-        // បន្ថែម Column ទាំងនេះស្វ័យប្រវត្តក្នុងករណីតារាងមានរួចស្រេច
         await client.query(`ALTER TABLE tax_invoices ADD COLUMN IF NOT EXISTS date_out VARCHAR(100);`);
         await client.query(`ALTER TABLE tax_invoices ADD COLUMN IF NOT EXISTS note TEXT;`);
 
@@ -590,33 +588,17 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS customs_reg_number VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS manifest_number VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS doc_type VARCHAR(10);`);
-        // 1. បង្កើត Table សម្រាប់កត់ត្រា Activity Logs ក្នុង Database (SQLite/PostgreSQL)
-db.run(`
-    CREATE TABLE IF NOT EXISTS activity_logs (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL,
-        action_type TEXT NOT NULL,
-        details TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-`);
 
-// 2. API សម្រាប់ទាញយក Activity Logs ទាំងអស់
-app.get('/api/fleet/activity-logs', (req, res) => {
-    const query = `SELECT * FROM activity_logs ORDER BY id DESC LIMIT 50`;
-    db.all(query, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
-});
-
-// 3. Helper Function សម្រាប់កត់ត្រា Log ចូល Database ស្វ័យប្រវត្តិ
-function saveActivityLog(username, actionType, details) {
-    const query = `INSERT INTO activity_logs (username, action_type, details) VALUES (?, ?, ?)`;
-    db.run(query, [username || 'បុគ្គលិកប្រតិបត្តិការ', actionType, details], (err) => {
-        if (err) console.error('Error saving activity log:', err.message);
-    });
-}
+        // ៣៥. តារាងប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Logs) - PostgreSQL
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS activity_logs (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(150) NOT NULL,
+                action_type VARCHAR(100) NOT NULL,
+                details TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
 
         // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត (ប្រសិនបើទិន្នន័យទទេ)
         const checkUser = await client.query('SELECT COUNT(*) FROM system_users');
@@ -645,36 +627,57 @@ function saveActivityLog(username, actionType, details) {
         client.release();
     }
 }
-// 1. API សម្រាប់ដឹងថា User ណាកំពុង Login (ផ្អែកលើ Session ឬ Token របស់បង)
+
+// ==========================================
+// API Routes: ប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Logs)
+// ==========================================
+app.get('/api/fleet/activity-logs', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM activity_logs ORDER BY id DESC LIMIT 50');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching activity logs:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.post('/api/fleet/activity-logs', async (req, res) => {
+    const { username, action_type, details } = req.body;
+    try {
+        const query = `
+            INSERT INTO activity_logs (username, action_type, details) 
+            VALUES ($1, $2, $3) RETURNING *;
+        `;
+        const values = [username || 'បុគ្គលិកប្រតិបត្តិការ', action_type, details];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving activity log:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.delete('/api/fleet/activity-logs', async (req, res) => {
+    try {
+        await pool.query('DELETE FROM activity_logs');
+        res.json({ success: true, message: 'បានសម្អាតប្រវត្តិសកម្មភាពដោយជោគជ័យ!' });
+    } catch (err) {
+        console.error('Error clearing activity logs:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ==========================================
+// API Routes: Authentication (Login / Auth Me)
+// ==========================================
 app.get('/api/auth/me', (req, res) => {
     if (req.session && req.session.user) {
-        res.json(req.session.user); // ឧទាហរណ៍: { username: "Kosal", role: "Admin" }
+        res.json(req.session.user);
     } else {
         res.status(401).json({ error: 'Unauthorized' });
     }
 });
 
-// 2. API សម្រាប់ទាញយក Activity Logs ពី Database
-app.get('/api/fleet/activity-logs', (req, res) => {
-    db.all(`SELECT * FROM activity_logs ORDER BY id DESC LIMIT 50`, [], (err, rows) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json(rows);
-    });
-});
-
-// 3. API សម្រាប់កត់ត្រា Activity Log ថ្មីចូល Cloud DB
-app.post('/api/fleet/activity-logs', (req, res) => {
-    const { username, action_type, details } = req.body;
-    const query = `INSERT INTO activity_logs (username, action_type, details) VALUES (?, ?, ?)`;
-    db.run(query, [username || 'បុគ្គលិកប្រតិបត្តិការ', action_type, details], function(err) {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ success: true, id: this.lastID });
-    });
-});
-
-// ==========================================
-// API Routes: Authentication (Login) - គាំទ្រទាំង /api/login និង /api/auth/login
-// ==========================================
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -714,18 +717,17 @@ app.post('/api/auth/login', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
-// 🌟 Self-Ping ដើម្បីការពារកុំឱ្យ Render Free Tier ចូលទៅកាន់ដំណាក់កាល Sleep បណ្តោះអាសន្ន
-const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL; // Render ផ្ដល់ជូនស្វ័យប្រវត្តិ
+
+// Self-Ping
+const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
 if (RENDER_EXTERNAL_URL) {
     setInterval(() => {
         axios.get(`${RENDER_EXTERNAL_URL}/api/run-cron`)
             .then(() => console.log('🔄 [Self-Ping] Server triggered successfully!'))
             .catch(err => console.error('⚠️ [Self-Ping Error]:', err.message));
-    }, 10 * 60 * 1000); // រៀងរាល់ ១០ នាទីម្ដង
+    }, 10 * 60 * 1000);
 }
-// ==========================================
-// API Routes: Register (បង្កើត User ថ្មី - កំណត់ Status ជា 'Active')
-// ==========================================
+
 app.post('/api/auth/register', async (req, res) => {
     const { username, password, full_name, role, dept_id } = req.body;
     try {
@@ -760,9 +762,6 @@ app.post('/api/users', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: User Management (សម្រាប់ Admin គ្រប់គ្រង User / បិទសិទ្ធិ)
-// ==========================================
 app.get('/api/users', async (req, res) => {
     try {
         const result = await pool.query('SELECT id, username, full_name, role, dept_id, status, created_at FROM system_users ORDER BY id DESC');
@@ -772,6 +771,7 @@ app.get('/api/users', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+
 app.get('/api/run-cron', async (req, res) => {
     try {
         const nowUTC = new Date();
@@ -780,9 +780,8 @@ app.get('/api/run-cron', async (req, res) => {
         console.log(`⏰ [Cron Triggered] Server UTC Time: ${nowUTC.toISOString()}`);
         console.log(`🇰🇭 [Cron Triggered] Local (Phnom Penh) Time: ${localTimeStr}`);
 
-        const result = await processPendingSchedules();
+        const result = processPendingSchedules ? await processPendingSchedules() : { count: 0, success: 0 };
         
-        // 🌟 កែត្រឹម Return JSON ខ្លីៗ គ្រប់គ្រាន់ មិនឱ្យធំពេកទេ
         res.json({ 
             success: true, 
             processedCount: result.count,
@@ -792,11 +791,10 @@ app.get('/api/run-cron', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
-// ==========================================
-// API Routes: គ្រប់គ្រងបញ្ជីវិក្កយបត្រ (Invoice List APIs)
-// ==========================================
 
-// ១. ទាញយកបញ្ជីវិក្កយបត្រទាំងអស់
+// ==========================================
+// API Routes: Invoices & Tax Invoices
+// ==========================================
 app.get('/api/tax-invoices', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM tax_invoices ORDER BY id DESC');
@@ -807,7 +805,6 @@ app.get('/api/tax-invoices', async (req, res) => {
     }
 });
 
-// ២. ទាញយកវិក្កយបត្រមួយតាម ID
 app.get('/api/tax-invoices/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -822,7 +819,6 @@ app.get('/api/tax-invoices/:id', async (req, res) => {
     }
 });
 
-// ៣. លុបវិក្កយបត្រតាម ID
 app.delete('/api/tax-invoices/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -837,7 +833,6 @@ app.delete('/api/tax-invoices/:id', async (req, res) => {
     }
 });
 
-// HTML Route សម្រាប់បើកទំព័រ invoice-list.html
 app.get('/invoice-list.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'invoice-list.html'));
 });
@@ -845,9 +840,6 @@ app.get('/views/invoice-list.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'invoice-list.html'));
 });
 
-// ==========================================
-// API Routes: ស្ថិតិវិក្កយបត្រ និងការរក្សាទុកវិក្កយបត្រ (Billing & Cashier Stats)
-// ==========================================
 app.get('/api/invoices/stats', async (req, res) => {
     const { customerName } = req.query;
     if (!customerName) {
@@ -905,6 +897,7 @@ app.post('/api/tax-invoices', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error: ' + err.message });
     }
 });
+
 app.put('/api/users/:id', async (req, res) => {
     const { id } = req.params;
     const { status, password, full_name, role, dept_id } = req.body;
@@ -937,11 +930,7 @@ app.put('/api/users/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
-// ==========================================
-// API Routes: កែប្រែ និងលុបចំណាយ (Update & Delete Expenses)
-// ==========================================
 
-// កែប្រែទិន្នន័យចំណាយតាម ID (PUT)
 app.put('/api/expenses/:id', async (req, res) => {
     const { id } = req.params;
     const { expense_date, category, description, amount, paid_to } = req.body;
@@ -966,7 +955,6 @@ app.put('/api/expenses/:id', async (req, res) => {
     }
 });
 
-// លុបទិន្នន័យចំណាយតាម ID (DELETE)
 app.delete('/api/expenses/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -980,7 +968,7 @@ app.delete('/api/expenses/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការលុបទិន្នន័យចំណាយ' });
     }
 });
-// កែប្រែទិន្នន័យគណនេយ្យទទួលទាំងស្រុង (Update Receivable Details for Edit)
+
 app.put('/api/receivables/:id', async (req, res) => {
     const { id } = req.params;
     const { customer_name, amount, invoice_date, due_date, status, description } = req.body;
@@ -1005,7 +993,6 @@ app.put('/api/receivables/:id', async (req, res) => {
     }
 });
 
-// លុបទិន្នន័យគណនេយ្យទទួល (Delete Receivable)
 app.delete('/api/receivables/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -1019,7 +1006,7 @@ app.delete('/api/receivables/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការលុបទិន្នន័យ' });
     }
 });
-// កែប្រែប្រាក់ចំណូល (Update Revenue)
+
 app.put('/api/revenues/:id', async (req, res) => {
     const { id } = req.params;
     const { revenue_date, category, description, amount, received_by } = req.body;
@@ -1043,7 +1030,6 @@ app.put('/api/revenues/:id', async (req, res) => {
     }
 });
 
-// លុបប្រាក់ចំណូល (Delete Revenue)
 app.delete('/api/revenues/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -1057,7 +1043,7 @@ app.delete('/api/revenues/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការលុបទិន្នន័យ' });
     }
 });
-// កែប្រែ / Update វិក្កយបត្រតាម ID
+
 app.put('/api/tax-invoices/:id', async (req, res) => {
     const { id } = req.params;
     const {
@@ -1112,7 +1098,6 @@ app.put('/api/users/:id/status', async (req, res) => {
     }
 });
 
-// API សម្រាប់បន្តកាលបរិច្ឆេទថ្មី (Renew BWH Record) និងរក្សាទុកប្រវត្តិថ្ងៃចាស់
 app.put('/api/bwh-records/:id/renew', async (req, res) => {
     const { id } = req.params;
     const { record_date, current_days } = req.body;
@@ -1130,92 +1115,104 @@ app.put('/api/bwh-records/:id/renew', async (req, res) => {
         res.status(500).json({ success: false, error: err.message });
     }
 });
-// 🌟 API សម្រាប់ទាញយកទិន្នន័យ (GET) - พร้อมสร้าง Table ស្វ័យប្រវត្តិបើអត់ទាន់មាន
+
+// Cargo Gates APIs
 app.get('/api/fleet/cargo-gates', async (req, res) => {
     try {
         await pool.query(`
-            CREATE TABLE IF NOT EXISTS cargo_gates (
+            CREATE TABLE IF NOT EXISTS cargo_gate_logs (
                 id SERIAL PRIMARY KEY,
-                cargo_code VARCHAR(100),
+                cargo_code VARCHAR(100) NOT NULL,
                 container_number VARCHAR(100),
-                gate_type VARCHAR(100),
-                gate_date TIMESTAMP WITH TIME ZONE,
+                gate_type VARCHAR(50) NOT NULL,
+                gate_date TIMESTAMP NOT NULL,
+                truck_plate_number VARCHAR(50),
+                driver_name VARCHAR(150),
                 owner_name VARCHAR(150),
                 container_qty VARCHAR(50),
                 company_name VARCHAR(150),
-                status VARCHAR(100),
+                status VARCHAR(50) DEFAULT 'Completed',
                 notes TEXT,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        const result = await pool.query('SELECT * FROM cargo_gates ORDER BY id DESC');
+        const query = 'SELECT * FROM cargo_gate_logs ORDER BY gate_date DESC, id DESC';
+        const result = await pool.query(query);
         res.json(result.rows);
     } catch (err) {
-        console.error('❌ [Cargo Gate Get Error]:', err.message);
-        res.status(500).json({ success: false, error: err.message });
+        console.error('Error fetching cargo gate logs:', err);
+        res.status(500).json({ success: false, error: 'Database error' });
     }
 });
 
-// 🌟 API សម្រាប់កត់ត្រាទិន្នន័យថ្មី (POST)
 app.post('/api/fleet/cargo-gates', async (req, res) => {
-    const { cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes } = req.body;
     try {
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS cargo_gates (
-                id SERIAL PRIMARY KEY,
-                cargo_code VARCHAR(100),
-                container_number VARCHAR(100),
-                gate_type VARCHAR(100),
-                gate_date TIMESTAMP WITH TIME ZONE,
-                owner_name VARCHAR(150),
-                container_qty VARCHAR(50),
-                company_name VARCHAR(150),
-                status VARCHAR(100),
-                notes TEXT,
-                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-        await pool.query(
-            `INSERT INTO cargo_gates (cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-            [cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes]
-        );
-        res.json({ success: true, message: 'បានរក្សាទុកទិន្នន័យដោយជោគជ័យ!' });
+        const { 
+            cargo_code, container_number, gate_type, gate_date, 
+            truck_plate_number, driver_name, owner_name, container_qty, company_name, status, notes 
+        } = req.body;
+
+        const query = `
+            INSERT INTO cargo_gate_logs 
+            (cargo_code, container_number, gate_type, gate_date, truck_plate_number, driver_name, owner_name, container_qty, company_name, status, notes) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) 
+            RETURNING *;
+        `;
+        const values = [
+            cargo_code, container_number || null, gate_type, gate_date, 
+            truck_plate_number || 'N/A', driver_name || 'N/A', owner_name || null, container_qty || null, company_name || null, status || 'Completed', notes || null
+        ];
+
+        const result = await pool.query(query, values);
+        res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        console.error('❌ [Cargo Gate Insert Error]:', err.message);
-        res.status(500).json({ success: false, error: err.message });
+        console.error('Error saving cargo gate log:', err);
+        res.status(500).json({ success: false, error: 'មិនអាចរក្សាទុកទិន្នន័យក្នុង Database ได้ទេ។ ' + err.message });
     }
 });
 
-// 🌟 API សម្រាប់កែប្រែទិន្នន័យ (PUT)
 app.put('/api/fleet/cargo-gates/:id', async (req, res) => {
     const { id } = req.params;
-    const { cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes } = req.body;
+    const { 
+        cargo_code, container_number, gate_type, gate_date, 
+        truck_plate_number, driver_name, owner_name, container_qty, company_name, status, notes 
+    } = req.body;
     try {
-        await pool.query(
-            `UPDATE cargo_gates SET cargo_code = $1, container_number = $2, gate_type = $3, gate_date = $4, owner_name = $5, container_qty = $6, company_name = $7, status = $8, notes = $9 WHERE id = $10`,
-            [cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes, id]
-        );
-        res.json({ success: true, message: 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' });
+        const query = `
+            UPDATE cargo_gate_logs 
+            SET cargo_code = $1, container_number = $2, gate_type = $3, gate_date = $4, 
+                truck_plate_number = $5, driver_name = $6, owner_name = $7, container_qty = $8, 
+                company_name = $9, status = $10, notes = $11
+            WHERE id = $12 RETURNING *;
+        `;
+        const values = [
+            cargo_code, container_number, gate_type, gate_date, 
+            truck_plate_number || 'N/A', driver_name || 'N/A', owner_name, container_qty, 
+            company_name, status, notes, id
+        ];
+        const result = await pool.query(query, values);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+        res.json({ success: true, data: result.rows[0] });
     } catch (err) {
-        console.error('❌ [Cargo Gate Update Error]:', err.message);
+        console.error('Error updating cargo gate:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
 
-// 🌟 API សម្រាប់លុបទិន្នន័យ (DELETE)
 app.delete('/api/fleet/cargo-gates/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        await pool.query('DELETE FROM cargo_gates WHERE id = $1', [id]);
+        await pool.query('DELETE FROM cargo_gate_logs WHERE id = $1', [id]);
         res.json({ success: true, message: 'បានលុបដោយជោគជ័យ!' });
     } catch (err) {
-        console.error('❌ [Cargo Gate Delete Error]:', err.message);
+        console.error('Error deleting cargo gate:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
-// ==========================================
-// API Routes: Customs Permit & Document Control (BWH) - Updated (Duplicate Permit Fix)
-// ==========================================
+
+// Customs Permits
 app.get('/api/customs-permits', async (req, res) => {
     try {
         const query = `
@@ -1337,7 +1334,7 @@ app.put('/api/customs-permits/:id', async (req, res) => {
 });
 
 // ==========================================
-// HTML Routes សម្រាប់បើកទំព័រ Views ផ្សេងៗ (រក្សាទុកគ្រប់ Routes ទាំងអស់)
+// HTML Routes
 // ==========================================
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
@@ -1471,9 +1468,7 @@ app.get('/views/customs-permit-control.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'customs-permit-control.html'));
 });
 
-// ==========================================
-// API Routes: ឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse - BWH In/Out)
-// ==========================================
+// Bonded Warehouse APIs
 app.get('/api/bwh-records', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM bonded_warehouse_records ORDER BY record_date DESC, id DESC');
@@ -1601,9 +1596,7 @@ app.put('/api/bwh-records/:id/duty-status', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory)
-// ==========================================
+// Duty Unpaid Inventory
 app.get('/api/duty-unpaid-inventory', async (req, res) => {
     try {
         const query = `
@@ -1658,9 +1651,7 @@ app.delete('/api/duty-unpaid-inventory/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: អ្នកកាន់ឯកសារគយ (Document Controller / Handler)
-// ==========================================
+// Document Handlers
 app.get('/api/document-handlers', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM document_handlers ORDER BY id DESC');
@@ -1721,9 +1712,7 @@ app.delete('/api/document-handlers/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: ការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Entry Management)
-// ==========================================
+// Customs System Data
 app.get('/api/customs-system-data', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM customs_system_data ORDER BY id DESC');
@@ -1784,9 +1773,7 @@ app.delete('/api/customs-system-data/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: ការគ្រប់គ្រងឯកសារគយ (Customs Document Management)
-// ==========================================
+// Customs Documents
 app.get('/api/customs-documents', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM customs_documents ORDER BY id DESC');
@@ -1847,9 +1834,7 @@ app.delete('/api/customs-documents/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: ស្វែងរកប្រភព និងការគាំទ្រទូទៅ (Sourcing & General Support)
-// ==========================================
+// Sourcing Support
 app.get('/api/sourcing-support', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM sourcing_support ORDER BY id DESC');
@@ -1910,9 +1895,7 @@ app.delete('/api/sourcing-support/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: ការដោះស្រាយបញ្ហា / ការតវ៉ា (Dispute & Complaint Resolution)
-// ==========================================
+// Dispute Resolutions
 app.get('/api/dispute-resolutions', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM dispute_resolutions ORDER BY id DESC');
@@ -1973,9 +1956,7 @@ app.delete('/api/dispute-resolutions/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: ទំនាក់ទំនងជាមួយអតិថិជន (Customer Relations)
-// ==========================================
+// Customer Relations
 app.get('/api/customer-relations', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM customer_relations ORDER BY id DESC');
@@ -2036,9 +2017,7 @@ app.delete('/api/customer-relations/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Job Vacancies (HR Management)
-// ==========================================
+// Job Vacancies
 app.get('/api/jobs', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM job_vacancies ORDER BY id DESC');
@@ -2065,9 +2044,7 @@ app.post('/api/jobs', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: IT CCTV & Network Infrastructure
-// ==========================================
+// IT CCTV
 app.get('/api/it-cctv', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM it_cctv_networks ORDER BY id DESC');
@@ -2105,9 +2082,7 @@ app.delete('/api/it-cctv/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: បុគ្គលិក (Employees)
-// ==========================================
+// Employees
 app.get('/api/employees', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM employees ORDER BY id DESC');
@@ -2131,9 +2106,7 @@ app.post('/api/employees', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: វត្តមាន (Attendance Logs)
-// ==========================================
+// Attendance
 app.get('/api/attendance/logs', async (req, res) => {
     const { from, to, search } = req.query;
     try {
@@ -2167,9 +2140,7 @@ app.get('/api/attendance/logs', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: ទ្រព្យសម្បត្តិ និងស្តុក (Inventory)
-// ==========================================
+// Inventory
 app.get('/api/inventory', async (req, res) => {
     const { search, category } = req.query;
     try {
@@ -2236,12 +2207,7 @@ app.put('/api/inventory/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll)
-// ==========================================
-// ==========================================
-// API Routes: ប្រាក់បៀវត្សរ៍ (Payroll) - គាំទ្រ Note
-// ==========================================
+// Payroll
 app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => {
     const { employee_code, pay_month } = req.params;
     try {
@@ -2251,7 +2217,6 @@ app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => 
         }
         const employee = empResult.rows[0];
 
-        // គណនាចំនួនថ្ងៃសរុបពិតប្រាកដក្នុងខែនោះ (២៨, ២៩, ៣០ ឬ ៣១ថ្ងៃ)
         const [year, month] = pay_month.split('-').map(Number);
         const standardWorkingDays = new Date(year, month, 0).getDate(); 
 
@@ -2277,6 +2242,7 @@ app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => 
         res.status(500).json({ error: 'មានបញ្ហាក្នុងការគណនាវត្តមាន' });
     }
 });
+
 app.get('/api/payroll', async (req, res) => {
     try {
         const result = await pool.query("SELECT * FROM payroll_records ORDER BY id DESC");
@@ -2348,9 +2314,8 @@ app.put('/api/payroll/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យប្រាក់បៀវត្សរ៍' });
     }
 });
-// ==========================================
-// API Routes: ប្រាក់ចំណូល (Revenues)
-// ==========================================
+
+// Revenues
 app.get('/api/revenues', async (req, res) => {
     const { from, to } = req.query;
     try {
@@ -2384,9 +2349,7 @@ app.post('/api/revenues', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: គណនេយ្យទទួល (Accounts Receivable)
-// ==========================================
+// Accounts Receivable
 app.get('/api/receivables', async (req, res) => {
     const { from, to } = req.query;
     try {
@@ -2420,59 +2383,7 @@ app.post('/api/receivables', async (req, res) => {
     }
 });
 
-app.put('/api/receivables/:id', async (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;
-    try {
-        // ១. អាប់ដេតស្ថានភាពក្នុងតារាង accounts_receivable ជាមុនសិន
-        const query = `
-            UPDATE accounts_receivable 
-            SET status = $1 
-            WHERE id = $2 
-            RETURNING *;
-        `;
-        const result = await pool.query(query, [status, id]);
-        
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យគណនេយ្យទទួលនេះទេ' });
-        }
-
-        const rec = result.rows[0];
-
-        // ២. អាប់ដេតតារាង tax_invoices តាមរយៈ Try-Catch ដាច់ដោយឡែក ដើម្បីការពារ Server Error 500
-        if (status === 'Paid') {
-            try {
-                const description = rec.description || '';
-                const invMatch = description.match(/INV-\d{4}-\d+/i);
-
-                if (invMatch) {
-                    await pool.query(
-                        "UPDATE tax_invoices SET payment_status = 'PAID' WHERE invoice_no ILIKE $1;",
-                        [invMatch[0]]
-                    );
-                } 
-                
-                if (rec.customer_name) {
-                    await pool.query(
-                        "UPDATE tax_invoices SET payment_status = 'PAID' WHERE TRIM(LOWER(charge_to)) = TRIM(LOWER($1));",
-                        [rec.customer_name]
-                    );
-                }
-            } catch (invoiceErr) {
-                console.error('Warning: Could not update tax_invoices payment_status:', invoiceErr.message);
-                // មិនឱ្យរាំងស្ទះដល់การ update receivable ដើមឡើយ
-            }
-        }
-
-        res.json({ success: true, data: rec });
-    } catch (err) {
-        console.error('Error updating receivable status:', err);
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែស្ថានភាពគណនេយ្យទទួល: ' + err.message });
-    }
-});
-// ==========================================
-// API Routes: ចំណាយ (Expenses)
-// ==========================================
+// Expenses
 app.get('/api/expenses', async (req, res) => {
     const { from, to } = req.query;
     try {
@@ -2506,9 +2417,7 @@ app.post('/api/expenses', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: របាយការណ៍ហិរញ្ញវត្ថុ (Financial Summary API)
-// ==========================================
+// Financial Summary
 app.get('/api/financial/summary', async (req, res) => {
     const { from, to } = req.query;
     try {
@@ -2552,9 +2461,7 @@ app.get('/api/financial/summary', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: ការចាត់ចែងរថយន្ត (Fleet Vehicles)
-// ==========================================
+// Fleet Vehicles
 app.get('/api/fleet/vehicles', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM fleet_vehicles ORDER BY id DESC');
@@ -2578,9 +2485,7 @@ app.post('/api/fleet/vehicles', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: ការគ្រប់គ្រងអ្នកបើកបរ (Drivers)
-// ==========================================
+// Drivers
 app.get('/api/fleet/drivers', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM drivers ORDER BY id DESC');
@@ -2604,9 +2509,7 @@ app.post('/api/fleet/drivers', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: ការបញ្ជូនដឹកជញ្ជូន (Transport Dispatches)
-// ==========================================
+// Dispatches
 app.get('/api/fleet/dispatches', async (req, res) => {
     const { from, to, search } = req.query;
     try {
@@ -2647,13 +2550,8 @@ app.post('/api/fleet/dispatches', async (req, res) => {
             `;
             const result = await client.query(query, [dispatch_code, vehicle_code, driver_name, destination, dispatch_date, status || 'Dispatched', notes]);
 
-            await client.query(`
-                UPDATE fleet_vehicles SET status = 'On Mission' WHERE plate_number = $1
-            `, [vehicle_code]);
-
-            await client.query(`
-                UPDATE drivers SET status = 'On Duty' WHERE full_name = $1
-            `, [driver_name]);
+            await client.query(`UPDATE fleet_vehicles SET status = 'On Mission' WHERE plate_number = $1`, [vehicle_code]);
+            await client.query(`UPDATE drivers SET status = 'On Duty' WHERE full_name = $1`, [driver_name]);
 
             await client.query('COMMIT');
             res.status(201).json({ success: true, data: result.rows[0] });
@@ -2668,32 +2566,7 @@ app.post('/api/fleet/dispatches', async (req, res) => {
     }
 });
 
-app.put('/api/fleet/dispatches/:id', async (req, res) => {
-    const { id } = req.params;
-    const { vehicle_code, driver_name, destination, notes, status } = req.body;
-    try {
-        const query = `
-            UPDATE transport_dispatches 
-            SET vehicle_code = $1, driver_name = $2, destination = $3, notes = $4, status = $5
-            WHERE id = $6 
-            RETURNING *;
-        `;
-        const result = await pool.query(query, [vehicle_code, driver_name, destination, notes, status, id]);
-        
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យការដឹកជញ្ជូននេះទេ' });
-        }
-
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        console.error('Error updating dispatch:', err);
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការដោះដូររថយន្ត និងអ្នកបើកបរ' });
-    }
-});
-
-// ==========================================
-// API Routes: ការគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)
-// ==========================================
+// Fuel Logs
 app.get('/api/fleet/fuel', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
     try {
@@ -2739,9 +2612,7 @@ app.post('/api/fleet/fuel', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: ការថែទាំយានយន្ត (Maintenance Logs)
-// ==========================================
+// Maintenance Logs
 app.get('/api/fleet/maintenance', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
     try {
@@ -2782,23 +2653,13 @@ app.post('/api/fleet/maintenance', async (req, res) => {
             `;
             const mStatus = status || 'Completed';
             const result = await client.query(query, [
-                vehicle_code, 
-                maintenance_date, 
-                service_type, 
-                description, 
-                parseFloat(cost) || 0, 
-                service_provider, 
-                mStatus
+                vehicle_code, maintenance_date, service_type, description, parseFloat(cost) || 0, service_provider, mStatus
             ]);
 
             if (mStatus === 'In Progress') {
-                await client.query(`
-                    UPDATE fleet_vehicles SET status = 'In Maintenance' WHERE vehicle_code = $1
-                `, [vehicle_code]);
+                await client.query(`UPDATE fleet_vehicles SET status = 'In Maintenance' WHERE vehicle_code = $1`, [vehicle_code]);
             } else {
-                await client.query(`
-                    UPDATE fleet_vehicles SET status = 'Available' WHERE vehicle_code = $1
-                `, [vehicle_code]);
+                await client.query(`UPDATE fleet_vehicles SET status = 'Available' WHERE vehicle_code = $1`, [vehicle_code]);
             }
 
             await client.query('COMMIT');
@@ -2814,9 +2675,7 @@ app.post('/api/fleet/maintenance', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: ផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)
-// ==========================================
+// Transport Plans
 app.get('/api/fleet/transport-plans', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
     try {
@@ -2855,19 +2714,9 @@ app.post('/api/fleet/transport-plans', async (req, res) => {
                 INSERT INTO transport_plans (cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes, status) 
                 VALUES ($1, $2, $3, $4, $5, $6, $7, 'Planned') RETURNING *;
             `;
-            const result = await client.query(query, [
-                cargo_code, 
-                vehicle_code, 
-                origin, 
-                destination, 
-                departure_date, 
-                driver_name, 
-                notes
-            ]);
+            const result = await client.query(query, [cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes]);
 
-            await client.query(`
-                UPDATE fleet_vehicles SET status = 'On Mission' WHERE vehicle_code = $1
-            `, [vehicle_code]);
+            await client.query(`UPDATE fleet_vehicles SET status = 'On Mission' WHERE vehicle_code = $1`, [vehicle_code]);
 
             await client.query('COMMIT');
             res.status(201).json({ success: true, data: result.rows[0] });
@@ -2882,59 +2731,10 @@ app.post('/api/fleet/transport-plans', async (req, res) => {
     }
 });
 
-app.put('/api/fleet/transport-plans/:id', async (req, res) => {
-    const { id } = req.params;
-    const { cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes, status } = req.body;
-    try {
-        const query = `
-            UPDATE transport_plans 
-            SET cargo_code = $1, vehicle_code = $2, origin = $3, destination = $4, departure_date = $5, driver_name = $6, notes = $7, status = $8
-            WHERE id = $9 
-            RETURNING *;
-        `;
-        const result = await pool.query(query, [cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes, status, id]);
-        
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យផែនការដឹកជញ្ជូននេះទេ' });
-        }
-
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        console.error('Error updating transport plan:', err);
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែ/ដោះដូរផែនការដឹកជញ្ជូន' });
-    }
-});
-
-// ==========================================
-// API Routes: ការត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
-// ==========================================
+// Damaged Containers
 app.get('/api/fleet/damaged-containers', async (req, res) => {
-    const { from, to, severity_level, shipping_line } = req.query;
     try {
-        let query = 'SELECT * FROM damaged_containers WHERE 1=1';
-        let params = [];
-        let paramIndex = 1;
-        
-        if (from && to) {
-            query += ` AND inspection_date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
-            params.push(from, to);
-            paramIndex += 2;
-        }
-
-        if (severity_level) {
-            query += ` AND severity_level = $${paramIndex}`;
-            params.push(severity_level);
-            paramIndex += 1;
-        }
-
-        if (shipping_line) {
-            query += ` AND shipping_line ILIKE $${paramIndex}`;
-            params.push(`%${shipping_line}%`);
-            paramIndex += 1;
-        }
-        
-        query += ' ORDER BY inspection_date DESC, id DESC';
-        const result = await pool.query(query, params);
+        const result = await pool.query('SELECT * FROM damaged_containers ORDER BY inspection_date DESC, id DESC');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យកុងតឺន័រខូចបានទេ' });
@@ -2942,96 +2742,23 @@ app.get('/api/fleet/damaged-containers', async (req, res) => {
 });
 
 app.post('/api/fleet/damaged-containers', async (req, res) => {
-    const { 
-        container_number, container_size, container_type, shipping_line, 
-        inspection_date, damage_location, severity_level, inspector_name, description, status 
-    } = req.body;
+    const { container_number, container_size, container_type, shipping_line, inspection_date, damage_location, severity_level, inspector_name, description, status } = req.body;
     try {
         const query = `
-            INSERT INTO damaged_containers 
-            (container_number, container_size, container_type, shipping_line, inspection_date, damage_location, severity_level, inspector_name, description, status) 
+            INSERT INTO damaged_containers (container_number, container_size, container_type, shipping_line, inspection_date, damage_location, severity_level, inspector_name, description, status) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
         `;
-        const result = await pool.query(query, [
-            container_number, 
-            container_size || "40'", 
-            container_type || "DC", 
-            shipping_line || null, 
-            inspection_date, 
-            damage_location, 
-            severity_level, 
-            inspector_name, 
-            description, 
-            status || 'Pending Repair'
-        ]);
+        const result = await pool.query(query, [container_number, container_size || "40'", container_type || "DC", shipping_line || null, inspection_date, damage_location, severity_level, inspector_name, description, status || 'Pending Repair']);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        console.error(err);
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាកុងតឺន័រខូច' });
     }
 });
 
-app.put('/api/fleet/damaged-containers/:id', async (req, res) => {
-    const { id } = req.params;
-    const { 
-        container_number, container_size, container_type, shipping_line, 
-        inspection_date, damage_location, severity_level, inspector_name, status, description 
-    } = req.body;
-    try {
-        const query = `
-            UPDATE damaged_containers 
-            SET container_number = $1, container_size = $2, container_type = $3, shipping_line = $4, 
-                inspection_date = $5, damage_location = $6, severity_level = $7, inspector_name = $8, status = $9, description = $10
-            WHERE id = $11 
-            RETURNING *;
-        `;
-        const values = [
-            container_number, container_size, container_type, shipping_line, 
-            inspection_date, damage_location, severity_level, inspector_name, status, description, id
-        ];
-        const result = await pool.query(query, values);
-        
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យកុងតឺន័រខូចនេះទេ' });
-        }
-
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        console.error('Error updating damaged container:', err);
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែ/ដោះដូរទិន្នន័យ' });
-    }
-});
-
-// ==========================================
-// API Routes: ការគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
-// ==========================================
+// Container Yard Locations
 app.get('/api/fleet/container-yard', async (req, res) => {
-    const { block_code, status, shipping_line } = req.query;
     try {
-        let query = 'SELECT * FROM container_yard_locations WHERE 1=1';
-        let params = [];
-        let paramIndex = 1;
-        
-        if (block_code) {
-            query += ` AND block_code = $${paramIndex}`;
-            params.push(block_code);
-            paramIndex += 1;
-        }
-
-        if (status) {
-            query += ` AND status = $${paramIndex}`;
-            params.push(status);
-            paramIndex += 1;
-        }
-
-        if (shipping_line) {
-            query += ` AND shipping_line ILIKE $${paramIndex}`;
-            params.push(`%${shipping_line}%`);
-            paramIndex += 1;
-        }
-        
-        query += ' ORDER BY updated_date DESC, id DESC';
-        const result = await pool.query(query, params);
+        const result = await pool.query('SELECT * FROM container_yard_locations ORDER BY updated_date DESC, id DESC');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យទីតាំងកុងតឺន័របានទេ' });
@@ -3042,82 +2769,20 @@ app.post('/api/fleet/container-yard', async (req, res) => {
     const { container_number, container_size, container_type, shipping_line, block_code, row_number, tier_number, status, updated_date, notes } = req.body;
     try {
         const query = `
-            INSERT INTO container_yard_locations 
-            (container_number, container_size, container_type, shipping_line, block_code, row_number, tier_number, status, updated_date, notes) 
+            INSERT INTO container_yard_locations (container_number, container_size, container_type, shipping_line, block_code, row_number, tier_number, status, updated_date, notes) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
         `;
-        const result = await pool.query(query, [
-            container_number, 
-            container_size || "40'", 
-            container_type || "DC", 
-            shipping_line || null, 
-            block_code, 
-            parseInt(row_number) || 1, 
-            parseInt(tier_number) || 1, 
-            status || 'Stored', 
-            updated_date, 
-            notes
-        ]);
+        const result = await pool.query(query, [container_number, container_size || "40'", container_type || "DC", shipping_line || null, block_code, parseInt(row_number) || 1, parseInt(tier_number) || 1, status || 'Stored', updated_date, notes]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        console.error(err);
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាទីតាំងកុងតឺន័រ' });
     }
 });
 
-app.put('/api/fleet/container-yard/:id', async (req, res) => {
-    const { id } = req.params;
-    const { container_number, container_size, container_type, shipping_line, block_code, row_number, tier_number, status, updated_date, notes } = req.body;
-    try {
-        const query = `
-            UPDATE container_yard_locations 
-            SET container_number = $1, container_size = $2, container_type = $3, shipping_line = $4, 
-                block_code = $5, row_number = $6, tier_number = $7, status = $8, updated_date = $9, notes = $10
-            WHERE id = $11 
-            RETURNING *;
-        `;
-        const values = [
-            container_number, container_size, container_type, shipping_line, 
-            block_code, parseInt(row_number) || 1, parseInt(tier_number) || 1, 
-            status, updated_date, notes, id
-        ];
-        const result = await pool.query(query, values);
-        
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យទីតាំងកុងតឺន័រនេះទេ' });
-        }
-
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        console.error('Error updating container yard location:', err);
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែ/ដោះដូរទិន្នន័យ' });
-    }
-});
-
-// ==========================================
-// API Routes: ការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)
-// ==========================================
+// Container Repair Logs
 app.get('/api/fleet/container-repairs', async (req, res) => {
-    const { status, container_number } = req.query;
     try {
-        let query = 'SELECT * FROM container_repair_logs WHERE 1=1';
-        let params = [];
-        let paramIndex = 1;
-        
-        if (status) {
-            query += ` AND status = $${paramIndex}`;
-            params.push(status);
-            paramIndex += 1;
-        }
-
-        if (container_number) {
-            query += ` AND container_number ILIKE $${paramIndex}`;
-            params.push(`%${container_number}%`);
-            paramIndex += 1;
-        }
-        
-        query += ' ORDER BY repair_date DESC, id DESC';
-        const result = await pool.query(query, params);
+        const result = await pool.query('SELECT * FROM container_repair_logs ORDER BY repair_date DESC, id DESC');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យការជួសជុលកុងតឺន័របានទេ' });
@@ -3125,146 +2790,23 @@ app.get('/api/fleet/container-repairs', async (req, res) => {
 });
 
 app.post('/api/fleet/container-repairs', async (req, res) => {
-    const { 
-        container_number, container_size, container_type, shipping_line, 
-        repair_date, block_code, row_number, tier_number, 
-        repair_type, cost, technician_name, status, notes 
-    } = req.body;
-    
-    const repairStatus = status || 'In Progress';
-    const client = await pool.connect();
+    const { container_number, container_size, container_type, shipping_line, repair_date, block_code, row_number, tier_number, repair_type, cost, technician_name, status, notes } = req.body;
     try {
-        await client.query('BEGIN');
-
-        const yardCheck = await client.query(
-            `SELECT status FROM container_yard_locations WHERE container_number = $1`, 
-            [container_number]
-        );
-
-        if (yardCheck.rows.length > 0) {
-            const currentYardStatus = yardCheck.rows[0].status;
-            if (currentYardStatus === 'Gate-Out' || currentYardStatus === 'In Repair') {
-                await client.query('ROLLBACK');
-                return res.status(400).json({ 
-                    success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចយកមកជួសជុលបានទេ!` 
-                });
-            }
-        }
-
         const query = `
-            INSERT INTO container_repair_logs 
-            (container_number, container_size, container_type, shipping_line, repair_date, block_code, row_number, tier_number, repair_type, cost, technician_name, status, notes) 
+            INSERT INTO container_repair_logs (container_number, container_size, container_type, shipping_line, repair_date, block_code, row_number, tier_number, repair_type, cost, technician_name, status, notes) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *;
         `;
-        const result = await client.query(query, [
-            container_number, 
-            container_size || "40'", 
-            container_type || "DC", 
-            shipping_line || null, 
-            repair_date, 
-            block_code || null, 
-            parseInt(row_number) || 1, 
-            parseInt(tier_number) || 1, 
-            repair_type, 
-            parseFloat(cost) || 0, 
-            technician_name, 
-            repairStatus, 
-            notes
-        ]);
-
-        const yardStatus = repairStatus === 'Completed' ? 'Stored' : 'In Repair';
-        await client.query(`
-            UPDATE container_yard_locations 
-            SET status = $1, updated_date = CURRENT_DATE 
-            WHERE container_number = $2
-        `, [yardStatus, container_number]);
-
-        await client.query('COMMIT');
+        const result = await pool.query(query, [container_number, container_size || "40'", container_type || "DC", shipping_line || null, repair_date, block_code || null, parseInt(row_number) || 1, parseInt(tier_number) || 1, repair_type, parseFloat(cost) || 0, technician_name, status || 'In Progress', notes]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        await client.query('ROLLBACK');
-        console.error('Error saving container repair and updating yard:', err);
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកត់ត្រាការជួសជុល និងធ្វើបច្ចុប្បន្នភាពស្តុក' });
-    } finally {
-        client.release();
+        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការជួសជុលកុងតឺន័រ' });
     }
 });
 
-app.put('/api/fleet/container-repairs/:id', async (req, res) => {
-    const { id } = req.params;
-    const { 
-        container_number, container_size, container_type, shipping_line, 
-        repair_date, block_code, row_number, tier_number, 
-        repair_type, cost, technician_name, status, notes 
-    } = req.body;
-
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
-
-        const query = `
-            UPDATE container_repair_logs 
-            SET container_number = $1, container_size = $2, container_type = $3, shipping_line = $4, 
-                repair_date = $5, block_code = $6, row_number = $7, tier_number = $8, 
-                repair_type = $9, cost = $10, technician_name = $11, status = $12, notes = $13
-            WHERE id = $14 
-            RETURNING *;
-        `;
-        const values = [
-            container_number, container_size, container_type, shipping_line, 
-            repair_date, block_code || null, parseInt(row_number) || 1, parseInt(tier_number) || 1, 
-            repair_type, parseFloat(cost) || 0, technician_name, status, notes, id
-        ];
-        const result = await client.query(query, values);
-        
-        if (result.rows.length === 0) {
-            await client.query('ROLLBACK');
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
-        }
-
-        const yardStatus = status === 'Completed' ? 'Stored' : 'In Repair';
-        await client.query(`
-            UPDATE container_yard_locations 
-            SET status = $1, updated_date = CURRENT_DATE 
-            WHERE container_number = $2
-        `, [yardStatus, container_number]);
-
-        await client.query('COMMIT');
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        await client.query('ROLLBACK');
-        console.error('Error updating container repair:', err);
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យ' });
-    } finally {
-        client.release();
-    }
-});
-
-// ==========================================
-// API Routes: ការចេញកុងតឺន័រ (Container Gate-Out)
-// ==========================================
+// Container Gate-Out
 app.get('/api/fleet/container-gate-out', async (req, res) => {
-    const { from, to, container_number } = req.query;
     try {
-        let query = 'SELECT * FROM container_gate_out WHERE 1=1';
-        let params = [];
-        let paramIndex = 1;
-        
-        if (from && to) {
-            query += ` AND gate_out_date::date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
-            params.push(from, to);
-            paramIndex += 2;
-        }
-
-        if (container_number) {
-            query += ` AND container_number ILIKE $${paramIndex}`;
-            params.push(`%${container_number}%`);
-            paramIndex += 1;
-        }
-        
-        query += ' ORDER BY gate_out_date DESC, id DESC';
-        const result = await pool.query(query, params);
+        const result = await pool.query('SELECT * FROM container_gate_out ORDER BY gate_out_date DESC, id DESC');
         res.json(result.rows);
     } catch (err) {
         res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យការចេញកុងតឺន័របានទេ' });
@@ -3272,243 +2814,49 @@ app.get('/api/fleet/container-gate-out', async (req, res) => {
 });
 
 app.post('/api/fleet/container-gate-out', async (req, res) => {
-    const { 
-        container_number, container_size, container_type, shipping_line, 
-        gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes 
-    } = req.body;
-    
-    const client = await pool.connect();
+    const { container_number, container_size, container_type, shipping_line, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes } = req.body;
     try {
-        await client.query('BEGIN');
-
-        const yardCheck = await client.query(
-            `SELECT status FROM container_yard_locations WHERE container_number = $1`, 
-            [container_number]
-        );
-
-        if (yardCheck.rows.length > 0) {
-            const currentYardStatus = yardCheck.rows[0].status;
-            if (currentYardStatus === 'Gate-Out' || currentYardStatus === 'In Repair') {
-                await client.query('ROLLBACK');
-                return res.status(400).json({ 
-                    success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out បានទេ!` 
-                });
-            }
-        }
-
         const query = `
-            INSERT INTO container_gate_out 
-            (container_number, container_size, container_type, shipping_line, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes) 
+            INSERT INTO container_gate_out (container_number, container_size, container_type, shipping_line, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *;
         `;
-        const result = await client.query(query, [
-            container_number, 
-            container_size || "40'", 
-            container_type || "DC", 
-            shipping_line || null, 
-            gate_out_date || new Date(), 
-            truck_plate_number, 
-            driver_name, 
-            destination, 
-            bill_of_lading, 
-            released_by, 
-            notes
-        ]);
-
-        await client.query(`
-            UPDATE container_yard_locations 
-            SET status = 'Gate-Out', updated_date = CURRENT_DATE 
-            WHERE container_number = $1
-        `, [container_number]);
-
-        await client.query('COMMIT');
+        const result = await pool.query(query, [container_number, container_size || "40'", container_type || "DC", shipping_line || null, gate_out_date || new Date(), truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        await client.query('ROLLBACK');
-        console.error(err);
-        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការចេញកុងតឺន័រ (Gate-Out)' });
-    } finally {
-        client.release();
+        res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការចេញកុងតឺន័រ' });
     }
 });
 
-app.put('/api/fleet/container-gate-out/:id', async (req, res) => {
-    const { id } = req.params;
-    const { 
-        container_number, container_size, container_type, shipping_line, 
-        gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes 
-    } = req.body;
-    try {
-        const query = `
-            UPDATE container_gate_out 
-            SET container_number = $1, container_size = $2, container_type = $3, shipping_line = $4, 
-                gate_out_date = $5, truck_plate_number = $6, driver_name = $7, destination = $8, 
-                bill_of_lading = $9, released_by = $10, notes = $11
-            WHERE id = $12 
-            RETURNING *;
-        `;
-        const values = [
-            container_number, container_size, container_type, shipping_line, 
-            gate_out_date, truck_plate_number, driver_name, destination, 
-            bill_of_lading, released_by, notes, id
-        ];
-        const result = await pool.query(query, values);
-        
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យការចេញកុងតឺន័រនេះទេ' });
-        }
-
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        console.error('Error updating container gate-out:', err);
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែ/ដោះដូរទិន្នន័យ' });
-    }
-});
-
-// ==========================================
-// API Routes: ប្រតិបត្តិការទីលាន (Yard Operations)
-// ==========================================
+// Yard Operations
 app.get('/api/fleet/yard-operations', async (req, res) => {
     try {
-        const query = 'SELECT * FROM yard_operations ORDER BY operation_date DESC';
-        const result = await pool.query(query);
+        const result = await pool.query('SELECT * FROM yard_operations ORDER BY operation_date DESC');
         res.json(result.rows);
     } catch (err) {
-        console.error('Error fetching yard operations:', err);
         res.status(500).json({ success: false, error: 'Database error' });
     }
 });
 
 app.post('/api/fleet/yard-operations', async (req, res) => {
     try {
-        const { 
-            container_number, operation_type, yard_location, 
-            operation_date, equipment_used, operator_name, status, notes 
-        } = req.body;
-
-        if (!container_number || !operation_type || !yard_location || !operation_date || !operator_name || !status) {
-            return res.status(400).json({ success: false, error: 'សូមបំពេញព័ត៌មានដែលចាំបាច់ឱ្យបានគ្រប់គ្រាន់!' });
-        }
-
+        const { container_number, operation_type, yard_location, operation_date, equipment_used, operator_name, status, notes } = req.body;
         const query = `
-            INSERT INTO yard_operations 
-            (container_number, operation_type, yard_location, operation_date, equipment_used, operator_name, status, notes) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
-            RETURNING *;
+            INSERT INTO yard_operations (container_number, operation_type, yard_location, operation_date, equipment_used, operator_name, status, notes) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;
         `;
-        const values = [
-            container_number, operation_type, yard_location, 
-            operation_date, equipment_used || null, operator_name, status, notes || null
-        ];
-
-        const result = await pool.query(query, values);
+        const result = await pool.query(query, [container_number, operation_type, yard_location, operation_date, equipment_used || null, operator_name, status, notes || null]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        console.error('Error saving yard operation:', err);
-        res.status(500).json({ success: false, error: 'មិនអាចរក្សាទុកទិន្នន័យក្នុង Database បានទេ' });
-    }
-});
-
-app.put('/api/fleet/yard-operations/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const { 
-            container_number, operation_type, yard_location, 
-            operation_date, equipment_used, operator_name, status, notes 
-        } = req.body;
-
-        const query = `
-            UPDATE yard_operations 
-            SET container_number = $1, operation_type = $2, yard_location = $3, 
-                operation_date = $4, equipment_used = $5, operator_name = $6, status = $7, notes = $8
-            WHERE id = $9 
-            RETURNING *;
-        `;
-        const values = [
-            container_number, operation_type, yard_location, 
-            operation_date, equipment_used || null, operator_name, status, notes || null, id
-        ];
-
-        const result = await pool.query(query, values);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
-        }
-
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        console.error('Error updating yard operation:', err);
         res.status(500).json({ success: false, error: 'Database error' });
     }
 });
 
-app.delete('/api/fleet/yard-operations/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const result = await pool.query('DELETE FROM yard_operations WHERE id = $1 RETURNING *;', [id]);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
-        }
-        res.json({ success: true, message: 'Deleted successfully' });
-    } catch (err) {
-        console.error('Error deleting yard operation:', err);
-        res.status(500).json({ success: false, error: 'Database error' });
-    }
-});
-
-// ==========================================
-// API Routes: ការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out)
-// ==========================================
-app.get('/api/fleet/cargo-gates', async (req, res) => {
-    try {
-        const query = 'SELECT * FROM cargo_gate_logs ORDER BY gate_date DESC, id DESC';
-        const result = await pool.query(query);
-        res.json(result.rows);
-    } catch (err) {
-        console.error('Error fetching cargo gate logs:', err);
-        res.status(500).json({ success: false, error: 'Database error' });
-    }
-});
-
-app.post('/api/fleet/cargo-gates', async (req, res) => {
-    try {
-        const { 
-            cargo_code, container_number, gate_type, gate_date, 
-            truck_plate_number, driver_name, company_name, status, notes 
-        } = req.body;
-
-        if (!cargo_code || !gate_type || !gate_date || !truck_plate_number || !driver_name) {
-            return res.status(400).json({ success: false, error: 'សូមបំពេញព័ត៌មានសំខាន់ៗឱ្យបានគ្រប់គ្រាន់!' });
-        }
-
-        const query = `
-            INSERT INTO cargo_gate_logs 
-            (cargo_code, container_number, gate_type, gate_date, truck_plate_number, driver_name, company_name, status, notes) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-            RETURNING *;
-        `;
-        const values = [
-            cargo_code, container_number || null, gate_type, gate_date, 
-            truck_plate_number, driver_name, company_name || null, status || 'Completed', notes || null
-        ];
-
-        const result = await pool.query(query, values);
-        res.status(201).json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        console.error('Error saving cargo gate log:', err);
-        res.status(500).json({ success: false, error: 'មិនអាចរក្សាទុកទិន្នន័យក្នុង Database បានទេ' });
-    }
-});
-
-// ==========================================
-// API Routes: ក្រុមសន្តិសុខ (Security Guard Team)
-// ==========================================
+// Security Logs
 app.get('/api/fleet/security-logs', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM security_logs ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
-        console.error('Error fetching security logs:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -3520,60 +2868,20 @@ app.post('/api/fleet/security-logs', async (req, res) => {
             INSERT INTO security_logs (guard_name, shift_time, post_location, log_date, event_type, status, notes)
             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
         `;
-        const values = [guard_name, shift_time, post_location, log_date, event_type, status, notes];
-        const result = await pool.query(query, values);
+        const result = await pool.query(query, [guard_name, shift_time, post_location, log_date, event_type, status, notes]);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
-        console.error('Error saving security log:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
-app.put('/api/fleet/security-logs/:id', async (req, res) => {
-    const { id } = req.params;
-    const { guard_name, shift_time, post_location, log_date, event_type, status, notes } = req.body;
-    try {
-        const query = `
-            UPDATE security_logs 
-            SET guard_name = $1, shift_time = $2, post_location = $3, log_date = $4, event_type = $5, status = $6, notes = $7
-            WHERE id = $8 
-            RETURNING *;
-        `;
-        const values = [guard_name, shift_time, post_location, log_date, event_type, status, notes, id];
-        const result = await pool.query(query, values);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យសន្តិសុខនេះទេ' });
-        }
-
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        console.error('Error updating security log:', err);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-app.delete('/api/fleet/security-logs/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        await pool.query('DELETE FROM security_logs WHERE id = $1', [id]);
-        res.json({ success: true, message: 'Deleted successfully' });
-    } catch (err) {
-        console.error('Error deleting security log:', err);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-// ==========================================
-// API Routes: ប្រព័ន្ធ WMS / OMS (Warehouse & Order Management Systems)
-// ==========================================
+// WMS/OMS
 app.get('/api/wms-oms', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM wms_oms_records ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
-        console.error('Error fetching WMS/OMS records:', err);
-        res.status(500).json({ error: 'Server.js error' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -3584,16 +2892,14 @@ app.post('/api/wms-oms', async (req, res) => {
             INSERT INTO wms_oms_records (item_code, item_name, system_type, quantity, location_status)
             VALUES ($1, $2, $3, $4, $5) RETURNING *;
         `;
-        const values = [item_code, item_name, system_type, parseInt(quantity) || 0, location_status];
-        const result = await pool.query(query, values);
+        const result = await pool.query(query, [item_code, item_name, system_type, parseInt(quantity) || 0, location_status]);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
-        console.error('Error saving WMS/OMS record:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
-// ចាប់ផ្តើមដំណើរការ Server
+// Initialization and Listen
 initializeDatabase().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
