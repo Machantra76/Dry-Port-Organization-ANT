@@ -186,6 +186,7 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+      
 
         // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs)
         await client.query(`
@@ -580,6 +581,7 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+         
    
         // បន្ថែម Column ទាំងនេះស្វ័យប្រវត្តក្នុងករណីតារាងមានរួចស្រេច
         await client.query(`ALTER TABLE tax_invoices ADD COLUMN IF NOT EXISTS date_out VARCHAR(100);`);
@@ -590,7 +592,17 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS customs_reg_number VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS manifest_number VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS doc_type VARCHAR(10);`);
-      
+       // ៣៥. តារាងប្រវត្តិសកម្មភាព Cargo Gates (Activity Logs)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS cargo_activities (
+                id SERIAL PRIMARY KEY,
+                cargo_id INT,
+                action VARCHAR(50),
+                user_name VARCHAR(100),
+                details TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
 
         // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត (ប្រសិនបើទិន្នន័យទទេ)
         const checkUser = await client.query('SELECT COUNT(*) FROM system_users');
