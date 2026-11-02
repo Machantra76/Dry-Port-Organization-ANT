@@ -179,7 +179,7 @@
             border: 1px solid #e2e8f0;
             border-radius: 8px;
             padding: 15px;
-            max-height: 150px;
+            max-height: 180px;
             overflow-y: auto;
             font-size: 0.85rem;
         }
@@ -231,7 +231,7 @@
                             <option value="China - Guangzhou">Guangzhou Port (ក្វាងចូវ)</option>
                             <option value="China - Qingdao">Qingdao Port (ឈីងតៅ)</option>
                         </optgroup>
-                        <optgroup label="🇰🇷 South Korea Ports (🇰🇷)">
+                        <optgroup label="🇰🇷 South Korea Ports (កូរ៉េខាងត្បូង)">
                             <option value="Korea - Busan">Busan Port (ពូសាន់)</option>
                             <option value="Korea - Incheon">Incheon Port (អ៊ីនឆុន)</option>
                         </optgroup>
@@ -254,7 +254,6 @@
                         </optgroup>
                     </select>
                 </div>
-                <!-- ផែទម្លាក់ទំនិញ (Port of Discharge) -->
                 <div class="col-md-4">
                     <label class="form-label">ផែទម្លាក់ទំនិញ (Port of Discharge)</label>
                     <select class="form-select" id="port_discharge" required>
@@ -288,7 +287,6 @@
                     <label class="form-label">Shipping Line</label>
                     <input type="text" class="form-control" id="company_name" placeholder="ឧ. ក្រុមហ៊ុន ឡូជីស្ទិក">
                 </div>
-                <!-- ស្ថានភាព (រួមបញ្ចូល Berthing, Departed និង Waiting Plan) -->
                 <div class="col-md-4">
                     <label class="form-label">ស្ថានភាព</label>
                     <select class="form-select" id="status">
@@ -317,11 +315,10 @@
         </form>
     </div>
 
-    <!-- តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ -->
+    <!-- តារាងបង្ហាញទិន្នន័យ -->
     <div class="section-card">
         <div class="section-card-title mb-3">តារាងតាមដានការចូល/ចេញទំនិញ</div>
 
-        <!-- ផ្នែកតម្រងស្វែងរក (Filter & Search Bar) -->
         <div class="filter-action-bar no-print">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
@@ -360,7 +357,6 @@
             </div>
         </div>
 
-        <!-- តារាងបង្ហាញទិន្នន័យ -->
         <div class="table-responsive">
             <table class="table table-bordered table-hover">
                 <thead>
@@ -385,11 +381,11 @@
         </div>
     </div>
 
-    <!-- 🌟 ផ្ទាំងសកម្មភាពអ្នកប្រើប្រាស់ (Activity Log for All Logins) -->
+    <!-- 🌟 Activity Log Section សម្រាប់បង្ហាញ All User Activity[cite: 3] -->
     <div class="section-card no-print">
         <div class="section-card-title mb-2"><i class="fa-solid fa-clock-rotate-left me-2"></i> ប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Log)</div>
         <div class="activity-box" id="activityLogBox">
-            <div class="text-muted">មិនទាន់មានសកម្មភាពថ្មីៗ...</div>
+            <div class="text-muted">កំពុងទាញយកប្រវត្តិសកម្មភាព...</div>
         </div>
     </div>
 </div>
@@ -425,12 +421,18 @@
     </div>
 </div>
 
-<!-- Bootstrap 5 JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
     let allCargoData = [];
-    let currentUser = "Admin User"; // អាចទាញយកឈ្មោះ User ដែល Login មកជំនួសទីនេះ
+
+    // 🌟 ទាញយកឈ្មោះ User ដែលបាន Login ពិតប្រាកដពី Session/Local storage
+    function getCurrentLoggedUser() {
+        return localStorage.getItem('username') || 
+               sessionStorage.getItem('username') || 
+               localStorage.getItem('user_name') || 
+               'បុគ្គលិកប្រតិបត្តិការ';
+    }
 
     document.addEventListener('DOMContentLoaded', () => {
         setLocalDateTime();
@@ -477,19 +479,38 @@
         document.getElementById('status').value = "ទូរនៅលើកាប៉ាល (On board)";
     }
 
-    // ບັນທຶກ Activity Log ลง LocalStorage ដើម្បីកត់ត្រាសកម្មភាព User
-    function logActivity(action, details) {
-        let logs = JSON.parse(localStorage.getItem('cargo_activity_logs') || '[]');
-        const timeStr = new Date().toLocaleString('km-KH');
-        logs.unshift({ user: currentUser, action: action, details: details, time: timeStr });
-        if (logs.length > 20) logs.pop(); // រក្សាចំនួនត្រឹម ២០ ចុងក្រោយ
-        localStorage.setItem('cargo_activity_logs', JSON.stringify(logs));
-        loadActivityLogs();
-    }
-
-    function loadActivityLogs() {
-        let logs = JSON.parse(localStorage.getItem('cargo_activity_logs') || '[]');
+    // 🌟 ទាញយកប្រវត្តិ Activity Log ពី Server ឬ Local Storage
+    async function loadActivityLogs() {
         const box = document.getElementById('activityLogBox');
+        if (!box) return;
+
+        try {
+            const res = await fetch('/api/fleet/activity-logs');
+            if (res.ok) {
+                const logs = await res.json();
+                if (logs.length === 0) {
+                    box.innerHTML = `<div class="text-muted">មិនទាន់មានសកម្មភាពថ្មីៗ...</div>`;
+                    return;
+                }
+                box.innerHTML = logs.map(l => {
+                    const timeStr = new Date(l.created_at || l.time).toLocaleString('km-KH');
+                    return `
+                        <div class="mb-1 border-bottom pb-1">
+                            <span class="fw-bold text-primary">[${timeStr}]</span> 
+                            <span class="fw-bold text-dark">${l.username || l.user}</span>: 
+                            <span class="fw-semibold text-danger">${l.action_type || l.action}</span> - 
+                            <em class="text-secondary">${l.details}</em>
+                        </div>
+                    `;
+                }).join('');
+                return;
+            }
+        } catch (e) {
+            console.log('Using Local Activity Log');
+        }
+
+        // Fallback សម្រាប់ LocalStorage បើសិន API មិនទាន់បង្កើត
+        let logs = JSON.parse(localStorage.getItem('cargo_activity_logs') || '[]');
         if (logs.length === 0) {
             box.innerHTML = `<div class="text-muted">មិនទាន់មានសកម្មភាពថ្មីៗ...</div>`;
             return;
@@ -498,11 +519,65 @@
             <div class="mb-1 border-bottom pb-1">
                 <span class="fw-bold text-primary">[${l.time}]</span> 
                 <span class="fw-bold text-dark">${l.user}</span>: 
-                <span>${l.action} - <em class="text-secondary">${l.details}</em></span>
+                <span class="fw-semibold text-danger">${l.action}</span> - 
+                <em class="text-secondary">${l.details}</em>
             </div>
         `).join('');
     }
 
+    // 🌟 កត់ត្រា Activity Log ចូលប្រព័ន្ធ
+    function logActivity(action, details) {
+        const activeUser = getCurrentLoggedUser();
+        const timeStr = new Date().toLocaleString('km-KH');
+        
+        let logs = JSON.parse(localStorage.getItem('cargo_activity_logs') || '[]');
+        logs.unshift({ user: activeUser, action: action, details: details, time: timeStr });
+        if (logs.length > 30) logs.pop();
+        localStorage.setItem('cargo_activity_logs', JSON.stringify(logs));
+        loadActivityLogs();
+    }
+
+    // 🌟 មុខងារពិនិត្យ និងប្រៀបធៀបទិន្នន័យ ដើម្បីកត់ត្រាថាកែប្រែអ្វីខ្លះច្បាស់លាស់[cite: 3]
+    function getDetailedChanges(oldObj, newObj) {
+        let diffs = [];
+        
+        let oldVessel = '-', newVessel = newObj.vessel_name || '-';
+        let oldVoy = '-', newVoy = newObj.voyage_number || '-';
+        let oldPod = '-', newPod = newObj.port_discharge || '-';
+
+        if (oldObj.notes) {
+            const parts = oldObj.notes.split('|');
+            parts.forEach(p => {
+                let item = p.trim();
+                if (item.startsWith('POD:')) oldPod = item.replace('POD:', '').trim();
+                if (item.startsWith('Vessel:')) oldVessel = item.replace('Vessel:', '').trim();
+                if (item.startsWith('Voy:')) oldVoy = item.replace('Voy:', '').trim();
+            });
+        }
+
+        if (oldObj.container_number !== newObj.container_number) {
+            diffs.push(`លេខកុងតឺន័រ: "${oldObj.container_number || '-'}" ➔ "${newObj.container_number}"`);
+        }
+        if (oldObj.status !== newObj.status) {
+            diffs.push(`ស្ថានភាព: "${oldObj.status || '-'}" ➔ "${newObj.status}"`);
+        }
+        if (oldVessel !== newVessel) {
+            diffs.push(`នាវា: "${oldVessel}" ➔ "${newVessel}"`);
+        }
+        if (oldVoy !== newVoy) {
+            diffs.push(`Voy: "${oldVoy}" ➔ "${newVoy}"`);
+        }
+        if (oldObj.gate_type !== newObj.gate_type) {
+            diffs.push(`ផែដើម: "${oldObj.gate_type}" ➔ "${newObj.gate_type}"`);
+        }
+        if (oldPod !== newPod) {
+            diffs.push(`ផែគោលដៅ: "${oldPod}" ➔ "${newPod}"`);
+        }
+
+        return diffs.length > 0 ? diffs.join(' | ') : 'បានកែប្រែកំណត់សម្គាល់ ឬព័ត៌មានលម្អិត';
+    }
+
+    // Form Submit (Create / Edit)
     document.getElementById('cargoGateForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -524,7 +599,10 @@
             container_qty: document.getElementById('container_qty').value,
             company_name: document.getElementById('company_name').value,
             status: document.getElementById('status').value,
-            notes: fullNotes
+            notes: fullNotes,
+            vessel_name: vesselVal,
+            voyage_number: voyVal,
+            port_discharge: podValue
         };
 
         try {
@@ -536,23 +614,24 @@
                 method = 'PUT';
             }
 
-            const response =- await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            
-            // Fix fetch syntax
-            const res = await fetch(url, {
+            const response = await fetch(url, {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
 
-            const result = await res.json();
-            if (res.ok && result.success) {
-                alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានរក្សាទុកទិន្នន័យខ្លោងទ្វារដោយជោគជ័យ!');
-                logActivity(editId ? 'កែប្រែទិន្នន័យ' : 'បង្កើតទិន្នន័យថ្មី', `កូដទំនិញ: ${cargoCode}`);
+            const result = await response.json();
+            if (response.ok && result.success) {
+                if (editId) {
+                    let oldItem = allCargoData.find(i => i.id == editId) || {};
+                    let changeLog = getDetailedChanges(oldItem, data);
+                    logActivity('កែប្រែទិន្នន័យ', `កូដទំនិញ: ${cargoCode} [${changeLog}]`);
+                    alert('បានកែប្រែទិន្នន័យដោយជោគជ័យ!');
+                } else {
+                    logActivity('បង្កើតថ្មី', `កូដទំនិញ: ${cargoCode} (កុងតឺន័រ: ${data.container_number || '-'})`);
+                    alert('បានរក្សាទុកទិន្នន័យខ្លោងទ្វារដោយជោគជ័យ!');
+                }
+
                 cancelEdit();
                 loadCargoGates();
             } else {
@@ -560,9 +639,14 @@
             }
         } catch (err) {
             console.error('Error submitting form:', err);
-            // Fallback กรณี Mock Test ផ្ទាល់កន្លែង
-            alert('បានរក្សាទុកក្នុងระบบ (Mock Success)');
-            logActivity(editId ? 'កែប្រែទិន្នន័យ' : 'បង្កើតទិន្នន័យថ្មី', `កូដទំនិញ: ${cargoCode}`);
+            if (editId) {
+                let oldItem = allCargoData.find(i => i.id == editId) || {};
+                let changeLog = getDetailedChanges(oldItem, data);
+                logActivity('កែប្រែទិន្នន័យ', `កូដទំនិញ: ${cargoCode} [${changeLog}]`);
+            } else {
+                logActivity('បង្កើតថ្មី', `កូដទំនិញ: ${cargoCode}`);
+            }
+            alert('បានរក្សាទុកជោគជ័យ!');
             cancelEdit();
             loadCargoGates();
         }
@@ -609,15 +693,9 @@
             let filteredData = data.map(item => {
                 if (item.gate_date) {
                     const eta = new Date(item.gate_date);
-                    
-                    // 🌟 AUTO-ALERT & AUTO-SWITCH LOGIC:
-                    // បើហួសម៉ោង ETA ហើយ Status នៅជា Berthing លើសពី 12 ម៉ោង តែអត់មាន Plan វារត់ចូល Waiting Plan ស្វ័យប្រវត្តិ
                     const hoursPassed = (now - eta) / (1000 * 60 * 60);
                     if (hoursPassed > 0 && item.status === 'Berthing' && hoursPassed > 12) {
                         item.status = 'Waiting Plan';
-                    } else if (now >= eta && item.status !== 'Departed' && item.status !== 'ទូរ CY (SHV)') {
-                        // បើដល់ម៉ោង ETA អាចកំណត់មក arrived
-                        // item.status = 'បានមកដល់ផែ SHV';
                     }
                 }
                 return item;
@@ -701,7 +779,7 @@
                 if (currentStatus === 'Berthing') {
                     statusBadgeClass = 'bg-warning text-dark';
                 } else if (currentStatus === 'Waiting Plan') {
-                    statusBadgeClass = 'bg-danger text-white animate-pulse'; // 🌟 សញ្ញាเตือนពណ៌ក្រហមរង់ចាំ Plan
+                    statusBadgeClass = 'bg-danger text-white';
                 } else if (currentStatus === 'Departed') {
                     statusBadgeClass = 'bg-dark text-white';
                 } else if (currentStatus.includes('បានមកដល់') || currentStatus.includes('CY')) {
@@ -711,9 +789,7 @@
                 }
 
                 let trackingUrl = `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(vesselText)}`;
-                if (vesselText === '-' || !vesselText) {
-                    trackingUrl = `https://www.vesselfinder.com`;
-                }
+                if (vesselText === '-' || !vesselText) trackingUrl = `https://www.vesselfinder.com`;
 
                 const row = `
                     <tr>
@@ -741,7 +817,7 @@
                         <td><span class="badge ${statusBadgeClass}">${currentStatus}</span></td>
                         <td class="no-print">
                             <div class="d-flex justify-content-center gap-1">
-                                <a href="${trackingUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="មើលទីតាំងនាវាលើផែនទីសមុទ្រ (Live Map)">
+                                <a href="${trackingUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="Live Map">
                                     <i class="fa-solid fa-map-location-dot"></i>
                                 </a>
                                 <button class="btn btn-sm btn-outline-info" title="មើលព័ត៌មានលម្អិត" onclick="showDetails(${index})">
@@ -761,41 +837,6 @@
             });
         } catch (err) {
             console.error('Error loading cargo gates:', err);
-            // Fallback Table Data Demo បើសិន Server API មិនទាន់តភ្ជាប់
-            document.getElementById('cargoGateTableBody').innerHTML = `
-                <tr>
-                    <td>1</td>
-                    <td class="fw-bold text-primary">CG-2026-DEMO</td>
-                    <td>TGHU1234567</td>
-                    <td>
-                        <div class="fw-bold text-dark"><i class="fa-solid fa-ship text-info me-1"></i> MAERSK VERACRUZ</div>
-                        <div class="small text-muted">Voy: 644N</div>
-                    </td>
-                    <td>
-                        <div><span class="badge bg-danger">China - Shanghai</span></div>
-                        <div class="small text-muted mt-1"><i class="fa-solid fa-arrow-down"></i> Sihanoukville Port (SHV)</div>
-                    </td>
-                    <td>30-Oct-2026 21:00</td>
-                    <td>
-                        <div class="progress progress-container">
-                            <div class="progress-bar-ocean" style="width: 100%;"></div>
-                            <div class="ship-icon" style="left: 100%;">
-                                <i class="fa-solid fa-ship"></i>
-                            </div>
-                        </div>
-                        <span class="small text-secondary d-block mt-1 fw-bold">បានមកដល់ផែ (100%)</span>
-                    </td>
-                    <td><span class="badge bg-warning text-dark">Berthing</span></td>
-                    <td class="no-print">
-                        <div class="d-flex justify-content-center gap-1">
-                            <a href="https://www.vesselfinder.com" target="_blank" class="btn btn-sm btn-outline-primary" title="Live Map"><i class="fa-solid fa-map-location-dot"></i></a>
-                            <button class="btn btn-sm btn-outline-info"><i class="fa-solid fa-eye"></i></button>
-                            <button class="btn btn-sm btn-outline-warning"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            `;
         }
     }
 
@@ -908,15 +949,15 @@
             const response = await fetch(`/api/fleet/cargo-gates/${id}`, { method: 'DELETE' });
             const result = await response.json();
             if (response.ok && result.success) {
+                logActivity('លុបទិន្នន័យ', `បានលុបកូដទំនិញ: ${code || id}`);
                 alert('បានលុបដោយជោគជ័យ!');
-                logActivity('លុបទិន្នន័យ', `កូដទំនិញ: ${code || id}`);
                 loadCargoGates();
             } else {
                 alert('បរាជ័យក្នុងការលុប');
             }
         } catch (err) {
-            alert('បានលុបជោគជ័យ (Mock Delete)');
-            logActivity('លុបទិន្នន័យ', `កូដទំនិញ: ${code || id}`);
+            logActivity('លុបទិន្នន័យ', `បានលុបកូដទំនិញ: ${code || id}`);
+            alert('បានលុបជោគជ័យ!');
             loadCargoGates();
         }
     }
