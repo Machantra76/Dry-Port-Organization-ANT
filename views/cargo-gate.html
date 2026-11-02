@@ -679,7 +679,6 @@
                 if (item.gate_date) {
                     const d = new Date(item.gate_date);
                     if (!isNaN(d.getTime())) {
-                        // 🌟 កំណត់ម៉ោងឱ្យត្រូវម៉ោងនៅកម្ពុជា (Asia/Phnom_Penh)
                         formattedDate = new Intl.DateTimeFormat('km-KH', {
                             year: 'numeric',
                             month: '2-digit',
@@ -732,6 +731,7 @@
                     trackingUrl = `https://www.vesselfinder.com`;
                 }
 
+                // 🌟 បានលុបប៊ូតុងលុប (Delete Button) ចេញពីទីនេះរួចរាល់
                 const row = `
                     <tr>
                         <td>${index + 1}</td>
@@ -769,9 +769,6 @@
                                 </button>
                                 <button class="btn btn-sm btn-outline-warning" title="កែប្រែ" onclick="editCargo(${index})">
                                     <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger" title="លុប" onclick="deleteCargo(${item.id})">
-                                    <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
                         </td>
@@ -845,7 +842,6 @@
         detailModal.show();
     }
 
-    // 🌟 មុខងារสำหรับទាញយក និងបង្ហាញ Activity Log Modal ពី Server (พร้อมปรับเวลาเป็นกัมพูชา)
     async function showActivityLog(cargoId, cargoCode) {
         document.getElementById('activity_cargo_code').innerText = cargoCode || 'N/A';
         const tbody = document.getElementById('activityTableBody');
@@ -954,24 +950,6 @@
         document.getElementById('cancelEditBtn').style.display = 'inline-block';
         
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    async function deleteCargo(id) {
-        if (!confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) return;
-
-        try {
-            const response = await fetch(`/api/fleet/cargo-gates/${id}`, { method: 'DELETE' });
-            const result = await response.json();
-            if (response.ok && result.success) {
-                alert('បានលុបដោយជោគជ័យ!');
-                loadCargoGates();
-            } else {
-                alert('បរាជ័យក្នុងការលុប៖ ' + (result.error || ''));
-            }
-        } catch (err) {
-            console.error('Error deleting cargo:', err);
-            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
-        }
     }
 
     function cancelEdit() {
