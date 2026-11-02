@@ -465,7 +465,6 @@
         document.getElementById('port_discharge').addEventListener('change', autoCalculateETA);
     });
 
-    // 🌟 មុខងារចាប់ទាញយក Logo របស់ក្រុមហ៊ុននាវាស្វ័យប្រវត្តិ
     function getVesselLogo(vesselText) {
         if (!vesselText || vesselText === '-') {
             return `<i class="fa-solid fa-ship text-info me-1"></i>`;
@@ -478,7 +477,7 @@
             logoUrl = 'https://logo.clearbit.com/maersk.com';
         } else if (nameUpper.includes('COSCO')) {
             logoUrl = 'https://logo.clearbit.com/coscoshipping.com';
-        } else if (nameUpper.includes('EVERGREEN') || nameUpper.includes('EVER')) {
+        } else if (nameUpper.includes('EVER') || nameUpper.includes('EVERGREEN')) {
             logoUrl = 'https://logo.clearbit.com/evergreen-marine.com';
         } else if (nameUpper.includes('ONE') || nameUpper.includes('OCEAN NETWORK')) {
             logoUrl = 'https://logo.clearbit.com/one-line.com';
@@ -497,12 +496,12 @@
         }
 
         if (logoUrl) {
-            return `<img src="${logoUrl}" class="vessel-logo-img" onerror="this.onerror=null; this.replaceWith(document.createElement('i')); this.className='fa-solid fa-ship text-info me-1';" alt="Logo">`;
+            // 🌟 បន្ថែម onerror ដើម្បីការពារករណីរូបភាព Load អត់ចេញ ឱ្យវាត្រឡប់ទៅជាសញ្ញានាវាវិញដោយស្វ័យប្រវត្តិ
+            return `<img src="${logoUrl}" class="vessel-logo-img" onerror="this.onerror=null; this.replaceWith(Object.assign(document.createElement('i'), {className:'fa-solid fa-ship text-info me-1'}));" alt="Logo">`;
         }
 
         return `<i class="fa-solid fa-ship text-info me-1"></i>`;
     }
-
     // 🌟 កំណត់ម៉ោងឱ្យត្រូវម៉ោងនៅកម្ពុជា (Asia/Phnom_Penh) ពេលបង្ហាញ Form
     function setLocalDateTime() {
         const now = new Date();
