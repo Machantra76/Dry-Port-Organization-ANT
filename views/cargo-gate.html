@@ -494,7 +494,7 @@
         document.getElementById('status').value = "ទូរនៅលើកាប៉ាល (On board)";
     }
 
-    // 🌟 ការដាក់ស្នើទិន្នន័យ (Submit) ព្រមទាំងកត់ត្រា Activity Log ជាមួយ User Login ស្រាប់
+    // 🌟 ការដាក់ស្នើទិន្នន័យ (Submit/Edit) ព្រមទាំងប្រៀបធៀបការកែប្រែជាក់ស្តែងសម្រាប់ Activity Log
     document.getElementById('cargoGateForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -518,6 +518,36 @@
             notes: fullNotes
         };
 
+        // 🌟 ផ្នែកបង្កើតព័ត៌មានលម្អិតនៃការកែប្រែជាក់ស្តែង (Track Dynamic Changes)
+        let changeDetails = '';
+        if (editId) {
+            const oldItem = allCargoData.find(item => String(item.id) === String(editId));
+            let changes = [];
+
+            if (oldItem) {
+                if (oldItem.status !== data.status) {
+                    changes.push(`ស្ថានភាព៖ "${oldItem.status || 'N/A'}" ➔ "${data.status}"`);
+                }
+                if (oldItem.container_number !== data.container_number) {
+                    changes.push(`កុងតឺន័រ៖ "${oldItem.container_number || 'N/A'}" ➔ "${data.container_number}"`);
+                }
+                if (oldItem.gate_type !== data.gate_type) {
+                    changes.push(`ផែដើម៖ "${oldItem.gate_type || 'N/A'}" ➔ "${data.gate_type}"`);
+                }
+                if (oldItem.owner_name !== data.owner_name) {
+                    changes.push(`ម្ចាស់ទំនិញ៖ "${oldItem.owner_name || 'N/A'}" ➔ "${data.owner_name}"`);
+                }
+            }
+
+            if (changes.length > 0) {
+                changeDetails = `បានកែប្រែ៖ ${changes.join(' | ')}`;
+            } else {
+                changeDetails = `បានធ្វើបច្ចុប្បន្នភាពទិន្នន័យ (គ្មានការផ្លាស់ប្តូរ Field សំខាន់ៗ)`;
+            }
+        } else {
+            changeDetails = `បានបង្កើតថ្មី - កូដទំនិញ: ${data.cargo_code} | កុងតឺន័រ: ${data.container_number || 'N/A'} | ស្ថានភាព: ${data.status}`;
+        }
+
         try {
             let url = '/api/fleet/cargo-gates';
             let method = 'POST';
@@ -535,15 +565,15 @@
 
             const result = await response.json();
             if (response.ok && result.success) {
-                // 🌟 ទាញយកข้อมูล User ທີ່ກำลัง Login อยู่
+                // ទាញយកព័ត៌មាន User ທີ່ກຳลัง Login อยู่
                 const loggedUser = JSON.parse(sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info')) || { username: 'System', full_name: 'Admin' };
                 const userInfoStr = `${loggedUser.full_name} (${loggedUser.username})`;
 
-                // 🌟 កត់ត្រា Activity Log
+                // 🌟 បញ្ជូនព័ត៌មានលម្អិតជាក់ស្តែងនៃការកែប្រែទៅកត់ត្រាក្នុង Activity Log
                 const logPayload = {
                     username: userInfoStr,
                     action_type: editId ? 'UPDATE_CARGO' : 'CREATE_CARGO',
-                    details: `កូដទំនិញ: ${data.cargo_code} | ស្ថានភាព: ${data.status} | Cargo ID: ${editId || 'New'}`
+                    details: `[Cargo ID: ${editId || result.data?.id || 'New'}] ${changeDetails}`
                 };
 
                 await fetch('/api/fleet/activity-logs', {
@@ -824,7 +854,7 @@
                             <td>${formattedDate}</td>
                             <td><span class="badge bg-info text-dark">${act.action_type || act.action || '-'}</span></td>
                             <td class="fw-bold text-primary">${act.username || 'System'}</td>
-                            <td>${act.details || '-'}</td>
+                            <td class="text-start">${act.details || '-'}</td>
                         </tr>
                     `;
                     tbody.innerHTML += row;
