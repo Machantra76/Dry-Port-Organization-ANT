@@ -17,16 +17,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/views', express.static(path.join(__dirname, 'views')));
-const insertResult = await pool.query(
-            `INSERT INTO cargo_gates (cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
-            [cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes]
-        );
-        
-        // កត់ត្រា Activity Log
-        await pool.query(
-            `INSERT INTO cargo_activities (cargo_id, action, user_name, details) VALUES ($1, $2, $3, $4)`,
-            [insertResult.rows[0].id, 'CREATE', 'System User', 'បានបង្កើតទិន្នន័យខ្លោងទ្វារទំនិញថ្មី']
-        );
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
