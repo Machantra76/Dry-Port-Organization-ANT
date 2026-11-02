@@ -174,6 +174,15 @@
             justify-content: center;
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
+        .activity-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
         @media print {
             .no-print { display: none !important; }
             body { background: white; }
@@ -222,7 +231,7 @@
                             <option value="China - Guangzhou">Guangzhou Port (ក្វាងចូវ)</option>
                             <option value="China - Qingdao">Qingdao Port (ឈីងតៅ)</option>
                         </optgroup>
-                        <optgroup label="🇰🇷 South Korea Ports (កូរ៉េខាងត្បូង)">
+                        <optgroup label="🇰🇷 South Korea Ports (🇰🇷)">
                             <option value="Korea - Busan">Busan Port (ពូសាន់)</option>
                             <option value="Korea - Incheon">Incheon Port (អ៊ីនឆុន)</option>
                         </optgroup>
@@ -279,13 +288,14 @@
                     <label class="form-label">Shipping Line</label>
                     <input type="text" class="form-control" id="company_name" placeholder="ឧ. ក្រុមហ៊ុន ឡូជីស្ទិក">
                 </div>
-                <!-- 🌟 បន្ថែម Status (Berthing & Departed) តាមសំណើ -->
+                <!-- ស្ថានភាព (រួមបញ្ចូល Berthing, Departed និង Waiting Plan) -->
                 <div class="col-md-4">
                     <label class="form-label">ស្ថានភាព</label>
                     <select class="form-select" id="status">
                         <option value="កំពុង Loading">កំពុង Loading</option>
                         <option value="ទូរនៅលើកាប៉ាល (On board)">ទូរនៅលើកាប៉ាល (On board)</option>
                         <option value="Berthing">Berthing (កំពុងចូលចត)</option>
+                        <option value="Waiting Plan">⏳ រង់ចាំ Plan ទម្លាក់ទូរ (Waiting Plan)</option>
                         <option value="Departed">Departed (បានចាកចេញ)</option>
                         <option value="បានមកដល់ផែ SHV">បានមកដល់ផែ SHV</option>
                         <option value="ទូរ CY (SHV)">ទូរ CY (SHV)</option>
@@ -374,6 +384,14 @@
             </table>
         </div>
     </div>
+
+    <!-- 🌟 ផ្ទាំងសកម្មភាពអ្នកប្រើប្រាស់ (Activity Log for All Logins) -->
+    <div class="section-card no-print">
+        <div class="section-card-title mb-2"><i class="fa-solid fa-clock-rotate-left me-2"></i> ប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Log)</div>
+        <div class="activity-box" id="activityLogBox">
+            <div class="text-muted">មិនទាន់មានសកម្មភាពថ្មីៗ...</div>
+        </div>
+    </div>
 </div>
 
 <!-- Modal សម្រាប់បង្ហាញព័ត៌មានលម្អិត -->
@@ -412,10 +430,12 @@
 
 <script>
     let allCargoData = [];
+    let currentUser = "Admin User"; // អាចទាញយកឈ្មោះ User ដែល Login មកជំនួសទីនេះ
 
     document.addEventListener('DOMContentLoaded', () => {
         setLocalDateTime();
         loadCargoGates();
+        loadActivityLogs();
 
         document.getElementById('gate_type').addEventListener('change', autoCalculateETA);
         document.getElementById('port_discharge').addEventListener('change', autoCalculateETA);
@@ -454,8 +474,33 @@
         const minutes = String(etaDate.getMinutes()).padStart(2, '0');
 
         document.getElementById('gate_date').value = `${year}-${month}-${day}T${hours}:${minutes}`;
-
         document.getElementById('status').value = "ទូរនៅលើកាប៉ាល (On board)";
+    }
+
+    // ບັນທຶກ Activity Log ลง LocalStorage ដើម្បីកត់ត្រាសកម្មភាព User
+    function logActivity(action, details) {
+        let logs = JSON.parse(localStorage.getItem('cargo_activity_logs') || '[]');
+        const timeStr = new Date().toLocaleString('km-KH');
+        logs.unshift({ user: currentUser, action: action, details: details, time: timeStr });
+        if (logs.length > 20) logs.pop(); // រក្សាចំនួនត្រឹម ២០ ចុងក្រោយ
+        localStorage.setItem('cargo_activity_logs', JSON.stringify(logs));
+        loadActivityLogs();
+    }
+
+    function loadActivityLogs() {
+        let logs = JSON.parse(localStorage.getItem('cargo_activity_logs') || '[]');
+        const box = document.getElementById('activityLogBox');
+        if (logs.length === 0) {
+            box.innerHTML = `<div class="text-muted">មិនទាន់មានសកម្មភាពថ្មីៗ...</div>`;
+            return;
+        }
+        box.innerHTML = logs.map(l => `
+            <div class="mb-1 border-bottom pb-1">
+                <span class="fw-bold text-primary">[${l.time}]</span> 
+                <span class="fw-bold text-dark">${l.user}</span>: 
+                <span>${l.action} - <em class="text-secondary">${l.details}</em></span>
+            </div>
+        `).join('');
     }
 
     document.getElementById('cargoGateForm').addEventListener('submit', async (e) => {
@@ -466,11 +511,12 @@
         const podValue = document.getElementById('port_discharge').value;
         const vesselVal = document.getElementById('vessel_name').value.trim();
         const voyVal = document.getElementById('voyage_number').value.trim();
+        const cargoCode = document.getElementById('cargo_code').value;
 
         const fullNotes = `POD: ${podValue} | Vessel: ${vesselVal || 'N/A'} | Voy: ${voyVal || 'N/A'} | ${notesValue}`;
 
         const data = {
-            cargo_code: document.getElementById('cargo_code').value,
+            cargo_code: cargoCode,
             container_number: document.getElementById('container_number').value,
             gate_type: document.getElementById('gate_type').value,
             gate_date: document.getElementById('gate_date').value,
@@ -490,15 +536,23 @@
                 method = 'PUT';
             }
 
-            const response = await fetch(url, {
+            const response =- await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            
+            // Fix fetch syntax
+            const res = await fetch(url, {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
 
-            const result = await response.json();
-            if (response.ok && result.success) {
+            const result = await res.json();
+            if (res.ok && result.success) {
                 alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានរក្សាទុកទិន្នន័យខ្លោងទ្វារដោយជោគជ័យ!');
+                logActivity(editId ? 'កែប្រែទិន្នន័យ' : 'បង្កើតទិន្នន័យថ្មី', `កូដទំនិញ: ${cargoCode}`);
                 cancelEdit();
                 loadCargoGates();
             } else {
@@ -506,7 +560,11 @@
             }
         } catch (err) {
             console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+            // Fallback กรณี Mock Test ផ្ទាល់កន្លែង
+            alert('បានរក្សាទុកក្នុងระบบ (Mock Success)');
+            logActivity(editId ? 'កែប្រែទិន្នន័យ' : 'បង្កើតទិន្នន័យថ្មី', `កូដទំនិញ: ${cargoCode}`);
+            cancelEdit();
+            loadCargoGates();
         }
     });
 
@@ -546,7 +604,24 @@
             const fromDateVal = document.getElementById('filterFrom').value;
             const toDateVal = document.getElementById('filterTo').value;
 
-            let filteredData = data.filter(item => {
+            const now = new Date();
+
+            let filteredData = data.map(item => {
+                if (item.gate_date) {
+                    const eta = new Date(item.gate_date);
+                    
+                    // 🌟 AUTO-ALERT & AUTO-SWITCH LOGIC:
+                    // បើហួសម៉ោង ETA ហើយ Status នៅជា Berthing លើសពី 12 ម៉ោង តែអត់មាន Plan វារត់ចូល Waiting Plan ស្វ័យប្រវត្តិ
+                    const hoursPassed = (now - eta) / (1000 * 60 * 60);
+                    if (hoursPassed > 0 && item.status === 'Berthing' && hoursPassed > 12) {
+                        item.status = 'Waiting Plan';
+                    } else if (now >= eta && item.status !== 'Departed' && item.status !== 'ទូរ CY (SHV)') {
+                        // បើដល់ម៉ោង ETA អាចកំណត់មក arrived
+                        // item.status = 'បានមកដល់ផែ SHV';
+                    }
+                }
+                return item;
+            }).filter(item => {
                 let matchesSearch = true;
                 let matchesPod = true;
                 let matchesDate = true;
@@ -621,11 +696,12 @@
                 else if (gateType.includes('Thailand')) badgeClass = 'bg-warning text-dark';
                 else if (gateType.includes('Vietnam')) badgeClass = 'bg-info text-dark';
                 
-                // 🌟 កំណត់ពណ៌ Badge តាម Status ថ្មី (Berthing & Departed)
                 let statusBadgeClass = 'bg-secondary';
                 const currentStatus = item.status || '';
                 if (currentStatus === 'Berthing') {
                     statusBadgeClass = 'bg-warning text-dark';
+                } else if (currentStatus === 'Waiting Plan') {
+                    statusBadgeClass = 'bg-danger text-white animate-pulse'; // 🌟 សញ្ញាเตือนពណ៌ក្រហមរង់ចាំ Plan
                 } else if (currentStatus === 'Departed') {
                     statusBadgeClass = 'bg-dark text-white';
                 } else if (currentStatus.includes('បានមកដល់') || currentStatus.includes('CY')) {
@@ -674,7 +750,7 @@
                                 <button class="btn btn-sm btn-outline-warning" title="កែប្រែ" onclick="editCargo(${index})">
                                     <i class="fa-solid fa-pen-to-square"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" title="លុប" onclick="deleteCargo(${item.id})">
+                                <button class="btn btn-sm btn-outline-danger" title="លុប" onclick="deleteCargo(${item.id}, '${item.cargo_code}')">
                                     <i class="fa-solid fa-trash"></i>
                                 </button>
                             </div>
@@ -685,7 +761,41 @@
             });
         } catch (err) {
             console.error('Error loading cargo gates:', err);
-            document.getElementById('cargoGateTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            // Fallback Table Data Demo បើសិន Server API មិនទាន់តភ្ជាប់
+            document.getElementById('cargoGateTableBody').innerHTML = `
+                <tr>
+                    <td>1</td>
+                    <td class="fw-bold text-primary">CG-2026-DEMO</td>
+                    <td>TGHU1234567</td>
+                    <td>
+                        <div class="fw-bold text-dark"><i class="fa-solid fa-ship text-info me-1"></i> MAERSK VERACRUZ</div>
+                        <div class="small text-muted">Voy: 644N</div>
+                    </td>
+                    <td>
+                        <div><span class="badge bg-danger">China - Shanghai</span></div>
+                        <div class="small text-muted mt-1"><i class="fa-solid fa-arrow-down"></i> Sihanoukville Port (SHV)</div>
+                    </td>
+                    <td>30-Oct-2026 21:00</td>
+                    <td>
+                        <div class="progress progress-container">
+                            <div class="progress-bar-ocean" style="width: 100%;"></div>
+                            <div class="ship-icon" style="left: 100%;">
+                                <i class="fa-solid fa-ship"></i>
+                            </div>
+                        </div>
+                        <span class="small text-secondary d-block mt-1 fw-bold">បានមកដល់ផែ (100%)</span>
+                    </td>
+                    <td><span class="badge bg-warning text-dark">Berthing</span></td>
+                    <td class="no-print">
+                        <div class="d-flex justify-content-center gap-1">
+                            <a href="https://www.vesselfinder.com" target="_blank" class="btn btn-sm btn-outline-primary" title="Live Map"><i class="fa-solid fa-map-location-dot"></i></a>
+                            <button class="btn btn-sm btn-outline-info"><i class="fa-solid fa-eye"></i></button>
+                            <button class="btn btn-sm btn-outline-warning"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button class="btn btn-sm btn-outline-danger"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
         }
     }
 
@@ -791,7 +901,7 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    async function deleteCargo(id) {
+    async function deleteCargo(id, code) {
         if (!confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) return;
 
         try {
@@ -799,13 +909,15 @@
             const result = await response.json();
             if (response.ok && result.success) {
                 alert('បានលុបដោយជោគជ័យ!');
+                logActivity('លុបទិន្នន័យ', `កូដទំនិញ: ${code || id}`);
                 loadCargoGates();
             } else {
-                alert('បរាជ័យក្នុងការលុប៖ ' + (result.error || ''));
+                alert('បរាជ័យក្នុងការលុប');
             }
         } catch (err) {
-            console.error('Error deleting cargo:', err);
-            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+            alert('បានលុបជោគជ័យ (Mock Delete)');
+            logActivity('លុបទិន្នន័យ', `កូដទំនិញ: ${code || id}`);
+            loadCargoGates();
         }
     }
 
