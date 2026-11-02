@@ -1606,6 +1606,30 @@ app.delete('/api/duty-unpaid-inventory/:id', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+// ក.) API សម្រាប់ទាញយកប្រវត្តិសកម្មភាពតាម cargo_id
+app.get('/api/fleet/cargo-gates/:id/activities', async (req, res) => {
+    try {
+        const cargoId = req.params.id;
+        // ឧទាហរណ៍នៃការ query យកទិន្នន័យពី Database
+        const query = `SELECT * FROM cargo_activities WHERE cargo_id = ? ORDER BY created_at DESC`;
+        
+        // ប្រសិនបើប្រើ sqlite3:
+        db.all(query, [cargoId], (err, rows) => {
+            if (err) {
+                return res.status(500).json({ success: false, error: err.message });
+            }
+            res.json(rows);
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ខ.) មុខងារសម្រាប់កត់ត្រា Log (អាចហៅប្រើប្រាស់ក្នុង POST, PUT, DELETE)
+function logCargoActivity(cargoId, action, userName, details) {
+    const query = `INSERT INTO cargo_activities (cargo_id, action, user_name, details) VALUES (?, ?, ?, ?)`;
+    // db.run(query, [cargoId, action, userName, details]);
+}
 
 // ==========================================
 // API Routes: អ្នកកាន់ឯកសារគយ (Document Controller / Handler)
