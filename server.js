@@ -551,6 +551,16 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        // ៣៥. តារាងប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Logs) - PostgreSQL
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS activity_logs (
+                id SERIAL PRIMARY KEY,
+                username VARCHAR(150) NOT NULL,
+                action_type VARCHAR(100) NOT NULL,
+                details TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
 
         // ៣៤. តារាងគ្រប់គ្រងវិក្កយបត្រ (Tax & Commercial Invoices)
         await client.query(`
@@ -738,6 +748,43 @@ app.get('/api/run-cron', async (req, res) => {
             successCount: result.success
         });
     } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+// ==========================================
+// API Routes: ប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Logs APIs)
+// ==========================================
+
+// ១. ទាញយក Activity Logs តាម Cargo ID ឬ 50 ចុងក្រោយ
+app.get('/api/fleet/cargo-gates/:id/activities', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const query = `
+            SELECT * FROM activity_logs 
+            WHERE details ILIKE $1 
+            ORDER BY id DESC LIMIT 50
+        `;
+        const result = await pool.query(query, [`%Cargo ID: ${id}%`]);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching activity logs:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ២. កត់ត្រា Activity Log ថ្មីចូល PostgreSQL
+app.post('/api/fleet/activity-logs', async (req, res) => {
+    const { username, action_type, details } = req.body;
+    try {
+        const query = `
+            INSERT INTO activity_logs (username, action_type, details) 
+            VALUES ($1, $2, $3) RETURNING *;
+        `;
+        const values = [username || 'បុគ្គលិកប្រតិបត្តិការ', action_type, details];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving activity log:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
