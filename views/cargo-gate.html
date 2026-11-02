@@ -525,7 +525,6 @@
             let changes = [];
 
             if (oldItem) {
-                // ពិនិត្យមើលរាល់ Field សំខាន់ៗទាំងអស់បន្ថែម
                 if (oldItem.cargo_code !== data.cargo_code) {
                     changes.push(`កូដទំនិញ៖ "${oldItem.cargo_code || 'N/A'}" ➔ "${data.cargo_code}"`);
                 }
@@ -549,7 +548,6 @@
             if (changes.length > 0) {
                 changeDetails = `បានកែប្រែ៖ ${changes.join(' | ')}`;
             } else {
-                // បើសិនជាគ្មានការផ្លាស់ប្តូរ Field ណាមួយសោះ ប៉ុន្តែมีการចុច Update
                 changeDetails = `បានចុចអាប់ដេតទិន្នន័យ (កូដទំនិញ: ${data.cargo_code}, ស្ថានភាព: ${data.status})`;
             }
         } else {
@@ -573,11 +571,9 @@
 
             const result = await response.json();
             if (response.ok && result.success) {
-                // ទាញយកព័ត៌មាន User ທີ່ກຳลัง Login อยู่
                 const loggedUser = JSON.parse(sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info')) || { username: 'System', full_name: 'Admin' };
                 const userInfoStr = `${loggedUser.full_name} (${loggedUser.username})`;
 
-                // 🌟 បញ្ជូនព័ត៌មានលម្អិតជាក់ស្តែងនៃការកែប្រែទៅកត់ត្រាក្នុង Activity Log
                 const logPayload = {
                     username: userInfoStr,
                     action_type: editId ? 'UPDATE_CARGO' : 'CREATE_CARGO',
@@ -683,10 +679,16 @@
                 if (item.gate_date) {
                     const d = new Date(item.gate_date);
                     if (!isNaN(d.getTime())) {
-                        formattedDate = d.toLocaleString('km-KH', { 
-                            year: 'numeric', month: '2-digit', day: '2-digit', 
-                            hour: '2-digit', minute: '2-digit', hour12: true 
-                        });
+                        // 🌟 កំណត់ម៉ោងឱ្យត្រូវម៉ោងនៅកម្ពុជា (Asia/Phnom_Penh)
+                        formattedDate = new Intl.DateTimeFormat('km-KH', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true,
+                            timeZone: 'Asia/Phnom_Penh'
+                        }).format(d);
                     }
                 }
 
@@ -790,7 +792,17 @@
         let formattedDate = '-';
         if (item.gate_date) {
             const d = new Date(item.gate_date);
-            if (!isNaN(d.getTime())) formattedDate = d.toLocaleString('km-KH');
+            if (!isNaN(d.getTime())) {
+                formattedDate = new Intl.DateTimeFormat('km-KH', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                    timeZone: 'Asia/Phnom_Penh'
+                }).format(d);
+            }
         }
 
         let podText = 'Sihanoukville Port (SHV)';
@@ -833,7 +845,7 @@
         detailModal.show();
     }
 
-    // 🌟 មុខងារសម្រាប់ទាញយក និងបង្ហាញ Activity Log Modal ពី Server
+    // 🌟 មុខងារสำหรับទាញយក និងបង្ហាញ Activity Log Modal ពី Server (พร้อมปรับเวลาเป็นกัมพูชา)
     async function showActivityLog(cargoId, cargoCode) {
         document.getElementById('activity_cargo_code').innerText = cargoCode || 'N/A';
         const tbody = document.getElementById('activityTableBody');
@@ -855,7 +867,23 @@
                 }
 
                 activities.forEach((act, idx) => {
-                    let formattedDate = act.created_at ? new Date(act.created_at).toLocaleString('km-KH') : '-';
+                    let formattedDate = '-';
+                    if (act.created_at) {
+                        const d = new Date(act.created_at);
+                        if (!isNaN(d.getTime())) {
+                            formattedDate = new Intl.DateTimeFormat('km-KH', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit',
+                                hour12: true,
+                                timeZone: 'Asia/Phnom_Penh'
+                            }).format(d);
+                        }
+                    }
+
                     const row = `
                         <tr>
                             <td>${idx + 1}</td>
