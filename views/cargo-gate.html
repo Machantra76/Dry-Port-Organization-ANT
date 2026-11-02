@@ -174,6 +174,13 @@
             justify-content: center;
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
+        .vessel-logo-img {
+            width: 22px;
+            height: 22px;
+            object-fit: contain;
+            border-radius: 4px;
+            margin-right: 4px;
+        }
         @media print {
             .no-print { display: none !important; }
             body { background: white; }
@@ -457,6 +464,44 @@
         document.getElementById('gate_type').addEventListener('change', autoCalculateETA);
         document.getElementById('port_discharge').addEventListener('change', autoCalculateETA);
     });
+
+    // 🌟 មុខងារចាប់ទាញយក Logo របស់ក្រុមហ៊ុននាវាស្វ័យប្រវត្តិ
+    function getVesselLogo(vesselText) {
+        if (!vesselText || vesselText === '-') {
+            return `<i class="fa-solid fa-ship text-info me-1"></i>`;
+        }
+
+        const nameUpper = vesselText.toUpperCase();
+        
+        let logoUrl = '';
+        if (nameUpper.includes('MAERSK')) {
+            logoUrl = 'https://logo.clearbit.com/maersk.com';
+        } else if (nameUpper.includes('COSCO')) {
+            logoUrl = 'https://logo.clearbit.com/coscoshipping.com';
+        } else if (nameUpper.includes('EVERGREEN') || nameUpper.includes('EVER')) {
+            logoUrl = 'https://logo.clearbit.com/evergreen-marine.com';
+        } else if (nameUpper.includes('ONE') || nameUpper.includes('OCEAN NETWORK')) {
+            logoUrl = 'https://logo.clearbit.com/one-line.com';
+        } else if (nameUpper.includes('CMA')) {
+            logoUrl = 'https://logo.clearbit.com/cma-cgm.com';
+        } else if (nameUpper.includes('MSC')) {
+            logoUrl = 'https://logo.clearbit.com/msc.com';
+        } else if (nameUpper.includes('YANG MING') || nameUpper.includes('YANGMING')) {
+            logoUrl = 'https://logo.clearbit.com/yangming.com';
+        } else if (nameUpper.includes('OOCL')) {
+            logoUrl = 'https://logo.clearbit.com/oocl.com';
+        } else if (nameUpper.includes('WAN HAI') || nameUpper.includes('WANHAI')) {
+            logoUrl = 'https://logo.clearbit.com/wanhai.com';
+        } else if (nameUpper.includes('HAPAG')) {
+            logoUrl = 'https://logo.clearbit.com/hapag-lloyd.com';
+        }
+
+        if (logoUrl) {
+            return `<img src="${logoUrl}" class="vessel-logo-img" onerror="this.onerror=null; this.replaceWith(document.createElement('i')); this.className='fa-solid fa-ship text-info me-1';" alt="Logo">`;
+        }
+
+        return `<i class="fa-solid fa-ship text-info me-1"></i>`;
+    }
 
     // 🌟 កំណត់ម៉ោងឱ្យត្រូវម៉ោងនៅកម្ពុជា (Asia/Phnom_Penh) ពេលបង្ហាញ Form
     function setLocalDateTime() {
@@ -759,13 +804,16 @@
                     trackingUrl = `https://www.vesselfinder.com`;
                 }
 
+                // 🌟 បង្ហាញ Logo តាមឈ្មោះនាវាស្វ័យប្រវត្តិ
+                const vesselLogoHtml = getVesselLogo(vesselText);
+
                 const row = `
                     <tr>
                         <td>${index + 1}</td>
                         <td class="fw-bold text-primary">${item.cargo_code || '-'}</td>
                         <td>${item.container_number || '-'}</td>
                         <td>
-                            <div class="fw-bold text-dark"><i class="fa-solid fa-ship text-info me-1"></i> ${vesselText}</div>
+                            <div class="fw-bold text-dark d-flex align-items-center justify-content-center">${vesselLogoHtml} ${vesselText}</div>
                             <div class="small text-muted">Voy: ${voyText}</div>
                         </td>
                         <td>
