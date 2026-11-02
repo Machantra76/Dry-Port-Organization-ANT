@@ -35,11 +35,7 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        const insertResult = await pool.query(
-            `INSERT INTO cargo_gates (cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING id`,
-            [cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes]
-        );
-
+     
         // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)
         await client.query(`
             CREATE TABLE IF NOT EXISTS attendance_logs (
@@ -635,11 +631,7 @@ async function initializeDatabase() {
         client.release();
     }
 }
-// កត់ត្រា Activity Log
-        await pool.query(
-            `INSERT INTO cargo_activities (cargo_id, action, user_name, details) VALUES ($1, $2, $3, $4)`,
-            [insertResult.rows[0].id, 'CREATE', 'System User', 'បានបង្កើតទិន្នន័យខ្លោងទ្វារទំនិញថ្មី']
-        );
+
 
 // ==========================================
 // API Routes: Authentication (Login) - គាំទ្រទាំង /api/login និង /api/auth/login
