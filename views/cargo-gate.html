@@ -15,14 +15,32 @@
             font-family: 'Kantumruy Pro', sans-serif;
             background-color: #f4f6f9;
             color: #333;
+            overflow-x: hidden; /* ការពារមិនឱ្យមានការហៀរចេញកាមេរ៉ាអដ្ដាតផ្ដេក */
         }
         .main-container {
             max-width: 1400px;
+            width: 100%;
             margin: 30px auto;
             background: #ffffff;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+        /* កែសម្រួលសម្រាប់អេក្រង់តូច ដើម្បីកុំឱ្យហៀរ និងស្ថិតនៅចំកណ្តាល */
+        @media (max-width: 1440px) {
+            .main-container {
+                max-width: 95%;
+                padding: 20px;
+                margin: 20px auto;
+            }
+        }
+        @media (max-width: 768px) {
+            .main-container {
+                max-width: 98%;
+                padding: 15px;
+                margin: 10px auto;
+                border-radius: 8px;
+            }
         }
         .btn-back {
             background-color: #1e3a8a;
@@ -184,7 +202,7 @@
         @media print {
             .no-print { display: none !important; }
             body { background: white; }
-            .main-container { box-shadow: none; padding: 0; }
+            .main-container { box-shadow: none; padding: 0; max-width: 100%; }
         }
     </style>
 </head>
@@ -462,7 +480,6 @@
         loadCargoGates();
     });
 
-    // 🌟 មុខងារទាញយករូប Logo ក្រុមហ៊ុននាវាស្វ័យប្រវត្តិ
     function getVesselLogo(vesselText) {
         if (!vesselText || vesselText === '-') {
             return `<i class="fa-solid fa-ship text-info me-1"></i>`;
@@ -499,7 +516,6 @@
         return `<i class="fa-solid fa-ship text-info me-1"></i>`;
     }
 
-    // 🌟 កំណត់ម៉ោងបច្ចុប្បន្ននៅកម្ពុជា (Asia/Phnom_Penh) ទុកជាមូលដ្ឋានគ្រឹះដំបូង (អាចប្តូរដោយដៃបានសេរី)
     function setLocalDateTime() {
         const now = new Date();
         const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -525,7 +541,6 @@
         document.getElementById('gate_date').value = `${year}-${month}-${day}T${hour}:${minute}`;
     }
 
-    // 🌟 ការដាក់ស្នើទិន្នន័យ (Submit/Edit) ដោយរក្សាថ្ងៃម៉ោងពិតប្រាកដដែលបានជ្រើសរើសដោយដៃ
     document.getElementById('cargoGateForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -542,7 +557,6 @@
             cargo_code: document.getElementById('cargo_code').value,
             container_number: document.getElementById('container_number').value,
             gate_type: document.getElementById('gate_type').value,
-            // 🌟 ផ្ញើតម្លៃថ្ងៃ និងម៉ោងផ្ទាល់ដោយមិនប្តូរទៅ UTC ធ្វើឱ្យលែងខុសថ្ងៃខែ
             gate_date: rawDateVal ? new Date(rawDateVal).toISOString() : null,
             owner_name: document.getElementById('owner_name').value,
             container_qty: document.getElementById('container_qty').value,
@@ -626,7 +640,7 @@
             }
         } catch (err) {
             console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+            alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ Server!');
         }
     });
 
