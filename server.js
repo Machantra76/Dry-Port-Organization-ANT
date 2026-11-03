@@ -17,6 +17,50 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/views', express.static(path.join(__dirname, 'views')));
+async function processPendingSchedules() {
+    try {
+        const result = await pool.query(
+            `SELECT * FROM scheduled_messages WHERE status = 'Pending' AND schedule_time <= NOW()`
+        );
+
+        const pendingTasks = result.rows;
+        if (pendingTasks.length === 0) return { count: 0, success: 0 };
+
+        let successCount = 0;
+        for (const item of pendingTasks) {
+            try {
+                await pool.query("UPDATE scheduled_messages SET status = 'Sent' WHERE id = $1", [item.id]);
+                successCount++;
+            } catch (err) {
+                console.error(`❌ [Schedule Error ID ${item.id}]:`, err.message);
+                await pool.query("UPDATE scheduled_messages SET status = $1 WHERE id = $2", [`Failed: ${err.message}`, item.id]);
+            }
+        }
+        return { count: pendingTasks.length, success: successCount };
+    } catch (err) {
+        console.error('❌ [processPendingSchedules Error]:', err.message);
+        return { count: 0, success: 0, error: err.message };
+    }
+}
+app.get('/api/run-cron', async (req, res) => {
+    try {
+        const nowUTC = new Date();
+        const localTimeStr = nowUTC.toLocaleString('en-GB', { timeZone: 'Asia/Phnom_Penh' });
+        
+        console.log(`⏰ [Cron Triggered] Server UTC Time: ${nowUTC.toISOString()}`);
+        console.log(`🇰🇭 [Cron Triggered] Local (Phnom Penh) Time: ${localTimeStr}`);
+
+        const result = await processPendingSchedules();
+        
+        res.json({ 
+            success: true, 
+            processedCount: result ? result.count : 0,
+            successCount: result ? result.success : 0
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 
 // មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
 async function initializeDatabase() {
@@ -731,25 +775,7 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-app.get('/api/run-cron', async (req, res) => {
-    try {
-        const nowUTC = new Date();
-        const localTimeStr = nowUTC.toLocaleString('en-GB', { timeZone: 'Asia/Phnom_Penh' });
-        
-        console.log(`⏰ [Cron Triggered] Server UTC Time: ${nowUTC.toISOString()}`);
-        console.log(`🇰🇭 [Cron Triggered] Local (Phnom Penh) Time: ${localTimeStr}`);
 
-        const result = await processPendingSchedules();
-        
-        res.json({ 
-            success: true, 
-            processedCount: result ? result.count : 0,
-            successCount: result ? result.success : 0
-        });
-    } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
 
 // ==========================================
 // API Routes: ប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Logs APIs) - 🌟 កែសម្រួលថ្មី
