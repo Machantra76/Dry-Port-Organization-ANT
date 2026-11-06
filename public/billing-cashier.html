@@ -126,7 +126,7 @@
             box-sizing: border-box;
             margin: 0 auto;
             color: #000;
-            font-size: 14px; /* ពង្រីកទំហំអក្សរទូទៅក្នុងប្រអប់វិក្កយបត្រ */
+            font-size: 14px;
         }
 
         .invoice-title-container {
@@ -178,7 +178,7 @@
         .info-label {
             width: 130px;
             font-weight: 600;
-            font-size: 13.5px; /* ពង្រីកទំហំអក្សរបន្ទាត់ខាងឆ្វេងឱ្យធំច្បាស់ល្អ */
+            font-size: 13.5px;
         }
 
         .info-value {
@@ -192,12 +192,11 @@
             border: none;
             outline: none;
             font-family: 'Kantumruy Pro', sans-serif;
-            font-size: 14px; /* ពង្រីកទំហំអក្សរក្នុងប្រអប់ Input ផ្នែកខាងលើឱ្យធំច្បាស់ */
+            font-size: 14px;
             background: transparent;
             font-weight: 500;
         }
 
-        /* ស្ទីលសម្រាប់ Note ឱ្យវា auto wrap ចុះក្រោមស្អាត */
         .note-section {
             margin-top: 15px;
             border: 1px solid #000;
@@ -270,7 +269,7 @@
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 6mm; /* កំណត់ខ្នាតក្រដាស A4 ឱ្យសមល្មម មិនហៀរចេញស្តាំ */
+                margin: 6mm;
             }
             body * {
                 visibility: hidden;
@@ -376,7 +375,6 @@
                         <span class="info-label">Date:</span>
                         <span class="info-value"><input type="text" id="invDate" value=""></span>
                     </div>
-                    <!-- Date Out ដាក់នៅក្រោម Date -->
                     <div class="info-row">
                         <span class="info-label">Date Out:</span>
                         <span class="info-value"><input type="text" id="dateOut" value=""></span>
@@ -452,7 +450,6 @@
                 </tr>
             </table>
 
-            <!-- Note ដាក់នៅក្រោមបន្ទាត់ The sum of USD: ជាមួយមុខងារ Auto-wrap -->
             <div class="note-section">
                 <div style="font-weight: bold; margin-bottom: 2px;">Note:</div>
                 <textarea id="invoiceNote" rows="5" placeholder="បញ្ចូលកំណត់សម្គាល់បន្ថែមនៅទីនេះ..."></textarea>
@@ -476,7 +473,8 @@
 
     <script>
         let isManualVAT = false;
-        let isTaxInvoiceMode = true;
+        // modeState: 0 = TAX_INVOICE, 1 = COMMERCIAL_INVOICE, 2 = DEBIT_NOTE
+        let modeState = 0; 
         let isEditMode = false;
         let editInvoiceId = null;
 
@@ -506,7 +504,12 @@
         }
 
         function toggleInvoiceMode() {
-            isTaxInvoiceMode = !isTaxInvoiceMode;
+            modeState = (modeState + 1) % 3;
+            updateModeUI();
+            calculateInvoice();
+        }
+
+        function updateModeUI() {
             const vatRow = document.getElementById('vatRow');
             const vatInput = document.getElementById('vatInput');
             const invMainTitle = document.getElementById('invMainTitle');
@@ -515,14 +518,14 @@
             const modeTitle = document.getElementById('modeTitle');
             const modeButtonText = document.getElementById('modeButtonText');
 
-            if (isTaxInvoiceMode) {
+            if (modeState === 0) { // Tax Invoice
                 invMainTitle.innerText = "វិក្កយបត្រអាករ";
                 invSubTitle.innerText = "TAX INVOICE";
                 vatTinSection.style.display = "block";
                 vatRow.style.display = "";
                 modeTitle.innerText = "ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE)";
                 modeButtonText.innerText = "វិក្កយបត្រធម្មតា (Commercial)";
-            } else {
+            } else if (modeState === 1) { // Commercial Invoice
                 invMainTitle.innerText = "វិក្កយបត្រ";
                 invSubTitle.innerText = "INVOICE";
                 vatTinSection.style.display = "none";
@@ -530,9 +533,17 @@
                 vatInput.value = "0.00";
                 isManualVAT = false;
                 modeTitle.innerText = "ទម្រង់វិក្កយបត្រធម្មតា (COMMERCIAL INVOICE)";
+                modeButtonText.innerText = "ដេប៊ីតណូត (Debit Note)";
+            } else if (modeState === 2) { // Debit Note
+                invMainTitle.innerText = "លិខិតបង្កើនតម្លៃ";
+                invSubTitle.innerText = "DEBIT NOTE";
+                vatTinSection.style.display = "none";
+                vatRow.style.display = "";
+                vatInput.value = "0.00";
+                isManualVAT = false;
+                modeTitle.innerText = "ទម្រង់ដេប៊ីតណូត (DEBIT NOTE)";
                 modeButtonText.innerText = "វិក្កយបត្រអាករ (Tax Invoice)";
             }
-            calculateInvoice();
         }
 
         function addRow(selectedDesc = "Gate Fee", size = "40HC", status = "Full", rate = 5.00, qty = 1, duration = 0) {
@@ -602,7 +613,7 @@
             let vat = 0;
             let grandTotalUSD = subtotal;
 
-            if (isTaxInvoiceMode) {
+            if (modeState === 0) { // Tax Invoice
                 if (!isManualVAT) {
                     vat = subtotal * 0.10;
                     document.getElementById('vatInput').value = vat.toFixed(2);
@@ -649,8 +660,12 @@
         }
 
         async function saveInvoiceToDB() {
+            let invTypeStr = 'TAX_INVOICE';
+            if (modeState === 1) invTypeStr = 'COMMERCIAL_INVOICE';
+            if (modeState === 2) invTypeStr = 'DEBIT_NOTE';
+
             const invoiceData = {
-                invoice_type: isTaxInvoiceMode ? 'TAX_INVOICE' : 'COMMERCIAL_INVOICE',
+                invoice_type: invTypeStr,
                 invoice_no: document.getElementById('invoiceNo').value,
                 charge_to: document.getElementById('chargeTo').value,
                 seal_no: document.getElementById('sealNo').value,
@@ -676,7 +691,7 @@
                 })),
                 subtotal: parseFloat(document.getElementById('subTotalDisplay').innerText) || 0,
                 exch_rate: parseFloat(document.getElementById('exchRate').value) || 4085,
-                vat_amount: isTaxInvoiceMode ? (parseFloat(document.getElementById('vatInput').value) || 0) : 0,
+                vat_amount: modeState === 0 ? (parseFloat(document.getElementById('vatInput').value) || 0) : 0,
                 grand_total_usd: parseFloat(document.getElementById('grandTotalUSDDisplay').innerText) || 0,
                 grand_total_khr: parseFloat(document.getElementById('grandTotalKHRDisplay').innerText.replace(/,/g, '')) || 0
             };
@@ -719,9 +734,14 @@
                     return;
                 }
 
-                if (inv.invoice_type === 'COMMERCIAL_INVOICE' && isTaxInvoiceMode) {
-                    toggleInvoiceMode();
+                if (inv.invoice_type === 'COMMERCIAL_INVOICE') {
+                    modeState = 1;
+                } else if (inv.invoice_type === 'DEBIT_NOTE') {
+                    modeState = 2;
+                } else {
+                    modeState = 0;
                 }
+                updateModeUI();
 
                 document.getElementById('invoiceNo').value = inv.invoice_no || '';
                 document.getElementById('chargeTo').value = inv.charge_to || '';
