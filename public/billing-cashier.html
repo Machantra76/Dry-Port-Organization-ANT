@@ -519,6 +519,7 @@
             const modeButtonText = document.getElementById('modeButtonText');
 
             if (modeState === 0) { // Tax Invoice
+                invMainTitle.style.display = "block";
                 invMainTitle.innerText = "វិក្កយបត្រអាករ";
                 invSubTitle.innerText = "TAX INVOICE";
                 vatTinSection.style.display = "block";
@@ -526,6 +527,7 @@
                 modeTitle.innerText = "ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE)";
                 modeButtonText.innerText = "វិក្កយបត្រធម្មតា (Commercial)";
             } else if (modeState === 1) { // Commercial Invoice
+                invMainTitle.style.display = "block";
                 invMainTitle.innerText = "វិក្កយបត្រ";
                 invSubTitle.innerText = "INVOICE";
                 vatTinSection.style.display = "none";
@@ -535,7 +537,7 @@
                 modeTitle.innerText = "ទម្រង់វិក្កយបត្រធម្មតា (COMMERCIAL INVOICE)";
                 modeButtonText.innerText = "DEBIT NOTE";
             } else if (modeState === 2) { // Debit Note
-                invMainTitle.innerText = "DEBIT NOTE";
+                invMainTitle.style.display = "none"; // លុបចំណងជើងទី ១ ចេញ ឱ្យនៅសល់តែ DEBIT NOTE ខាងក្រោម
                 invSubTitle.innerText = "DEBIT NOTE";
                 vatTinSection.style.display = "none";
                 vatRow.style.display = "";
