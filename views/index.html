@@ -37,6 +37,22 @@
             flex-wrap: wrap;
         }
 
+        /* 🖼️ ការរៀបចំស្តាយសម្រាប់ Logo ANT លើ Header */
+        .header-left-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-logo {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            background: white;
+            padding: 4px;
+            border-radius: 8px;
+        }
+
         header .header-title h1 {
             margin: 0;
             font-size: 22px;
@@ -385,9 +401,13 @@
 
     <!-- Header Dashboard -->
     <header>
-        <div class="header-title">
-            <h1>រចនាសម្ព័ន្ធស្ថាប័នផែស្ងួត អេអិនធី</h1>
-            <p>DRY PORT ORGANIZATION CHART & WORKFLOW DASHBOARD ANT</p>
+        <div class="header-left-group">
+            <!-- 🖼️ បន្ថែម Logo ANT នៅទីនេះ -->
+            <img src="logo.jpg" alt="ANT Logo" class="header-logo">
+            <div class="header-title">
+                <h1>រចនាសម្ព័ន្ធស្ថាប័នផែស្ងួត អេអិនធី</h1>
+                <p>DRY PORT ORGANIZATION CHART & WORKFLOW DASHBOARD ANT</p>
+            </div>
         </div>
         <div class="user-info" id="userInfoDisplay" style="display: none;">
             <span id="welcomeText"><i class="fa-solid fa-user me-1"></i>...</span>
