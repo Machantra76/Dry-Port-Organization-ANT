@@ -38,7 +38,6 @@
             padding: 0 15px;
         }
 
-        /* 🗂️ ផ្ទាំងប៊ូតុង Tab សម្រាប់ជ្រើសរើសប្រភេទវិក្កយបត្រ */
         .tab-bar {
             display: flex;
             justify-content: center;
@@ -139,7 +138,6 @@
             font-size: 14px;
         }
 
-        /* 🖼️ ក្បាលវិក្កយបត្រមាន Logo ANT នៅខាងឆ្វេង */
         .invoice-title-container {
             display: flex;
             align-items: center;
@@ -200,7 +198,7 @@
 
         .info-grid {
             display: grid;
-            grid-template-columns: 1.15fr 0.85fr;
+            grid-template-columns: 1.25fr 0.75fr;
             gap: 15px;
             margin-bottom: 15px;
         }
@@ -217,7 +215,6 @@
             font-size: 13.5px;
         }
 
-        /* កែទំហំ Label ផ្នែកស្តាំ និងការពារអត្ថបទវែងមិនឱ្យដាច់ជួរពីរ */
         .info-right .info-label {
             width: 175px;
             flex-shrink: 0;
@@ -348,7 +345,6 @@
 
     <div class="container">
         
-        <!-- 🗂️ ប៊ូតុង Tab ប្តូរប្រភេទវិក្កយបត្រ -->
         <div class="tab-bar no-print">
             <button class="tab-btn active" id="btnTab0" onclick="switchTab(0)"><i class="fa-solid fa-file-invoice-dollar"></i> វិក្កយបត្រអាករ (Tax Invoice)</button>
             <button class="tab-btn" id="btnTab1" onclick="switchTab(1)"><i class="fa-solid fa-file-invoice"></i> វិក្កយបត្រធម្មតា (Commercial Invoice)</button>
@@ -365,10 +361,8 @@
             </div>
         </div>
 
-        <!-- ផ្ទាំងវិក្កយបត្រ -->
         <div class="invoice-box" id="invoiceBox">
             
-            <!-- 🖼️ ក្បាលវិក្កយបត្រមាន Logo ANT នៅខាងឆ្វេង -->
             <div class="invoice-title-container">
                 <img src="logo.jpg" alt="ANT Logo" class="invoice-logo">
                 <div class="invoice-header-text">
@@ -383,7 +377,6 @@
 
             <div class="header-divider"></div>
 
-            <!-- ផ្នែកចំណងជើងវិក្កយបត្រ -->
             <div class="invoice-type-heading">
                 <h2 id="invMainTitle">វិក្កយបត្រអាករ</h2>
                 <h3 id="invSubTitle">TAX INVOICE</h3>
@@ -413,7 +406,6 @@
                     </div>
                 </div>
 
-                <!-- ផ្នែកខាងស្តាំ -->
                 <div class="info-right">
                     <div class="info-row">
                         <span class="info-label">Date In:</span>
@@ -436,7 +428,6 @@
                         <span class="info-value"><input type="text" id="truckIn" value=""></span>
                     </div>
                     <div class="info-row">
-                        <!-- Label នេះនឹងដូរអត្ថបទនិងទំហំស្វ័យប្រវត្តិមិនឱ្យដាច់ជួរ -->
                         <span class="info-label" id="vatTinLabel">លេខអត្តសញ្ញាណកម្ម អាកប(VAT-TIN):</span>
                         <span class="info-value"><input type="text" id="owner" value=""></span>
                     </div>
@@ -812,7 +803,7 @@
                 calculateInvoice();
             } catch (err) {
                 console.error("Error loading invoice for edit:", err);
-                alert("មានបញ្ហាក្នុងការទាញយកទិន្នន័យសម្រាប់កែប្រែ!");
+                alert("មានបញ្ហាក្នុងการទាញយកទិន្នន័យសម្រាប់កែប្រែ!");
             }
         }
 
@@ -839,39 +830,50 @@
             return str;
         }
 
+        // 💡 កែតម្រូវមុខងារ convertKhmer ថ្មី សុវត្ថិភាព មិនឱ្យ Error Maximum Call Stack
         function numberToKhmerWords(num) {
             num = Math.round(Math.abs(parseFloat(num) || 0));
             if (num === 0) return "សូន្យរៀល";
 
             const khmerNumbers = ["សូន្យ", "មួយ", "ពីរ", "បី", "បួន", "ប្រាំ", "ប្រាំមួយ", "ប្រាំពីរ", "ប្រាំបី", "ប្រាំបួន"];
-            const tenStr = ["", "ដប់", "ម្ភៃ", "សាមសិប", "សែសិប", "ហាសិប", "ហុកសិប", "ចិត្តសិប", "ប៉ែតសិប", "កៅសិប"];
+            const units = ["", "ដប់", "រយ", "ពាន់", "ម៉ឺន", "សែន", "លាន"];
 
-            function convertKhmer(n) {
-                n = Math.floor(n);
-                if (n <= 0) return "";
-                if (n < 10) return khmerNumbers[n];
-                if (n < 100) {
-                    return tenStr[Math.floor(n / 10)] + (n % 10 !== 0 ? khmerNumbers[n % 10] : "");
+            function convertGroup(n) {
+                let str = "";
+                let len = n.length;
+                for (let i = 0; i < len; i++) {
+                    let digit = parseInt(n[i]);
+                    let pos = len - i - 1;
+                    if (digit !== 0) {
+                        if (pos === 1 && digit === 1) {
+                            str += "ដប់";
+                        } else if (pos === 1 && digit === 2) {
+                            str += "ម្ភៃ";
+                        } else {
+                            str += khmerNumbers[digit] + (pos > 0 ? units[pos] : "");
+                        }
+                    } else if (pos === 1) {
+                        // Handle zero tens if needed
+                    }
                 }
-                if (n < 1000) {
-                    return khmerNumbers[Math.floor(n / 100)] + "រយ" + (n % 100 !== 0 ? convertKhmer(n % 100) : "");
-                }
-                if (n < 1000) {
-                    return khmerNumbers[Math.floor(n / 1000)] + "ពាន់" + (n % 1000 !== 0 ? convertKhmer(n % 1000) : "");
-                }
-                if (n < 100005) {
-                    return convertKhmer(Math.floor(n / 10000)) + "ម៉ឺន" + (n % 10000 !== 0 ? convertKhmer(n % 10000) : "");
-                }
-                if (n < 1000000) {
-                    return convertKhmer(Math.floor(n / 100000)) + "សែន" + (n % 100000 !== 0 ? convertKhmer(n % 100000) : "");
-                }
-                if (n < 1000000000) {
-                    return convertKhmer(Math.floor(n / 1000000)) + "លាន" + (n % 1000000 !== 0 ? convertKhmer(n % 1000000) : "");
-                }
-                return n.toLocaleString('km-KH');
+                return str;
             }
 
-            return convertKhmer(num) + "រៀល";
+            let numStr = num.toString();
+            let result = "";
+            
+            if (num >= 1000000) {
+                let millions = Math.floor(num / 1000000);
+                let remainder = num % 1000000;
+                result += convertGroup(millions.toString()) + "លាន";
+                if (remainder > 0) {
+                    result += convertGroup(remainder.toString());
+                }
+            } else {
+                result = convertGroup(numStr);
+            }
+
+            return result + "រៀល";
         }
 
         document.addEventListener('DOMContentLoaded', () => {
