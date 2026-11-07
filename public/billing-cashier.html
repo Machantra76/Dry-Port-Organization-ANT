@@ -129,32 +129,47 @@
             font-size: 14px;
         }
 
+        /* 🎨 ការរៀបចំក្បាលវិក្កយបត្រឱ្យមាន Logo នៅខាងឆ្វេង */
         .invoice-title-container {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            gap: 15px;
             margin-bottom: 15px;
         }
 
-        .invoice-title-container h2 {
+        .invoice-logo {
+            width: 85px;
+            height: 85px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .invoice-header-text {
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .invoice-header-text h2 {
             margin: 0;
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 700;
         }
 
-        .invoice-title-container h3 {
+        .invoice-header-text h3 {
             margin: 2px 0;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 700;
         }
 
         .company-name {
             font-size: 14px;
             font-weight: 600;
-            margin-top: 5px;
+            margin-top: 4px;
         }
 
         .address-text {
-            font-size: 12px;
-            margin-top: 3px;
+            font-size: 11px;
+            margin-top: 2px;
         }
 
         .header-divider {
@@ -349,13 +364,17 @@
         <!-- ផ្ទាំងវិក្កយបត្រ -->
         <div class="invoice-box" id="invoiceBox">
             
+            <!-- 🖼️ ក្បាលវិក្កយបត្រមាន Logo នៅខាងឆ្វេង និងអត្ថបទនៅចំកណ្តាល -->
             <div class="invoice-title-container">
-                <h2 style="font-size: 16px; margin: 0;">អេ​ អេន ធី ដ្រាយ ផត</h2>
-                <div class="company-name" style="margin-top: 8px;">ANT DRY PORT (CAMBODIA) CO.,LTD</div>
-                <div class="address-text">អាសយដ្ឋាន ៖ ក្បាលដីលេខ ៤៥៦ ផ្លូវបេតុង ភូមិត្រពាំងអារក្ស សង្កាត់ឪឡោក ខណ្ឌកំបូល រាជធានីភ្នំពេញ</div>
-                <div class="address-text">Kbal Di Leak 456, Beton Street, Phum Trapeang Arak, Sangkat Ou Lok, Khan Kambol, Phnom Penh</div>
-                <div class="address-text" style="margin-top: 2px;">Tel: (+855) 10 79 7777 | Email: antdryport@gmail.com</div>
-                <div id="vatTinSection" style="margin-top: 3px;">លេខអត្តសញ្ញាណកម្ម អាកប (VAT-TIN) ៖ K010-902503705</div>
+                <img src="logo.jpg" alt="ANT Logo" class="invoice-logo">
+                <div class="invoice-header-text">
+                    <h2 style="font-size: 16px; margin: 0;">អេ​ អេន ធី ដ្រាយ ផត</h2>
+                    <div class="company-name" style="margin-top: 4px;">ANT DRY PORT (CAMBODIA) CO.,LTD</div>
+                    <div class="address-text">អាសយដ្ឋាន ៖ ក្បាលដីលេខ ៤៥៦ ផ្លូវបេតុង ភូមិត្រពាំងអារក្ស សង្កាត់ឪឡោក ខណ្ឌកំបូល រាជធានីភ្នំពេញ</div>
+                    <div class="address-text">Kbal Di Leak 456, Beton Street, Phum Trapeang Arak, Sangkat Ou Lok, Khan Kambol, Phnom Penh</div>
+                    <div class="address-text" style="margin-top: 2px;">Tel: (+855) 10 79 7777 | Email: antdryport@gmail.com</div>
+                    <div id="vatTinSection" style="margin-top: 2px;">លេខអត្តសញ្ញាណកម្ម អាកប (VAT-TIN) ៖ K010-902503705</div>
+                </div>
             </div>
 
             <div class="header-divider"></div>
@@ -497,7 +516,6 @@
 
     <script>
         let isManualVAT = false;
-        // modeState: 0 = TAX_INVOICE, 1 = COMMERCIAL_INVOICE, 2 = DEBIT_NOTE
         let modeState = 0; 
         let isEditMode = false;
         let editInvoiceId = null;
@@ -562,7 +580,7 @@
                 modeTitle.innerText = "ទម្រង់វិក្កយបត្រធម្មតា (COMMERCIAL INVOICE)";
                 modeButtonText.innerText = "DEBIT NOTE";
             } else if (modeState === 2) { // Debit Note
-                invMainTitle.style.display = "none"; // លុបចំណងជើងទី ១ ចេញ ឱ្យនៅសល់តែ DEBIT NOTE ខាងក្រោម
+                invMainTitle.style.display = "none";
                 invSubTitle.innerText = "DEBIT NOTE";
                 vatTinSection.style.display = "none";
                 vatRow.style.display = "";
@@ -664,26 +682,6 @@
         function calculateCustomVAT() {
             isManualVAT = true;
             calculateInvoice();
-        }
-
-        async function fetchCustomerStats(customerName) {
-            if (!customerName.trim()) {
-                document.getElementById('customerStatsDisplay').style.display = 'none';
-                return;
-            }
-
-            try {
-                const response = await fetch(`${window.location.origin}/api/invoices/stats?customerName=${encodeURIComponent(customerName.trim())}`);
-                const result = await response.json();
-
-                if (result.success) {
-                    document.getElementById('statCount').innerText = result.total_invoices;
-                    document.getElementById('statTotal').innerText = result.total_amount_usd.toFixed(2);
-                    document.getElementById('customerStatsDisplay').style.display = 'block';
-                }
-            } catch (err) {
-                console.error('Error fetching stats:', err);
-            }
         }
 
         async function saveInvoiceToDB() {
@@ -802,7 +800,7 @@
                 calculateInvoice();
             } catch (err) {
                 console.error("Error loading invoice for edit:", err);
-                alert("មានបញ្ហាក្នុងการទាញយកទិន្នន័យសម្រាប់កែប្រែ!");
+                alert("មានបញ្ហាក្នុងការទាញយកទិន្នន័យសម្រាប់កែប្រែ!");
             }
         }
 
