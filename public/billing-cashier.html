@@ -212,7 +212,7 @@
         .info-label {
             width: 130px;
             font-weight: 600;
-            font-size: 13.5px;
+            font-size: 13px;
         }
 
         .info-right .info-label {
@@ -403,6 +403,11 @@
                     <div class="info-row">
                         <span class="info-label">Tel/Email:</span>
                         <span class="info-value"><input type="text" id="remark" value=""></span>
+                    </div>
+                    <!-- 💡 បន្ថែម Container No នៅខាងក្រោម Tel/Email ខាងឆ្វេង -->
+                    <div class="info-row">
+                        <span class="info-label">Container No:</span>
+                        <span class="info-value"><input type="text" id="containerNoLeft" value=""></span>
                     </div>
                 </div>
 
@@ -664,7 +669,7 @@
             let vat = 0;
             let grandTotalUSD = subtotal;
 
-            if (currentTab === 0) { // Tax Invoice
+            if (currentTab === 0) {
                 if (!isManualVAT) {
                     vat = subtotal * 0.10;
                     document.getElementById('vatInput').value = vat.toFixed(2);
@@ -672,7 +677,7 @@
                     vat = parseFloat(document.getElementById('vatInput').value) || 0;
                 }
                 grandTotalUSD = subtotal + vat;
-            } else { // Commercial / Debit Note
+            } else {
                 document.getElementById('vatInput').value = "0.00";
                 grandTotalUSD = subtotal;
             }
@@ -703,6 +708,7 @@
                 seal_no: document.getElementById('sealNo').value,
                 booking_no: document.getElementById('bookingNo').value,
                 container_no: document.getElementById('containerNo').value,
+                container_no_left: document.getElementById('containerNoLeft').value,
                 remark: document.getElementById('remark').value,
                 inv_date: document.getElementById('invDate').value,
                 date_out: document.getElementById('dateOut').value,
@@ -778,6 +784,7 @@
                 document.getElementById('sealNo').value = inv.seal_no || '';
                 document.getElementById('bookingNo').value = inv.booking_no || '';
                 document.getElementById('containerNo').value = inv.container_no || '';
+                document.getElementById('containerNoLeft').value = inv.container_no_left || '';
                 document.getElementById('remark').value = inv.remark || '';
                 document.getElementById('invDate').value = inv.inv_date || '';
                 document.getElementById('dateOut').value = inv.date_out || '';
@@ -803,7 +810,7 @@
                 calculateInvoice();
             } catch (err) {
                 console.error("Error loading invoice for edit:", err);
-                alert("មានបញ្ហាក្នុងการទាញយកទិន្នន័យសម្រាប់កែប្រែ!");
+                alert("មានបញ្ហាក្នុងការទាញយកទិន្នន័យសម្រាប់កែប្រែ!");
             }
         }
 
@@ -830,7 +837,6 @@
             return str;
         }
 
-        // 💡 កែតម្រូវមុខងារ convertKhmer ថ្មី សុវត្ថិភាព មិនឱ្យ Error Maximum Call Stack
         function numberToKhmerWords(num) {
             num = Math.round(Math.abs(parseFloat(num) || 0));
             if (num === 0) return "សូន្យរៀល";
@@ -852,8 +858,6 @@
                         } else {
                             str += khmerNumbers[digit] + (pos > 0 ? units[pos] : "");
                         }
-                    } else if (pos === 1) {
-                        // Handle zero tens if needed
                     }
                 }
                 return str;
