@@ -198,7 +198,6 @@
             font-weight: 700;
         }
 
-        /* 📐 រំកិលផ្នែកខាងស្តាំឱ្យស្មើនឹងជួររយៈពេល (Duration) នៃតារាង */
         .info-grid {
             display: grid;
             grid-template-columns: 1.25fr 0.75fr;
@@ -423,7 +422,8 @@
                         <span class="info-value"><input type="text" id="dateOut" value=""></span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Invoice No:</span>
+                        <!-- Label នេះនឹងដូរអត្ថបទស្វ័យប្រវត្តិទៅតាម Tab -->
+                        <span class="info-label" id="invoiceNoLabel">Tax Invoice No:</span>
                         <span class="info-value"><input type="text" id="invoiceNo" value="INV-2026-001"></span>
                     </div>
                     <div class="info-row">
@@ -464,7 +464,6 @@
                     <td colspan="7" class="text-right" style="font-weight: bold; width: 77%;">សរុប / Total</td>
                     <td class="text-right" style="width: 23%; font-weight: bold;">$ <span id="subTotalDisplay">0.00</span></td>
                 </tr>
-                <!-- ជួរ Exch Rate និង VAT (នឹងលាក់ VAT ពេលនៅ Commercial ឬ Debit Note តែ Exch Rate នៅដដែល) -->
                 <tr id="exchRateRow">
                     <td style="width: 25%; font-weight: bold;">Exch Rate In Riel:</td>
                     <td style="width: 10%;">KHR</td>
@@ -560,6 +559,7 @@
             const invSubTitle = document.getElementById('invSubTitle');
             const vatTinSection = document.getElementById('vatTinSection');
             const modeTitle = document.getElementById('modeTitle');
+            const invoiceNoLabel = document.getElementById('invoiceNoLabel');
 
             if (currentTab === 0) { // Tax Invoice
                 invMainTitle.style.display = "block";
@@ -567,33 +567,39 @@
                 invSubTitle.innerText = "TAX INVOICE";
                 vatTinSection.style.display = "block";
                 
-                // បង្ហាញ VAT វិញធម្មតា
                 vatLabelCell.style.display = "";
                 vatInputCell.style.display = "";
                 modeTitle.innerText = "ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE)";
+                
+                // 💡 ដូរមក Tax Invoice No សម្រាប់ Tax Invoice
+                invoiceNoLabel.innerText = "Tax Invoice No:";
             } else if (currentTab === 1) { // Commercial Invoice
                 invMainTitle.style.display = "block";
                 invMainTitle.innerText = "វិក្កយបត្រ";
                 invSubTitle.innerText = "COMMERCIAL INVOICE";
                 vatTinSection.style.display = "none";
                 
-                // 🛑 ដក/លាក់ VAT ចេញ តែរក្សា Exch Rate ទុកដដែល
                 vatLabelCell.style.display = "none";
                 vatInputCell.style.display = "none";
                 vatInput.value = "0.00";
                 isManualVAT = false;
                 modeTitle.innerText = "ទម្រង់វិក្កយបត្រធម្មតា (COMMERCIAL INVOICE)";
+                
+                // 💡 ដូរមក Invoice No ធម្មតា
+                invoiceNoLabel.innerText = "Invoice No:";
             } else if (currentTab === 2) { // Debit Note
                 invMainTitle.style.display = "none";
                 invSubTitle.innerText = "DEBIT NOTE";
                 vatTinSection.style.display = "none";
                 
-                // 🛑 ដក/លាក់ VAT ចេញ តែរក្សា Exch Rate ទុកដដែល
                 vatLabelCell.style.display = "none";
                 vatInputCell.style.display = "none";
                 vatInput.value = "0.00";
                 isManualVAT = false;
                 modeTitle.innerText = "ទម្រង់ DEBIT NOTE";
+                
+                // 💡 ដូរមក Invoice No ធម្មតា
+                invoiceNoLabel.innerText = "Invoice No:";
             }
         }
 
@@ -664,7 +670,7 @@
             let vat = 0;
             let grandTotalUSD = subtotal;
 
-            if (currentTab === 0) { // Tax Invoice គណនាបន្ថែម VAT 10%
+            if (currentTab === 0) { // Tax Invoice
                 if (!isManualVAT) {
                     vat = subtotal * 0.10;
                     document.getElementById('vatInput').value = vat.toFixed(2);
@@ -672,7 +678,7 @@
                     vat = parseFloat(document.getElementById('vatInput').value) || 0;
                 }
                 grandTotalUSD = subtotal + vat;
-            } else { // Commercial Invoice & Debit Note គ្មាន VAT ទេ
+            } else { // Commercial / Debit Note
                 document.getElementById('vatInput').value = "0.00";
                 grandTotalUSD = subtotal;
             }
@@ -803,7 +809,7 @@
                 calculateInvoice();
             } catch (err) {
                 console.error("Error loading invoice for edit:", err);
-                alert("មានបញ្ហាក្នុងการទាញយកទិន្នន័យសម្រាប់កែប្រែ!");
+                alert("មានបញ្ហាក្នុងការទាញយកទិន្នន័យសម្រាប់កែប្រែ!");
             }
         }
 
