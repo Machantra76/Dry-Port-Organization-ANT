@@ -198,11 +198,11 @@
             font-weight: 700;
         }
 
-        /* 📐 កែសម្រួល Grid ឱ្យផ្នែកខាងស្តាំរំកិលមកស្តាំល្មមស្មើនឹងតារាង QTY */
+        /* 📐 រំកិលផ្នែកខាងស្តាំឱ្យស្មើនឹងជួររយៈពេល (Duration) នៃតារាង */
         .info-grid {
             display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
-            gap: 20px;
+            grid-template-columns: 1.25fr 0.75fr;
+            gap: 15px;
             margin-bottom: 15px;
         }
 
@@ -218,10 +218,11 @@
             font-size: 13.5px;
         }
 
-        /* កែទំហំ label ផ្នែកខាងស្តាំឱ្យខ្លីល្មម ដើម្បីឱ្យប្រអប់ input រំកិលមកស្តាំស្មើគ្នា */
+        /* កាត់បន្ថយទំហំ Label ផ្នែកស្តាំបន្ថែមទៀត ដើម្បីឱ្យប្រអប់ input រំកិលមកស្តាំកាន់តែខ្លាំង */
         .info-right .info-label {
-            width: 105px;
+            width: 95px;
             flex-shrink: 0;
+            font-size: 13px;
         }
 
         .info-value {
@@ -412,7 +413,7 @@
                     </div>
                 </div>
 
-                <!-- ផ្នែកខាងស្តាំដែលបានរំកិលមកស្តាំស្មើល្អ -->
+                <!-- ផ្នែកខាងស្តាំដែលបានរំកិលមកស្តាំស្មើនឹង Duration -->
                 <div class="info-right">
                     <div class="info-row">
                         <span class="info-label">Date In:</span>
@@ -791,7 +792,7 @@
                 calculateInvoice();
             } catch (err) {
                 console.error("Error loading invoice for edit:", err);
-                alert("មានបញ្ហាក្នុងការទាញយកទិន្នន័យសម្រាប់កែប្រែ!");
+                alert("មានបញ្ហាក្នុងการទាញយកទិន្នន័យសម្រាប់កែប្រែ!");
             }
         }
 
