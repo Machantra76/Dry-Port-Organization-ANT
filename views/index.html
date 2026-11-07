@@ -37,7 +37,6 @@
             flex-wrap: wrap;
         }
 
-        /* 🖼️ ការរៀបចំស្តាយសម្រាប់ Logo ANT លើ Header */
         .header-left-group {
             display: flex;
             align-items: center;
@@ -125,6 +124,14 @@
             max-width: 450px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             text-align: center;
+        }
+
+        /* 🖼️ ស្តាយសម្រាប់ Logo ANT លើផ្ទាំង Login Modal */
+        .auth-logo {
+            width: 80px;
+            height: 80px;
+            object-fit: contain;
+            margin-bottom: 12px;
         }
 
         .auth-card h2 {
@@ -312,6 +319,8 @@
     <div id="authModal" class="modal-overlay">
         <!-- Form Login -->
         <div id="loginCard" class="auth-card">
+            <!-- 🖼️ បន្ថែម Logo ANT លើផ្ទាំង Login -->
+            <img src="logo.jpg" alt="ANT Logo" class="auth-logo">
             <h2>ចូលប្រព័ន្ធ (Login)</h2>
             <p>ANT Dry Port Management Dashboard</p>
             <form id="loginForm" onsubmit="handleLogin(event)">
@@ -329,6 +338,8 @@
 
         <!-- Form បង្កើត User ថ្មី (សម្រាប់ Admin) -->
         <div id="registerCard" class="auth-card" style="display: none;">
+            <!-- 🖼️ បន្ថែម Logo ANT លើផ្ទាំង Register -->
+            <img src="logo.jpg" alt="ANT Logo" class="auth-logo">
             <h2>បង្កើត User ថ្មី (Create User)</h2>
             <p>ចុះឈ្មោះអ្នកប្រើប្រាស់ និងកំណត់សិទ្ធិ (Role)</p>
             <form id="registerForm" onsubmit="handleRegister(event)">
@@ -402,7 +413,6 @@
     <!-- Header Dashboard -->
     <header>
         <div class="header-left-group">
-            <!-- 🖼️ បន្ថែម Logo ANT នៅទីនេះ -->
             <img src="logo.jpg" alt="ANT Logo" class="header-logo">
             <div class="header-title">
                 <h1>រចនាសម្ព័ន្ធស្ថាប័នផែស្ងួត អេអិនធី</h1>
