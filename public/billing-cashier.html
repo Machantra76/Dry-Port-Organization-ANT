@@ -218,7 +218,6 @@
             font-size: 13.5px;
         }
 
-        /* កាត់បន្ថយទំហំ Label ផ្នែកស្តាំបន្ថែមទៀត ដើម្បីឱ្យប្រអប់ input រំកិលមកស្តាំកាន់តែខ្លាំង */
         .info-right .info-label {
             width: 95px;
             flex-shrink: 0;
@@ -413,7 +412,7 @@
                     </div>
                 </div>
 
-                <!-- ផ្នែកខាងស្តាំដែលបានរំកិលមកស្តាំស្មើនឹង Duration -->
+                <!-- ផ្នែកខាងស្តាំ -->
                 <div class="info-right">
                     <div class="info-row">
                         <span class="info-label">Date In:</span>
@@ -465,12 +464,13 @@
                     <td colspan="7" class="text-right" style="font-weight: bold; width: 77%;">សរុប / Total</td>
                     <td class="text-right" style="width: 23%; font-weight: bold;">$ <span id="subTotalDisplay">0.00</span></td>
                 </tr>
-                <tr id="vatRow">
+                <!-- ជួរ Exch Rate និង VAT (នឹងលាក់ VAT ពេលនៅ Commercial ឬ Debit Note តែ Exch Rate នៅដដែល) -->
+                <tr id="exchRateRow">
                     <td style="width: 25%; font-weight: bold;">Exch Rate In Riel:</td>
                     <td style="width: 10%;">KHR</td>
                     <td style="width: 15%; font-weight: bold;" class="text-right"><input type="number" id="exchRate" style="width:100%; border:none; outline:none; font-weight:bold; text-align:right;" value="4085" oninput="calculateInvoice()"></td>
-                    <td colspan="4" class="text-right" style="font-weight: bold;">អាករលើតម្លៃបន្ថែម / VAT 10%</td>
-                    <td class="text-right">$ <input type="number" id="vatInput" style="width:80%; border:none; outline:none; text-align:right; font-weight:bold;" value="0.00" step="0.01" oninput="calculateCustomVAT()"></td>
+                    <td colspan="4" class="text-right" style="font-weight: bold;" id="vatLabelCell">អាករលើតម្លៃបន្ថែម / VAT 10%</td>
+                    <td class="text-right" id="vatInputCell">$ <input type="number" id="vatInput" style="width:80%; border:none; outline:none; text-align:right; font-weight:bold;" value="0.00" step="0.01" oninput="calculateCustomVAT()"></td>
                 </tr>
                 <tr>
                     <td style="font-weight: bold;">សរុបជាអក្សរ:</td>
@@ -553,34 +553,44 @@
         }
 
         function updateTabUI() {
-            const vatRow = document.getElementById('vatRow');
+            const vatLabelCell = document.getElementById('vatLabelCell');
+            const vatInputCell = document.getElementById('vatInputCell');
             const vatInput = document.getElementById('vatInput');
             const invMainTitle = document.getElementById('invMainTitle');
             const invSubTitle = document.getElementById('invSubTitle');
             const vatTinSection = document.getElementById('vatTinSection');
             const modeTitle = document.getElementById('modeTitle');
 
-            if (currentTab === 0) {
+            if (currentTab === 0) { // Tax Invoice
                 invMainTitle.style.display = "block";
                 invMainTitle.innerText = "វិក្កយបត្រអាករ";
                 invSubTitle.innerText = "TAX INVOICE";
                 vatTinSection.style.display = "block";
-                vatRow.style.display = "";
+                
+                // បង្ហាញ VAT វិញធម្មតា
+                vatLabelCell.style.display = "";
+                vatInputCell.style.display = "";
                 modeTitle.innerText = "ទម្រង់វិក្កយបត្រអាករ (TAX INVOICE)";
-            } else if (currentTab === 1) {
+            } else if (currentTab === 1) { // Commercial Invoice
                 invMainTitle.style.display = "block";
                 invMainTitle.innerText = "វិក្កយបត្រ";
                 invSubTitle.innerText = "COMMERCIAL INVOICE";
                 vatTinSection.style.display = "none";
-                vatRow.style.display = "";
+                
+                // 🛑 ដក/លាក់ VAT ចេញ តែរក្សា Exch Rate ទុកដដែល
+                vatLabelCell.style.display = "none";
+                vatInputCell.style.display = "none";
                 vatInput.value = "0.00";
                 isManualVAT = false;
                 modeTitle.innerText = "ទម្រង់វិក្កយបត្រធម្មតា (COMMERCIAL INVOICE)";
-            } else if (currentTab === 2) {
+            } else if (currentTab === 2) { // Debit Note
                 invMainTitle.style.display = "none";
                 invSubTitle.innerText = "DEBIT NOTE";
                 vatTinSection.style.display = "none";
-                vatRow.style.display = "";
+                
+                // 🛑 ដក/លាក់ VAT ចេញ តែរក្សា Exch Rate ទុកដដែល
+                vatLabelCell.style.display = "none";
+                vatInputCell.style.display = "none";
                 vatInput.value = "0.00";
                 isManualVAT = false;
                 modeTitle.innerText = "ទម្រង់ DEBIT NOTE";
@@ -654,7 +664,7 @@
             let vat = 0;
             let grandTotalUSD = subtotal;
 
-            if (currentTab === 0) {
+            if (currentTab === 0) { // Tax Invoice គណនាបន្ថែម VAT 10%
                 if (!isManualVAT) {
                     vat = subtotal * 0.10;
                     document.getElementById('vatInput').value = vat.toFixed(2);
@@ -662,8 +672,9 @@
                     vat = parseFloat(document.getElementById('vatInput').value) || 0;
                 }
                 grandTotalUSD = subtotal + vat;
-            } else {
+            } else { // Commercial Invoice & Debit Note គ្មាន VAT ទេ
                 document.getElementById('vatInput').value = "0.00";
+                grandTotalUSD = subtotal;
             }
 
             document.getElementById('grandTotalUSDDisplay').innerText = grandTotalUSD.toFixed(2);
