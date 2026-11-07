@@ -162,6 +162,24 @@
             margin: 10px 0 15px 0;
         }
 
+        /* រចនាប័ទ្មសម្រាប់ចំណងជើងវិក្កយបត្រអាករនៅចំកណ្តាលក្រោមបន្ទាត់ */
+        .invoice-type-heading {
+            text-align: center;
+            margin: 10px 0 15px 0;
+        }
+
+        .invoice-type-heading h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .invoice-type-heading h3 {
+            margin: 2px 0 0 0;
+            font-size: 15px;
+            font-weight: 700;
+        }
+
         .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -332,15 +350,16 @@
         <div class="invoice-box" id="invoiceBox">
             
             <div class="invoice-title-container">
-                <h2 id="invMainTitle">អេ អេន ធី ដ្រាយ ផត</h2>
-        ​​     <div class="company-name">ANT DRY PORT (CAMBODIA)  CO.,LTD</div>
-          <div class="address-text">អាសយដ្ឋាន ៖ ក្បាលដីលេខ ៤៥៦ ផ្លូវបេតុង ភូមិត្រពាំងអារក្ស សង្កាត់ឪឡោក ខណ្ឌកំបូល រាជធានីភ្នំពេញ</div>
-         <div class="address-text">Kbal Di Leak 456, Beton Street, Phum Trapeang Arak, Sangkat Ou Lok, Khan Kambol, Phnom Penh</div>
+                <h2 style="font-size: 16px; margin: 0;">ព្រះរាជាណាចក្រកម្ពុជា ជាតិ សាសនា ព្រះมหากษัตริย์</h2>
+                <div class="company-name" style="margin-top: 8px;">ANT DRY PORT (CAMBODIA) CO.,LTD</div>
+                <div class="address-text">អាសយដ្ឋាន ៖ ក្បាលដីលេខ ៤៥៦ ផ្លូវបេតុង ភូមិត្រពាំងអារក្ស សង្កាត់ឪឡោក ខណ្ឌកំបូល រាជធានីភ្នំពេញ</div>
+                <div class="address-text">Kbal Di Leak 456, Beton Street, Phum Trapeang Arak, Sangkat Ou Lok, Khan Kambol, Phnom Penh</div>
                 <div class="address-text" style="margin-top: 2px;">Tel: (+855) 10 79 7777 | Email: antdryport@gmail.com</div>
-                 <div id="vatTinSection">លេខអត្តសញ្ញាណកម្ម អាកប (VAT-TIN) ៖ K010-902503705</div>
+                <div id="vatTinSection" style="margin-top: 3px;">លេខអត្តសញ្ញាណកម្ម អាកប (VAT-TIN) ៖ K010-902503705</div>
             </div>
 
             <div class="header-divider"></div>
+
             <!-- ផ្នែកបន្ថែម៖ វិក្កយបត្រអាករ / TAX INVOICE ចំកណ្តាលក្រោមបន្ទាត់ -->
             <div class="invoice-type-heading">
                 <h2 id="invMainTitle">វិក្កយបត្រអាករ</h2>
@@ -457,7 +476,7 @@
 
             <div class="note-section">
                 <div style="font-weight: bold; margin-bottom: 2px;">Note:</div>
-                <textarea id="invoiceNote" rows="5" placeholder="បញ្ចូលកំណត់សម្គាល់បន្ថែមនៅទីនេះ..."></textarea>
+                <textarea id="invoiceNote" rows="5" placeholder="បញ្ចូលកំណត់សម្គាល់បន្ថែមនៅទីนี่..."></textarea>
             </div>
 
             <div class="signature-container">
@@ -783,7 +802,7 @@
                 calculateInvoice();
             } catch (err) {
                 console.error("Error loading invoice for edit:", err);
-                alert("មានបញ្ហាក្នុងការទាញយកទិន្នន័យសម្រាប់កែប្រែ!");
+                alert("មានបញ្ហាក្នុងการទាញយកទិន្នន័យសម្រាប់កែប្រែ!");
             }
         }
 
@@ -830,7 +849,7 @@
                 if (n < 10000) {
                     return khmerNumbers[Math.floor(n / 1000)] + "ពាន់" + (n % 1000 !== 0 ? convertKhmer(n % 1000) : "");
                 }
-                if (n < 100000) {
+                if (n < 100005) {
                     return convertKhmer(Math.floor(n / 10000)) + "ម៉ឺន" + (n % 10000 !== 0 ? convertKhmer(n % 10000) : "");
                 }
                 if (n < 1000000) {
