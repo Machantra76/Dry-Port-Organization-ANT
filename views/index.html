@@ -191,14 +191,14 @@
             cursor: pointer;
         }
 
-        /* 🌟 Layout បែងចែកខាងឆ្វេង (រូបភាពផែស្ងួត) និងខាងស្តាំ (កាតមែកធាង) */
+        /* 🌟 Main Layout: ផ្នែកខាងឆ្វេង (រូបភាពផែស្ងួត) និងផ្នែកខាងស្តាំ (កាតរៀបចុះក្រោម) */
         .main-layout {
             max-width: 1400px;
             margin: 30px auto;
             padding: 0 20px;
             display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 24px;
+            grid-template-columns: 350px 1fr;
+            gap: 30px;
             align-items: start;
         }
 
@@ -222,7 +222,7 @@
 
         .dryport-photo-box {
             width: 100%;
-            height: 220px;
+            height: 260px;
             border-radius: 8px;
             overflow: hidden;
             background: #e2e8f0;
@@ -241,22 +241,22 @@
 
         .left-dryport-space h3 {
             color: var(--primary-color);
-            font-size: 17px;
+            font-size: 18px;
             margin: 0 0 8px 0;
         }
 
         .left-dryport-space p {
-            font-size: 12.5px;
+            font-size: 13px;
             color: #64748b;
             margin: 0;
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
-        /* 🌲 ផ្នែកខាងស្តាំ៖ កាត និងមែកធាង (Tree View) */
+        /* 🌲 ផ្នែកខាងស្តាំ៖ កាតរៀបជាជួរចុះមកក្រោម (Column Stack) */
         .right-cards-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
         .card {
@@ -267,12 +267,12 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 6px 20px rgba(0, 198, 255, 0.15);
+            box-shadow: 0 4px 15px rgba(0, 198, 255, 0.12);
             border: 1px solid var(--border-color);
         }
 
         .card-header {
-            padding: 18px 20px;
+            padding: 16px 20px;
             border-bottom: 1px solid var(--border-color);
             background: linear-gradient(135deg, #f8fafc, #edf2f7);
             cursor: pointer;
@@ -283,7 +283,7 @@
 
         .card-header-info h3 {
             margin: 0;
-            font-size: 16px;
+            font-size: 16.5px;
             font-weight: 700;
             color: var(--primary-color);
         }
@@ -316,7 +316,7 @@
 
         .card.active .card-body {
             max-height: 1000px;
-            padding: 12px 15px;
+            padding: 12px 18px 16px 18px;
             transition: max-height 0.6s ease-in;
         }
 
@@ -502,7 +502,7 @@
         </div>
     </header>
 
-    <!-- 🌟 Main Layout: ផ្នែកខាងឆ្វេង (រូបភាពផែស្ងួត) និងផ្នែកខាងស្តាំ (កាតមែកធាង) -->
+    <!-- 🌟 Main Layout: ផ្នែកខាងឆ្វេង (រូបភាពផែស្ងួត) និងផ្នែកខាងស្តាំ (កាតរៀបចុះក្រោម) -->
     <div class="main-layout">
         <!-- Space ខាងឆ្វេងសម្រាប់រូបភាពផែស្ងួត -->
         <div class="left-dryport-space">
@@ -514,7 +514,7 @@
             <p>មជ្ឈមណ្ឌលភស្តុភារកម្ម និងឃ្លាំងពន្ធដារទំនើប ផ្តល់សេវាកម្មដឹកជញ្ជូន គ្រប់គ្រងកុងតឺន័រ និងទំនិញគ្រប់ប្រភេទដោយសុវត្ថិភាពខ្ពស់។</p>
         </div>
 
-        <!-- ផ្នែកខាងស្តាំសម្រាប់បង្ហាញកាតតាមផ្នែក -->
+        <!-- ផ្នែកខាងស្តាំសម្រាប់បង្ហាញកាតរៀបជាជួរចុះមកក្រោម -->
         <div id="dashboard" class="right-cards-container">
             <!-- Content Rendered dynamically -->
         </div>
@@ -810,7 +810,6 @@
                     `;
                 }).join('');
                 
-                // បើកកាតទី១ ស្វ័យប្រវត្តិ
                 let activeClass = index === 0 ? 'active' : '';
 
                 let card = `
