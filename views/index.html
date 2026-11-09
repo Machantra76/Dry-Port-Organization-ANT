@@ -18,7 +18,7 @@
 
         body {
             font-family: 'Kantumruy Pro', sans-serif;
-            /* 💡 រូបភាព Background ពេញអេក្រង់ល្អឥតខ្ចោះ (សូមប្រាកដថាဖိုင် bg.jpg ស្ថិតក្នុង Folder ជាមួយគ្នា) */
+            /* 💡 កូដដាក់រូបភាព Background ពេញអេក្រង់ និងមិនរត់បាត់ពេល Scroll */
             background: linear-gradient(rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.5)), url('bg.jpg') no-repeat center center fixed;
             background-size: cover;
             -webkit-background-size: cover;
@@ -195,23 +195,22 @@
             cursor: pointer;
         }
 
-        /* 🌟 Main Layout: កាតនៅខាងស្តាំ */
-        .main-layout {
+        /* 🌟 Main Layout: រៀបចំកាតឱ្យនៅខាងស្តាំ និងមានទំហំសមល្មម */
+        .container {
             max-width: 1400px;
             margin: 30px auto;
             padding: 0 30px;
             display: flex;
-            justify-content: flex-end;
+            justify-content: flex-end; /* 💡 រុញកាតឱ្យទៅនៅខាងស្តាំ */
         }
 
-        /* 🌲 ផ្នែកកាតរៀបជាជួរចុះមកក្រោមនៅខាងស្ដាំ (បង្រួមទទឹង max-width ឱ្យខ្លីជាងមុន) */
-        .right-cards-container {
+        .grid-container {
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            align-items: center; /* จัดให้อยู่กึ่งกลาง */
+            gap: 16px;
             width: 100%;
-            max-width: 650px; /* 💡 បង្រួមទទឹងកាតឱ្យខ្លីជាងមុនតាមការចង់បាន */
+            max-width: 650px; /* 💡 បង្រួមកាតឱ្យខ្លីល្មមស្អាត */
+            align-items: center;
         }
 
         .card {
@@ -227,6 +226,23 @@
             width: 100%;
         }
 
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #00c6ff, #ffffff, #8ae9ff, #0072ff, #00c6ff);
+            background-size: 300% 100%;
+            animation: diamondShimmer 3s linear infinite;
+        }
+
+        @keyframes diamondShimmer {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
         .card:hover {
             border-color: #00c6ff;
             box-shadow: 0 0 20px rgba(0, 198, 255, 0.8), 0 8px 25px rgba(0, 0, 0, 0.3);
@@ -234,60 +250,33 @@
         }
 
         .card-header {
-            padding: 14px 18px;
+            padding: 16px 20px;
             border-bottom: 1px solid var(--border-color);
             background: linear-gradient(135deg, rgba(248, 250, 252, 0.95), rgba(237, 242, 247, 0.95));
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            text-align: center; /* 💡 ដាក់អក្សរចំណងជើងកាតឱ្យចំកណ្តាល */
         }
 
-        /* 💡 ដាក់អក្សរក្នុង Header ឱ្យចំកណ្តាល (Center Alignment) */
-        .card-header-info {
-            width: 100%;
-            text-align: center;
-        }
-
-        .card-header-info h3 {
+        .card-header h3 {
             margin: 0;
             font-size: 17px;
             font-weight: 700;
             color: var(--primary-color);
         }
 
-        .card-header-info .eng-title {
+        .card-header .eng-title {
             font-size: 12.5px;
             font-weight: 600;
             color: #475569;
-            margin-top: 2px;
+            margin-top: 3px;
         }
 
-        .tree-toggle-icon {
-            font-size: 14px;
-            color: var(--primary-color);
-            transition: transform 0.3s ease;
-            position: absolute;
-            right: 18px;
-        }
-
-        .card.active .tree-toggle-icon {
-            transform: rotate(180deg);
-        }
-
-        /* មែកធាងរង (Tree Children Container) */
         .card-body {
-            padding: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease-out;
+            padding: 14px 18px 18px 18px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
             background: rgba(255, 255, 255, 0.95);
-        }
-
-        .card.active .card-body {
-            max-height: 800px;
-            padding: 12px 18px 16px 18px;
-            transition: max-height 0.4s ease-in;
         }
 
         .role-list {
@@ -297,48 +286,27 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            position: relative;
-        }
-
-        .role-list::before {
-            content: '';
-            position: absolute;
-            top: 4px;
-            bottom: 12px;
-            left: 12px;
-            width: 2px;
-            background: #94a3b8;
         }
 
         .role-item {
-            position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
+            text-align: center; /* 💡 ដាក់អក្សរខាងក្នុងមែកធាងឱ្យចំកណ្តាល */
             background: #f8fafc;
             border: 1px solid var(--border-color);
-            padding: 10px 12px 10px 28px;
-            border-radius: 6px;
+            padding: 10px 14px;
+            border-radius: 8px;
             text-decoration: none;
             transition: all 0.2s ease;
-            margin-left: 8px;
-        }
-
-        .role-item::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: -8px;
-            width: 8px;
-            height: 2px;
-            background: #94a3b8;
         }
 
         .role-item:hover {
             background: linear-gradient(135deg, #00c6ff, #0072ff);
             color: #ffffff;
             border-color: transparent;
-            transform: translateX(4px);
+            transform: translateY(-2px);
         }
 
         .role-item:hover .role-km, 
@@ -429,7 +397,7 @@
         </div>
     </div>
 
-    <!-- Modal សម្រាប់ Admin គ្រប់គ្រងបញ្ជី User -->
+    <!-- Modal សម្រាប់ Admin គ្រប់គ្រងបញ្ជី User (Active / Inactive) -->
     <div id="manageUsersModal" class="modal-overlay" style="display: none;">
         <div class="auth-card" style="max-width: 900px; text-align: left; max-height: 85vh; overflow-y: auto;">
             <h2 style="text-align: center;">គ្រប់គ្រងគណនីអ្នកប្រើប្រាស់ (User Management)</h2>
@@ -446,7 +414,9 @@
                             <th style="padding: 10px; text-align: center;">សកម្មភាព</th>
                         </tr>
                     </thead>
-                    <tbody id="userTableBody"></tbody>
+                    <tbody id="userTableBody">
+                        <!-- ទិន្នន័យ User នឹងត្រូវ Load ចូលទីនេះដោយស្វ័យប្រវត្តិ -->
+                    </tbody>
                 </table>
             </div>
 
@@ -471,10 +441,8 @@
         </div>
     </header>
 
-    <!-- 🌟 Main Layout -->
-    <div class="main-layout">
-        <!-- ផ្នែកខាងស្តាំសម្រាប់បង្ហាញកាតរៀបជាជួរចុះមកក្រោម -->
-        <div id="dashboard" class="right-cards-container">
+    <div class="container">
+        <div id="dashboard" class="grid-container">
             <!-- Content Rendered dynamically -->
         </div>
     </div>
@@ -735,12 +703,6 @@
             location.reload();
         }
 
-        // 🌲 មុខងារចុចបើក-បិទមែកធាង (Toggle Tree) ឯកកោ
-        function toggleTreeCard(headerElement) {
-            const card = headerElement.closest('.card');
-            card.classList.toggle('active');
-        }
-
         function renderDashboard(user) {
             const dashboardContainer = document.getElementById('dashboard');
             dashboardContainer.innerHTML = '';
@@ -754,7 +716,7 @@
                 }
             }
 
-            filteredDepts.forEach((dept, index) => {
+            filteredDepts.forEach(dept => {
                 let engName = englishTitles[dept.id] || "Department";
                 
                 let rolesHtml = dept.roles.map(role => {
@@ -769,16 +731,11 @@
                     `;
                 }).join('');
                 
-                let activeClass = index === 0 ? 'active' : '';
-
                 let card = `
-                    <div class="card ${activeClass}">
-                        <div class="card-header" onclick="toggleTreeCard(this)">
-                            <div class="card-header-info">
-                                <h3>${dept.name}</h3>
-                                <div class="eng-title">${engName}</div>
-                            </div>
-                            <i class="fa-solid fa-chevron-down tree-toggle-icon"></i>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>${dept.name}</h3>
+                            <div class="eng-title">${engName}</div>
                         </div>
                         <div class="card-body">
                             <ul class="role-list">${rolesHtml}</ul>
