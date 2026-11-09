@@ -191,14 +191,14 @@
             cursor: pointer;
         }
 
-        /* 🌟 Main Layout: ផ្នែកខាងឆ្វេង (រូបភាពផែស្ងួត) និងផ្នែកខាងស្តាំ (កាតរៀបចុះក្រោម) */
+        /* 🌟 Main Layout: ផ្នែកខាងឆ្វេង និងផ្នែកខាងស្តាំរៀបជាជួរ */
         .main-layout {
             max-width: 1400px;
             margin: 30px auto;
             padding: 0 20px;
             display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 30px;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
             align-items: start;
         }
 
@@ -212,8 +212,8 @@
         .left-dryport-space {
             background: white;
             border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+            padding: 18px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
             border: 1px solid var(--border-color);
             position: sticky;
             top: 20px;
@@ -222,14 +222,14 @@
 
         .dryport-photo-box {
             width: 100%;
-            height: 260px;
+            height: 200px;
             border-radius: 8px;
             overflow: hidden;
             background: #e2e8f0;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             border: 2px dashed #cbd5e1;
         }
 
@@ -241,38 +241,38 @@
 
         .left-dryport-space h3 {
             color: var(--primary-color);
-            font-size: 18px;
-            margin: 0 0 8px 0;
+            font-size: 16px;
+            margin: 0 0 6px 0;
         }
 
         .left-dryport-space p {
-            font-size: 13px;
+            font-size: 12px;
             color: #64748b;
             margin: 0;
-            line-height: 1.6;
+            line-height: 1.5;
         }
 
-        /* 🌲 ផ្នែកខាងស្តាំ៖ កាតរៀបជាជួរចុះមកក្រោម (Column Stack) */
+        /* 🌲 ផ្នែកខាងស្តាំ៖ កាតរៀបជាជួរចុះមកក្រោម */
         .right-cards-container {
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 14px;
         }
 
         .card {
             background: var(--card-bg);
-            border-radius: 12px;
+            border-radius: 10px;
             transition: all 0.3s ease;
             position: relative;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0, 198, 255, 0.12);
+            box-shadow: 0 3px 10px rgba(0, 198, 255, 0.1);
             border: 1px solid var(--border-color);
         }
 
         .card-header {
-            padding: 16px 20px;
+            padding: 14px 18px;
             border-bottom: 1px solid var(--border-color);
             background: linear-gradient(135deg, #f8fafc, #edf2f7);
             cursor: pointer;
@@ -283,20 +283,20 @@
 
         .card-header-info h3 {
             margin: 0;
-            font-size: 16.5px;
+            font-size: 15.5px;
             font-weight: 700;
             color: var(--primary-color);
         }
 
         .card-header-info .eng-title {
-            font-size: 12px;
+            font-size: 11.5px;
             font-weight: 600;
             color: #64748b;
-            margin-top: 3px;
+            margin-top: 2px;
         }
 
         .tree-toggle-icon {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--primary-color);
             transition: transform 0.3s ease;
         }
@@ -310,14 +310,14 @@
             padding: 0;
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+            transition: max-height 0.3s ease-out;
             background: #ffffff;
         }
 
         .card.active .card-body {
-            max-height: 1000px;
-            padding: 12px 18px 16px 18px;
-            transition: max-height 0.6s ease-in;
+            max-height: 800px;
+            padding: 10px 15px 14px 15px;
+            transition: max-height 0.4s ease-in;
         }
 
         .role-list {
@@ -326,7 +326,7 @@
             margin: 0;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             position: relative;
         }
 
@@ -334,9 +334,9 @@
         .role-list::before {
             content: '';
             position: absolute;
-            top: 5px;
-            bottom: 15px;
-            left: 14px;
+            top: 4px;
+            bottom: 12px;
+            left: 12px;
             width: 2px;
             background: #cbd5e1;
         }
@@ -348,19 +348,19 @@
             justify-content: center;
             background: #f8fafc;
             border: 1px solid var(--border-color);
-            padding: 10px 12px 10px 30px;
+            padding: 8px 10px 8px 26px;
             border-radius: 6px;
             text-decoration: none;
             transition: all 0.2s ease;
-            margin-left: 10px;
+            margin-left: 8px;
         }
 
         .role-item::before {
             content: '';
             position: absolute;
             top: 50%;
-            left: -10px;
-            width: 10px;
+            left: -8px;
+            width: 8px;
             height: 2px;
             background: #cbd5e1;
         }
@@ -369,7 +369,7 @@
             background: linear-gradient(135deg, #00c6ff, #0072ff);
             color: #ffffff;
             border-color: transparent;
-            transform: translateX(4px);
+            transform: translateX(3px);
         }
 
         .role-item:hover .role-km, 
@@ -379,16 +379,16 @@
 
         .role-km {
             display: block;
-            font-size: 14px;
+            font-size: 13.5px;
             font-weight: 600;
             color: var(--text-main);
         }
 
         .role-en {
             display: block;
-            font-size: 11.5px;
+            font-size: 11px;
             color: #64748b;
-            margin-top: 2px;
+            margin-top: 1px;
         }
     </style>
 </head>
@@ -507,7 +507,6 @@
         <!-- Space ខាងឆ្វេងសម្រាប់រូបភាពផែស្ងួត -->
         <div class="left-dryport-space">
             <div class="dryport-photo-box">
-                <!-- 💡 បងអាចប្តូរ Link រូបភាពផែស្ងួតតាមតម្រូវការ -->
                 <img src="dryport-facility.jpg" alt="ANT Dry Port Facility" onerror="this.src='https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80'">
             </div>
             <h3>ANT Dry Port (Cambodia)</h3>
