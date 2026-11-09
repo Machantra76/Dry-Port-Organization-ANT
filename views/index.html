@@ -126,7 +126,6 @@
             text-align: center;
         }
 
-        /* 🖼️ ស្តាយសម្រាប់ Logo ANT លើផ្ទាំង Login Modal */
         .auth-logo {
             width: 80px;
             height: 80px;
@@ -192,17 +191,72 @@
             cursor: pointer;
         }
 
-        .container {
+        /* 🌟 Layout បែងចែកខាងឆ្វេង (រូបភាពផែស្ងួត) និងខាងស្តាំ (កាតមែកធាង) */
+        .main-layout {
             max-width: 1400px;
             margin: 30px auto;
             padding: 0 20px;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+            align-items: start;
         }
 
-        .grid-container {
+        @media (max-width: 992px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 🖼️ ផ្នែក Space ខាងឆ្វេងសម្រាប់ដាក់រូបភាពផែស្ងួត */
+        .left-dryport-space {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border-color);
+            position: sticky;
+            top: 20px;
+            text-align: center;
+        }
+
+        .dryport-photo-box {
+            width: 100%;
+            height: 220px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            border: 2px dashed #cbd5e1;
+        }
+
+        .dryport-photo-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .left-dryport-space h3 {
+            color: var(--primary-color);
+            font-size: 17px;
+            margin: 0 0 8px 0;
+        }
+
+        .left-dryport-space p {
+            font-size: 12.5px;
+            color: #64748b;
+            margin: 0;
+            line-height: 1.5;
+        }
+
+        /* 🌲 ផ្នែកខាងស្តាំ៖ កាត និងមែកធាង (Tree View) */
+        .right-cards-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 24px;
-            align-items: stretch;
+            gap: 20px;
         }
 
         .card {
@@ -213,54 +267,57 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 6px 20px rgba(0, 198, 255, 0.25);
-            height: 100%;
-        }
-
-        .card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: linear-gradient(90deg, #00c6ff, #ffffff, #8ae9ff, #0072ff, #00c6ff);
-            background-size: 300% 100%;
-            animation: diamondShimmer 3s linear infinite;
-        }
-
-        @keyframes diamondShimmer {
-            0% { background-position: 0% 50%; }
-            100% { background-position: 100% 50%; }
+            box-shadow: 0 6px 20px rgba(0, 198, 255, 0.15);
+            border: 1px solid var(--border-color);
         }
 
         .card-header {
-            padding: 20px 20px 10px 20px;
+            padding: 18px 20px;
             border-bottom: 1px solid var(--border-color);
-            background-color: #fafbfc;
-            text-align: center;
+            background: linear-gradient(135deg, #f8fafc, #edf2f7);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        .card-header h3 {
+        .card-header-info h3 {
             margin: 0;
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 700;
             color: var(--primary-color);
         }
 
-        .card-header .eng-title {
-            font-size: 13px;
+        .card-header-info .eng-title {
+            font-size: 12px;
             font-weight: 600;
             color: #64748b;
-            margin-top: 4px;
+            margin-top: 3px;
         }
 
+        .tree-toggle-icon {
+            font-size: 14px;
+            color: var(--primary-color);
+            transition: transform 0.3s ease;
+        }
+
+        .card.active .tree-toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        /* មែកធាងរង (Tree Children Container) */
         .card-body {
-            padding: 15px 20px 20px 20px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0, 1, 0, 1);
+            background: #ffffff;
+        }
+
+        .card.active .card-body {
+            max-height: 1000px;
+            padding: 12px 15px;
+            transition: max-height 0.6s ease-in;
         }
 
         .role-list {
@@ -269,28 +326,50 @@
             margin: 0;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
+            position: relative;
+        }
+
+        /* 🌲 បង្កើតបន្ទាត់មែកធាង (Tree Lines) */
+        .role-list::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            bottom: 15px;
+            left: 14px;
+            width: 2px;
+            background: #cbd5e1;
         }
 
         .role-item {
+            position: relative;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            align-items: center;
-            text-align: center;
             background: #f8fafc;
             border: 1px solid var(--border-color);
-            padding: 14px 16px;
-            border-radius: 8px;
+            padding: 10px 12px 10px 30px;
+            border-radius: 6px;
             text-decoration: none;
             transition: all 0.2s ease;
+            margin-left: 10px;
+        }
+
+        .role-item::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: -10px;
+            width: 10px;
+            height: 2px;
+            background: #cbd5e1;
         }
 
         .role-item:hover {
             background: linear-gradient(135deg, #00c6ff, #0072ff);
             color: #ffffff;
             border-color: transparent;
-            transform: translateY(-2px);
+            transform: translateX(4px);
         }
 
         .role-item:hover .role-km, 
@@ -300,16 +379,16 @@
 
         .role-km {
             display: block;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
             color: var(--text-main);
         }
 
         .role-en {
             display: block;
-            font-size: 14px;
+            font-size: 11.5px;
             color: #64748b;
-            margin-top: 4px;
+            margin-top: 2px;
         }
     </style>
 </head>
@@ -319,7 +398,6 @@
     <div id="authModal" class="modal-overlay">
         <!-- Form Login -->
         <div id="loginCard" class="auth-card">
-            <!-- 🖼️ បន្ថែម Logo ANT លើផ្ទាំង Login -->
             <img src="logo.jpg" alt="ANT Logo" class="auth-logo">
             <h2>ចូលប្រព័ន្ធ (Login)</h2>
             <p>ANT Dry Port Management Dashboard</p>
@@ -338,7 +416,6 @@
 
         <!-- Form បង្កើត User ថ្មី (សម្រាប់ Admin) -->
         <div id="registerCard" class="auth-card" style="display: none;">
-            <!-- 🖼️ បន្ថែម Logo ANT លើផ្ទាំង Register -->
             <img src="logo.jpg" alt="ANT Logo" class="auth-logo">
             <h2>បង្កើត User ថ្មី (Create User)</h2>
             <p>ចុះឈ្មោះអ្នកប្រើប្រាស់ និងកំណត់សិទ្ធិ (Role)</p>
@@ -383,7 +460,7 @@
         </div>
     </div>
 
-    <!-- Modal សម្រាប់ Admin គ្រប់គ្រងបញ្ជី User (Active / Inactive) -->
+    <!-- Modal សម្រាប់ Admin គ្រប់គ្រងបញ្ជី User -->
     <div id="manageUsersModal" class="modal-overlay" style="display: none;">
         <div class="auth-card" style="max-width: 900px; text-align: left; max-height: 85vh; overflow-y: auto;">
             <h2 style="text-align: center;">គ្រប់គ្រងគណនីអ្នកប្រើប្រាស់ (User Management)</h2>
@@ -400,9 +477,7 @@
                             <th style="padding: 10px; text-align: center;">សកម្មភាព</th>
                         </tr>
                     </thead>
-                    <tbody id="userTableBody">
-                        <!-- ទិន្នន័យ User នឹងត្រូវ Load ចូលទីនេះដោយស្វ័យប្រវត្តិ -->
-                    </tbody>
+                    <tbody id="userTableBody"></tbody>
                 </table>
             </div>
 
@@ -427,8 +502,20 @@
         </div>
     </header>
 
-    <div class="container">
-        <div id="dashboard" class="grid-container">
+    <!-- 🌟 Main Layout: ផ្នែកខាងឆ្វេង (រូបភាពផែស្ងួត) និងផ្នែកខាងស្តាំ (កាតមែកធាង) -->
+    <div class="main-layout">
+        <!-- Space ខាងឆ្វេងសម្រាប់រូបភាពផែស្ងួត -->
+        <div class="left-dryport-space">
+            <div class="dryport-photo-box">
+                <!-- 💡 បងអាចប្តូរ Link រូបភាពផែស្ងួតតាមតម្រូវការ -->
+                <img src="dryport-facility.jpg" alt="ANT Dry Port Facility" onerror="this.src='https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80'">
+            </div>
+            <h3>ANT Dry Port (Cambodia)</h3>
+            <p>មជ្ឈមណ្ឌលភស្តុភារកម្ម និងឃ្លាំងពន្ធដារទំនើប ផ្តល់សេវាកម្មដឹកជញ្ជូន គ្រប់គ្រងកុងតឺន័រ និងទំនិញគ្រប់ប្រភេទដោយសុវត្ថិភាពខ្ពស់។</p>
+        </div>
+
+        <!-- ផ្នែកខាងស្តាំសម្រាប់បង្ហាញកាតតាមផ្នែក -->
+        <div id="dashboard" class="right-cards-container">
             <!-- Content Rendered dynamically -->
         </div>
     </div>
@@ -689,6 +776,12 @@
             location.reload();
         }
 
+        // 🌲 មុខងារចុចបើក-បិទមែកធាង (Toggle Tree) សម្រាប់នីមួយៗ
+        function toggleTreeCard(headerElement) {
+            const card = headerElement.closest('.card');
+            card.classList.toggle('active');
+        }
+
         function renderDashboard(user) {
             const dashboardContainer = document.getElementById('dashboard');
             dashboardContainer.innerHTML = '';
@@ -702,7 +795,7 @@
                 }
             }
 
-            filteredDepts.forEach(dept => {
+            filteredDepts.forEach((dept, index) => {
                 let engName = englishTitles[dept.id] || "Department";
                 
                 let rolesHtml = dept.roles.map(role => {
@@ -717,11 +810,17 @@
                     `;
                 }).join('');
                 
+                // បើកកាតទី១ ស្វ័យប្រវត្តិ
+                let activeClass = index === 0 ? 'active' : '';
+
                 let card = `
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>${dept.name}</h3>
-                            <div class="eng-title">${engName}</div>
+                    <div class="card ${activeClass}">
+                        <div class="card-header" onclick="toggleTreeCard(this)">
+                            <div class="card-header-info">
+                                <h3>${dept.name}</h3>
+                                <div class="eng-title">${engName}</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-down tree-toggle-icon"></i>
                         </div>
                         <div class="card-body">
                             <ul class="role-list">${rolesHtml}</ul>
