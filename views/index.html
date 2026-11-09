@@ -18,7 +18,6 @@
 
         body {
             font-family: 'Kantumruy Pro', sans-serif;
-            /* 💡 រូបភាព Background ពេញអេក្រង់ល្អឥតខ្ចោះ (សូមប្រាកដថាဖိုင် bg.jpg ស្ថិតក្នុង Folder ជាមួយគ្នា) */
             background: linear-gradient(rgba(15, 23, 42, 0.5), rgba(15, 23, 42, 0.5)), url('views/bg.jpg') no-repeat center center fixed;
             background-size: cover;
             -webkit-background-size: cover;
@@ -33,7 +32,7 @@
         header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
-            padding: 20px 30px;
+            padding: 15px 25px;
             box-shadow: 0 4px 15px rgba(0, 198, 255, 0.4);
             display: flex;
             justify-content: space-between;
@@ -48,8 +47,8 @@
         }
 
         .header-logo {
-            width: 60px;
-            height: 60px;
+            width: 50px;
+            height: 50px;
             object-fit: contain;
             background: white;
             padding: 4px;
@@ -58,36 +57,36 @@
 
         header .header-title h1 {
             margin: 0;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 700;
         }
 
         header .header-title p {
-            margin: 4px 0 0 0;
-            font-size: 13px;
+            margin: 2px 0 0 0;
+            font-size: 12px;
             color: #dbeafe;
         }
 
         .user-info {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             background: rgba(255, 255, 255, 0.15);
-            padding: 8px 16px;
+            padding: 6px 14px;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13px;
         }
 
         .btn-action {
             background: #00c6ff;
             color: #1e3c72;
             border: none;
-            padding: 6px 14px;
+            padding: 5px 12px;
             border-radius: 6px;
             cursor: pointer;
             font-family: 'Kantumruy Pro', sans-serif;
             font-weight: 600;
-            font-size: 13px;
+            font-size: 12px;
             transition: all 0.2s;
         }
 
@@ -122,53 +121,53 @@
 
         .auth-card {
             background: white;
-            padding: 35px;
+            padding: 30px;
             border-radius: 12px;
             width: 100%;
-            max-width: 450px;
+            max-width: 400px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             text-align: center;
         }
 
         .auth-logo {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             object-fit: contain;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
 
         .auth-card h2 {
             color: var(--primary-color);
             margin-bottom: 5px;
-            font-size: 22px;
+            font-size: 20px;
         }
 
         .auth-card p {
             color: #64748b;
-            font-size: 13px;
-            margin-bottom: 20px;
+            font-size: 12px;
+            margin-bottom: 15px;
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 12px;
             text-align: left;
         }
 
         .form-group label {
             display: block;
             font-weight: 600;
-            font-size: 13px;
-            margin-bottom: 5px;
+            font-size: 12px;
+            margin-bottom: 4px;
             color: #334155;
         }
 
         .form-control, .form-select {
             width: 100%;
-            padding: 10px 12px;
+            padding: 8px 10px;
             border: 1px solid var(--border-color);
             border-radius: 6px;
             font-family: 'Kantumruy Pro', sans-serif;
-            font-size: 14px;
+            font-size: 13px;
             box-sizing: border-box;
         }
 
@@ -177,64 +176,65 @@
             color: white;
             border: none;
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border-radius: 6px;
             font-family: 'Kantumruy Pro', sans-serif;
             font-weight: 600;
-            font-size: 15px;
+            font-size: 14px;
             cursor: pointer;
-            margin-top: 10px;
+            margin-top: 8px;
         }
 
         .toggle-link {
-            margin-top: 15px;
+            margin-top: 12px;
             display: block;
-            font-size: 13px;
+            font-size: 12px;
             color: #ef4444;
             text-decoration: underline;
             cursor: pointer;
         }
 
-        /* 🌟 Main Layout: កាតនៅខាងស្តាំ */
+        /* 🌟 Main Layout: Auto Size & រំកិលទៅខាងស្តាំ */
         .main-layout {
-            max-width: 1400px;
-            margin: 30px auto;
+            width: 100%;
+            max-width: 1550px;
+            margin: 25px auto;
             padding: 0 30px;
             display: flex;
-            justify-content: flex-end;
+            justify-content: flex-end; /* រំកិលកាតទាំងអស់ទៅខាងស្តាំ */
+            box-sizing: border-box;
         }
 
-        /* 🌲 ផ្នែកកាតរៀបជាជួរចុះមកក្រោមនៅខាងស្ដាំ (បង្រួមទទឹង max-width ឱ្យខ្លីជាងមុន) */
+        /* 🌲 ផ្នែកកាតរៀបជាជួរ បង្រួមទទឹង max-width ឱ្យខ្លីជាងមុន និងដាក់ Auto size */
         .right-cards-container {
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            align-items: center; /* จัดให้อยู่กึ่งกลาง */
+            gap: 12px;
             width: 100%;
-            max-width: 650px; /* 💡 បង្រួមទទឹងកាតឱ្យខ្លីជាងមុនតាមការចង់បាន */
+            max-width: 480px; /* 💡 បង្រួមទទឹងកាតឱ្យខ្លីល្មមស្អាតតាមតម្រូវការ */
         }
 
         .card {
             background: var(--card-bg);
-            border-radius: 12px;
+            border-radius: 10px;
             transition: all 0.3s ease;
             position: relative;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             border: 2px solid rgba(255, 255, 255, 0.8);
             width: 100%;
         }
 
         .card:hover {
             border-color: #00c6ff;
-            box-shadow: 0 0 20px rgba(0, 198, 255, 0.8), 0 8px 25px rgba(0, 0, 0, 0.3);
-            transform: translateY(-3px);
+            box-shadow: 0 0 15px rgba(0, 198, 255, 0.7), 0 6px 20px rgba(0, 0, 0, 0.25);
+            transform: translateY(-2px);
         }
 
         .card-header {
-            padding: 14px 18px;
+            padding: 12px 16px;
             border-bottom: 1px solid var(--border-color);
             background: linear-gradient(135deg, rgba(248, 250, 252, 0.95), rgba(237, 242, 247, 0.95));
             cursor: pointer;
@@ -243,7 +243,7 @@
             align-items: center;
         }
 
-        /* 💡 ដាក់អក្សរក្នុង Header ឱ្យចំកណ្តាល (Center Alignment) */
+        /* 💡 ដាក់អក្សរក្នុង Header ឱ្យចំកណ្តាល */
         .card-header-info {
             width: 100%;
             text-align: center;
@@ -251,24 +251,24 @@
 
         .card-header-info h3 {
             margin: 0;
-            font-size: 17px;
+            font-size: 15px;
             font-weight: 700;
             color: var(--primary-color);
         }
 
         .card-header-info .eng-title {
-            font-size: 12.5px;
+            font-size: 11.5px;
             font-weight: 600;
             color: #475569;
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
         .tree-toggle-icon {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--primary-color);
             transition: transform 0.3s ease;
             position: absolute;
-            right: 18px;
+            right: 16px;
         }
 
         .card.active .tree-toggle-icon {
@@ -286,7 +286,7 @@
 
         .card.active .card-body {
             max-height: 800px;
-            padding: 12px 18px 16px 18px;
+            padding: 10px 14px 14px 14px;
             transition: max-height 0.4s ease-in;
         }
 
@@ -296,7 +296,7 @@
             margin: 0;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             position: relative;
         }
 
@@ -304,8 +304,8 @@
             content: '';
             position: absolute;
             top: 4px;
-            bottom: 12px;
-            left: 12px;
+            bottom: 10px;
+            left: 10px;
             width: 2px;
             background: #94a3b8;
         }
@@ -317,19 +317,19 @@
             justify-content: center;
             background: #f8fafc;
             border: 1px solid var(--border-color);
-            padding: 10px 12px 10px 28px;
+            padding: 8px 10px 8px 24px;
             border-radius: 6px;
             text-decoration: none;
             transition: all 0.2s ease;
-            margin-left: 8px;
+            margin-left: 6px;
         }
 
         .role-item::before {
             content: '';
             position: absolute;
             top: 50%;
-            left: -8px;
-            width: 8px;
+            left: -6px;
+            width: 6px;
             height: 2px;
             background: #94a3b8;
         }
@@ -338,7 +338,7 @@
             background: linear-gradient(135deg, #00c6ff, #0072ff);
             color: #ffffff;
             border-color: transparent;
-            transform: translateX(4px);
+            transform: translateX(3px);
         }
 
         .role-item:hover .role-km, 
@@ -348,16 +348,23 @@
 
         .role-km {
             display: block;
-            font-size: 14.5px;
+            font-size: 13.5px;
             font-weight: 600;
             color: var(--text-main);
         }
 
         .role-en {
             display: block;
-            font-size: 12px;
+            font-size: 11px;
             color: #475569;
-            margin-top: 2px;
+            margin-top: 1px;
+        }
+
+        /* Responsive Optimization សម្រាប់អេក្រងធំ */
+        @media (min-width: 1400px) {
+            .main-layout {
+                padding-right: 60px;
+            }
         }
     </style>
 </head>
