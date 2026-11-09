@@ -194,12 +194,12 @@
             cursor: pointer;
         }
 
-        /* 🌟 Main Layout: រំកិលកាតទៅខាងស្តាំ */
+        /* 🌟 Main Layout: រំកិលកាតទៅខាងស្តាំបន្ថែមទៀត */
         .main-layout {
             width: 100%;
-            max-width: 1650px;
+            max-width: 1850px;
             margin: 25px auto;
-            padding: 0 40px;
+            padding: 0 60px;
             display: flex;
             justify-content: flex-end;
             box-sizing: border-box;
@@ -246,7 +246,6 @@
             transition: background 0.3s ease;
         }
 
-        /* 💡 ប្ដូរពណ៌ Header ពេលដាក់ម៉ៅលើកាត */
         .card:hover .card-header {
             background: rgba(15, 23, 42, 0.2);
             border-bottom-color: rgba(255, 255, 255, 0.2);
@@ -257,7 +256,6 @@
             text-align: center;
         }
 
-        /* ចំណងជើងមេ (Font ធំ) */
         .card-header-info h3 {
             margin: 0;
             font-size: 16px; 
@@ -266,7 +264,6 @@
             transition: color 0.3s ease, text-shadow 0.3s ease;
         }
 
-        /* 💡 ផ្លេកពណ៌អក្សរចំណងជើងមេទៅជាពណ៌សភ្លឺពេលដាក់ម៉ៅលើកាត */
         .card:hover .card-header-info h3 {
             color: #ffffff;
             text-shadow: 0 0 10px #00c6ff, 0 0 20px #00c6ff;
@@ -280,7 +277,6 @@
             transition: color 0.3s ease;
         }
 
-        /* 💡 ផ្លាស់ប្ដូរពណ៌អក្សរអង់គ្លេសផ្នែកលើពេលដាក់ម៉ៅលើ */
         .card:hover .card-header-info .eng-title {
             color: #dbeafe;
         }
@@ -293,7 +289,6 @@
             right: 15px;
         }
 
-        /* 💡 ប្ដូរពណ៌ Icon ลูกศร ពេលដាក់ម៉ៅលើ */
         .card:hover .tree-toggle-icon {
             color: #00c6ff;
             text-shadow: 0 0 8px #00c6ff;
@@ -303,7 +298,6 @@
             transform: rotate(180deg);
         }
 
-        /* មែកធាងរង (Tree Children Container) */
         .card-body {
             padding: 0;
             max-height: 0;
@@ -376,7 +370,6 @@
             text-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
         }
 
-        /* អក្សរខ្មែរខាងក្នុង (Font ធំ) */
         .role-km {
             display: block;
             font-size: 14.5px;
@@ -393,10 +386,10 @@
             transition: color 0.2s ease;
         }
 
-        /* Responsive Optimization សម្រាប់អេក្រងធំ */
+        /* Responsive Optimization សម្រាប់អេក្រងធំ (រំកិលទៅស្តាំបន្ថែម) */
         @media (min-width: 1400px) {
             .main-layout {
-                padding-right: 90px;
+                padding-right: 140px;
             }
         }
     </style>
