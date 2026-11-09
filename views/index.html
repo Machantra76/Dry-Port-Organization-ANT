@@ -191,14 +191,14 @@
             cursor: pointer;
         }
 
-        /* 🌟 Main Layout */
+        /* 🌟 Main Layout: ផ្នែកខាងឆ្វេង (រូបភាពផែស្ងួត) និងផ្នែកខាងស្តាំ (កាតរៀបចុះក្រោម) */
         .main-layout {
             max-width: 1400px;
             margin: 30px auto;
             padding: 0 20px;
             display: grid;
             grid-template-columns: 320px 1fr;
-            gap: 20px;
+            gap: 24px;
             align-items: start;
         }
 
@@ -208,7 +208,7 @@
             }
         }
 
-        /* 🖼️ ផ្នែក Space ខាងឆ្វេងសម្រាប់ដាក់រូបភាពផែស្ងួត */
+        /* 🖼️ ផ្នែក Space ខាងឆ្វេងសម្រាប់ដាក់រូបភាពផែស្ងួត (Sticky ជាប់ស្អាតពេល Scroll) */
         .left-dryport-space {
             background: white;
             border-radius: 12px;
@@ -252,11 +252,13 @@
             line-height: 1.5;
         }
 
-        /* 🌲 ផ្នែកខាងស្តាំ៖ តម្រឹមឱ្យកាតខិតមកស្តាំពង្រីកពេញទំហំ */
+        /* 🌲 ផ្នែកខាងស្តាំ៖ កាតរៀបជាជួរចុះមកក្រោម */
+       /* 🌲 ផ្នែកខាងស្តាំ៖ កាតរៀបជាជួរចុះមកក្រោម និងកំណត់ប្រវែងឱ្យតម្រឹមតាមអក្សរ */
         .right-cards-container {
             display: flex;
             flex-direction: column;
             gap: 14px;
+            align-items: flex-start; /* 💡 ធ្វើឱ្យកាតតម្រឹមតាមប្រវែងអក្សរ (មិនអូសពេញប្រវែងទេ) */
             width: 100%;
         }
 
@@ -270,9 +272,9 @@
             overflow: hidden;
             box-shadow: 0 3px 10px rgba(0, 198, 255, 0.1);
             border: 1px solid var(--border-color);
-            width: 100%; /* 💡 រีกពង្រីកពេញទំហំប្រវែងខាងស្តាំរហូតដល់គែម */
+            width: 100%;
+            max-width: 550px; /* 💡 កំណត់ប្រវែងអតិបរិមាឱ្យកាតវាល្មមស្អាត មិនវែងជ្រុល */
         }
-
         .card-header {
             padding: 14px 18px;
             border-bottom: 1px solid var(--border-color);
@@ -811,6 +813,7 @@
                     `;
                 }).join('');
                 
+                // 💡 ធានាថាមានតែកាតទី១ (index === 0) ទេដែលបើកស្រាប់ (active) ក្រៅពីนั้นបិទទាំងអស់ ដើម្បីកុំឱ្យវែងជ្រុល
                 let activeClass = index === 0 ? 'active' : '';
 
                 let card = `
