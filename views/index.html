@@ -194,14 +194,14 @@
             cursor: pointer;
         }
 
-        /* 🌟 Main Layout: រំកិលកាតទៅខាងស្តាំកាន់តែខ្លាំង */
+        /* 🌟 Main Layout: រំកិលកាតទៅខាងស្តាំ */
         .main-layout {
             width: 100%;
             max-width: 1650px;
             margin: 25px auto;
             padding: 0 40px;
             display: flex;
-            justify-content: flex-end; /* រំកិលទៅខាងស្តាំដាច់ខាត */
+            justify-content: flex-end;
             box-sizing: border-box;
         }
 
@@ -211,7 +211,7 @@
             flex-direction: column;
             gap: 12px;
             width: 100%;
-            max-width: 400px; /* 💡 បង្រួមទទឹងកាតឱ្យខ្លីជាងមុន */
+            max-width: 400px;
         }
 
         .card {
@@ -227,10 +227,12 @@
             width: 100%;
         }
 
+        /* 💡 ពេលដាក់ម៉ៅលើកាត (Hover Effect & ផ្លេកពណ៌អក្សរ) */
         .card:hover {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
             border-color: #00c6ff;
-            box-shadow: 0 0 15px rgba(0, 198, 255, 0.7), 0 6px 20px rgba(0, 0, 0, 0.25);
-            transform: translateY(-2px);
+            box-shadow: 0 0 20px rgba(0, 198, 255, 0.9), 0 8px 25px rgba(0, 0, 0, 0.4);
+            transform: translateY(-3px);
         }
 
         .card-header {
@@ -241,6 +243,13 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: background 0.3s ease;
+        }
+
+        /* 💡 ប្ដូរពណ៌ Header ពេលដាក់ម៉ៅលើកាត */
+        .card:hover .card-header {
+            background: rgba(15, 23, 42, 0.2);
+            border-bottom-color: rgba(255, 255, 255, 0.2);
         }
 
         .card-header-info {
@@ -248,12 +257,19 @@
             text-align: center;
         }
 
-        /* 💡 ថែម Font Size ឱ្យធំជាងមុន (ចំណងជើងមេ) */
+        /* ចំណងជើងមេ (Font ធំ) */
         .card-header-info h3 {
             margin: 0;
             font-size: 16px; 
             font-weight: 700;
             color: var(--primary-color);
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+
+        /* 💡 ផ្លេកពណ៌អក្សរចំណងជើងមេទៅជាពណ៌សភ្លឺពេលដាក់ម៉ៅលើកាត */
+        .card:hover .card-header-info h3 {
+            color: #ffffff;
+            text-shadow: 0 0 10px #00c6ff, 0 0 20px #00c6ff;
         }
 
         .card-header-info .eng-title {
@@ -261,14 +277,26 @@
             font-weight: 600;
             color: #475569;
             margin-top: 2px;
+            transition: color 0.3s ease;
+        }
+
+        /* 💡 ផ្លាស់ប្ដូរពណ៌អក្សរអង់គ្លេសផ្នែកលើពេលដាក់ម៉ៅលើ */
+        .card:hover .card-header-info .eng-title {
+            color: #dbeafe;
         }
 
         .tree-toggle-icon {
             font-size: 13px;
             color: var(--primary-color);
-            transition: transform 0.3s ease;
+            transition: transform 0.3s ease, color 0.3s ease;
             position: absolute;
             right: 15px;
+        }
+
+        /* 💡 ប្ដូរពណ៌ Icon ลูกศร ពេលដាក់ម៉ៅលើ */
+        .card:hover .tree-toggle-icon {
+            color: #00c6ff;
+            text-shadow: 0 0 8px #00c6ff;
         }
 
         .card.active .tree-toggle-icon {
@@ -339,19 +367,22 @@
             color: #ffffff;
             border-color: transparent;
             transform: translateX(3px);
+            box-shadow: 0 0 12px rgba(0, 198, 255, 0.8);
         }
 
         .role-item:hover .role-km, 
         .role-item:hover .role-en {
             color: #ffffff;
+            text-shadow: 0 0 6px rgba(255, 255, 255, 0.8);
         }
 
-        /* 💡 ថែម Font Size អក្សរខ្មែរខាងក្នុងឱ្យធំជាងមុន */
+        /* អក្សរខ្មែរខាងក្នុង (Font ធំ) */
         .role-km {
             display: block;
             font-size: 14.5px;
             font-weight: 600;
             color: var(--text-main);
+            transition: color 0.2s ease;
         }
 
         .role-en {
@@ -359,9 +390,10 @@
             font-size: 11.5px;
             color: #475569;
             margin-top: 1px;
+            transition: color 0.2s ease;
         }
 
-        /* Responsive Optimization សម្រាប់អេក្រងធំ (រំកិលឱ្យដាច់ទៅស្តាំបន្ថែម) */
+        /* Responsive Optimization សម្រាប់អេក្រងធំ */
         @media (min-width: 1400px) {
             .main-layout {
                 padding-right: 90px;
