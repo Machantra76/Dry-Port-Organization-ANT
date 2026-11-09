@@ -191,7 +191,7 @@
             cursor: pointer;
         }
 
-        /* 🌟 Main Layout: ផ្នែកខាងឆ្វេង (រូបភាពផែស្ងួត) និងផ្នែកខាងស្តាំ (កាតរៀបចុះក្រោម) */
+        /* 🌟 Main Layout: រៀបចំកឡោនរវាងរូបភាពខាងឆ្វេង និងកាតខាងស្តាំ */
         .main-layout {
             max-width: 1400px;
             margin: 30px auto;
@@ -208,7 +208,7 @@
             }
         }
 
-        /* 🖼️ ផ្នែក Space ខាងឆ្វេងសម្រាប់ដាក់រូបភាពផែស្ងួត (Sticky ជាប់ស្អាតពេល Scroll) */
+        /* 🖼️ ផ្នែក Space ខាងឆ្វេងសម្រាប់ដាក់រូបភាពផែស្ងួត */
         .left-dryport-space {
             background: white;
             border-radius: 12px;
@@ -252,14 +252,12 @@
             line-height: 1.5;
         }
 
-        /* 🌲 ផ្នែកខាងស្តាំ៖ កាតរៀបជាជួរចុះមកក្រោម */
-       /* 🌲 ផ្នែកខាងស្តាំ៖ កាតរៀបជាជួរចុះមកក្រោម និងកំណត់ប្រវែងឱ្យតម្រឹមតាមអក្សរ */
+        /* 🌲 ផ្នែកខាងស្តាំ៖ រៀបចំឱ្យកាតរីកពង្រីកពេញទំហំទៅខាងស្តាំឱ្យអស់ */
         .right-cards-container {
             display: flex;
             flex-direction: column;
             gap: 14px;
-            align-items: flex-start; /* 💡 ធ្វើឱ្យកាតតម្រឹមតាមប្រវែងអក្សរ (មិនអូសពេញប្រវែងទេ) */
-            width: 100%;
+            width: 100%; /* 💡 ឱ្យ Container រีกពេញទំហំ 1fr ខាងស្តាំ */
         }
 
         .card {
@@ -272,9 +270,9 @@
             overflow: hidden;
             box-shadow: 0 3px 10px rgba(0, 198, 255, 0.1);
             border: 1px solid var(--border-color);
-            width: 100%;
-            max-width: 550px; /* 💡 កំណត់ប្រវែងអតិបរិមាឱ្យកាតវាល្មមស្អាត មិនវែងជ្រុល */
+            width: 100%; /* 💡 ឱ្យកាតនីមួយៗរីកពេញប្រវែងខាងស្តាំរហូតដល់គែម */
         }
+
         .card-header {
             padding: 14px 18px;
             border-bottom: 1px solid var(--border-color);
@@ -813,7 +811,6 @@
                     `;
                 }).join('');
                 
-                // 💡 ធានាថាមានតែកាតទី១ (index === 0) ទេដែលបើកស្រាប់ (active) ក្រៅពីนั้นបិទទាំងអស់ ដើម្បីកុំឱ្យវែងជ្រុល
                 let activeClass = index === 0 ? 'active' : '';
 
                 let card = `
