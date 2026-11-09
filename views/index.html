@@ -191,7 +191,7 @@
             cursor: pointer;
         }
 
-        /* 🌟 Main Layout: ផ្នែកខាងឆ្វេង និងផ្នែកខាងស្តាំរៀបជាជួរ */
+        /* 🌟 Main Layout: ផ្នែកខាងឆ្វេង (រូបភាពផែស្ងួត) និងផ្នែកខាងស្តាំ (កាតរៀបចុះក្រោម) */
         .main-layout {
             max-width: 1400px;
             margin: 30px auto;
@@ -208,7 +208,7 @@
             }
         }
 
-        /* 🖼️ ផ្នែក Space ខាងឆ្វេងសម្រាប់ដាក់រូបភាពផែស្ងួត */
+        /* 🖼️ ផ្នែក Space ខាងឆ្វេងសម្រាប់ដាក់រូបភាពផែស្ងួត (Sticky ជាប់ស្អាតពេល Scroll) */
         .left-dryport-space {
             background: white;
             border-radius: 12px;
@@ -502,7 +502,7 @@
         </div>
     </header>
 
-    <!-- 🌟 Main Layout: ផ្នែកខាងឆ្វេង (រូបភាពផែស្ងួត) និងផ្នែកខាងស្តាំ (កាតរៀបចុះក្រោម) -->
+    <!-- 🌟 Main Layout -->
     <div class="main-layout">
         <!-- Space ខាងឆ្វេងសម្រាប់រូបភាពផែស្ងួត -->
         <div class="left-dryport-space">
@@ -775,7 +775,7 @@
             location.reload();
         }
 
-        // 🌲 មុខងារចុចបើក-បិទមែកធាង (Toggle Tree) សម្រាប់នីមួយៗ
+        // 🌲 មុខងារចុចបើក-បិទមែកធាង (Toggle Tree) ឯកកោ
         function toggleTreeCard(headerElement) {
             const card = headerElement.closest('.card');
             card.classList.toggle('active');
@@ -809,6 +809,7 @@
                     `;
                 }).join('');
                 
+                // 💡 ធានាថាមានតែកាតទី១ (index === 0) ទេដែលបើកស្រាប់ (active) ក្រៅពីนั้นបិទទាំងអស់ ដើម្បីកុំឱ្យវែងជ្រុល
                 let activeClass = index === 0 ? 'active' : '';
 
                 let card = `
