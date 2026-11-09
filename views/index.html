@@ -253,10 +253,13 @@
         }
 
         /* 🌲 ផ្នែកខាងស្តាំ៖ កាតរៀបជាជួរចុះមកក្រោម */
+       /* 🌲 ផ្នែកខាងស្តាំ៖ កាតរៀបជាជួរចុះមកក្រោម និងកំណត់ប្រវែងឱ្យតម្រឹមតាមអក្សរ */
         .right-cards-container {
             display: flex;
             flex-direction: column;
             gap: 14px;
+            align-items: flex-start; /* 💡 ធ្វើឱ្យកាតតម្រឹមតាមប្រវែងអក្សរ (មិនអូសពេញប្រវែងទេ) */
+            width: 100%;
         }
 
         .card {
@@ -269,8 +272,9 @@
             overflow: hidden;
             box-shadow: 0 3px 10px rgba(0, 198, 255, 0.1);
             border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 550px; /* 💡 កំណត់ប្រវែងអតិបរិមាឱ្យកាតវាល្មមស្អាត មិនវែងជ្រុល */
         }
-
         .card-header {
             padding: 14px 18px;
             border-bottom: 1px solid var(--border-color);
