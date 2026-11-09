@@ -191,73 +191,23 @@
             cursor: pointer;
         }
 
-        /* 🌟 Main Layout: រៀបចំកឡោនរវាងរូបភាពខាងឆ្វេង និងកាតខាងស្តាំ */
+        /* 🌟 Main Layout: កែសម្រួលឱ្យកាតបង្ហាញចំកណ្តាល និងមានរបៀបរៀបរយស្អាតពេញទំព័រ */
         .main-layout {
-            max-width: 1400px;
+            max-width: 900px;
             margin: 30px auto;
             padding: 0 20px;
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 24px;
-            align-items: start;
-        }
-
-        @media (max-width: 992px) {
-            .main-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* 🖼️ ផ្នែក Space ខាងឆ្វេងសម្រាប់ដាក់រូបភាពផែស្ងួត */
-        .left-dryport-space {
-            background: white;
-            border-radius: 12px;
-            padding: 18px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border-color);
-            position: sticky;
-            top: 20px;
-            text-align: center;
-        }
-
-        .dryport-photo-box {
-            width: 100%;
-            height: 200px;
-            border-radius: 8px;
-            overflow: hidden;
-            background: #e2e8f0;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            margin-bottom: 12px;
-            border: 2px dashed #cbd5e1;
         }
 
-        .dryport-photo-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .left-dryport-space h3 {
-            color: var(--primary-color);
-            font-size: 16px;
-            margin: 0 0 6px 0;
-        }
-
-        .left-dryport-space p {
-            font-size: 12px;
-            color: #64748b;
-            margin: 0;
-            line-height: 1.5;
-        }
-
-        /* 🌲 ផ្នែកខាងស្តាំ៖ រៀបចំឱ្យកាតរីកពង្រីកពេញទំហំទៅខាងស្តាំឱ្យអស់ */
+        /* 🌲 ផ្នែកកាតរៀបជាជួរចុះមកក្រោម */
         .right-cards-container {
             display: flex;
             flex-direction: column;
             gap: 14px;
-            width: 100%; /* 💡 ឱ្យ Container រีกពេញទំហំ 1fr ខាងស្តាំ */
+            align-items: center;
+            width: 100%;
         }
 
         .card {
@@ -270,7 +220,8 @@
             overflow: hidden;
             box-shadow: 0 3px 10px rgba(0, 198, 255, 0.1);
             border: 1px solid var(--border-color);
-            width: 100%; /* 💡 ឱ្យកាតនីមួយៗរីកពេញប្រវែងខាងស្តាំរហូតដល់គែម */
+            width: 100%;
+            max-width: 750px;
         }
 
         .card-header {
@@ -504,18 +455,9 @@
         </div>
     </header>
 
-    <!-- 🌟 Main Layout -->
+    <!-- 🌟 Main Layout (លុបរូបភាពខាងឆ្វេងចេញ និងจัดតម្រឹមកាតស្ថាប័នឱ្យចំកណ្តាលពេញទំព័រ) -->
     <div class="main-layout">
-        <!-- Space ខាងឆ្វេងសម្រាប់រូបភាពផែស្ងួត -->
-        <div class="left-dryport-space">
-            <div class="dryport-photo-box">
-                <img src="dryport-facility.jpg" alt="ANT Dry Port Facility" onerror="this.src='https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80'">
-            </div>
-            <h3>ANT Dry Port (Cambodia)</h3>
-            <p>មជ្ឈមណ្ឌលភស្តុភារកម្ម និងឃ្លាំងពន្ធដារទំនើប ផ្តល់សេវាកម្មដឹកជញ្ជូន គ្រប់គ្រងកុងតឺន័រ និងទំនិញគ្រប់ប្រភេទដោយសុវត្ថិភាពខ្ពស់។</p>
-        </div>
-
-        <!-- ផ្នែកខាងស្តាំសម្រាប់បង្ហាញកាតរៀបជាជួរចុះមកក្រោម -->
+        <!-- ផ្នែកសម្រាប់បង្ហាញកាតស្ថាប័នរៀបជាជួរចុះមកក្រោម -->
         <div id="dashboard" class="right-cards-container">
             <!-- Content Rendered dynamically -->
         </div>
