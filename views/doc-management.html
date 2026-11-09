@@ -118,10 +118,16 @@
             border: 1px solid #e2e8f0;
             margin-bottom: 20px;
         }
+        
+        /* 💡 កំណត់ទម្រង់បោះពុម្ពជា Landscape ស្វ័យប្រវត្តិ */
         @media print {
+            @page {
+                size: landscape;
+                margin: 10mm;
+            }
             .no-print { display: none !important; }
             body { background: white; }
-            .main-container { box-shadow: none; padding: 0; }
+            .main-container { box-shadow: none; padding: 0; max-width: 100%; }
         }
     </style>
 </head>
@@ -199,21 +205,34 @@
     <div class="section-card">
         <div class="section-card-title mb-3"><i class="fa-solid fa-table-list me-2"></i> តារាងបញ្ជីគ្រប់គ្រងឯកសារគយ (Customs Documents List)</div>
 
-        <!-- ផ្នែកស្វែងរក -->
+        <!-- 💡 ផ្នែកស្វែងរក និង From Date / To Date (Filter Bar) -->
         <div class="filter-action-bar no-print">
             <div class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label class="form-label">ស្វែងរកតាមលេខឯកសារ ឬឈ្មោះក្រុមហ៊ុន:</label>
+                <div class="col-md-3">
+                    <label class="form-label">ស្វែងរក (លេខឯកសារ / ក្រុមហ៊ុន):</label>
                     <input type="text" class="form-control" id="searchInput" placeholder="វាយស្វែងរក...">
                 </div>
-                <div class="col-md-4 d-flex gap-2">
-                    <button class="btn btn-outline-secondary" onclick="document.getElementById('searchInput').value=''; loadDocuments();">
-                        <i class="fa-solid fa-rotate-right me-1"></i> កំណត់ឡើងវិញ
+                <div class="col-md-3">
+                    <label class="form-label">កាលបរិច្ឆេទចាប់ពី (From Date):</label>
+                    <input type="date" class="form-control" id="fromDate">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">ដល់កាលបរិច្ឆេទ (To Date):</label>
+                    <input type="date" class="form-control" id="toDate">
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button class="btn btn-primary w-100" onclick="filterDocuments()">
+                        <i class="fa-solid fa-filter me-1"></i> ត្រងទិន្នន័យ
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="resetFilter()" title="កំណត់ឡើងវិញ">
+                        <i class="fa-solid fa-rotate-right"></i>
                     </button>
                 </div>
-                <div class="col-md-4 text-end">
+            </div>
+            <div class="row mt-3">
+                <div class="col-12 text-end">
                     <button class="btn btn-secondary" onclick="window.print()">
-                        <i class="fa-solid fa-print me-1"></i> បោះពុម្ព PDF
+                        <i class="fa-solid fa-print me-1"></i> បោះពុម្ព PDF (Landscape)
                     </button>
                 </div>
             </div>
@@ -301,6 +320,39 @@
         });
     }
 
+    // 💡 មុខងារត្រងទិន្នន័យតាម Text Search និង From Date / To Date
+    function filterDocuments() {
+        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        const fromDate = document.getElementById('fromDate').value;
+        const toDate = document.getElementById('toDate').value;
+
+        const filtered = documentDataList.filter(item => {
+            const matchesKeyword = 
+                (item.document_number && item.document_number.toLowerCase().includes(keyword)) || 
+                (item.company_name && item.company_name.toLowerCase().includes(keyword));
+
+            let matchesDate = true;
+            if (item.document_date) {
+                const itemDate = item.document_date.split('T')[0];
+                if (fromDate && itemDate < fromDate) matchesDate = false;
+                if (toDate && itemDate > toDate) matchesDate = false;
+            } else if (fromDate || toDate) {
+                matchesDate = false;
+            }
+
+            return matchesKeyword && matchesDate;
+        });
+
+        renderTable(filtered);
+    }
+
+    function resetFilter() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('fromDate').value = '';
+        document.getElementById('toDate').value = '';
+        renderTable(documentDataList);
+    }
+
     document.getElementById('documentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -378,13 +430,9 @@
         }
     }
 
+    // ស្វែងរកអូតូពេលវាយអក្សរ
     document.getElementById('searchInput').addEventListener('keyup', function() {
-        const keyword = this.value.toLowerCase();
-        const filtered = documentDataList.filter(item => 
-            (item.document_number && item.document_number.toLowerCase().includes(keyword)) || 
-            (item.company_name && item.company_name.toLowerCase().includes(keyword))
-        );
-        renderTable(filtered);
+        filterDocuments();
     });
 </script>
 
