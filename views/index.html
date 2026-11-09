@@ -194,24 +194,24 @@
             cursor: pointer;
         }
 
-        /* 🌟 Main Layout: Auto Size & រំកិលទៅខាងស្តាំ */
+        /* 🌟 Main Layout: រំកិលកាតទៅខាងស្តាំកាន់តែខ្លាំង */
         .main-layout {
             width: 100%;
-            max-width: 1550px;
+            max-width: 1650px;
             margin: 25px auto;
-            padding: 0 30px;
+            padding: 0 40px;
             display: flex;
-            justify-content: flex-end; /* រំកិលកាតទាំងអស់ទៅខាងស្តាំ */
+            justify-content: flex-end; /* រំកិលទៅខាងស្តាំដាច់ខាត */
             box-sizing: border-box;
         }
 
-        /* 🌲 ផ្នែកកាតរៀបជាជួរ បង្រួមទទឹង max-width ឱ្យខ្លីជាងមុន និងដាក់ Auto size */
+        /* 🌲 បង្រួមកាតឱ្យខ្លីជាងមុន និងដាក់ Auto size */
         .right-cards-container {
             display: flex;
             flex-direction: column;
             gap: 12px;
             width: 100%;
-            max-width: 480px; /* 💡 បង្រួមទទឹងកាតឱ្យខ្លីល្មមស្អាតតាមតម្រូវការ */
+            max-width: 400px; /* 💡 បង្រួមទទឹងកាតឱ្យខ្លីជាងមុន */
         }
 
         .card {
@@ -234,7 +234,7 @@
         }
 
         .card-header {
-            padding: 12px 16px;
+            padding: 12px 15px;
             border-bottom: 1px solid var(--border-color);
             background: linear-gradient(135deg, rgba(248, 250, 252, 0.95), rgba(237, 242, 247, 0.95));
             cursor: pointer;
@@ -243,24 +243,24 @@
             align-items: center;
         }
 
-        /* 💡 ដាក់អក្សរក្នុង Header ឱ្យចំកណ្តាល */
         .card-header-info {
             width: 100%;
             text-align: center;
         }
 
+        /* 💡 ថែម Font Size ឱ្យធំជាងមុន (ចំណងជើងមេ) */
         .card-header-info h3 {
             margin: 0;
-            font-size: 15px;
+            font-size: 16px; 
             font-weight: 700;
             color: var(--primary-color);
         }
 
         .card-header-info .eng-title {
-            font-size: 11.5px;
+            font-size: 12px;
             font-weight: 600;
             color: #475569;
-            margin-top: 1px;
+            margin-top: 2px;
         }
 
         .tree-toggle-icon {
@@ -268,7 +268,7 @@
             color: var(--primary-color);
             transition: transform 0.3s ease;
             position: absolute;
-            right: 16px;
+            right: 15px;
         }
 
         .card.active .tree-toggle-icon {
@@ -346,24 +346,25 @@
             color: #ffffff;
         }
 
+        /* 💡 ថែម Font Size អក្សរខ្មែរខាងក្នុងឱ្យធំជាងមុន */
         .role-km {
             display: block;
-            font-size: 13.5px;
+            font-size: 14.5px;
             font-weight: 600;
             color: var(--text-main);
         }
 
         .role-en {
             display: block;
-            font-size: 11px;
+            font-size: 11.5px;
             color: #475569;
             margin-top: 1px;
         }
 
-        /* Responsive Optimization សម្រាប់អេក្រងធំ */
+        /* Responsive Optimization សម្រាប់អេក្រងធំ (រំកិលឱ្យដាច់ទៅស្តាំបន្ថែម) */
         @media (min-width: 1400px) {
             .main-layout {
-                padding-right: 60px;
+                padding-right: 90px;
             }
         }
     </style>
