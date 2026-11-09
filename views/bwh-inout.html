@@ -272,7 +272,6 @@
             box-shadow: none !important;
         }
 
-        /* ស្ទីលសម្រាប់បង្រួម Font Size ពេលទាញយកជា PDF ឱ្យចេញពេញតារាងល្អ */
         .pdf-export-mode {
             width: 100% !important;
         }
@@ -588,7 +587,6 @@
                     historyText = `<br><span style="font-size: 10px; color: #0284c7; font-weight: 600;">(រួមថ្ងៃចាស់: ${previousDays} ថ្ងៃ)</span>`;
                 }
 
-                // បើបានបង់ពន្ធរួច (Duty Paid / Released) ដាក់ attribute disabled លើប៊ូតុងបន្តថ្មី
                 let renewButton = `<button class="btn-action btn-renew" ${isPaid ? 'disabled' : ''} onclick="renewRecord(${item.id}, ${totalDays})" title="${isPaid ? 'ទំនិញបានបង់ពន្ធរួច មិនបាច់បន្តកាលបរិច្ឆេទទេ' : 'បន្តកាលបរិច្ឆេទថ្មី'}"><i class="fa-solid fa-rotate-right"></i> បន្តថ្មី</button>`;
 
                 let row = `
@@ -656,18 +654,21 @@
             const movement_type = document.getElementById('movementType').value;
             const customs_status = document.getElementById('customsStatus').value;
 
-            const todayDate = new Date().toISOString().split('T')[0];
-
+            // កសាង Payload មូលដ្ឋាន
             const payload = {
                 container_number,
                 vehicle_vin,
                 cargo_name,
                 owner_name,
                 movement_type,
-                record_date: todayDate,
-                days_in_bonded: 0,
                 customs_status
             };
+
+            // បើជាការបង្កើតថ្មី (Create) ដាក់បញ្ចូលកាលបរិច្ឆេទថ្ងៃនេះ ប៉ុន្តែបើជាការកែប្រែ (Update) មិនបាច់ផ្ញើ record_date ទៅទេ ដើម្បីឱ្យ Server រក្សារកាលបរិច្ឆេទចាស់នៅដដែល
+            if (!id) {
+                payload.record_date = new Date().toISOString().split('T')[0];
+                payload.days_in_bonded = 0;
+            }
 
             try {
                 let url = '/api/bwh-records';
@@ -752,13 +753,11 @@
             document.getElementById('bwhModal').style.display = 'none';
         }
 
-        /* មុខងារ Export PDF ដែលបានបង្រួម Font size និងរៀបទំហំជួរឈរពេញលេញ */
         function exportToPDF() {
             const element = document.getElementById('pdfContent');
             const pdfTitle = document.getElementById('pdfHeaderTitle');
             pdfTitle.style.display = 'block';
 
-            // បន្ថែម Class បង្រួម Font
             element.classList.add('pdf-export-mode');
 
             const options = {
