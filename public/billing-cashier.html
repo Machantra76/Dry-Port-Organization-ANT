@@ -389,25 +389,26 @@
                         <span class="info-value"><input type="text" id="chargeTo" value=""></span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">Company name:</span>
+                        <span class="info-label">Seal No:</span>
                         <span class="info-value"><input type="text" id="sealNo" value=""></span>
                     </div>
                     <div class="info-row">
-                        <span class="info-label">អាស័យដ្ធាន:</span>
+                        <span class="info-label">Booking No:</span>
                         <span class="info-value"><input type="text" id="bookingNo" value=""></span>
                     </div>
+                    <!-- 💡 កែតម្រូវ ID ទីនេះឱ្យចំជា Address / អាសយដ្ឋាន -->
                     <div class="info-row">
-                        <span class="info-label">Address:</span>
-                        <span class="info-value"><input type="text" id="containerNo" value=""></span>
+                        <span class="info-label">អាសយដ្ឋាន:</span>
+                        <span class="info-value"><input type="text" id="address" value=""></span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">Tel/Email:</span>
                         <span class="info-value"><input type="text" id="remark" value=""></span>
                     </div>
-                    <!-- 💡 បន្ថែម Container No នៅខាងក្រោម Tel/Email ខាងឆ្វេង -->
+                    <!-- 💡 កែតម្រូវ ID នេះឱ្យចំជា container_no ដើម្បីពេល Save ធានាថាចូលកន្លែងលេខកុងតឺន័រត្រូវ ១០០% -->
                     <div class="info-row">
                         <span class="info-label">Container No:</span>
-                        <span class="info-value"><input type="text" id="containerNoLeft" value=""></span>
+                        <span class="info-value"><input type="text" id="containerNo" value=""></span>
                     </div>
                 </div>
 
@@ -707,8 +708,8 @@
                 charge_to: document.getElementById('chargeTo').value,
                 seal_no: document.getElementById('sealNo').value,
                 booking_no: document.getElementById('bookingNo').value,
-                container_no: document.getElementById('containerNo').value,
-                container_no_left: document.getElementById('containerNoLeft').value,
+                address: document.getElementById('address').value,
+                container_no: document.getElementById('containerNo').value, // 💡 ចំកន្លែង Container No ត្រឹមត្រូវ
                 remark: document.getElementById('remark').value,
                 inv_date: document.getElementById('invDate').value,
                 date_out: document.getElementById('dateOut').value,
@@ -783,8 +784,8 @@
                 document.getElementById('chargeTo').value = inv.charge_to || '';
                 document.getElementById('sealNo').value = inv.seal_no || '';
                 document.getElementById('bookingNo').value = inv.booking_no || '';
+                document.getElementById('address').value = inv.address || '';
                 document.getElementById('containerNo').value = inv.container_no || '';
-                document.getElementById('containerNoLeft').value = inv.container_no_left || '';
                 document.getElementById('remark').value = inv.remark || '';
                 document.getElementById('invDate').value = inv.inv_date || '';
                 document.getElementById('dateOut').value = inv.date_out || '';
