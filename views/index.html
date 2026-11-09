@@ -11,15 +11,15 @@
             --primary-color: #1e3c72;
             --secondary-color: #2a5298;
             --accent-color: #00c6ff;
-            --card-bg: rgba(255, 255, 255, 0.95);
+            --card-bg: rgba(255, 255, 255, 0.92); /* ធ្វើឱ្យកាតសសបស្រទន់បន្តិច */
             --text-main: #222222;
             --border-color: #e2e8f0;
         }
 
         body {
             font-family: 'Kantumruy Pro', sans-serif;
-            /* ដាក់រូបភាពផ្ទៃខាងក្រោយពេញអេក្រងដោយប្រើប្រាស់ឈ្មោះរូបភាព និងស្រមោលស្តើងបំផុត */
-            background: linear-gradient(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url('photo_2026-11-09_11-48-26.jpg') no-repeat center center fixed;
+            /* ដាក់រូបភាពថ្មីជា Background ពេញអេក្រង និងមានស្រមោលងងឹតបន្តិចពីលើ */
+            background: linear-gradient(rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.55)), url('bg.jpg') no-repeat center center fixed;
             background-size: cover;
             color: var(--text-main);
             margin: 0;
@@ -219,7 +219,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); /* ដាក់ស្រមោលកាតឱ្យស្រស់ស្អាត */
             border: 2px solid rgba(255, 255, 255, 0.8);
             width: 100%;
         }
@@ -227,7 +227,7 @@
         /* ✨ បន្ថែមបែបផែនពេលដាក់ម៉ៅលើកាត (Hover Effect) ចេញពណ៌ពន្លឺព័ទ្ធជុំវិញកាតស្អាត */
         .card:hover {
             border-color: #00c6ff;
-            box-shadow: 0 0 25px rgba(0, 198, 255, 0.8), 0 10px 30px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 0 20px rgba(0, 198, 255, 0.8), 0 8px 25px rgba(0, 0, 0, 0.3);
             transform: translateY(-3px);
         }
 
@@ -244,13 +244,13 @@
         /* 🔍 បន្ថែមទំហំអក្សរចំណងជើងកាតឱ្យធំជាងមុន */
         .card-header-info h3 {
             margin: 0;
-            font-size: 18px;
+            font-size: 18px; /* ធំជាងមុន */
             font-weight: 700;
             color: var(--primary-color);
         }
 
         .card-header-info .eng-title {
-            font-size: 13px;
+            font-size: 13px; /* ធំជាងមុនបន្តិច */
             font-weight: 600;
             color: #475569;
             margin-top: 3px;
@@ -272,7 +272,7 @@
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease-out;
-            background: rgba(255, 255, 255, 0.98);
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .card.active .card-body {
@@ -341,14 +341,14 @@
         /* 🔍 បន្ថែមទំហំអក្សរខាងក្នុងមែកធាងឱ្យធំ និងងាយស្រួលអានជាងមុន */
         .role-km {
             display: block;
-            font-size: 15px;
+            font-size: 15px; /* ធំជាងមុន */
             font-weight: 600;
             color: var(--text-main);
         }
 
         .role-en {
             display: block;
-            font-size: 12.5px;
+            font-size: 12.5px; /* ធំជាងមុន */
             color: #475569;
             margin-top: 2px;
         }
