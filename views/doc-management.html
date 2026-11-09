@@ -25,7 +25,6 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
         
-        /* 🎨 ប៊ូតុងត្រឡប់ក្រោយស្អាតជាងមុន */
         .btn-back {
             background: linear-gradient(135deg, #0284c7, #0369a1);
             color: white;
@@ -88,7 +87,6 @@
             box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.15);
         }
 
-        /* 🎨 ប៊ូតុងរក្សាទុកពណ៌ថ្មី (Teal Gradient) */
         .btn-primary-custom {
             background: linear-gradient(135deg, #0d9488, #0f766e);
             border: none;
@@ -108,16 +106,17 @@
             color: white;
         }
 
-        /* 🎨 ប៊ូតុងត្រងទិន្នន័យ (Filter Button) ពណ៌ស្វាយ/ខៀវស្រស់ */
+        /* 🎨 ប៊ូតុងត្រង និងកំណត់ឡើងវិញ ឱ្យមានទំហំស្មើគ្នា (Equal Width Buttons) */
         .btn-filter-custom {
             background: linear-gradient(135deg, #6366f1, #4f46e5);
             border: none;
             color: white;
             font-weight: 600;
             border-radius: 8px;
-            padding: 10px 16px;
+            padding: 10px 14px;
             box-shadow: 0 3px 10px rgba(99, 102, 241, 0.25);
             transition: all 0.2s;
+            flex: 1; /* 💡 ចែកទំហំស្មើគ្នា */
         }
         .btn-filter-custom:hover {
             background: linear-gradient(135deg, #4f46e5, #4338ca);
@@ -125,7 +124,21 @@
             transform: translateY(-1px);
         }
 
-        /* 🎨 ប៊ូតុងបោះពុម្ព PDF ពណ៌ទឹកក្រូច/ប្រផេះបែបស៊ីវីល័យ */
+        .btn-reset-custom {
+            background-color: #e2e8f0;
+            border: none;
+            color: #334155;
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 10px 14px;
+            transition: all 0.2s;
+            flex: 1; /* 💡 ចែកទំហំស្មើគ្នាជាមួយប៊ូតុងត្រង */
+        }
+        .btn-reset-custom:hover {
+            background-color: #cbd5e1;
+            color: #1e293b;
+        }
+
         .btn-print-custom {
             background: linear-gradient(135deg, #f59e0b, #d97706);
             border: none;
@@ -140,21 +153,6 @@
             background: linear-gradient(135deg, #d97706, #b45309);
             color: white;
             transform: translateY(-1px);
-        }
-
-        /* 🎨 ប៊ូតុងកំណត់ឡើងវិញ (Reset Button) */
-        .btn-reset-custom {
-            background-color: #e2e8f0;
-            border: none;
-            color: #334155;
-            font-weight: 600;
-            border-radius: 8px;
-            padding: 10px 16px;
-            transition: all 0.2s;
-        }
-        .btn-reset-custom:hover {
-            background-color: #cbd5e1;
-            color: #1e293b;
         }
 
         .table-custom-header {
@@ -278,11 +276,12 @@
                     <input type="date" class="form-control" id="toDate">
                 </div>
                 <div class="col-md-3 d-flex gap-2">
-                    <button class="btn btn-filter-custom w-100" onclick="filterDocuments()">
+                    <!-- 💡 ប៊ូតុងទាំងពីរត្រូវបានកំណត់ឱ្យមានទំហំស្មើគ្នាដោយប្រើ flex: 1 -->
+                    <button class="btn btn-filter-custom" onclick="filterDocuments()">
                         <i class="fa-solid fa-filter me-1"></i> ត្រង
                     </button>
-                    <button class="btn btn-reset-custom px-3" onclick="resetFilter()" title="កំណត់ឡើងវិញ">
-                        <i class="fa-solid fa-rotate-right"></i>
+                    <button class="btn btn-reset-custom" onclick="resetFilter()" title="កំណត់ឡើងវិញ">
+                        <i class="fa-solid fa-rotate-right me-1"></i> សារថ្មី
                     </button>
                 </div>
             </div>
