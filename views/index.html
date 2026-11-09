@@ -191,7 +191,7 @@
             cursor: pointer;
         }
 
-        /* 🌟 Main Layout: រៀបចំឱ្យរូបភាពនៅឆ្វេង និងកាតនៅស្តាំជាប់គ្នាស្អាត */
+        /* 🌟 Main Layout */
         .main-layout {
             max-width: 1400px;
             margin: 30px auto;
@@ -252,12 +252,11 @@
             line-height: 1.5;
         }
 
-        /* 🌲 ផ្នែកខាងស្តាំ៖ តម្រឹមឱ្យកាតខិតមកកៀនស្ដាំស្អាត និងកំណត់ប្រវែងល្មម */
+        /* 🌲 ផ្នែកខាងស្តាំ៖ តម្រឹមឱ្យកាតខិតមកស្តាំពង្រីកពេញទំហំ */
         .right-cards-container {
             display: flex;
             flex-direction: column;
             gap: 14px;
-            align-items: flex-start;
             width: 100%;
         }
 
@@ -271,8 +270,7 @@
             overflow: hidden;
             box-shadow: 0 3px 10px rgba(0, 198, 255, 0.1);
             border: 1px solid var(--border-color);
-            width: 100%;
-            max-width: 650px; /* កំណត់ប្រវែងអតិបរិមាឱ្យកាតល្មមស្អាត មិនវែងជ្រុលពេញអេក្រង់ */
+            width: 100%; /* 💡 រีกពង្រីកពេញទំហំប្រវែងខាងស្តាំរហូតដល់គែម */
         }
 
         .card-header {
@@ -813,7 +811,6 @@
                     `;
                 }).join('');
                 
-                // 💡 ធានាថាមានតែកាតទី១ (index === 0) ទេដែលបើកស្រាប់ (active) ក្រៅពីនោះបិទទាំងអស់
                 let activeClass = index === 0 ? 'active' : '';
 
                 let card = `
