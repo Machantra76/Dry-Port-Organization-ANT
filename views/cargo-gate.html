@@ -499,7 +499,7 @@
         return `<i class="fa-solid fa-ship text-info me-1"></i>`;
     }
 
-    // 🌟 កំណត់ម៉ោងបច្ចុប្បន្ននៅកម្ពុជា (Asia/Phnom_Penh) ទុកជាមូលដ្ឋានគ្រឹះដំបូង
+    // 🌟 កំណត់ម៉ោងបច្ចុប្បន្ននៅកម្ពុជា (Asia/Phnom_Penh) ទុកជាមូលដ្ឋានគ្រឹះដំបូង (អាចប្តូរដោយដៃបានសេរី)
     function setLocalDateTime() {
         const now = new Date();
         const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -542,6 +542,7 @@
             cargo_code: document.getElementById('cargo_code').value,
             container_number: document.getElementById('container_number').value,
             gate_type: document.getElementById('gate_type').value,
+            // 🌟 ផ្ញើតម្លៃថ្ងៃ និងម៉ោងផ្ទាល់ដោយមិនប្តូរទៅ UTC ធ្វើឱ្យលែងខុសថ្ងៃខែ
             gate_date: rawDateVal ? new Date(rawDateVal).toISOString() : null,
             owner_name: document.getElementById('owner_name').value,
             container_qty: document.getElementById('container_qty').value,
