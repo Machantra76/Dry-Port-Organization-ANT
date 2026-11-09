@@ -191,23 +191,23 @@
             cursor: pointer;
         }
 
-        /* 🌟 Main Layout: កែសម្រួលឱ្យកាតបង្ហាញចំកណ្តាល និងមានរបៀបរៀបរយស្អាតពេញទំព័រ */
+        /* 🌟 Main Layout: រក្សាកាតให้อยู่ខាងស្តាំ តាមបំណងប្រាថ្នារបស់អ្នក */
         .main-layout {
-            max-width: 900px;
+            max-width: 1400px;
             margin: 30px auto;
-            padding: 0 20px;
+            padding: 0 40px;
             display: flex;
-            flex-direction: column;
-            align-items: center;
+            justify-content: flex-end; /* បញ្ជាឱ្យកាតទៅនៅខាងស្តាំ */
         }
 
-        /* 🌲 ផ្នែកកាតរៀបជាជួរចុះមកក្រោម */
+        /* 🌲 ផ្នែកកាតរៀបជាជួរចុះមកក្រោមនៅខាងស្ដាំ */
         .right-cards-container {
             display: flex;
             flex-direction: column;
             gap: 14px;
-            align-items: center;
+            align-items: flex-start;
             width: 100%;
+            max-width: 850px; /* កំណត់ទំហំទទឹងឱ្យសមល្មម មិនវែងជ្រុលពេក */
         }
 
         .card {
@@ -221,7 +221,6 @@
             box-shadow: 0 3px 10px rgba(0, 198, 255, 0.1);
             border: 1px solid var(--border-color);
             width: 100%;
-            max-width: 750px;
         }
 
         .card-header {
@@ -455,9 +454,9 @@
         </div>
     </header>
 
-    <!-- 🌟 Main Layout (លុបរូបភាពខាងឆ្វេងចេញ និងจัดតម្រឹមកាតស្ថាប័នឱ្យចំកណ្តាលពេញទំព័រ) -->
+    <!-- 🌟 Main Layout (កាតនៅខាងស្តាំ និងលុបរូបភាពខាងឆ្វេងចេញ) -->
     <div class="main-layout">
-        <!-- ផ្នែកសម្រាប់បង្ហាញកាតស្ថាប័នរៀបជាជួរចុះមកក្រោម -->
+        <!-- ផ្នែកខាងស្តាំសម្រាប់បង្ហាញកាតរៀបជាជួរចុះមកក្រោម -->
         <div id="dashboard" class="right-cards-container">
             <!-- Content Rendered dynamically -->
         </div>
