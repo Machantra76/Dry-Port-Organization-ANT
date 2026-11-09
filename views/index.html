@@ -11,19 +11,20 @@
             --primary-color: #1e3c72;
             --secondary-color: #2a5298;
             --accent-color: #00c6ff;
-            --bg-color: #f0f4f8;
-            --card-bg: #ffffff;
-            --text-main: #333333;
-            --text-sub: #555555;
+            --card-bg: rgba(255, 255, 255, 0.92); /* ធ្វើឱ្យកាតសសបស្រទន់បន្តិច */
+            --text-main: #222222;
             --border-color: #e2e8f0;
         }
 
         body {
             font-family: 'Kantumruy Pro', sans-serif;
-            background-color: var(--bg-color);
+            /* ដាក់រូបភាពថ្មីជា Background ពេញអេក្រង និងមានស្រមោលងងឹតបន្តិចពីលើ */
+            background: linear-gradient(rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.55)), url('bg.jpg') no-repeat center center fixed;
+            background-size: cover;
             color: var(--text-main);
             margin: 0;
             padding: 0;
+            min-height: 100vh;
         }
 
         header {
@@ -191,116 +192,72 @@
             cursor: pointer;
         }
 
-        /* 🌟 Main Layout: ផ្នែកខាងឆ្វេង (រូបភាពផែស្ងួត) និងផ្នែកខាងស្តាំ (កាតរៀបចុះក្រោម) */
+        /* 🌟 Main Layout: កាតនៅខាងស្តាំ */
         .main-layout {
             max-width: 1400px;
             margin: 30px auto;
-            padding: 0 20px;
-            display: grid;
-            grid-template-columns: 320px 1fr;
-            gap: 24px;
-            align-items: start;
-        }
-
-        @media (max-width: 992px) {
-            .main-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* 🖼️ ផ្នែក Space ខាងឆ្វេងសម្រាប់ដាក់រូបភាពផែស្ងួត (Sticky ជាប់ស្អាតពេល Scroll) */
-        .left-dryport-space {
-            background: white;
-            border-radius: 12px;
-            padding: 18px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-            border: 1px solid var(--border-color);
-            position: sticky;
-            top: 20px;
-            text-align: center;
-        }
-
-        .dryport-photo-box {
-            width: 100%;
-            height: 200px;
-            border-radius: 8px;
-            overflow: hidden;
-            background: #e2e8f0;
+            padding: 0 40px;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 12px;
-            border: 2px dashed #cbd5e1;
+            justify-content: flex-end;
         }
 
-        .dryport-photo-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .left-dryport-space h3 {
-            color: var(--primary-color);
-            font-size: 16px;
-            margin: 0 0 6px 0;
-        }
-
-        .left-dryport-space p {
-            font-size: 12px;
-            color: #64748b;
-            margin: 0;
-            line-height: 1.5;
-        }
-
-        /* 🌲 ផ្នែកខាងស្តាំ៖ កាតរៀបជាជួរចុះមកក្រោម */
-       /* 🌲 ផ្នែកខាងស្តាំ៖ កាតរៀបជាជួរចុះមកក្រោម និងកំណត់ប្រវែងឱ្យតម្រឹមតាមអក្សរ */
+        /* 🌲 ផ្នែកកាតរៀបជាជួរចុះមកក្រោមនៅខាងស្ដាំ */
         .right-cards-container {
             display: flex;
             flex-direction: column;
-            gap: 14px;
-            align-items: flex-start; /* 💡 ធ្វើឱ្យកាតតម្រឹមតាមប្រវែងអក្សរ (មិនអូសពេញប្រវែងទេ) */
+            gap: 16px;
+            align-items: flex-start;
             width: 100%;
+            max-width: 850px;
         }
 
         .card {
             background: var(--card-bg);
-            border-radius: 10px;
+            border-radius: 12px;
             transition: all 0.3s ease;
             position: relative;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 3px 10px rgba(0, 198, 255, 0.1);
-            border: 1px solid var(--border-color);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25); /* ដាក់ស្រមោលកាតឱ្យស្រស់ស្អាត */
+            border: 2px solid rgba(255, 255, 255, 0.8);
             width: 100%;
-            max-width: 550px; /* 💡 កំណត់ប្រវែងអតិបរិមាឱ្យកាតវាល្មមស្អាត មិនវែងជ្រុល */
         }
+
+        /* ✨ បន្ថែមបែបផែនពេលដាក់ម៉ៅលើកាត (Hover Effect) ចេញពណ៌ពន្លឺព័ទ្ធជុំវិញកាតស្អាត */
+        .card:hover {
+            border-color: #00c6ff;
+            box-shadow: 0 0 20px rgba(0, 198, 255, 0.8), 0 8px 25px rgba(0, 0, 0, 0.3);
+            transform: translateY(-3px);
+        }
+
         .card-header {
-            padding: 14px 18px;
+            padding: 16px 20px;
             border-bottom: 1px solid var(--border-color);
-            background: linear-gradient(135deg, #f8fafc, #edf2f7);
+            background: linear-gradient(135deg, rgba(248, 250, 252, 0.95), rgba(237, 242, 247, 0.95));
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
+        /* 🔍 បន្ថែមទំហំអក្សរចំណងជើងកាតឱ្យធំជាងមុន */
         .card-header-info h3 {
             margin: 0;
-            font-size: 15.5px;
+            font-size: 18px; /* ធំជាងមុន */
             font-weight: 700;
             color: var(--primary-color);
         }
 
         .card-header-info .eng-title {
-            font-size: 11.5px;
+            font-size: 13px; /* ធំជាងមុនបន្តិច */
             font-weight: 600;
-            color: #64748b;
-            margin-top: 2px;
+            color: #475569;
+            margin-top: 3px;
         }
 
         .tree-toggle-icon {
-            font-size: 13px;
+            font-size: 15px;
             color: var(--primary-color);
             transition: transform 0.3s ease;
         }
@@ -315,12 +272,12 @@
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease-out;
-            background: #ffffff;
+            background: rgba(255, 255, 255, 0.95);
         }
 
         .card.active .card-body {
             max-height: 800px;
-            padding: 10px 15px 14px 15px;
+            padding: 12px 18px 16px 18px;
             transition: max-height 0.4s ease-in;
         }
 
@@ -330,7 +287,7 @@
             margin: 0;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
             position: relative;
         }
 
@@ -342,7 +299,7 @@
             bottom: 12px;
             left: 12px;
             width: 2px;
-            background: #cbd5e1;
+            background: #94a3b8;
         }
 
         .role-item {
@@ -352,7 +309,7 @@
             justify-content: center;
             background: #f8fafc;
             border: 1px solid var(--border-color);
-            padding: 8px 10px 8px 26px;
+            padding: 10px 12px 10px 28px;
             border-radius: 6px;
             text-decoration: none;
             transition: all 0.2s ease;
@@ -366,14 +323,14 @@
             left: -8px;
             width: 8px;
             height: 2px;
-            background: #cbd5e1;
+            background: #94a3b8;
         }
 
         .role-item:hover {
             background: linear-gradient(135deg, #00c6ff, #0072ff);
             color: #ffffff;
             border-color: transparent;
-            transform: translateX(3px);
+            transform: translateX(4px);
         }
 
         .role-item:hover .role-km, 
@@ -381,18 +338,19 @@
             color: #ffffff;
         }
 
+        /* 🔍 បន្ថែមទំហំអក្សរខាងក្នុងមែកធាងឱ្យធំ និងងាយស្រួលអានជាងមុន */
         .role-km {
             display: block;
-            font-size: 13.5px;
+            font-size: 15px; /* ធំជាងមុន */
             font-weight: 600;
             color: var(--text-main);
         }
 
         .role-en {
             display: block;
-            font-size: 11px;
-            color: #64748b;
-            margin-top: 1px;
+            font-size: 12.5px; /* ធំជាងមុន */
+            color: #475569;
+            margin-top: 2px;
         }
     </style>
 </head>
@@ -508,15 +466,6 @@
 
     <!-- 🌟 Main Layout -->
     <div class="main-layout">
-        <!-- Space ខាងឆ្វេងសម្រាប់រូបភាពផែស្ងួត -->
-        <div class="left-dryport-space">
-            <div class="dryport-photo-box">
-                <img src="dryport-facility.jpg" alt="ANT Dry Port Facility" onerror="this.src='https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80'">
-            </div>
-            <h3>ANT Dry Port (Cambodia)</h3>
-            <p>មជ្ឈមណ្ឌលភស្តុភារកម្ម និងឃ្លាំងពន្ធដារទំនើប ផ្តល់សេវាកម្មដឹកជញ្ជូន គ្រប់គ្រងកុងតឺន័រ និងទំនិញគ្រប់ប្រភេទដោយសុវត្ថិភាពខ្ពស់។</p>
-        </div>
-
         <!-- ផ្នែកខាងស្តាំសម្រាប់បង្ហាញកាតរៀបជាជួរចុះមកក្រោម -->
         <div id="dashboard" class="right-cards-container">
             <!-- Content Rendered dynamically -->
@@ -813,7 +762,6 @@
                     `;
                 }).join('');
                 
-                // 💡 ធានាថាមានតែកាតទី១ (index === 0) ទេដែលបើកស្រាប់ (active) ក្រៅពីนั้นបិទទាំងអស់ ដើម្បីកុំឱ្យវែងជ្រុល
                 let activeClass = index === 0 ? 'active' : '';
 
                 let card = `
