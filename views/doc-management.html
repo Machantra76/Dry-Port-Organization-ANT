@@ -87,7 +87,7 @@
             box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.15);
         }
 
-        /* 🎨 ប៊ូតុងក្នុង Form (រក្សាទុក និង សារថ្មី/ចុះបញ្ជី) ឱ្យមានទំហំស្មើគ្នា */
+        /* 🎨 ប៊ូតុងក្នុង Form */
         .btn-primary-custom {
             background: linear-gradient(135deg, #0d9488, #0f766e);
             border: none;
@@ -125,7 +125,7 @@
             color: white;
         }
 
-        /* 🎨 ប៊ូតុងត្រង, សារថ្មី និង បោះពុម្ព PDF ឱ្យមានទំហំស្មើគ្នាល្អឥតខ្ចោះ */
+        /* 🎨 ប៊ូតុងត្រង, សារថ្មី និង បោះពុម្ព PDF */
         .btn-filter-custom {
             background: linear-gradient(135deg, #6366f1, #4f46e5);
             border: none;
@@ -187,6 +187,14 @@
             font-size: 0.88rem;
             text-align: center;
         }
+        
+        /* 💡 កែតម្រូវកော်ឡូនសកម្មភាពមិនឱ្យប៊ូតុងធ្លាក់ចុះក្រោម */
+        .action-column {
+            white-space: nowrap;
+            width: 1%;
+            text-align: center;
+        }
+
         .filter-action-bar {
             background-color: #f8fafc;
             padding: 20px;
@@ -268,7 +276,6 @@
                     <textarea class="form-control" id="notes" rows="3" placeholder="ព័ត៌មានបន្ថែមទាក់ទងនឹងឯកសារគយនេះ..."></textarea>
                 </div>
                 
-                <!-- 💡 ប៊ូតុងរក្សាទុក និង ប៊ូតុងចុះបញ្ជីថ្មី រៀបចំឱ្យមានទំហំស្មើគ្នា -->
                 <div class="col-12 mt-4">
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -307,7 +314,6 @@
                     <input type="date" class="form-control" id="toDate">
                 </div>
                 
-                <!-- 💡 ប៊ូតុង ត្រង, សារថ្មី និង បោះពុម្ព PDF រៀបចំក្នុងជួរដេកតែមួយ ឱ្យមានទំហំស្មើគ្នាស្របគ្នា -->
                 <div class="col-md-3">
                     <div class="row g-2">
                         <div class="col-4">
@@ -402,7 +408,8 @@
                     <td>${item.officer_name}</td>
                     <td>${item.reference_no || '-'}</td>
                     <td><span class="badge ${statusBadge}">${item.status}</span></td>
-                    <td class="no-print">
+                    <!-- 💡 បន្ថែម class action-column ដើម្បីបង្ខំឱ្យប៊ូតុងនៅជួរដេកតែមួយ -->
+                    <td class="no-print action-column">
                         <button class="btn btn-sm btn-outline-primary me-1" onclick="editDocument(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button class="btn btn-sm btn-outline-danger" onclick="deleteDocument(${item.id})" title="លុប"><i class="fa-solid fa-trash"></i></button>
                     </td>
