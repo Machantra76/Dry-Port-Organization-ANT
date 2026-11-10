@@ -606,7 +606,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣៥. តារាងគ្រប់គ្រងវិក្កយបត្រ (Tax & Commercial Invoices)
+        // ៣៥. តារាងគ្រប់គ្រងវិក្កយបត្រ (Tax & Commercial Invoices) - 🌟 បានបន្ថែម address_kh នៅទីនេះ
         await client.query(`
             CREATE TABLE IF NOT EXISTS tax_invoices (
                 id SERIAL PRIMARY KEY,
@@ -615,6 +615,8 @@ async function initializeDatabase() {
                 charge_to VARCHAR(255),
                 seal_no VARCHAR(100),
                 booking_no VARCHAR(100),
+                address_kh TEXT,
+                address TEXT,
                 container_no VARCHAR(100),
                 remark TEXT,
                 inv_date VARCHAR(100),
@@ -637,6 +639,8 @@ async function initializeDatabase() {
    
         await client.query(`ALTER TABLE tax_invoices ADD COLUMN IF NOT EXISTS date_out VARCHAR(100);`);
         await client.query(`ALTER TABLE tax_invoices ADD COLUMN IF NOT EXISTS note TEXT;`);
+        await client.query(`ALTER TABLE tax_invoices ADD COLUMN IF NOT EXISTS address_kh TEXT;`);
+        await client.query(`ALTER TABLE tax_invoices ADD COLUMN IF NOT EXISTS address TEXT;`);
 
         await client.query(`ALTER TABLE customs_permit_records DROP CONSTRAINT IF EXISTS customs_permit_records_permit_number_key;`).catch(() => {});
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);`);
@@ -778,10 +782,8 @@ app.get('/api/users', async (req, res) => {
 
 
 // ==========================================
-// API Routes: ប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Logs APIs) - 🌟 កែសម្រួលថ្មី
+// API Routes: ប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Logs APIs)
 // ==========================================
-
-// ១. ទាញយក Activity Logs តាម Cargo ID ឬ 50 ចុងក្រោយ
 app.get('/api/fleet/cargo-gates/:id/activities', async (req, res) => {
     const { id } = req.params;
     try {
@@ -798,7 +800,6 @@ app.get('/api/fleet/cargo-gates/:id/activities', async (req, res) => {
     }
 });
 
-// ២. កត់ត្រា Activity Log ថ្មីចូល PostgreSQL
 app.post('/api/fleet/activity-logs', async (req, res) => {
     const { username, action_type, details } = req.body;
     try {
@@ -806,7 +807,7 @@ app.post('/api/fleet/activity-logs', async (req, res) => {
             INSERT INTO activity_logs (username, action_type, details) 
             VALUES ($1, $2, $3) RETURNING *;
         `;
-        const values = [username || 'បុគ្គលិកប្រតិបត្តិការ', action_type, details];
+        const values = [username || 'បុគ្គលិកប្រតិបត្តិการ', action_type, details];
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
@@ -864,7 +865,7 @@ app.get('/views/invoice-list.html', (req, res) => {
 });
 
 // ==========================================
-// API Routes: ស្ថិតិវិក្កយបត្រ និងការរក្សាទុកវិក្កយបត្រ
+// API Routes: ស្ថិតិវិក្កយបត្រ និងការរក្សាទុកវិក្កយបត្រ (🌟 កែសម្រួលទទួល address_kh និង address)
 // ==========================================
 app.get('/api/invoices/stats', async (req, res) => {
     const { customerName } = req.query;
@@ -895,7 +896,7 @@ app.get('/api/invoices/stats', async (req, res) => {
 
 app.post('/api/tax-invoices', async (req, res) => {
     const {
-        invoice_type, invoice_no, charge_to, seal_no, booking_no, container_no,
+        invoice_type, invoice_no, charge_to, seal_no, address_kh, address, container_no,
         remark, inv_date, date_out, truck_out, truck_in, owner, booking_by, size, note,
         items, subtotal, exch_rate, vat_amount, grand_total_usd, grand_total_khr
     } = req.body;
@@ -903,14 +904,14 @@ app.post('/api/tax-invoices', async (req, res) => {
     try {
         const query = `
             INSERT INTO tax_invoices (
-                invoice_type, invoice_no, charge_to, seal_no, booking_no, container_no,
+                invoice_type, invoice_no, charge_to, seal_no, address_kh, address, container_no,
                 remark, inv_date, date_out, truck_out, truck_in, owner, booking_by, size, note,
                 items, subtotal, exch_rate, vat_amount, grand_total_usd, grand_total_khr
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
             RETURNING *;
         `;
         const values = [
-            invoice_type || 'TAX_INVOICE', invoice_no, charge_to, seal_no, booking_no, container_no,
+            invoice_type || 'TAX_INVOICE', invoice_no, charge_to, seal_no, address_kh || null, address || null, container_no,
             remark, inv_date, date_out || null, truck_out, truck_in, owner, booking_by, size, note || null,
             JSON.stringify(items || []), subtotal || 0, exch_rate || 4085, vat_amount || 0,
             grand_total_usd || 0, grand_total_khr || 0
@@ -920,6 +921,44 @@ app.post('/api/tax-invoices', async (req, res) => {
         res.json({ success: true, message: 'បានរក្សាទុកវិក្កយបត្រដោយជោគជ័យ!', data: result.rows[0] });
     } catch (err) {
         console.error('Error saving tax invoice:', err);
+        res.status(500).json({ success: false, error: 'Server error: ' + err.message });
+    }
+});
+
+app.put('/api/tax-invoices/:id', async (req, res) => {
+    const { id } = req.params;
+    const {
+        invoice_type, invoice_no, charge_to, seal_no, address_kh, address, container_no,
+        remark, inv_date, date_out, truck_out, truck_in, owner, booking_by, size, note,
+        items, subtotal, exch_rate, vat_amount, grand_total_usd, grand_total_khr
+    } = req.body;
+
+    try {
+        const query = `
+            UPDATE tax_invoices 
+            SET invoice_type = $1, invoice_no = $2, charge_to = $3, seal_no = $4, 
+                address_kh = $5, address = $6, container_no = $7, remark = $8, inv_date = $9, date_out = $10,
+                truck_out = $11, truck_in = $12, owner = $13, booking_by = $14, 
+                size = $15, note = $16, items = $17, subtotal = $18, exch_rate = $19, 
+                vat_amount = $20, grand_total_usd = $21, grand_total_khr = $22
+            WHERE id = $23 
+            RETURNING *;
+        `;
+        const values = [
+            invoice_type || 'TAX_INVOICE', invoice_no, charge_to, seal_no, address_kh || null, address || null, container_no,
+            remark, inv_date, date_out || null, truck_out, truck_in, owner, booking_by, size, note || null,
+            JSON.stringify(items || []), subtotal || 0, exch_rate || 4085, vat_amount || 0,
+            grand_total_usd || 0, grand_total_khr || 0, id
+        ];
+
+        const result = await pool.query(query, values);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញវិក្កយបត្រដែលត្រូវកែប្រែទេ' });
+        }
+
+        res.json({ success: true, message: 'បានកែប្រែវិក្កយបត្រដោយជោគជ័យ!', data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating tax invoice:', err);
         res.status(500).json({ success: false, error: 'Server error: ' + err.message });
     }
 });
@@ -1072,44 +1111,6 @@ app.delete('/api/revenues/:id', async (req, res) => {
     } catch (err) {
         console.error('Error deleting revenue:', err);
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការលុបទិន្នន័យ' });
-    }
-});
-
-app.put('/api/tax-invoices/:id', async (req, res) => {
-    const { id } = req.params;
-    const {
-        invoice_type, invoice_no, charge_to, seal_no, booking_no, container_no,
-        remark, inv_date, date_out, truck_out, truck_in, owner, booking_by, size, note,
-        items, subtotal, exch_rate, vat_amount, grand_total_usd, grand_total_khr
-    } = req.body;
-
-    try {
-        const query = `
-            UPDATE tax_invoices 
-            SET invoice_type = $1, invoice_no = $2, charge_to = $3, seal_no = $4, 
-                booking_no = $5, container_no = $6, remark = $7, inv_date = $8, date_out = $9,
-                truck_out = $10, truck_in = $11, owner = $12, booking_by = $13, 
-                size = $14, note = $15, items = $16, subtotal = $17, exch_rate = $18, 
-                vat_amount = $19, grand_total_usd = $20, grand_total_khr = $21
-            WHERE id = $22 
-            RETURNING *;
-        `;
-        const values = [
-            invoice_type || 'TAX_INVOICE', invoice_no, charge_to, seal_no, booking_no, container_no,
-            remark, inv_date, date_out || null, truck_out, truck_in, owner, booking_by, size, note || null,
-            JSON.stringify(items || []), subtotal || 0, exch_rate || 4085, vat_amount || 0,
-            grand_total_usd || 0, grand_total_khr || 0, id
-        ];
-
-        const result = await pool.query(query, values);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញវិក្កយបត្រដែលត្រូវកែប្រែទេ' });
-        }
-
-        res.json({ success: true, message: 'បានកែប្រែវិក្កយបត្រដោយជោគជ័យ!', data: result.rows[0] });
-    } catch (err) {
-        console.error('Error updating tax invoice:', err);
-        res.status(500).json({ success: false, error: 'Server error: ' + err.message });
     }
 });
 
