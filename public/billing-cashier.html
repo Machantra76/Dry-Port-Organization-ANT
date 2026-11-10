@@ -392,12 +392,12 @@
                         <span class="info-label">Company name/Customer:</span>
                         <span class="info-value"><input type="text" id="sealNo" value=""></span>
                     </div>
-                    <!-- ✅ អាស័យដ្ឋាន (ភាសាខ្មែរ) -->
+                    <!-- អាស័យដ្ឋាន (ភាសាខ្មែរ) -->
                     <div class="info-row">
                         <span class="info-label">អាស័យដ្ឋាន:</span>
                         <span class="info-value"><input type="text" id="address" value=""></span>
                     </div>
-                    <!-- ✅ Address (ភាសាអង់គ្លេស - បន្ថែមដាច់ដោយឡែក) -->
+                    <!-- Address (ភាសាអង់គ្លេស) -->
                     <div class="info-row">
                         <span class="info-label">Address:</span>
                         <span class="info-value"><input type="text" id="addressEn" value=""></span>
@@ -707,8 +707,8 @@
                 invoice_no: document.getElementById('invoiceNo').value,
                 charge_to: document.getElementById('chargeTo').value,
                 seal_no: document.getElementById('sealNo').value,
-                address: document.getElementById('address').value,       // 👈 រក្សាទុក អាស័យដ្ឋាន (Khmer)
-                address_en: document.getElementById('addressEn').value, // 👈 រក្សាទុក Address (English)
+                address: document.getElementById('address').value,       // រក្សាទុក អាស័យដ្ឋាន (Khmer)
+                address_en: document.getElementById('addressEn').value, // រក្សាទុក Address (English)
                 container_no: document.getElementById('containerNo').value,
                 remark: document.getElementById('remark').value,
                 inv_date: document.getElementById('invDate').value,
@@ -783,8 +783,8 @@
                 document.getElementById('invoiceNo').value = inv.invoice_no || '';
                 document.getElementById('chargeTo').value = inv.charge_to || '';
                 document.getElementById('sealNo').value = inv.seal_no || '';
-                document.getElementById('address').value = inv.address || '';         // 👈 ទាញទិន្នន័យ អាស័យដ្ឋាន (Khmer)
-                document.getElementById('addressEn').value = inv.address_en || '';     // 👈 ទាញទិន្នន័យ Address (English)
+                document.getElementById('address').value = inv.address || '';         // ទាញទិន្នន័យ អាស័យដ្ឋាន (Khmer)
+                document.getElementById('addressEn').value = inv.address_en || '';     // ទាញទិន្នន័យ Address (English)
                 document.getElementById('containerNo').value = inv.container_no || '';
                 document.getElementById('remark').value = inv.remark || '';
                 document.getElementById('invDate').value = inv.inv_date || '';
