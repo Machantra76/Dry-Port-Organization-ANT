@@ -293,7 +293,7 @@
                 tr.innerHTML = `
                     <td>${index + 1}</td>
                     <td>${typeBadge}</td>
-                    <td style="font-weight: bold; color: #1e3c72;" onclick="viewAndPrintInvoice(${inv.id})" style="cursor: pointer;" title="ចុចเพื่อមើល">${inv.invoice_no || 'N/A'}</td>
+                    <td style="font-weight: bold; color: #1e3c72;" onclick="viewAndPrintInvoice(${inv.id})" style="cursor: pointer;" title="ចុចដើម្បីមើល">${inv.invoice_no || 'N/A'}</td>
                     <td>${inv.charge_to || '-'}</td>
                     <td>${inv.container_no || '-'}</td>
                     <td>${inv.inv_date || '-'}</td>
@@ -378,9 +378,9 @@
                             <div>
                                 <div><strong>Charge To:</strong> ${inv.charge_to || ''}</div>
                                 <div><strong>Seal No:</strong> ${inv.seal_no || ''}</div>
-                                <div><strong>Booking No:</strong> ${inv.booking_no || ''}</div>
+                                <div><strong>អាសយដ្ឋាន:</strong> ${inv.address || ''}</div>
+                                <div><strong>Address:</strong> ${inv.address_en || ''}</div>
                                 <div><strong>Container No:</strong> ${inv.container_no || ''}</div>
-                                <div><strong>Address:</strong> ${inv.address || ''}</div>
                             </div>
                             <div>
                                 <div><strong>Date:</strong> ${inv.inv_date || ''}</div>
