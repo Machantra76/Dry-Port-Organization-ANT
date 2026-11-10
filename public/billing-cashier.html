@@ -392,12 +392,12 @@
                         <span class="info-label">Company name/Customer:</span>
                         <span class="info-value"><input type="text" id="sealNo" value=""></span>
                     </div>
-                    <!-- 💡 កែតម្រូវ ID អាស័យដ្ឋាន (ខ្មែរ) ឱ្យដាច់ដោយឡែកពីគ្នា -->
+                    <!-- អាស័យដ្ឋាន (ខ្មែរ) -->
                     <div class="info-row">
                         <span class="info-label">អាស័យដ្ឋាន:</span>
                         <span class="info-value"><input type="text" id="addressKh" value=""></span>
                     </div>
-                    <!-- 💡 កែតម្រូវ ID Address (អង់គ្លេស) ឱ្យដាច់ដោយឡែកពីគ្នា -->
+                    <!-- Address (អង់គ្លេស) -->
                     <div class="info-row">
                         <span class="info-label">Address:</span>
                         <span class="info-value"><input type="text" id="addressEn" value=""></span>
@@ -416,10 +416,6 @@
                     <div class="info-row">
                         <span class="info-label">Date In:</span>
                         <span class="info-value"><input type="text" id="invDate" value=""></span>
-                    </div>
-                    <div class="info-row">
-                        <span class="info-label">Date Out:</span>
-                        <span class="info-value"><input type="text" id="dateOut" value=""></span>
                     </div>
                     <div class="info-row">
                         <span class="info-label" id="invoiceNoLabel">Tax Invoice No:</span>
@@ -707,12 +703,11 @@
                 invoice_no: document.getElementById('invoiceNo').value,
                 charge_to: document.getElementById('chargeTo').value,
                 seal_no: document.getElementById('sealNo').value,
-                address_kh: document.getElementById('addressKh').value, // 💡 រក្សាទុកអាស័យដ្ឋានខ្មែរ
-                address: document.getElementById('addressEn').value,       // 💡 រក្សាទុក Address អង់គ្លេស
+                address_kh: document.getElementById('addressKh').value,
+                address: document.getElementById('addressEn').value,
                 container_no: document.getElementById('containerNo').value,
                 remark: document.getElementById('remark').value,
                 inv_date: document.getElementById('invDate').value,
-                date_out: document.getElementById('dateOut').value,
                 truck_out: document.getElementById('truckOut').value,
                 truck_in: document.getElementById('truckIn').value,
                 owner: document.getElementById('owner').value,
@@ -783,12 +778,11 @@
                 document.getElementById('invoiceNo').value = inv.invoice_no || '';
                 document.getElementById('chargeTo').value = inv.charge_to || '';
                 document.getElementById('sealNo').value = inv.seal_no || '';
-                document.getElementById('addressKh').value = inv.address_kh || inv.booking_no || ''; // 💡 ទាញទិន្នន័យអាស័យដ្ឋានខ្មែរមកបង្ហាញវិញ
-                document.getElementById('addressEn').value = inv.address || ''; // 💡 ទាញ Address អង់គ្លេសមកបង្ហាញវិញ
+                document.getElementById('addressKh').value = inv.address_kh || inv.booking_no || '';
+                document.getElementById('addressEn').value = inv.address || '';
                 document.getElementById('containerNo').value = inv.container_no || '';
                 document.getElementById('remark').value = inv.remark || '';
                 document.getElementById('invDate').value = inv.inv_date || '';
-                document.getElementById('dateOut').value = inv.date_out || '';
                 document.getElementById('truckOut').value = inv.truck_out || '';
                 document.getElementById('truckIn').value = inv.truck_in || '';
                 document.getElementById('owner').value = inv.owner || '';
