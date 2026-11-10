@@ -577,6 +577,8 @@
             "ការគ្រប់គ្រងឯកសារ": { en: "Document Management", url: "/views/doc-management.html" },
             "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ": { en: "Customs System Data Entry Management", url: "/views/doc-customs.html" },
             "អ្នកកាន់ឯកសារ": { en: "Document Controller / Handler", url: "/views/doc-handler.html" },
+            /* 🌟 បន្ថែម E-Customs ត្រង់នេះ ដោយតភ្ជាប់ទៅ Link ខាងក្រៅ */
+            "E-Customs": { en: "E-Customs Transit Portal", url: "https://transit.customs.gov.kh/dashboard", external: true },
 
             "ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)": { en: "Bonded Warehouse Cargo In/Out Control", url: "/views/bwh-inout.html" },
             "ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ": { en: "Duty-Unpaid Inventory Monitoring", url: "/views/bwh-inventory.html" },
@@ -591,7 +593,8 @@
             { id: "TECH_STUFFING", name: "ផ្នែកត្រួតពិនិត្យទីលានកុងតឺន័រ", roles: ["ប្រតិបត្តិការនៅទីលាន", "ការចូល / ចេញទំនិញ", "ក្រុមសន្តិសុខ"] },
             { id: "IT_SYSTEMS", name: "ផ្នែកព័ត៌មានវិទ្យា & ប្រព័ន្ធ", roles: ["ប្រព័ន្ធ WMS / OMS", "ប្រព័ន្ធ CCTV & បណ្តាញ", "ការគ្រប់គ្រងទិន្នន័យ"] },
             { id: "CUSTOMER_SVC", name: "ផ្នែកសេវាកម្មអតិថិជន", roles: ["ទំនាក់ទំនងជាមួយអតិថិជន", "ការដោះស្រាយបញ្ហា / ការតវ៉ា", "ជំនួយការផ្នែកស្វែងរកប្រភព"] },
-            { id: "FACILITIES", name: "ប្រធានផ្នែកសម្ភារឯកសារ", roles: ["ការគ្រប់គ្រងឯកសារ", "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ", "អ្នកកាន់ឯកសារ"] },
+            /* 🌟 បន្ថែម "E-Customs" ចូលទៅក្នុងផ្នែក FACILITIES (ប្រធានផ្នែកសម្ភារឯកសារ) */
+            { id: "FACILITIES", name: "ប្រធានផ្នែកសម្ភារឯកសារ", roles: ["ការគ្រប់គ្រងឯកសារ", "ការគ្រប់គ្រងបញ្ចូលទិន័យប្រព័ន្ធគយ", "អ្នកកាន់ឯកសារ", "E-Customs"] },
             { id: "BONDED_WH", name: "ផ្នែកឃ្លាំងទំនិញពន្ធដារ (BWH)", roles: ["ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)", "ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ", "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ"] }
         ];
 
@@ -792,9 +795,11 @@
                 
                 let rolesHtml = dept.roles.map(role => {
                     let info = roleDetails[role] || { en: "Workflow Item", url: "#" };
+                    // បន្ថែម target="_blank" ប្រសិនបើជា Link ខាងក្រៅ (External Link)
+                    let targetAttr = info.external ? 'target="_blank"' : '';
                     return `
                         <li>
-                            <a href="${info.url}" class="role-item">
+                            <a href="${info.url}" ${targetAttr} class="role-item">
                                 <span class="role-km">${role}</span>
                                 <span class="role-en">${info.en}</span>
                             </a>
