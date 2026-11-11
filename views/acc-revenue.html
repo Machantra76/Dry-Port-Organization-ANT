@@ -175,8 +175,6 @@
             margin-right: 8px;
         }
         .action-link:hover { text-decoration: underline; }
-        .action-delete { color: #dc2626; }
-        .action-delete:hover { color: #b91c1c; }
 
         .invoice-header {
             display: none;
@@ -197,7 +195,7 @@
 </head>
 <body>
     <div class="container">
-        <a href="/" class="back-btn no-print">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
+        <a href="/" class="back-btn no-print">← ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
         
         <div class="invoice-header">
             <h2>ANT DRY PORT</h2>
@@ -208,7 +206,7 @@
         <h1>គណនេយ្យប្រាក់ចំណូល</h1>
         <div class="eng-sub no-print">Revenue Accounting, Filter & Invoice System</div>
         
-        <!-- Form សម្រាប់បញ្ចូលទិន្នន័យ (บังคับกรอกทุกช่องด้วย attribute required) -->
+        <!-- Form សម្រាប់បញ្ចូលទិន្នន័យ -->
         <div class="section-box no-print">
             <h3 id="formTitle">កត់ត្រាប្រាក់ចំណូលថ្មី (Record New Revenue)</h3>
             <form id="revenueForm">
@@ -296,9 +294,6 @@
     </div>
 
     <script>
-        // តម្លើងតម្លៃ Role របស់អ្នកប្រើប្រាស់ (អាចប្តូរជា dynamic តាម session របស់អ្នក backend)
-        let currentUserRole = 'Admin'; // ឧទាហរណ៍៖ 'Admin' ឬ 'Staff'
-
         async function loadRevenues() {
             const from = document.getElementById('filter_from').value;
             const to = document.getElementById('filter_to').value;
@@ -312,12 +307,7 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 
-                // ទាញយក Role ពី API បើមាន (ផ្អែកលើระบบ Login របស់អ្នក)
-                if (data.userRole) {
-                    currentUserRole = data.userRole;
-                }
-
-                const revenues = data.revenues || data; // ស្របតាមទម្រង់ API response
+                const revenues = data.revenues || data;
                 const tbody = document.getElementById('revenueTableBody');
                 tbody.innerHTML = '';
                 
@@ -329,14 +319,11 @@
                 revenues.forEach(item => {
                     const formattedDate = new Date(item.revenue_date).toLocaleDateString('km-KH');
                     
-                    // បង្កើតប៊ូតុង កែ និង លុប សម្រាប់តែ Admin ប៉ុណ្ណោះ
-                    let adminActions = '';
-                    if (currentUserRole === 'Admin') {
-                        adminActions = `
-                            <a class="action-link" onclick="editRevenue('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || ''}', '${item.received_by}', '${item.amount}')">✏️ កែ</a>
-                            <a class="action-link action-delete" onclick="deleteRevenue('${item.id}')">🗑️ លុប</a>
-                        `;
-                    }
+                    // 💡 បង្ហាញតែប៊ូតុង វិក្កយបត្រ និង កែប្រែ (បានលុបប៊ូតុងលុបចេញរួចរាល់)
+                    const actionsHtml = `
+                        <a class="action-link" onclick="printInvoice('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || '-'}', '${item.received_by}', '${item.amount}')">🧾 វិក្កយបត្រ</a>
+                        <a class="action-link" onclick="editRevenue('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || ''}', '${item.received_by}', '${item.amount}')">✏️ កែ</a>
+                    `;
 
                     tbody.innerHTML += `<tr>
                         <td>${formattedDate}</td>
@@ -345,14 +332,13 @@
                         <td>${item.received_by}</td>
                         <td><span class="badge-revenue">+$${parseFloat(item.amount).toFixed(2)}</span></td>
                         <td class="no-print">
-                           <a class="action-link" onclick="printInvoice('${item.id}', '${item.revenue_date ? item.revenue_date.split('T')[0] : ''}', '${item.category}', '${item.description || '-'}', '${item.received_by}', '${item.amount}')">🧾 វិក្កយបត្រ</a>
-                           ${adminActions}
+                           ${actionsHtml}
                         </td>
                     </tr>`;
                 });
             } catch (err) { 
                 console.error(err);
-                document.getElementById('revenueTableBody').innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">មានបញ្ហាក្នុងការទាញយកទិន្នន័យ (Error loading data)</td></tr>';
+                document.getElementById('revenueTableBody').innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">មានបញ្ហាក្នុងการទាញយកទិន្នន័យ (Error loading data)</td></tr>';
             }
         }
 
@@ -362,7 +348,6 @@
             loadRevenues();
         }
 
-        // មុខងារសម្រាប់បំពេញទិន្នន័យចូល Form ដើម្បីកែប្រែ (Edit)
         function editRevenue(id, date, category, desc, receiver, amount) {
             document.getElementById('editId').value = id;
             document.getElementById('revenue_date').value = date;
@@ -374,24 +359,6 @@
             document.getElementById('formTitle').textContent = 'កែប្រែព័ត៌មានប្រាក់ចំណូល (Edit Revenue)';
             document.getElementById('submitBtn').textContent = '💾 រក្សាទុកការកែប្រែ (Update Revenue)';
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        // មុខងារលុបទិន្នន័យ (Delete)
-        async function deleteRevenue(id) {
-            if (!confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ? (Are you sure to delete?)')) return;
-
-            try {
-                const res = await fetch(`/api/revenues/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    alert('បានលុបដោយជោគជ័យ! (Deleted successfully!)');
-                    loadRevenues();
-                } else {
-                    alert('បរាជ័យក្នុងការលុប! (Failed to delete!)');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('មានបញ្ហាក្នុងការតភ្ជាប់ Server!');
-            }
         }
 
         function printInvoice(id, date, category, desc, receiver, amount) {
@@ -442,7 +409,6 @@
             printWindow.document.close();
         }
 
-        // Form Submit (รองรับทั้งการสร้างใหม่และการอាប់เดត)
         document.getElementById('revenueForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const editId = document.getElementById('editId').value;
