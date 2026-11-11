@@ -262,7 +262,7 @@
                     <input type="text" class="form-control" id="sys_code" placeholder="ឧ. SYS-DECL-2026-001 (មិនบังคับ)">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">ប្រភេទប្រតិបត្តិการប្រព័ន្ធ (Transaction Type):</label>
+                    <label class="form-label">ប្រភេទប្រតិបត្តិការប្រព័ន្ធ (Transaction Type):</label>
                     <select class="form-select" id="transaction_type" required>
                         <option value="ASYCUDA Input">ការបញ្ចូលទិន្នន័យក្នុងប្រព័ន្ធ ASYCUDA</option>
                         <option value="Manifest Registration">ការចុះបញ្ជីទំនិញនាំចូល/ចេញ (Manifest)</option>
@@ -636,6 +636,7 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // 💡 បានបន្ថែមព្រឹត្តិការណ៍ keyup ដើម្បីឱ្យប្រអប់ស្វែងរកដំណើរការភ្លាមៗពេលវាយអក្សរ
     document.getElementById('searchInput').addEventListener('keyup', function() {
         filterCustomsData();
     });
