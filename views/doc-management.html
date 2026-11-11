@@ -228,7 +228,6 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">លេខឯកសារ / លេខប្រកាសជំនាញ (Document / Declaration No.):</label>
-                    <!-- 💡 ដក required ចេញ ដើម្បីអាចទុកទំនេរមិនបាច់បញ្ចូលក៏បាន -->
                     <input type="text" class="form-control" id="document_number" placeholder="ឧ. DECL-2026-00123 (មិនบังคับ)">
                 </div>
                 <div class="col-md-6">
@@ -400,7 +399,6 @@
                 downloadBtn = `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
             }
 
-            // 💡 បានលុបប៊ូតុងលុប (Delete Button) ចេញពីទីនេះ
             const row = `
                 <tr>
                     <td>${index + 1}</td>
@@ -467,19 +465,6 @@
         const docNumber = document.getElementById('document_number').value.trim();
         const pdfFile = document.getElementById('pdf_file').files[0];
 
-        // 💡 ពិនិត្យមិនឱ្យស្ទួនលេខឯកសារ (document_number) (ប្រសិនបើមានការបញ្ចូល)
-        if (docNumber !== '') {
-            const existingMatch = documentDataList.find(item => 
-                item.document_number && 
-                item.document_number.trim().toLowerCase() === docNumber.toLowerCase() && 
-                item.id != editId
-            );
-            if (existingMatch) {
-                alert(`លេខឯកសារ / លេខប្រកាស "${docNumber}" នេះមានរួចហើយក្នុងប្រព័ន្ធ! សូមប្រើប្រាស់លេខផ្សេងដើម្បីជៀសវាងការស្ទួន។`);
-                return;
-            }
-        }
-
         if (pdfFile && pdfFile.size > 10 * 1024 * 1024) {
             alert('ឯកសារ PDF ធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំទាបជាង 10MB។');
             return;
@@ -545,6 +530,7 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // 💡 បានបន្ថែមមុខងារនេះដើម្បីឱ្យពេលវាយអក្សរស្វែងរកក្នុង ô searchInput វាធ្វើការត្រងទិន្នន័យស្វ័យប្រវត្តិភ្លាមៗ
     document.getElementById('searchInput').addEventListener('keyup', function() {
         filterDocuments();
     });
