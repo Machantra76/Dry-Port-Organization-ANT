@@ -2,9 +2,38 @@ const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
 const cors = require('cors');
+const multer = require('multer'); // 🌟 បន្ថែម Multer សម្រាប់ការ Upload ឯកសារ PDF
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// 🌟 កំណត់ទីតាំងរក្សាទុកឯកសារ PDF Uploaded
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'pdf-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+const upload = multer({ 
+    storage: storage,
+    limits: { fileSize: 10 * 1024 * 1024 }, // កំណត់ទំហំអតិបរមា 10MB
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'application/pdf') {
+            cb(null, true);
+        } else {
+            cb(new Error('សូមអនុញ្ញាតតែឯកសារប្រភេទ PDF ប៉ុណ្ណោះ!'), false);
+        }
+    }
+});
 
 // ការតភ្ជាប់ PostgreSQL Database
 const pool = new Pool({
@@ -17,6 +46,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/views', express.static(path.join(__dirname, 'views')));
+app.use('/uploads', express.static(uploadDir)); // 🌟 សម្រាប់ឱ្យ Frontend สามารถเข้าถึงไฟล์ PDF ที่อัปโหลดได้
+
 async function processPendingSchedules() {
     try {
         const result = await pool.query(
@@ -480,11 +511,13 @@ async function initializeDatabase() {
                 officer_name VARCHAR(150) NOT NULL,
                 reference_no VARCHAR(100),
                 notes TEXT,
+                pdf_path VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
         // 🌟 ដាក់កូដបង្ការ ឬបន្ថែម Column ទីនេះស្រាប់
         await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_url TEXT;`);
+        await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_path VARCHAR(255);`);
 
         // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management)
         await client.query(`
@@ -1805,11 +1838,11 @@ app.delete('/api/customs-system-data/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Customs Documents
+// API Routes: Customs Documents (🌟 កែសម្រួលគាំទ្រ File Upload PDF)
 // ==========================================
 app.get('/api/customs-documents', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM customs_documents ORDER BY id DESC');
+        const result = await pool.query('SELECT id, document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_path, created_at FROM customs_documents ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching customs documents:', err);
@@ -1817,33 +1850,50 @@ app.get('/api/customs-documents', async (req, res) => {
     }
 });
 
-app.post('/api/customs-documents', async (req, res) => {
+app.post('/api/customs-documents', upload.single('pdf_file'), async (req, res) => {
     const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
+    const pdf_path = req.file ? `/uploads/${req.file.filename}` : null;
+
     try {
         const query = `
-            INSERT INTO customs_documents (document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;
+            INSERT INTO customs_documents (document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_path)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
         `;
-        const values = [document_number, company_name, document_type, document_date, status || 'Pending', officer_name, reference_no, notes];
+        const values = [document_number, company_name, document_type, document_date, status || 'Pending', officer_name, reference_no, notes, pdf_path];
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error saving customs document:', err);
-        res.status(500).json({ error: 'Server error (លេខឯកសារអាចមានរួចហើយ)' });
+        res.status(500).json({ success: false, error: 'Server error (លេខឯកសារអាចមានរួចហើយ)' });
     }
 });
 
 
-app.put('/api/customs-documents/:id', async (req, res) => {
+app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res) => {
     const { id } = req.params;
     const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
+    
     try {
-        const query = `
-            UPDATE customs_documents 
-            SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8
-            WHERE id = $9 RETURNING *;
-        `;
-        const values = [document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, id];
+        let query = '';
+        let values = [];
+
+        if (req.file) {
+            const pdf_path = `/uploads/${req.file.filename}`;
+            query = `
+                UPDATE customs_documents 
+                SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8, pdf_path = $9
+                WHERE id = $10 RETURNING *;
+            `;
+            values = [document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_path, id];
+        } else {
+            query = `
+                UPDATE customs_documents 
+                SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8
+                WHERE id = $9 RETURNING *;
+            `;
+            values = [document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, id];
+        }
+
         const result = await pool.query(query, values);
 
         if (result.rows.length === 0) {
@@ -1853,13 +1903,22 @@ app.put('/api/customs-documents/:id', async (req, res) => {
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error updating customs document:', err);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ success: false, error: 'Server error' });
     }
 });
 
 app.delete('/api/customs-documents/:id', async (req, res) => {
     const { id } = req.params;
     try {
+        // ลบไฟล์ PDF บน Server ด้วยถ้ามี
+        const fileQuery = await pool.query('SELECT pdf_path FROM customs_documents WHERE id = $1', [id]);
+        if (fileQuery.rows.length > 0 && fileQuery.rows[0].pdf_path) {
+            const filePath = path.join(__dirname, fileQuery.rows[0].pdf_path);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+
         await pool.query('DELETE FROM customs_documents WHERE id = $1', [id]);
         res.json({ success: true, message: 'Deleted successfully' });
     } catch (err) {
