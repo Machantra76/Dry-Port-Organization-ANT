@@ -293,7 +293,7 @@
                     <label class="form-label">ច្រកទ្វារ ឬការិយាល័យគយ (Customs Office / Gate):</label>
                     <input type="text" class="form-control" id="customs_office" placeholder="ឧ. ការិយាល័យគយ និងរដ្ឋាករកំពង់ផែស្វយ័តភ្នំពេញ">
                 </div>
-                <!-- 💡 បន្ថែម File Input សម្រាប់ Upload ឯកសារ PDF -->
+                <!-- 💡 Upload ឯកសារ PDF -->
                 <div class="col-md-6">
                     <label class="form-label">แนបឯកសារ PDF (Upload PDF Document):</label>
                     <input type="file" class="form-control" id="pdf_file" accept="application/pdf">
@@ -490,10 +490,12 @@
             else if (item.system_status === 'Pending') statusBadge = 'bg-warning text-dark';
             else if (item.system_status === 'Error') statusBadge = 'bg-danger';
 
-            // 💡 បង្កើតប៊ូតុង Download PDF ប្រសិនបើมีไฟล์ PDF ភ្ជាប់មកជាមួយ
+            // 🌟 ឆែកមើល pdf_path តាមរយៈ API Endpoint របស់ ID ផ្ទាល់ (បើមានបង្ហាញប៊ូតុងពណ៌បៃតង បើគ្មានបង្ហាញពណ៌ប្រផេះ Disabled)
             let downloadBtn = '';
             if (item.pdf_path) {
-                downloadBtn = `<a href="${item.pdf_path}" class="btn btn-sm btn-outline-success me-1" target="_blank" title="ទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
+                downloadBtn = `<a href="/api/customs-system-data/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
+            } else {
+                downloadBtn = `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
             }
 
             const row = `
@@ -561,7 +563,6 @@
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យប្រព័ន្ធគយ`;
     }
 
-    // 💡 ប្រើប្រាស់ FormData ដើម្បីអាចផ្ញើឯកសារ PDF ទៅកាន់ Backend តាមរយៈ POST និង PUT
     document.getElementById('customsDataForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -589,7 +590,7 @@
 
             const response = await fetch(url, {
                 method: method,
-                body: formData // ផ្ញើបែប FormData មិនបាច់កំណត់ Content-Type header ទេ
+                body: formData 
             });
 
             const result = await response.json();
