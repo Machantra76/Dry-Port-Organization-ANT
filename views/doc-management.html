@@ -394,7 +394,6 @@
 
             let downloadBtn = '';
             if (item.pdf_path) {
-                // 💡 ប្រសិនបើ pdf_path ជាទម្រង់ Base64 (មានអក្សរ data:application/pdf) គឺបើកដោយផ្ទាល់ ឬ Download តាម Base64 តែម្តង
                 let pdfHref = item.pdf_path;
                 if (!pdfHref.startsWith('data:')) {
                     pdfHref = `${window.location.origin}${item.pdf_path}`;
@@ -462,7 +461,6 @@
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ`;
     }
 
-    // 💡 មុខងារជំនួយសម្រាប់แปลง file ទៅเป็น Base64
     const convertFileToBase64 = (file) => {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -480,6 +478,11 @@
         let pdfBase64 = null;
         const pdfFile = document.getElementById('pdf_file').files[0];
         if (pdfFile) {
+            if (pdfFile.size > 10 * 1024 * 1024) {
+                alert('ឯកសារ PDF ធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំទាបជាង 10MB។');
+                return;
+            }
+
             try {
                 pdfBase64 = await convertFileToBase64(pdfFile);
             } catch (err) {
@@ -499,7 +502,6 @@
             notes: document.getElementById('notes').value
         };
 
-        // បញ្ចូល pdf_path (ที่เป็น Base64) ទៅក្នុង payload ប្រសិនបើมีไฟล์ใหม่ถูกเลือก
         if (pdfBase64) {
             payload.pdf_path = pdfBase64;
         }
@@ -516,6 +518,11 @@
                 body: JSON.stringify(payload)
             });
 
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Server បានឆ្លើយតបខុសទម្រង់ (អាចមកពី File ធំពេកហួសដែនកំណត់)");
+            }
+
             const result = await response.json();
             if (response.ok && result.success) {
                 alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានចុះបញ្ជីឯកសារថ្មីដោយជោគជ័យ!');
@@ -526,7 +533,7 @@
             }
         } catch (err) {
             console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server ឬទំហំឯកសារធំពេក: ' + err.message);
         }
     });
 
@@ -545,7 +552,7 @@
         document.getElementById('notes').value = item.notes || '';
 
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យ`;
-        window.scrollTo({ top: 'smooth', top: 0 });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     async function deleteDocument(id) {
