@@ -395,10 +395,10 @@
             let downloadBtn = '';
             if (item.pdf_path) {
                 let pdfHref = item.pdf_path;
-                if (!pdfHref.startsWith('data:')) {
+                if (!pdfHref.startsWith('data:') && !pdfHref.startsWith('http')) {
                     pdfHref = `${window.location.origin}${item.pdf_path}`;
                 }
-                downloadBtn = `<a href="${pdfHref}" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF" download="Customs-Doc-${item.document_number}.pdf"><i class="fa-solid fa-file-pdf"></i></a>`;
+                downloadBtn = `<a href="${pdfHref}" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
             }
 
             const row = `
@@ -461,49 +461,30 @@
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ`;
     }
 
-    const convertFileToBase64 = (file) => {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = (error) => reject(error);
-        });
-    };
-
+    // 🌟 កែប្រែប្រើប្រាស់ FormData ជំនួសឱ្យ JSON ដើម្បីផ្ញើឯកសារ PDF ទៅកាន់ Multer របស់ Server
     document.getElementById('documentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const editId = document.getElementById('editId').value;
-        
-        let pdfBase64 = null;
         const pdfFile = document.getElementById('pdf_file').files[0];
-        if (pdfFile) {
-            if (pdfFile.size > 10 * 1024 * 1024) {
-                alert('ឯកសារ PDF ធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំទាបជាង 10MB។');
-                return;
-            }
 
-            try {
-                pdfBase64 = await convertFileToBase64(pdfFile);
-            } catch (err) {
-                alert('មានបញ្ហាក្នុងការអានឯកសារ PDF!');
-                return;
-            }
+        if (pdfFile && pdfFile.size > 10 * 1024 * 1024) {
+            alert('ឯកសារ PDF ធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំទាបជាង 10MB។');
+            return;
         }
 
-        const payload = {
-            document_number: document.getElementById('document_number').value,
-            company_name: document.getElementById('company_name').value,
-            document_type: document.getElementById('document_type').value,
-            document_date: document.getElementById('document_date').value,
-            status: document.getElementById('status').value,
-            officer_name: document.getElementById('officer_name').value,
-            reference_no: document.getElementById('reference_no').value,
-            notes: document.getElementById('notes').value
-        };
+        const formData = new FormData();
+        formData.append('document_number', document.getElementById('document_number').value);
+        formData.append('company_name', document.getElementById('company_name').value);
+        formData.append('document_type', document.getElementById('document_type').value);
+        formData.append('document_date', document.getElementById('document_date').value);
+        formData.append('status', document.getElementById('status').value);
+        formData.append('officer_name', document.getElementById('officer_name').value);
+        formData.append('reference_no', document.getElementById('reference_no').value);
+        formData.append('notes', document.getElementById('notes').value);
 
-        if (pdfBase64) {
-            payload.pdf_path = pdfBase64;
+        if (pdfFile) {
+            formData.append('pdf_file', pdfFile);
         }
 
         try {
@@ -512,10 +493,7 @@
 
             const response = await fetch(url, {
                 method: method,
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
+                body: formData // មិនបាច់ដាក់ headers 'Content-Type': 'application/json' ទេ ព្រោះ FormData កំណត់ multipart/form-data ให้อัตโนมัติ
             });
 
             const contentType = response.headers.get("content-type");
