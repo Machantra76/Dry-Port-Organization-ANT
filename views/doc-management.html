@@ -392,9 +392,9 @@
             else if (item.status === 'Pending') statusBadge = 'bg-warning text-dark';
             else if (item.status === 'Rejected') statusBadge = 'bg-danger';
 
-            // 🌟 កូដបង្ហាញប៊ូតុង PDF (ប្រសិនបើมี pdf_path នឹងបង្ហាញប៊ូតុងពណ៌បៃតង ຖ້າគ្មានទេបង្ហាញប៊ូតុងពណ៌ប្រផេះ)
+            // 🌟 ពិនិត្យមើល has_pdf និងតភ្ជាប់ទៅកាន់ API Endpoint របស់ ID ផ្ទាល់ (បើមានបង្ហាញប៊ូតុងពណ៌បៃតង បើគ្មានបង្ហាញពណ៌ប្រផេះ Disabled)
             let downloadBtn = '';
-            if (item.pdf_path) {
+            if (item.has_pdf) {
                 downloadBtn = `<a href="/api/customs-documents/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
             } else {
                 downloadBtn = `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
