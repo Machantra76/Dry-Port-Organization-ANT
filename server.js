@@ -2,29 +2,16 @@ const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
 const cors = require('cors');
-const multer = require('multer'); // 🌟 បន្ថែម Multer សម្រាប់ការ Upload ឯកសារ PDF
+const multer = require('multer'); // 🌟 បន្ថែម Multer សម្រាប់ការ Upload ឯកសារ PDF ជា Memory Buffer
 const fs = require('fs');
+const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 🌟 កំណត់ទីតាំងរក្សាទុកឯកសារ PDF Uploaded
-const uploadDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'pdf-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
+// 🌟 ប្រើ memoryStorage ដើម្បីទាញយក Buffer របស់ PDF យកមកបម្លែងជា Base64 រក្សាទុកក្នុង Database
 const upload = multer({ 
-    storage: storage,
+    storage: multer.memoryStorage(),
     limits: { fileSize: 10 * 1024 * 1024 }, // កំណត់ទំហំអតិបរមា 10MB
     fileFilter: (req, file, cb) => {
         if (file.mimetype === 'application/pdf') {
@@ -48,7 +35,6 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/views', express.static(path.join(__dirname, 'views')));
-app.use('/uploads', express.static(uploadDir)); // 🌟 សម្រាប់ឱ្យ Frontend អាចចូលទៅយកឯកសារ PDF ដែលបាន Upload
 
 async function processPendingSchedules() {
     try {
@@ -513,12 +499,13 @@ async function initializeDatabase() {
                 officer_name VARCHAR(150) NOT NULL,
                 reference_no VARCHAR(100),
                 notes TEXT,
-                pdf_path VARCHAR(255),
+                pdf_data TEXT,
+                has_pdf BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_url TEXT;`);
-        await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_path VARCHAR(255);`);
+        await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_data TEXT;`);
+        await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS has_pdf BOOLEAN DEFAULT FALSE;`);
 
         // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management)
         await client.query(`
@@ -533,11 +520,13 @@ async function initializeDatabase() {
                 reference_number VARCHAR(100),
                 customs_office VARCHAR(150),
                 remarks TEXT,
-                pdf_path VARCHAR(255),
+                pdf_data TEXT,
+                has_pdf BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        await client.query(`ALTER TABLE customs_system_data ADD COLUMN IF NOT EXISTS pdf_path VARCHAR(255);`);
+        await client.query(`ALTER TABLE customs_system_data ADD COLUMN IF NOT EXISTS pdf_data TEXT;`);
+        await client.query(`ALTER TABLE customs_system_data ADD COLUMN IF NOT EXISTS has_pdf BOOLEAN DEFAULT FALSE;`);
 
         // ២៩. តារាងអ្នកកាន់ឯកសារគយ (Document Controller / Handler)
         await client.query(`
@@ -1776,11 +1765,11 @@ app.delete('/api/document-handlers/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Customs System Data
+// API Routes: Customs System Data (Base64 Storage)
 // ==========================================
 app.get('/api/customs-system-data', async (req, res) => {
     try {
-        const result = await pool.query('SELECT * FROM customs_system_data ORDER BY id DESC');
+        const result = await pool.query('SELECT id, sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, has_pdf, created_at FROM customs_system_data ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching customs system data:', err);
@@ -1790,14 +1779,20 @@ app.get('/api/customs-system-data', async (req, res) => {
 
 app.post('/api/customs-system-data', upload.single('pdf_file'), async (req, res) => {
     const { sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks } = req.body;
-    const pdf_path = req.file ? `/uploads/${req.file.filename}` : null;
+    
+    let pdf_data = null;
+    let has_pdf = false;
+    if (req.file) {
+        pdf_data = `data:application/pdf;base64,${req.file.buffer.toString('base64')}`;
+        has_pdf = true;
+    }
 
     try {
         const query = `
-            INSERT INTO customs_system_data (sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, pdf_path)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
+            INSERT INTO customs_system_data (sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, pdf_data, has_pdf)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *;
         `;
-        const values = [sys_code, company_name, transaction_type, entry_date, system_status || 'Pending', operator_name, reference_number, customs_office, remarks, pdf_path];
+        const values = [sys_code, company_name, transaction_type, entry_date, system_status || 'Pending', operator_name, reference_number, customs_office, remarks, pdf_data, has_pdf];
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
@@ -1815,21 +1810,14 @@ app.put('/api/customs-system-data/:id', upload.single('pdf_file'), async (req, r
         let values = [];
 
         if (req.file) {
-            const pdf_path = `/uploads/${req.file.filename}`;
-            const oldFileQuery = await pool.query('SELECT pdf_path FROM customs_system_data WHERE id = $1', [id]);
-            if (oldFileQuery.rows.length > 0 && oldFileQuery.rows[0].pdf_path) {
-                const oldFilePath = path.join(__dirname, oldFileQuery.rows[0].pdf_path);
-                if (fs.existsSync(oldFilePath)) {
-                    fs.unlinkSync(oldFilePath);
-                }
-            }
-
+            const pdf_data = `data:application/pdf;base64,${req.file.buffer.toString('base64')}`;
+            const has_pdf = true;
             query = `
                 UPDATE customs_system_data 
-                SET sys_code = $1, company_name = $2, transaction_type = $3, entry_date = $4, system_status = $5, operator_name = $6, reference_number = $7, customs_office = $8, remarks = $9, pdf_path = $10
-                WHERE id = $11 RETURNING *;
+                SET sys_code = $1, company_name = $2, transaction_type = $3, entry_date = $4, system_status = $5, operator_name = $6, reference_number = $7, customs_office = $8, remarks = $9, pdf_data = $10, has_pdf = $11
+                WHERE id = $12 RETURNING *;
             `;
-            values = [sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, pdf_path, id];
+            values = [sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, pdf_data, has_pdf, id];
         } else {
             query = `
                 UPDATE customs_system_data 
@@ -1855,14 +1843,6 @@ app.put('/api/customs-system-data/:id', upload.single('pdf_file'), async (req, r
 app.delete('/api/customs-system-data/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const fileQuery = await pool.query('SELECT pdf_path FROM customs_system_data WHERE id = $1', [id]);
-        if (fileQuery.rows.length > 0 && fileQuery.rows[0].pdf_path) {
-            const filePath = path.join(__dirname, fileQuery.rows[0].pdf_path);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
-        }
-
         await pool.query('DELETE FROM customs_system_data WHERE id = $1', [id]);
         res.json({ success: true, message: 'Deleted successfully' });
     } catch (err) {
@@ -1872,35 +1852,36 @@ app.delete('/api/customs-system-data/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Customs Documents
+// API Routes: Customs Documents (Base64 Storage)
 // ==========================================
 app.get('/api/customs-documents', async (req, res) => {
     try {
-        const result = await pool.query('SELECT id, document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_path, created_at FROM customs_documents ORDER BY id DESC');
+        const result = await pool.query('SELECT id, document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, has_pdf, created_at FROM customs_documents ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching customs documents:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
+
 // ==========================================
-// API Route: មើល ឬទាញយកឯកសារ PDF របស់ Customs Documents
+// API Route: មើល ឬទាញយកឯកសារ PDF របស់ Customs Documents ពី Database
 // ==========================================
 app.get('/api/customs-documents/:id/pdf', async (req, res) => {
     const { id } = req.params;
     try {
-        const result = await pool.query('SELECT pdf_path, document_number FROM customs_documents WHERE id = $1', [id]);
-        if (result.rows.length === 0 || !result.rows[0].pdf_path) {
+        const result = await pool.query('SELECT pdf_data FROM customs_documents WHERE id = $1', [id]);
+        if (result.rows.length === 0 || !result.rows[0].pdf_data) {
             return res.status(404).send('រកមិនឃើញឯកសារ PDF សម្រាប់ទិន្នន័យនេះទេ');
         }
 
-        const pdfPath = path.join(__dirname, result.rows[0].pdf_path);
-        if (!fs.existsSync(pdfPath)) {
-            return res.status(404).send('ឯកសារ PDF មិនមាននៅលើ Server ទេ');
-        }
+        const base64Str = result.rows[0].pdf_data;
+        const base64Data = base64Str.split(';base64,').pop();
+        const buffer = Buffer.from(base64Data, 'base64');
 
         res.setHeader('Content-Type', 'application/pdf');
-        res.sendFile(pdfPath);
+        res.setHeader('Content-Disposition', 'inline; filename="document.pdf"');
+        res.send(buffer);
     } catch (err) {
         console.error('Error serving PDF:', err);
         res.status(500).send('Server error');
@@ -1908,23 +1889,23 @@ app.get('/api/customs-documents/:id/pdf', async (req, res) => {
 });
 
 // ==========================================
-// API Route: មើល ឬទាញយកឯកសារ PDF របស់ Customs System Data
+// API Route: មើល ឬទាញយកឯកសារ PDF របស់ Customs System Data ពី Database
 // ==========================================
 app.get('/api/customs-system-data/:id/pdf', async (req, res) => {
     const { id } = req.params;
     try {
-        const result = await pool.query('SELECT pdf_path, sys_code FROM customs_system_data WHERE id = $1', [id]);
-        if (result.rows.length === 0 || !result.rows[0].pdf_path) {
+        const result = await pool.query('SELECT pdf_data FROM customs_system_data WHERE id = $1', [id]);
+        if (result.rows.length === 0 || !result.rows[0].pdf_data) {
             return res.status(404).send('រកមិនឃើញឯកសារ PDF សម្រាប់ទិន្នន័យនេះទេ');
         }
 
-        const pdfPath = path.join(__dirname, result.rows[0].pdf_path);
-        if (!fs.existsSync(pdfPath)) {
-            return res.status(404).send('ឯកសារ PDF មិនមាននៅលើ Server ទេ');
-        }
+        const base64Str = result.rows[0].pdf_data;
+        const base64Data = base64Str.split(';base64,').pop();
+        const buffer = Buffer.from(base64Data, 'base64');
 
         res.setHeader('Content-Type', 'application/pdf');
-        res.sendFile(pdfPath);
+        res.setHeader('Content-Disposition', 'inline; filename="system-document.pdf"');
+        res.send(buffer);
     } catch (err) {
         console.error('Error serving PDF:', err);
         res.status(500).send('Server error');
@@ -1933,14 +1914,20 @@ app.get('/api/customs-system-data/:id/pdf', async (req, res) => {
 
 app.post('/api/customs-documents', upload.single('pdf_file'), async (req, res) => {
     const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
-    const pdf_path = req.file ? `/uploads/${req.file.filename}` : null;
+    
+    let pdf_data = null;
+    let has_pdf = false;
+    if (req.file) {
+        pdf_data = `data:application/pdf;base64,${req.file.buffer.toString('base64')}`;
+        has_pdf = true;
+    }
 
     try {
         const query = `
-            INSERT INTO customs_documents (document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_path)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
+            INSERT INTO customs_documents (document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_data, has_pdf)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
         `;
-        const values = [document_number, company_name, document_type, document_date, status || 'Pending', officer_name, reference_no, notes, pdf_path];
+        const values = [document_number, company_name, document_type, document_date, status || 'Pending', officer_name, reference_no, notes, pdf_data, has_pdf];
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
@@ -1958,13 +1945,14 @@ app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res
         let values = [];
 
         if (req.file) {
-            const pdf_path = `/uploads/${req.file.filename}`;
+            const pdf_data = `data:application/pdf;base64,${req.file.buffer.toString('base64')}`;
+            const has_pdf = true;
             query = `
                 UPDATE customs_documents 
-                SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8, pdf_path = $9
-                WHERE id = $10 RETURNING *;
+                SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8, pdf_data = $9, has_pdf = $10
+                WHERE id = $11 RETURNING *;
             `;
-            values = [document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_path, id];
+            values = [document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_data, has_pdf, id];
         } else {
             query = `
                 UPDATE customs_documents 
@@ -1983,21 +1971,13 @@ app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error updating customs document:', err);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ success: false, error: 'Server error' });
     }
 });
 
 app.delete('/api/customs-documents/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const fileQuery = await pool.query('SELECT pdf_path FROM customs_documents WHERE id = $1', [id]);
-        if (fileQuery.rows.length > 0 && fileQuery.rows[0].pdf_path) {
-            const filePath = path.join(__dirname, fileQuery.rows[0].pdf_path);
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
-        }
-
         await pool.query('DELETE FROM customs_documents WHERE id = $1', [id]);
         res.json({ success: true, message: 'Deleted successfully' });
     } catch (err) {
@@ -3254,7 +3234,7 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
                     success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចយកមកជួសជុលได้ទេ!` 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចយកមកជួសជុលបានទេ!` 
                 });
             }
         }
