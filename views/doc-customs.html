@@ -258,8 +258,9 @@
                     <input type="text" class="form-control" id="company_name" placeholder="ស្វ័យប្រវត្តិពេលជ្រើសរើសឯកសារយោង" required readonly style="background-color: #f8fafc;">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">លេខកូដប្រព័ន្ធ / សេចក្តីប្រកាស (System / Declaration Code):</label>
-                    <input type="text" class="form-control" id="sys_code" placeholder="ឧ. SYS-DECL-2026-001" required>
+                    <label class="form-label">លេខកូដប្រព័ន្ធ / សេចក្តីប្រកាស ( System / Declaration Code):</label>
+                    <!-- 💡 ដក required ចេញ ដើម្បីអាចទុកទំនេរមិនបាច់បញ្ចូលក៏បាន -->
+                    <input type="text" class="form-control" id="sys_code" placeholder="ឧ. SYS-DECL-2026-001 (មិនบังคับ)">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">ប្រភេទប្រតិបត្តិការប្រព័ន្ធ (Transaction Type):</label>
@@ -490,7 +491,6 @@
             else if (item.system_status === 'Pending') statusBadge = 'bg-warning text-dark';
             else if (item.system_status === 'Error') statusBadge = 'bg-danger';
 
-            // 🌟 ពិនិត្យមើល has_pdf និងតភ្ជាប់ទៅកាន់ API Endpoint របស់ ID ផ្ទាល់
             let downloadBtn = '';
             if (item.has_pdf) {
                 downloadBtn = `<a href="/api/customs-system-data/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
@@ -498,10 +498,11 @@
                 downloadBtn = `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
             }
 
+            // 💡 បានលុបប៊ូតុងលុប (Delete Button) ចេញពីទីនេះ
             const row = `
                 <tr>
                     <td>${index + 1}</td>
-                    <td class="fw-bold text-primary">${item.sys_code}</td>
+                    <td class="fw-bold text-primary">${item.sys_code || '-'}</td>
                     <td>${item.company_name}</td>
                     <td><span class="badge bg-dark">${item.transaction_type}</span></td>
                     <td>${item.entry_date ? item.entry_date.split('T')[0] : '-'}</td>
@@ -510,8 +511,7 @@
                     <td><span class="badge ${statusBadge}">${item.system_status}</span></td>
                     <td class="no-print action-column">
                         ${downloadBtn}
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editCustomsData(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomsData(${item.id})" title="លុប"><i class="fa-solid fa-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="editCustomsData(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
                     </td>
                 </tr>
             `;
@@ -567,7 +567,21 @@
         e.preventDefault();
 
         const editId = document.getElementById('editId').value;
+        const sysCode = document.getElementById('sys_code').value.trim();
         const pdfFile = document.getElementById('pdf_file').files[0];
+
+        // 💡 ពិនិត្យមិនឱ្យស្ទួនកូដប្រព័ន្ធ (sys_code) (ប្រសិនបើមានការបញ្ចូល sys_code)
+        if (sysCode !== '') {
+            const existingMatch = customsList.find(item => 
+                item.sys_code && 
+                item.sys_code.trim().toLowerCase() === sysCode.toLowerCase() && 
+                item.id != editId
+            );
+            if (existingMatch) {
+                alert(`លេខកូដប្រព័ន្ធ "${sysCode}" នេះមានរួចហើយក្នុងប្រព័ន្ធ! សូមប្រើប្រាស់កូដផ្សេងដើម្បីជៀសវាងការស្ទួន។`);
+                return;
+            }
+        }
 
         if (pdfFile && pdfFile.size > 10 * 1024 * 1024) {
             alert('ឯកសារ PDF ធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំទាបជាង 10MB។');
@@ -575,7 +589,7 @@
         }
 
         const formData = new FormData();
-        formData.append('sys_code', document.getElementById('sys_code').value);
+        formData.append('sys_code', sysCode);
         formData.append('company_name', document.getElementById('company_name').value);
         formData.append('transaction_type', document.getElementById('transaction_type').value);
         formData.append('entry_date', document.getElementById('entry_date').value);
@@ -614,7 +628,7 @@
             }
         } catch (err) {
             console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ Server ឬទំហំឯកសារធំពេក: ' + err.message);
+            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server ឬទំហំឯកសារធំពេក: ' + err.message);
         }
     });
 
@@ -623,7 +637,7 @@
         if (!item) return;
 
         document.getElementById('editId').value = item.id;
-        document.getElementById('sys_code').value = item.sys_code;
+        document.getElementById('sys_code').value = item.sys_code || '';
         document.getElementById('reference_number').value = item.reference_number || '';
         document.getElementById('company_name').value = item.company_name;
         document.getElementById('transaction_type').value = item.transaction_type;
@@ -635,23 +649,6 @@
 
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យប្រព័ន្ធគយ`;
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    async function deleteCustomsData(id) {
-        if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?")) {
-            try {
-                const response = await fetch(`/api/customs-system-data/${id}`, { method: 'DELETE' });
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    alert('បានលុបដោយជោគជ័យ!');
-                    loadCustomsData();
-                } else {
-                    alert('មិនអាចលុបបានទេ!');
-                }
-            } catch (err) {
-                console.error('Error deleting record:', err);
-            }
-        }
     }
 
     document.getElementById('searchInput').addEventListener('keyup', function() {
