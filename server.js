@@ -1355,14 +1355,6 @@ app.put('/api/customs-permits/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error: ' + err.message });
     }
 });
-app.post('/api/customs-documents', upload.single('pdf_file'), async (req, res) => {
-    // req.file គឺជាไฟล์ PDF ដែល User Upload មក
-    let pdfUrl = null;
-    if (req.file) {
-        pdfUrl = await uploadImageToHosting(req.file.buffer); // ប្រើ function upload ដែលមានស្រាប់
-    }
-    // រួចសរសេរคำสั่ง INSERT ចូល Database រួមជាមួយ pdfUrl
-});
 
 // ==========================================
 // HTML Routes សម្រាប់បើកទំព័រ Views ផ្សេងៗ
