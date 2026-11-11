@@ -518,7 +518,7 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_url TEXT;`);
         await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_path VARCHAR(255);`);
 
-        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management) - 🌟 เพิ่มคอลัมน์ pdf_path
+        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management)
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_system_data (
                 id SERIAL PRIMARY KEY,
@@ -1774,7 +1774,7 @@ app.delete('/api/document-handlers/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Customs System Data (🌟 កែសម្រួលគាំទ្រ File Upload PDF និង Delete File)
+// API Routes: Customs System Data
 // ==========================================
 app.get('/api/customs-system-data', async (req, res) => {
     try {
@@ -1814,7 +1814,6 @@ app.put('/api/customs-system-data/:id', upload.single('pdf_file'), async (req, r
 
         if (req.file) {
             const pdf_path = `/uploads/${req.file.filename}`;
-            // 💡 លុប File PDF ចាស់ចោលប្រសិនបើមានការ Upload ថ្មីមកជំនួស
             const oldFileQuery = await pool.query('SELECT pdf_path FROM customs_system_data WHERE id = $1', [id]);
             if (oldFileQuery.rows.length > 0 && oldFileQuery.rows[0].pdf_path) {
                 const oldFilePath = path.join(__dirname, oldFileQuery.rows[0].pdf_path);
@@ -1854,7 +1853,6 @@ app.put('/api/customs-system-data/:id', upload.single('pdf_file'), async (req, r
 app.delete('/api/customs-system-data/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        // 💡 លុប File PDF លើ Server ផងដែរ ប្រសិនបើមាន
         const fileQuery = await pool.query('SELECT pdf_path FROM customs_system_data WHERE id = $1', [id]);
         if (fileQuery.rows.length > 0 && fileQuery.rows[0].pdf_path) {
             const filePath = path.join(__dirname, fileQuery.rows[0].pdf_path);
@@ -1912,6 +1910,14 @@ app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res
 
         if (req.file) {
             const pdf_path = `/uploads/${req.file.filename}`;
+            const oldFileQuery = await pool.query('SELECT pdf_path FROM customs_documents WHERE id = $1', [id]);
+            if (oldFileQuery.rows.length > 0 && oldFileQuery.rows[0].pdf_path) {
+                const oldFilePath = path.join(__dirname, oldFileQuery.rows[0].pdf_path);
+                if (fs.existsSync(oldFilePath)) {
+                    fs.unlinkSync(oldFilePath);
+                }
+            }
+
             query = `
                 UPDATE customs_documents 
                 SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8, pdf_path = $9
@@ -2007,7 +2013,7 @@ app.put('/api/sourcing-support/:id', async (req, res) => {
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error updating sourcing support record:', err);
-        res.status(500).json({ success: false, error: 'Server error' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -2070,7 +2076,7 @@ app.put('/api/dispute-resolutions/:id', async (req, res) => {
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error updating dispute resolution:', err);
-        res.status(500).json({ success: false, error: 'Server error' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -2133,7 +2139,7 @@ app.put('/api/customer-relations/:id', async (req, res) => {
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error updating customer relation:', err);
-        res.status(500).json({ success: false, error: 'Server error' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
