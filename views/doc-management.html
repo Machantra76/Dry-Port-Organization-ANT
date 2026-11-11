@@ -87,7 +87,6 @@
             box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.15);
         }
 
-        /* 🎨 ប៊ូតុងក្នុង Form */
         .btn-primary-custom {
             background: linear-gradient(135deg, #0d9488, #0f766e);
             border: none;
@@ -125,7 +124,6 @@
             color: white;
         }
 
-        /* 🎨 ប៊ូតុងត្រង, សារថ្មី និង បោះពុម្ព PDF */
         .btn-filter-custom {
             background: linear-gradient(135deg, #6366f1, #4f46e5);
             border: none;
@@ -188,7 +186,6 @@
             text-align: center;
         }
         
-        /* 💡 កែតម្រូវកော်ឡូនសកម្មភាពមិនឱ្យប៊ូតុងធ្លាក់ចុះក្រោម */
         .action-column {
             white-space: nowrap;
             width: 1%;
@@ -217,16 +214,13 @@
 <body>
 
 <div class="main-container">
-    <!-- ប៊ូតុងត្រឡប់ក្រោយ -->
     <a href="/" class="btn-back no-print">
         <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ
     </a>
 
-    <!-- ចំណងជើងទំព័រ -->
     <h2 class="page-title">ការគ្រប់គ្រងឯកសារគយ</h2>
     <p class="page-subtitle">CUSTOMS DOCUMENT MANAGEMENT SYSTEM</p>
 
-    <!-- Form កត់ត្រាឯកសារថ្មី -->
     <div class="section-card no-print">
         <div class="section-card-title"><i class="fa-solid fa-file-invoice me-2"></i> បញ្ចូលព័ត៌មានឯកសារគយថ្មី (Record New Customs Document)</div>
         <form id="documentForm">
@@ -271,7 +265,6 @@
                     <label class="form-label">ឯកសារយោង / លេខកុងតឺន័រ (Reference / Container No.):</label>
                     <input type="text" class="form-control" id="reference_no" placeholder="ឧ. CONT1234567 ឬ BL-998877">
                 </div>
-                <!-- 💡 បន្ថែម File Input សម្រាប់ Upload ឯកសារ PDF -->
                 <div class="col-md-6">
                     <label class="form-label">ឯកសារ PDF (Upload PDF Document):</label>
                     <input type="file" class="form-control" id="pdf_file" accept="application/pdf">
@@ -299,11 +292,9 @@
         </form>
     </div>
 
-    <!-- តារាងបង្ហាញទិន្នន័យ -->
     <div class="section-card">
         <div class="section-card-title mb-3"><i class="fa-solid fa-table-list me-2"></i> តារាងបញ្ជីគ្រប់គ្រងឯកសារគយ (Customs Documents List)</div>
 
-        <!-- ផ្នែកស្វែងរក និង Filter Bar -->
         <div class="filter-action-bar no-print">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
@@ -341,7 +332,6 @@
             </div>
         </div>
 
-        <!-- តារាងបង្ហាញទិន្នន័យ -->
         <div class="table-responsive">
             <table class="table table-bordered table-hover">
                 <thead>
@@ -365,7 +355,6 @@
     </div>
 </div>
 
-<!-- Bootstrap 5 JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
@@ -403,27 +392,11 @@
             else if (item.status === 'Pending') statusBadge = 'bg-warning text-dark';
             else if (item.status === 'Rejected') statusBadge = 'bg-danger';
 
-            // 💡 បង្កើតប៊ូតុង Download PDF ដែលគាំទ្រทั้ง Relative Path និង Absolute URL
             let downloadBtn = '';
             if (item.pdf_path) {
-                let fileUrl = item.pdf_path;
-                // ប្រសិនបើ path ចាប់ផ្តើមដោយ http ប៉ុន្តែខុស domain (เช่น localhost ពេលបើកកុំព្យូទ័រផ្សេង) 
-                // ជំនួសមកវិញដោយ window.location.origin ឬប្រើ Relative Path ផ្ទាល់តែម្តង
-                if (fileUrl.startsWith('http')) {
-                    try {
-                        const urlObj = new URL(fileUrl);
-                        // ប្តូរយក path មកប្រើជាមួយ host បច្ចុប្បន្នដោយស្វ័យប្រវត្តិ
-                        fileUrl = urlObj.pathname + urlObj.search;
-                    } catch (e) {
-                        // ប្រសិនបើ URL format ខុស ទុកតាមដើម
-                    }
-                }
-                // ធានាថាបើ path អត់មាន / នាំមុខ បន្ថែម / ឱ្យត្រូវ
-                if (!fileUrl.startsWith('/') && !fileUrl.startsWith('http')) {
-                    fileUrl = '/' + fileUrl;
-                }
-
-                downloadBtn = `<a href="${fileUrl}" class="btn btn-sm btn-outline-success me-1" target="_blank" title="ទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
+                // 🌟 កែសម្រួល URL ឱ្យប្រើ window.location.origin ដើម្បីឱ្យកុំព្យូទ័រផ្សេងទៀតក្នុង Network អាចទាញយក file PDF ត្រូវ IP/Domain របស់ server
+                const fullPdfUrl = `${window.location.origin}${item.pdf_path}`;
+                downloadBtn = `<a href="${fullPdfUrl}" class="btn btn-sm btn-outline-success me-1" target="_blank" title="ទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
             }
 
             const row = `
@@ -436,7 +409,6 @@
                     <td>${item.officer_name}</td>
                     <td>${item.reference_no || '-'}</td>
                     <td><span class="badge ${statusBadge}">${item.status}</span></td>
-                    <!-- 💡 បន្ថែមប៊ូតុង Download PDF ក្នុងកော်ឡូនសកម្មភាព -->
                     <td class="no-print action-column">
                         ${downloadBtn}
                         <button class="btn btn-sm btn-outline-primary me-1" onclick="editDocument(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
@@ -487,7 +459,6 @@
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ`;
     }
 
-    // 💡 ប្រើប្រាស់ FormData និងកំណត់ Method ត្រឹមត្រូវ (POST សម្រាប់បង្កើតថ្មី, PUT សម្រាប់កែប្រែ)
     document.getElementById('documentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -510,12 +481,11 @@
 
         try {
             const url = editId ? `/api/customs-documents/${editId}` : '/api/customs-documents';
-            // 🌟 កែតម្រូវត្រង់នេះ៖ ប្រើ PUT ពេលមាន editId និង POST ពេលបង្កើតថ្មី
             const method = editId ? 'PUT' : 'POST'; 
 
             const response = await fetch(url, {
                 method: method,
-                body: formData // ផ្ញើបែប FormData មិនបាច់កំណត់ Content-Type header ទេ
+                body: formData
             });
 
             const result = await response.json();
