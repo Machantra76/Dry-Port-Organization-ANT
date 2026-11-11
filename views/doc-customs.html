@@ -258,11 +258,11 @@
                     <input type="text" class="form-control" id="company_name" placeholder="ស្វ័យប្រវត្តិពេលជ្រើសរើសឯកសារយោង" required readonly style="background-color: #f8fafc;">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">លេខកូដប្រព័ន្ធ / សេចក្តីប្រកាស (System / Declaration Code):</label>
-                    <input type="text" class="form-control" id="sys_code" placeholder="ឧ. SYS-DECL-2026-001" required>
+                    <label class="form-label">លេខកូដប្រព័ន្ធ / សេចក្តីប្រកាស ( System / Declaration Code):</label>
+                    <input type="text" class="form-control" id="sys_code" placeholder="ឧ. SYS-DECL-2026-001 (មិនบังคับ)">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">ប្រភេទប្រតិបត្តិការប្រព័ន្ធ (Transaction Type):</label>
+                    <label class="form-label">ប្រភេទប្រតិបត្តិการប្រព័ន្ធ (Transaction Type):</label>
                     <select class="form-select" id="transaction_type" required>
                         <option value="ASYCUDA Input">ការបញ្ចូលទិន្នន័យក្នុងប្រព័ន្ធ ASYCUDA</option>
                         <option value="Manifest Registration">ការចុះបញ្ជីទំនិញនាំចូល/ចេញ (Manifest)</option>
@@ -300,7 +300,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">កំណត់សម្គាល់បន្ថែម (Remarks / Notes):</label>
-                    <textarea class="form-control" id="remarks" rows="2" placeholder="បញ្ជាក់ព័ត៌មានលម្អិតបន្ថែមពីការបញ្ចូលទិន្នន័យ..."></textarea>
+                    <textarea class="form-control" id="remarks" rows="2" placeholder="បញ្ជាក់ព័ត៌មានលម្អិតបន្ថែមពីการបញ្ចូលទិន្នន័យ..."></textarea>
                 </div>
                 
                 <!-- ប៊ូតុងរក្សាទុក និង ចុះបញ្ជីថ្មី -->
@@ -490,7 +490,6 @@
             else if (item.system_status === 'Pending') statusBadge = 'bg-warning text-dark';
             else if (item.system_status === 'Error') statusBadge = 'bg-danger';
 
-            // 🌟 ពិនិត្យមើល has_pdf និងតភ្ជាប់ទៅកាន់ API Endpoint របស់ ID ផ្ទាល់
             let downloadBtn = '';
             if (item.has_pdf) {
                 downloadBtn = `<a href="/api/customs-system-data/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
@@ -501,7 +500,7 @@
             const row = `
                 <tr>
                     <td>${index + 1}</td>
-                    <td class="fw-bold text-primary">${item.sys_code}</td>
+                    <td class="fw-bold text-primary">${item.sys_code || '-'}</td>
                     <td>${item.company_name}</td>
                     <td><span class="badge bg-dark">${item.transaction_type}</span></td>
                     <td>${item.entry_date ? item.entry_date.split('T')[0] : '-'}</td>
@@ -510,8 +509,7 @@
                     <td><span class="badge ${statusBadge}">${item.system_status}</span></td>
                     <td class="no-print action-column">
                         ${downloadBtn}
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editCustomsData(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomsData(${item.id})" title="លុប"><i class="fa-solid fa-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="editCustomsData(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
                     </td>
                 </tr>
             `;
@@ -567,6 +565,7 @@
         e.preventDefault();
 
         const editId = document.getElementById('editId').value;
+        const sysCode = document.getElementById('sys_code').value.trim();
         const pdfFile = document.getElementById('pdf_file').files[0];
 
         if (pdfFile && pdfFile.size > 10 * 1024 * 1024) {
@@ -575,7 +574,7 @@
         }
 
         const formData = new FormData();
-        formData.append('sys_code', document.getElementById('sys_code').value);
+        formData.append('sys_code', sysCode);
         formData.append('company_name', document.getElementById('company_name').value);
         formData.append('transaction_type', document.getElementById('transaction_type').value);
         formData.append('entry_date', document.getElementById('entry_date').value);
@@ -614,7 +613,7 @@
             }
         } catch (err) {
             console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ Server ឬទំហំឯកសារធំពេក: ' + err.message);
+            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server ឬទំហំឯកសារធំពេក: ' + err.message);
         }
     });
 
@@ -623,7 +622,7 @@
         if (!item) return;
 
         document.getElementById('editId').value = item.id;
-        document.getElementById('sys_code').value = item.sys_code;
+        document.getElementById('sys_code').value = item.sys_code || '';
         document.getElementById('reference_number').value = item.reference_number || '';
         document.getElementById('company_name').value = item.company_name;
         document.getElementById('transaction_type').value = item.transaction_type;
@@ -635,23 +634,6 @@
 
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យប្រព័ន្ធគយ`;
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    async function deleteCustomsData(id) {
-        if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?")) {
-            try {
-                const response = await fetch(`/api/customs-system-data/${id}`, { method: 'DELETE' });
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    alert('បានលុបដោយជោគជ័យ!');
-                    loadCustomsData();
-                } else {
-                    alert('មិនអាចលុបបានទេ!');
-                }
-            } catch (err) {
-                console.error('Error deleting record:', err);
-            }
-        }
     }
 
     document.getElementById('searchInput').addEventListener('keyup', function() {
