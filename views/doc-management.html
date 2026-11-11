@@ -188,6 +188,7 @@
             text-align: center;
         }
         
+        /* 💡 កែតម្រូវកော်ឡូនសកម្មភាពមិនឱ្យប៊ូតុងធ្លាក់ចុះក្រោម */
         .action-column {
             white-space: nowrap;
             width: 1%;
@@ -270,7 +271,7 @@
                     <label class="form-label">ឯកសារយោង / លេខកុងតឺន័រ (Reference / Container No.):</label>
                     <input type="text" class="form-control" id="reference_no" placeholder="ឧ. CONT1234567 ឬ BL-998877">
                 </div>
-                <!-- ឯកសារ PDF -->
+                <!-- 💡 បន្ថែម File Input សម្រាប់ Upload ឯកសារ PDF -->
                 <div class="col-md-6">
                     <label class="form-label">ឯកសារ PDF (Upload PDF Document):</label>
                     <input type="file" class="form-control" id="pdf_file" accept="application/pdf">
@@ -402,9 +403,27 @@
             else if (item.status === 'Pending') statusBadge = 'bg-warning text-dark';
             else if (item.status === 'Rejected') statusBadge = 'bg-danger';
 
+            // 💡 បង្កើតប៊ូតុង Download PDF ដែលគាំទ្រทั้ง Relative Path និង Absolute URL
             let downloadBtn = '';
             if (item.pdf_path) {
-                downloadBtn = `<a href="${item.pdf_path}" class="btn btn-sm btn-outline-success me-1" target="_blank" title="ទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
+                let fileUrl = item.pdf_path;
+                // ប្រសិនបើ path ចាប់ផ្តើមដោយ http ប៉ុន្តែខុស domain (เช่น localhost ពេលបើកកុំព្យូទ័រផ្សេង) 
+                // ជំនួសមកវិញដោយ window.location.origin ឬប្រើ Relative Path ផ្ទាល់តែម្តង
+                if (fileUrl.startsWith('http')) {
+                    try {
+                        const urlObj = new URL(fileUrl);
+                        // ប្តូរយក path មកប្រើជាមួយ host បច្ចុប្បន្នដោយស្វ័យប្រវត្តិ
+                        fileUrl = urlObj.pathname + urlObj.search;
+                    } catch (e) {
+                        // ប្រសិនបើ URL format ខុស ទុកតាមដើម
+                    }
+                }
+                // ធានាថាបើ path អត់មាន / នាំមុខ បន្ថែម / ឱ្យត្រូវ
+                if (!fileUrl.startsWith('/') && !fileUrl.startsWith('http')) {
+                    fileUrl = '/' + fileUrl;
+                }
+
+                downloadBtn = `<a href="${fileUrl}" class="btn btn-sm btn-outline-success me-1" target="_blank" title="ទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
             }
 
             const row = `
@@ -417,10 +436,11 @@
                     <td>${item.officer_name}</td>
                     <td>${item.reference_no || '-'}</td>
                     <td><span class="badge ${statusBadge}">${item.status}</span></td>
-                    <!-- 💡 បانលុបប៊ូតុងលុប (Delete) ចេញរួចរាល់ -->
+                    <!-- 💡 បន្ថែមប៊ូតុង Download PDF ក្នុងកော်ឡូនសកម្មភាព -->
                     <td class="no-print action-column">
                         ${downloadBtn}
-                        <button class="btn btn-sm btn-outline-primary" onclick="editDocument(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editDocument(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteDocument(${item.id})" title="លុប"><i class="fa-solid fa-trash"></i></button>
                     </td>
                 </tr>
             `;
@@ -467,6 +487,7 @@
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ`;
     }
 
+    // 💡 ប្រើប្រាស់ FormData និងកំណត់ Method ត្រឹមត្រូវ (POST សម្រាប់បង្កើតថ្មី, PUT សម្រាប់កែប្រែ)
     document.getElementById('documentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -489,11 +510,12 @@
 
         try {
             const url = editId ? `/api/customs-documents/${editId}` : '/api/customs-documents';
+            // 🌟 កែតម្រូវត្រង់នេះ៖ ប្រើ PUT ពេលមាន editId និង POST ពេលបង្កើតថ្មី
             const method = editId ? 'PUT' : 'POST'; 
 
             const response = await fetch(url, {
                 method: method,
-                body: formData
+                body: formData // ផ្ញើបែប FormData មិនបាច់កំណត់ Content-Type header ទេ
             });
 
             const result = await response.json();
@@ -526,6 +548,23 @@
 
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យ`;
         window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    async function deleteDocument(id) {
+        if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?")) {
+            try {
+                const response = await fetch(`/api/customs-documents/${id}`, { method: 'DELETE' });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    alert('បានលុបដោយជោគជ័យ!');
+                    loadDocuments();
+                } else {
+                    alert('មិនអាចលុបបានទេ!');
+                }
+            } catch (err) {
+                console.error('Error deleting document record:', err);
+            }
+        }
     }
 
     document.getElementById('searchInput').addEventListener('keyup', function() {
