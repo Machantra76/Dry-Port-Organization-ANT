@@ -483,6 +483,8 @@ async function initializeDatabase() {
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        // 🌟 ដាក់កូដបង្ការ ឬបន្ថែម Column ទីនេះស្រាប់
+        await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_url TEXT;`);
 
         // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management)
         await client.query(`
@@ -1352,6 +1354,14 @@ app.put('/api/customs-permits/:id', async (req, res) => {
         console.error('Error updating customs permit:', err);
         res.status(500).json({ success: false, error: 'Server error: ' + err.message });
     }
+});
+app.post('/api/customs-documents', upload.single('pdf_file'), async (req, res) => {
+    // req.file គឺជាไฟล์ PDF ដែល User Upload មក
+    let pdfUrl = null;
+    if (req.file) {
+        pdfUrl = await uploadImageToHosting(req.file.buffer); // ប្រើ function upload ដែលមានស្រាប់
+    }
+    // រួចសរសេរคำสั่ง INSERT ចូល Database រួមជាមួយ pdfUrl
 });
 
 // ==========================================
