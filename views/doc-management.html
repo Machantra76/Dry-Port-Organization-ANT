@@ -470,7 +470,7 @@
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ`;
     }
 
-    // 💡 ប្រើប្រាស់ FormData ដើម្បីផ្ញើឯកសារ PDF ទៅកាន់ Backend API
+    // 💡 ប្រើប្រាស់ FormData និងកំណត់ Method ត្រឹមត្រូវ (POST សម្រាប់បង្កើតថ្មី, PUT សម្រាប់កែប្រែ)
     document.getElementById('documentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -493,15 +493,12 @@
 
         try {
             const url = editId ? `/api/customs-documents/${editId}` : '/api/customs-documents';
-            // ចំណាំ៖ ប្រសិនបើប្រើ PUT សម្រាប់ការ update ជាមួយ file upload ខ្លះ server អាចទាមទារ POST route ជំនួស
-            const method = editId ? 'POST' : 'POST'; 
-            if (editId) {
-                formData.append('_method', 'PUT'); // សម្រាប់ helper ក្នុង framework ខ្លះ ដូចជា Laravel
-            }
+            // 🌟 កែតម្រូវត្រង់នេះ៖ ប្រើ PUT ពេលមាន editId និង POST ពេលបង្កើតថ្មី
+            const method = editId ? 'PUT' : 'POST'; 
 
             const response = await fetch(url, {
                 method: method,
-                body: formData // ផ្ញើបែប FormData មិនបាច់កំណត់ Content-Type header ទេ (Browser កំណត់ឱ្យស្វ័យប្រវត្តិ)
+                body: formData // ផ្ញើបែប FormData មិនបាច់កំណត់ Content-Type header ទេ
             });
 
             const result = await response.json();
@@ -514,7 +511,7 @@
             }
         } catch (err) {
             console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ Server!');
+            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
         }
     });
 
