@@ -271,9 +271,14 @@
                     <label class="form-label">ឯកសារយោង / លេខកុងតឺន័រ (Reference / Container No.):</label>
                     <input type="text" class="form-control" id="reference_no" placeholder="ឧ. CONT1234567 ឬ BL-998877">
                 </div>
-                <div class="col-12">
+                <!-- 💡 បន្ថែម File Input សម្រាប់ Upload ឯកសារ PDF -->
+                <div class="col-md-6">
+                    <label class="form-label">แนបឯកសារ PDF (Upload PDF Document):</label>
+                    <input type="file" class="form-control" id="pdf_file" accept="application/pdf">
+                </div>
+                <div class="col-md-6">
                     <label class="form-label">កំណត់សម្គាល់ ឬព័ត៌មានលម្អិត (Notes / Description):</label>
-                    <textarea class="form-control" id="notes" rows="3" placeholder="ព័ត៌មានបន្ថែមទាក់ទងនឹងឯកសារគយនេះ..."></textarea>
+                    <textarea class="form-control" id="notes" rows="2" placeholder="ព័ត៌មានបន្ថែមទាក់ទងនឹងឯកសារគយនេះ..."></textarea>
                 </div>
                 
                 <div class="col-12 mt-4">
@@ -398,6 +403,12 @@
             else if (item.status === 'Pending') statusBadge = 'bg-warning text-dark';
             else if (item.status === 'Rejected') statusBadge = 'bg-danger';
 
+            // 💡 បង្កើតប៊ូតុង Download PDF ប្រសិនបើมีไฟล์ PDF ភ្ជាប់មកជាមួយ
+            let downloadBtn = '';
+            if (item.pdf_path) {
+                downloadBtn = `<a href="${item.pdf_path}" class="btn btn-sm btn-outline-success me-1" target="_blank" title="ទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
+            }
+
             const row = `
                 <tr>
                     <td>${index + 1}</td>
@@ -408,8 +419,9 @@
                     <td>${item.officer_name}</td>
                     <td>${item.reference_no || '-'}</td>
                     <td><span class="badge ${statusBadge}">${item.status}</span></td>
-                    <!-- 💡 បន្ថែម class action-column ដើម្បីបង្ខំឱ្យប៊ូតុងនៅជួរដេកតែមួយ -->
+                    <!-- 💡 បន្ថែមប៊ូតុង Download PDF ក្នុងកော်ឡូនសកម្មភាព -->
                     <td class="no-print action-column">
+                        ${downloadBtn}
                         <button class="btn btn-sm btn-outline-primary me-1" onclick="editDocument(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
                         <button class="btn btn-sm btn-outline-danger" onclick="deleteDocument(${item.id})" title="លុប"><i class="fa-solid fa-trash"></i></button>
                     </td>
@@ -458,29 +470,38 @@
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ`;
     }
 
+    // 💡 ប្រើប្រាស់ FormData ដើម្បីផ្ញើឯកសារ PDF ទៅកាន់ Backend API
     document.getElementById('documentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const editId = document.getElementById('editId').value;
-        const payload = {
-            document_number: document.getElementById('document_number').value,
-            company_name: document.getElementById('company_name').value,
-            document_type: document.getElementById('document_type').value,
-            document_date: document.getElementById('document_date').value,
-            status: document.getElementById('status').value,
-            officer_name: document.getElementById('officer_name').value,
-            reference_no: document.getElementById('reference_no').value,
-            notes: document.getElementById('notes').value
-        };
+        const formData = new FormData();
+        
+        formData.append('document_number', document.getElementById('document_number').value);
+        formData.append('company_name', document.getElementById('company_name').value);
+        formData.append('document_type', document.getElementById('document_type').value);
+        formData.append('document_date', document.getElementById('document_date').value);
+        formData.append('status', document.getElementById('status').value);
+        formData.append('officer_name', document.getElementById('officer_name').value);
+        formData.append('reference_no', document.getElementById('reference_no').value);
+        formData.append('notes', document.getElementById('notes').value);
+
+        const pdfFile = document.getElementById('pdf_file').files[0];
+        if (pdfFile) {
+            formData.append('pdf_file', pdfFile);
+        }
 
         try {
             const url = editId ? `/api/customs-documents/${editId}` : '/api/customs-documents';
-            const method = editId ? 'PUT' : 'POST';
+            // ចំណាំ៖ ប្រសិនបើប្រើ PUT សម្រាប់ការ update ជាមួយ file upload ខ្លះ server អាចទាមទារ POST route ជំនួស
+            const method = editId ? 'POST' : 'POST'; 
+            if (editId) {
+                formData.append('_method', 'PUT'); // សម្រាប់ helper ក្នុង framework ខ្លះ ដូចជា Laravel
+            }
 
             const response = await fetch(url, {
                 method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: formData // ផ្ញើបែប FormData មិនបាច់កំណត់ Content-Type header ទេ (Browser កំណត់ឱ្យស្វ័យប្រវត្តិ)
             });
 
             const result = await response.json();
@@ -493,7 +514,7 @@
             }
         } catch (err) {
             console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+            alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ Server!');
         }
     });
 
