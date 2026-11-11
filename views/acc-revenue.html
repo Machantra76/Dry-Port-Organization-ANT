@@ -208,7 +208,7 @@
         <h1>គណនេយ្យប្រាក់ចំណូល</h1>
         <div class="eng-sub no-print">Revenue Accounting, Filter & Invoice System</div>
         
-        <!-- Form សម្រាប់បញ្ចូលទិន្នន័យ -->
+        <!-- Form សម្រាប់បញ្ចូលទិន្នន័យ (บังคับกรอกทุกช่องด้วย attribute required) -->
         <div class="section-box no-print">
             <h3 id="formTitle">កត់ត្រាប្រាក់ចំណូលថ្មី (Record New Revenue)</h3>
             <form id="revenueForm">
@@ -296,8 +296,8 @@
     </div>
 
     <script>
-        // កំណត់ Role៖ បើដាក់ 'Staff' ប៊ូតុង កែ និង លុប នឹងត្រូវបានលុបចេញពីตារាងដោយស្វ័យប្រវត្តិ
-        let currentUserRole = 'Staff'; // អាចប្ដូរជា 'Admin' បានបើចង់ឱ្យចេញប៊ូតុងទាំងពីរវិញ[cite: 2]
+        // តម្លើងតម្លៃ Role របស់អ្នកប្រើប្រាស់ (អាចប្តូរជា dynamic តាម session របស់អ្នក backend)
+        let currentUserRole = 'Admin'; // ឧទាហរណ៍៖ 'Admin' ឬ 'Staff'
 
         async function loadRevenues() {
             const from = document.getElementById('filter_from').value;
@@ -312,12 +312,12 @@
                 const response = await fetch(url);
                 const data = await response.json();
                 
-                // ទាញយក Role ពី API បើមាន
+                // ទាញយក Role ពី API បើមាន (ផ្អែកលើระบบ Login របស់អ្នក)
                 if (data.userRole) {
                     currentUserRole = data.userRole;
                 }
 
-                const revenues = data.revenues || data;
+                const revenues = data.revenues || data; // ស្របតាមទម្រង់ API response
                 const tbody = document.getElementById('revenueTableBody');
                 tbody.innerHTML = '';
                 
@@ -329,7 +329,7 @@
                 revenues.forEach(item => {
                     const formattedDate = new Date(item.revenue_date).toLocaleDateString('km-KH');
                     
-                    // បង្កើតប៊ូតុង កែ និង លុប เฉพาะ Admin ប៉ុណ្ណោះ (បើ Staff គឺអត់មានកូដពីរនេះទេ លុបចេញស្រឡះ)[cite: 2]
+                    // បង្កើតប៊ូតុង កែ និង លុប សម្រាប់តែ Admin ប៉ុណ្ណោះ
                     let adminActions = '';
                     if (currentUserRole === 'Admin') {
                         adminActions = `
@@ -362,6 +362,7 @@
             loadRevenues();
         }
 
+        // មុខងារសម្រាប់បំពេញទិន្នន័យចូល Form ដើម្បីកែប្រែ (Edit)
         function editRevenue(id, date, category, desc, receiver, amount) {
             document.getElementById('editId').value = id;
             document.getElementById('revenue_date').value = date;
@@ -375,6 +376,7 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        // មុខងារលុបទិន្នន័យ (Delete)
         async function deleteRevenue(id) {
             if (!confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ? (Are you sure to delete?)')) return;
 
@@ -440,6 +442,7 @@
             printWindow.document.close();
         }
 
+        // Form Submit (รองรับทั้งการสร้างใหม่และการอាប់เดត)
         document.getElementById('revenueForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const editId = document.getElementById('editId').value;
