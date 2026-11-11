@@ -122,6 +122,26 @@
             color: white;
         }
 
+        .btn-jump-table {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            border: none;
+            color: white;
+            font-weight: 500;
+            border-radius: 8px;
+            padding: 10px 18px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.25);
+            transition: all 0.2s;
+        }
+        .btn-jump-table:hover {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+            transform: translateY(-1px);
+        }
+
         .btn-filter-custom {
             background: linear-gradient(135deg, #6366f1, #4f46e5);
             border: none;
@@ -203,28 +223,39 @@
 <body>
 
 <div class="main-container">
-    <!-- ប៊ូតុងត្រឡប់ក្រោយ -->
-    <a href="/" class="btn-back no-print">
-        <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅផ្ទាំងដើមវិញ (Back to Dashboard)
-    </a>
+    <!-- ប៊ូតុងត្រឡប់ក្រោយ និង ប៊ូតុងទៅកាន់តារាងបញ្ជី -->
+    <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+        <a href="/" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅផ្ទាំងដើមវិញ
+        </a>
+        <a href="#tableSection" class="btn-jump-table">
+            <i class="fa-solid fa-table-list"></i> មើលតារាងបញ្ជីទិន្នន័យប្រព័ន្ធគយ
+        </a>
+    </div>
 
     <!-- ចំណងជើងទំព័រ -->
     <h2 class="page-title">ការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ</h2>
     <p class="page-subtitle">CUSTOMS SYSTEM DATA ENTRY MANAGEMENT</p>
 
-    <!-- Form បញ្ចូលទិន្នន័យប្រព័ន្ធគយថ្មី -->
-    <div class="section-card no-print">
+    <!-- 🌟 SECTION 1: Form បញ្ចូលទិន្នន័យប្រព័ន្ធគយថ្មី -->
+    <div class="section-card no-print" id="formSection">
         <div class="section-card-title"><i class="fa-solid fa-database me-2"></i> បញ្ចូលទិន្នន័យប្រព័ន្ធគយថ្មី (New Customs System Data Entry)</div>
         <form id="customsDataForm">
             <input type="hidden" id="editId" value="">
             <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">ជ្រើសរើសលេខឯកសារយោង / វិក្កយបត្រ (Reference / Document No.):</label>
+                    <select class="form-select" id="reference_number" required onchange="onReferenceChange()">
+                        <option value="">-- ជ្រើសរើសលេខឯកសារគយ --</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">ឈ្មោះក្រុមហ៊ុន / ម្ចាស់ទំនិញ (Company Name):</label>
+                    <input type="text" class="form-control" id="company_name" placeholder="ស្វ័យប្រវត្តិពេលជ្រើសរើសឯកសារយោង" required readonly style="background-color: #f8fafc;">
+                </div>
                 <div class="col-md-4">
                     <label class="form-label">លេខកូដប្រព័ន្ធ / សេចក្តីប្រកាស (System / Declaration Code):</label>
                     <input type="text" class="form-control" id="sys_code" placeholder="ឧ. SYS-DECL-2026-001" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">ឈ្មោះក្រុមហ៊ុន / ម្ចាស់ទំនិញ (Company Name):</label>
-                    <input type="text" class="form-control" id="company_name" placeholder="ឧ. ក្រុមហ៊ុន ឡូជីស្ទិក (ខេមបូឌា) ម.ក" required>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">ប្រភេទប្រតិបត្តិការប្រព័ន្ធ (Transaction Type):</label>
@@ -254,13 +285,7 @@
                     <label class="form-label">មន្ត្រីប្រតិបត្តិករប្រព័ន្ធ (Operator Name):</label>
                     <input type="text" class="form-control" id="operator_name" placeholder="ឧ. លោក សុខ ជា" required>
                 </div>
-                <div class="col-md-6">
-                    <label class="form-label">ជ្រើសរើសលេខឯកសារយោង / វិក្កយបត្រ (Reference / Document No.):</label>
-                    <select class="form-select" id="reference_number" required>
-                        <option value="">-- ជ្រើសរើសលេខឯកសារគយ --</option>
-                    </select>
-                </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">ច្រកទ្វារ ឬការិយាល័យគយ (Customs Office / Gate):</label>
                     <input type="text" class="form-control" id="customs_office" placeholder="ឧ. ការិយាល័យគយ និងរដ្ឋាករកំពង់ផែស្វយ័តភ្នំពេញ">
                 </div>
@@ -288,9 +313,14 @@
         </form>
     </div>
 
-    <!-- តារាងបង្ហាញទិន្នន័យប្រព័ន្ធគយ -->
-    <div class="section-card">
-        <div class="section-card-title mb-3"><i class="fa-solid fa-table-list me-2"></i> តារាងបញ្ជីទិន្នន័យប្រព័ន្ធគយ (Customs System Data Records)</div>
+    <!-- 🌟 SECTION 2: តារាងបង្ហាញទិន្នន័យប្រព័ន្ធគយ (Customs System Data Records) -->
+    <div class="section-card" id="tableSection">
+        <div class="section-card-title mb-3 d-flex justify-content-between align-items-center">
+            <span><i class="fa-solid fa-table-list me-2"></i> តារាងបញ្ជីទិន្នន័យប្រព័ន្ធគយ (Customs System Data Records)</span>
+            <a href="#formSection" class="btn btn-sm btn-outline-primary no-print">
+                <i class="fa-solid fa-arrow-up me-1"></i> ឡើងទៅទฟាំរក្សារទុកទិន្នន័យ
+            </a>
+        </div>
 
         <!-- ផ្នែកស្វែងរក, From Date, To Date និងប៊ូតុងស្មើគ្នា -->
         <div class="filter-action-bar no-print">
@@ -360,6 +390,7 @@
 
 <script>
     let customsList = [];
+    let availableDocuments = []; // ឃ្លាំងទុករក្សាទុកទិន្នន័យឯកសារយោង
 
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('entry_date').value = new Date().toISOString().split('T')[0];
@@ -371,19 +402,38 @@
         try {
             const response = await fetch('/api/customs-documents');
             const docs = await response.json();
+            availableDocuments = Array.isArray(docs) ? docs : [];
+            
             const select = document.getElementById('reference_number');
             select.innerHTML = '<option value="">-- ជ្រើសរើសលេខឯកសារគយ --</option>';
             
-            if (Array.isArray(docs)) {
-                docs.forEach(doc => {
-                    const option = document.createElement('option');
-                    option.value = doc.document_number;
-                    option.textContent = `${doc.document_number} (${doc.company_name})`;
-                    select.appendChild(option);
-                });
-            }
+            availableDocuments.forEach(doc => {
+                const option = document.createElement('option');
+                option.value = doc.document_number;
+                option.textContent = `${doc.document_number} (${doc.company_name})`;
+                select.appendChild(option);
+            });
         } catch (err) {
             console.error('Error loading documents for dropdown:', err);
+        }
+    }
+
+    // 💡 មុខងារ Auto-Fill ឈ្មោះក្រុមហ៊ុន នៅពេលជ្រើសរើស លេខឯកសារយោង
+    function onReferenceChange() {
+        const selectedRefNo = document.getElementById('reference_number').value;
+        const companyInput = document.getElementById('company_name');
+
+        if (!selectedRefNo) {
+            companyInput.value = '';
+            return;
+        }
+
+        // ស្វែងរកឯកសារយោងដែលត្រូវគ្នា
+        const matchedDoc = availableDocuments.find(doc => doc.document_number === selectedRefNo);
+        if (matchedDoc && matchedDoc.company_name) {
+            companyInput.value = matchedDoc.company_name;
+        } else {
+            companyInput.value = '';
         }
     }
 
@@ -469,6 +519,7 @@
     function resetForm() {
         document.getElementById('customsDataForm').reset();
         document.getElementById('editId').value = '';
+        document.getElementById('company_name').value = '';
         document.getElementById('entry_date').value = new Date().toISOString().split('T')[0];
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យប្រព័ន្ធគយ`;
     }
@@ -520,12 +571,12 @@
 
         document.getElementById('editId').value = item.id;
         document.getElementById('sys_code').value = item.sys_code;
-        document.getElementById('company_name').value = item.company_name;
+        document.getElementById('reference_number').value = item.reference_number || '';
+        document.getElementById('company_name').value = item.company_name; // កំណត់ឈ្មោះក្រុមហ៊ុនតាមទិន្នន័យដែលមានស្រាប់
         document.getElementById('transaction_type').value = item.transaction_type;
         document.getElementById('entry_date').value = item.entry_date ? item.entry_date.split('T')[0] : '';
         document.getElementById('system_status').value = item.system_status;
         document.getElementById('operator_name').value = item.operator_name;
-        document.getElementById('reference_number').value = item.reference_number || '';
         document.getElementById('customs_office').value = item.customs_office || '';
         document.getElementById('remarks').value = item.remarks || '';
 
