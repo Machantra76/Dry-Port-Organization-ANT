@@ -394,9 +394,12 @@
 
             let downloadBtn = '';
             if (item.pdf_path) {
-                // 🌟 កែសម្រួល URL ឱ្យប្រើ window.location.origin ដើម្បីឱ្យកុំព្យូទ័រផ្សេងទៀតក្នុង Network អាចទាញយក file PDF ត្រូវ IP/Domain របស់ server
-                const fullPdfUrl = `${window.location.origin}${item.pdf_path}`;
-                downloadBtn = `<a href="${fullPdfUrl}" class="btn btn-sm btn-outline-success me-1" target="_blank" title="ទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
+                // 💡 ប្រសិនបើ pdf_path ជាទម្រង់ Base64 (មានអក្សរ data:application/pdf) គឺបើកដោយផ្ទាល់ ឬ Download តាម Base64 តែម្តង
+                let pdfHref = item.pdf_path;
+                if (!pdfHref.startsWith('data:')) {
+                    pdfHref = `${window.location.origin}${item.pdf_path}`;
+                }
+                downloadBtn = `<a href="${pdfHref}" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF" download="Customs-Doc-${item.document_number}.pdf"><i class="fa-solid fa-file-pdf"></i></a>`;
             }
 
             const row = `
@@ -459,24 +462,46 @@
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ`;
     }
 
+    // 💡 មុខងារជំនួយសម្រាប់แปลง file ទៅเป็น Base64
+    const convertFileToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = (error) => reject(error);
+        });
+    };
+
     document.getElementById('documentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const editId = document.getElementById('editId').value;
-        const formData = new FormData();
         
-        formData.append('document_number', document.getElementById('document_number').value);
-        formData.append('company_name', document.getElementById('company_name').value);
-        formData.append('document_type', document.getElementById('document_type').value);
-        formData.append('document_date', document.getElementById('document_date').value);
-        formData.append('status', document.getElementById('status').value);
-        formData.append('officer_name', document.getElementById('officer_name').value);
-        formData.append('reference_no', document.getElementById('reference_no').value);
-        formData.append('notes', document.getElementById('notes').value);
-
+        let pdfBase64 = null;
         const pdfFile = document.getElementById('pdf_file').files[0];
         if (pdfFile) {
-            formData.append('pdf_file', pdfFile);
+            try {
+                pdfBase64 = await convertFileToBase64(pdfFile);
+            } catch (err) {
+                alert('មានបញ្ហាក្នុងការអានឯកសារ PDF!');
+                return;
+            }
+        }
+
+        const payload = {
+            document_number: document.getElementById('document_number').value,
+            company_name: document.getElementById('company_name').value,
+            document_type: document.getElementById('document_type').value,
+            document_date: document.getElementById('document_date').value,
+            status: document.getElementById('status').value,
+            officer_name: document.getElementById('officer_name').value,
+            reference_no: document.getElementById('reference_no').value,
+            notes: document.getElementById('notes').value
+        };
+
+        // បញ្ចូល pdf_path (ที่เป็น Base64) ទៅក្នុង payload ប្រសិនបើมีไฟล์ใหม่ถูกเลือก
+        if (pdfBase64) {
+            payload.pdf_path = pdfBase64;
         }
 
         try {
@@ -485,7 +510,10 @@
 
             const response = await fetch(url, {
                 method: method,
-                body: formData
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
             });
 
             const result = await response.json();
@@ -517,7 +545,7 @@
         document.getElementById('notes').value = item.notes || '';
 
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យ`;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo({ top: 'smooth', top: 0 });
     }
 
     async function deleteDocument(id) {
