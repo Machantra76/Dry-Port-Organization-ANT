@@ -1883,6 +1883,53 @@ app.get('/api/customs-documents', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
+// ==========================================
+// API Route: មើល ឬទាញយកឯកសារ PDF របស់ Customs Documents
+// ==========================================
+app.get('/api/customs-documents/:id/pdf', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('SELECT pdf_path, document_number FROM customs_documents WHERE id = $1', [id]);
+        if (result.rows.length === 0 || !result.rows[0].pdf_path) {
+            return res.status(404).send('រកមិនឃើញឯកសារ PDF សម្រាប់ទិន្នន័យនេះទេ');
+        }
+
+        const pdfPath = path.join(__dirname, result.rows[0].pdf_path);
+        if (!fs.existsSync(pdfPath)) {
+            return res.status(404).send('ឯកសារ PDF មិនមាននៅលើ Server ទេ');
+        }
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.sendFile(pdfPath);
+    } catch (err) {
+        console.error('Error serving PDF:', err);
+        res.status(500).send('Server error');
+    }
+});
+
+// ==========================================
+// API Route: មើល ឬទាញយកឯកសារ PDF របស់ Customs System Data
+// ==========================================
+app.get('/api/customs-system-data/:id/pdf', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('SELECT pdf_path, sys_code FROM customs_system_data WHERE id = $1', [id]);
+        if (result.rows.length === 0 || !result.rows[0].pdf_path) {
+            return res.status(404).send('រកមិនឃើញឯកសារ PDF សម្រាប់ទិន្នន័យនេះទេ');
+        }
+
+        const pdfPath = path.join(__dirname, result.rows[0].pdf_path);
+        if (!fs.existsSync(pdfPath)) {
+            return res.status(404).send('ឯកសារ PDF មិនមាននៅលើ Server ទេ');
+        }
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.sendFile(pdfPath);
+    } catch (err) {
+        console.error('Error serving PDF:', err);
+        res.status(500).send('Server error');
+    }
+});
 
 app.post('/api/customs-documents', upload.single('pdf_file'), async (req, res) => {
     const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
