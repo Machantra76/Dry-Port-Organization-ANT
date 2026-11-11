@@ -491,7 +491,7 @@ async function initializeDatabase() {
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_documents (
                 id SERIAL PRIMARY KEY,
-                document_number VARCHAR(100) UNIQUE NOT NULL,
+                document_number VARCHAR(100),
                 company_name VARCHAR(150) NOT NULL,
                 document_type VARCHAR(100) NOT NULL,
                 document_date DATE NOT NULL,
@@ -506,6 +506,8 @@ async function initializeDatabase() {
         `);
         await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_data TEXT;`);
         await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS has_pdf BOOLEAN DEFAULT FALSE;`);
+        // ដក UNIQUE Constraint ចេញពី document_number ដើម្បីអាចទុកទទេ ឬស្ទួនបានបើចាំបាច់ ប៉ុន្តែយើងនឹងពិនិត្យកូដផ្ទៀងផ្ទាត់កុំឱ្យស្ទួនខាងក្រោម
+        await client.query(`ALTER TABLE customs_documents DROP CONSTRAINT IF EXISTS customs_documents_document_number_key;`).catch(() => {});
 
         // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management)
         await client.query(`
@@ -1912,35 +1914,59 @@ app.get('/api/customs-system-data/:id/pdf', async (req, res) => {
     }
 });
 
+// 🌟 POST Customs Document ជាមួយ Duplicate Check (ការពារកុំឱ្យស្ទួនលេខឯកសារ)
 app.post('/api/customs-documents', upload.single('pdf_file'), async (req, res) => {
     const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
     
-    let pdf_data = null;
-    let has_pdf = false;
-    if (req.file) {
-        pdf_data = `data:application/pdf;base64,${req.file.buffer.toString('base64')}`;
-        has_pdf = true;
-    }
-
     try {
+        const trimmedDocNum = document_number ? document_number.trim() : '';
+        if (trimmedDocNum !== '') {
+            const checkDup = await pool.query(
+                'SELECT id FROM customs_documents WHERE LOWER(TRIM(document_number)) = LOWER($1)',
+                [trimmedDocNum]
+            );
+            if (checkDup.rows.length > 0) {
+                return res.status(400).json({ success: false, error: `លេខឯកសារ / លេខប្រកាស "${trimmedDocNum}" នេះមានរួចហើយក្នុងប្រព័ន្ធ!` });
+            }
+        }
+
+        let pdf_data = null;
+        let has_pdf = false;
+        if (req.file) {
+            pdf_data = `data:application/pdf;base64,${req.file.buffer.toString('base64')}`;
+            has_pdf = true;
+        }
+
         const query = `
             INSERT INTO customs_documents (document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_data, has_pdf)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
         `;
-        const values = [document_number, company_name, document_type, document_date, status || 'Pending', officer_name, reference_no, notes, pdf_data, has_pdf];
+        const values = [trimmedDocNum || null, company_name, document_type, document_date, status || 'Pending', officer_name, reference_no, notes, pdf_data, has_pdf];
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error saving customs document:', err);
-        res.status(500).json({ success: false, error: 'Server error (លេខឯកសារអាចមានរួចហើយ)' });
+        res.status(500).json({ success: false, error: 'Server error: ' + err.message });
     }
 });
 
+// 🌟 PUT Customs Document ជាមួយ Duplicate Check (ការពារកុំឱ្យស្ទួនពេលកែប្រែ)
 app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res) => {
     const { id } = req.params;
     const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
     
     try {
+        const trimmedDocNum = document_number ? document_number.trim() : '';
+        if (trimmedDocNum !== '') {
+            const checkDup = await pool.query(
+                'SELECT id FROM customs_documents WHERE LOWER(TRIM(document_number)) = LOWER($1) AND id != $2',
+                [trimmedDocNum, id]
+            );
+            if (checkDup.rows.length > 0) {
+                return res.status(400).json({ success: false, error: `លេខឯកសារ / លេខប្រកាស "${trimmedDocNum}" នេះត្រូវបានប្រើប្រាស់ដោយឯកសារផ្សេងរួចហើយ!` });
+            }
+        }
+
         let query = '';
         let values = [];
 
@@ -1952,14 +1978,14 @@ app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res
                 SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8, pdf_data = $9, has_pdf = $10
                 WHERE id = $11 RETURNING *;
             `;
-            values = [document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_data, has_pdf, id];
+            values = [trimmedDocNum || null, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_data, has_pdf, id];
         } else {
             query = `
                 UPDATE customs_documents 
                 SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8
                 WHERE id = $9 RETURNING *;
             `;
-            values = [document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, id];
+            values = [trimmedDocNum || null, company_name, document_type, document_date, status, officer_name, reference_no, notes, id];
         }
 
         const result = await pool.query(query, values);
@@ -1971,7 +1997,7 @@ app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error updating customs document:', err);
-        res.status(500).json({ success: false, error: 'Server error' });
+        res.status(500).json({ success: false, error: 'Server error: ' + err.message });
     }
 });
 
