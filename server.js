@@ -3,7 +3,6 @@ const { Pool } = require('pg');
 const path = require('path');
 const cors = require('cors');
 const multer = require('multer'); // 🌟 ប្រើសម្រាប់ Upload ក្នុង Memory[cite: 7]
-const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -739,16 +738,6 @@ app.post('/api/auth/login', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
-
-// Self-Ping[cite: 7]
-const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
-if (RENDER_EXTERNAL_URL) {
-    setInterval(() => {
-        axios.get(`${RENDER_EXTERNAL_URL}/api/run-cron`)
-            .then(() => console.log('🔄 [Self-Ping] Server triggered successfully!'))
-            .catch(err => console.error('⚠️ [Self-Ping Error]:', err.message));
-    }, 10 * 60 * 1000);
-}
 
 // ==========================================
 // API Routes: Register & Users[cite: 7]
@@ -2046,7 +2035,7 @@ app.get('/api/employees', async (req, res) => {
         const result = await pool.query('SELECT * FROM employees ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យបុគ្គលិកได้ទេ' });
+        res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យបុគ្គលិកបានទេ' });
     }
 });
 
@@ -2962,7 +2951,7 @@ app.post('/api/fleet/yard-operations', async (req, res) => {
         const result = await pool.query(query, [container_number, operation_type, yard_location, operation_date, equipment_used || null, operator_name, status, notes || null]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ success: false, error: ' Database error' });
+        res.status(500).json({ success: false, error: 'Database error' });
     }
 });
 
