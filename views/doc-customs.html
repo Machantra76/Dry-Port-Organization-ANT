@@ -293,14 +293,14 @@
                     <label class="form-label">ច្រកទ្វារ ឬការិយាល័យគយ (Customs Office / Gate):</label>
                     <input type="text" class="form-control" id="customs_office" placeholder="ឧ. ការិយាល័យគយ និងរដ្ឋាករកំពង់ផែស្វយ័តភ្នំពេញ">
                 </div>
-                <!-- 💡 Upload ឯកសារ PDF -->
+                <!-- 💡 Upload PDF Document -->
                 <div class="col-md-6">
                     <label class="form-label">แนបឯកសារ PDF (Upload PDF Document):</label>
                     <input type="file" class="form-control" id="pdf_file" accept="application/pdf">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">កំណត់សម្គាល់បន្ថែម (Remarks / Notes):</label>
-                    <textarea class="form-control" id="remarks" rows="2" placeholder="បញ្ជាក់ព័ត៌មានលម្អិតបន្ថែមពីการបញ្ចូលទិន្នន័យ..."></textarea>
+                    <textarea class="form-control" id="remarks" rows="2" placeholder="បញ្ជាក់ព័ត៌មានលម្អិតបន្ថែមពីការបញ្ចូលទិន្នន័យ..."></textarea>
                 </div>
                 
                 <!-- ប៊ូតុងរក្សាទុក និង ចុះបញ្ជីថ្មី -->
@@ -490,9 +490,9 @@
             else if (item.system_status === 'Pending') statusBadge = 'bg-warning text-dark';
             else if (item.system_status === 'Error') statusBadge = 'bg-danger';
 
-            // 🌟 ឆែកមើល pdf_path តាមរយៈ API Endpoint របស់ ID ផ្ទាល់ (បើមានបង្ហាញប៊ូតុងពណ៌បៃតង បើគ្មានបង្ហាញពណ៌ប្រផេះ Disabled)
+            // 🌟 ពិនិត្យមើល has_pdf និងតភ្ជាប់ទៅកាន់ API Endpoint របស់ ID ផ្ទាល់
             let downloadBtn = '';
-            if (item.pdf_path) {
+            if (item.has_pdf) {
                 downloadBtn = `<a href="/api/customs-system-data/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
             } else {
                 downloadBtn = `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
@@ -567,8 +567,14 @@
         e.preventDefault();
 
         const editId = document.getElementById('editId').value;
+        const pdfFile = document.getElementById('pdf_file').files[0];
+
+        if (pdfFile && pdfFile.size > 10 * 1024 * 1024) {
+            alert('ឯកសារ PDF ធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំទាបជាង 10MB។');
+            return;
+        }
+
         const formData = new FormData();
-        
         formData.append('sys_code', document.getElementById('sys_code').value);
         formData.append('company_name', document.getElementById('company_name').value);
         formData.append('transaction_type', document.getElementById('transaction_type').value);
@@ -579,7 +585,6 @@
         formData.append('customs_office', document.getElementById('customs_office').value);
         formData.append('remarks', document.getElementById('remarks').value);
 
-        const pdfFile = document.getElementById('pdf_file').files[0];
         if (pdfFile) {
             formData.append('pdf_file', pdfFile);
         }
@@ -593,6 +598,11 @@
                 body: formData 
             });
 
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("Server បានឆ្លើយតបខុសទម្រង់ (អាចមកពី File ធំពេកហួសដែនកំណត់)");
+            }
+
             const result = await response.json();
             if (response.ok && result.success) {
                 alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានចុះបញ្ជីទិន្នន័យប្រព័ន្ធគយថ្មីដោយជោគជ័យ!');
@@ -604,7 +614,7 @@
             }
         } catch (err) {
             console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
+            alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ Server ឬទំហំឯកសារធំពេក: ' + err.message);
         }
     });
 
