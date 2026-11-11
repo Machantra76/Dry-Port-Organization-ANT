@@ -2,13 +2,13 @@ const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
 const cors = require('cors');
-const multer = require('multer'); // 🌟 បន្ថែម Multer សម្រាប់ការ Upload ឯកសារ PDF
+const multer = require('multer'); // 🌟 បន្ថែម Multer សម្រាប់ការ Upload ឯកសារ PDF[cite: 7]
 const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 🌟 កំណត់ទីតាំងរក្សាទុកឯកសារ PDF Uploaded
+// 🌟 កំណត់ទីតាំងរក្សាទុកឯកសារ PDF Uploaded[cite: 7]
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
@@ -25,7 +25,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 }, // កំណត់ទំហំអតិបរមា 10MB
+    limits: { fileSize: 10 * 1024 * 1024 }, // កំណត់ទំហំអតិបរមា 10MB[cite: 7]
     fileFilter: (req, file, cb) => {
         if (file.mimetype === 'application/pdf') {
             cb(null, true);
@@ -35,7 +35,7 @@ const upload = multer({
     }
 });
 
-// ការតភ្ជាប់ PostgreSQL Database
+// ការតភ្ជាប់ PostgreSQL Database[cite: 7]
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgresql://user:password@localhost:5432/hr_db',
     ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
@@ -46,7 +46,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/views', express.static(path.join(__dirname, 'views')));
-app.use('/uploads', express.static(uploadDir)); // 🌟 សម្រាប់ឱ្យ Frontend អាចចូលទៅយកឯកសារ PDF ដែលបាន Upload
+app.use('/uploads', express.static(uploadDir)); // 🌟 សម្រាប់ឱ្យ Frontend អាចចូលទៅយកឯកសារ PDF ដែលបាន Upload[cite: 7]
 
 async function processPendingSchedules() {
     try {
@@ -93,13 +93,13 @@ app.get('/api/run-cron', async (req, res) => {
     }
 });
 
-// មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server
+// មុខងារសម្រាប់បង្កើត Tables ក្នុង Database ដោយស្វ័យប្រវត្តពេល Start Server[cite: 7]
 async function initializeDatabase() {
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
-        // ១. តារាងបុគ្គលិក (Employees)
+        // ១. តារាងបុគ្គលិក (Employees)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS employees (
                 id SERIAL PRIMARY KEY,
@@ -111,7 +111,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)
+        // ២. តារាងកត់ត្រាវត្តមាន (Attendance Logs)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS attendance_logs (
                 id SERIAL PRIMARY KEY,
@@ -123,7 +123,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)
+        // ៣. តារាងទ្រព្យសម្បត្តិ និងស្តុក (Inventory & Assets)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS inventory_items (
                 id SERIAL PRIMARY KEY,
@@ -138,7 +138,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)
+        // ៤. តារាងដំណើរការប្រាក់បៀវត្សរ៍ (Payroll Records)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS payroll_records (
                 id SERIAL PRIMARY KEY,
@@ -165,7 +165,7 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS absent_days INT DEFAULT 0;`);
         await client.query(`ALTER TABLE payroll_records ADD COLUMN IF NOT EXISTS note TEXT;`);
 
-        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)
+        // ៥. តារាងគណនេយ្យប្រាក់ចំណូល (Revenues)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS revenues (
                 id SERIAL PRIMARY KEY,
@@ -178,7 +178,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable)
+        // ៦. តារាងគណនេយ្យទទួល (Accounts Receivable)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS accounts_receivable (
                 id SERIAL PRIMARY KEY,
@@ -192,7 +192,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៧. តារាងចំណាយ (Expenses)
+        // ៧. តារាងចំណាយ (Expenses)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS expenses (
                 id SERIAL PRIMARY KEY,
@@ -205,7 +205,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៨. តារាងគ្រប់គ្រងរថយន្ត (Fleet Vehicles)
+        // ៨. តារាងគ្រប់គ្រងរថយន្ត (Fleet Vehicles)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS fleet_vehicles (
                 id SERIAL PRIMARY KEY,
@@ -218,7 +218,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៩. តារាងគ្រប់គ្រងអ្នកបើកបរ (Drivers)
+        // ៩. តារាងគ្រប់គ្រងអ្នកបើកបរ (Drivers)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS drivers (
                 id SERIAL PRIMARY KEY,
@@ -231,7 +231,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១០. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches)
+        // ១០. តារាងការចាត់ចែងការដឹកជញ្ជូន (Transport Dispatches)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS transport_dispatches (
                 id SERIAL PRIMARY KEY,
@@ -246,7 +246,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១១. តារាងគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)
+        // ១១. តារាងគ្រប់គ្រងប្រេងឥន្ធនៈ (Fuel Logs)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS fuel_logs (
                 id SERIAL PRIMARY KEY,
@@ -261,7 +261,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs)
+        // ១២. តារាងគ្រប់គ្រងការថែទាំយានយន្ត (Maintenance Logs)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS maintenance_logs (
                 id SERIAL PRIMARY KEY,
@@ -276,7 +276,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៣. តារាងរៀបចំផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)
+        // ១៣. តារាងរៀបចំផែនការដឹកជញ្ជូនទំនិញ (Transport Plans)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS transport_plans (
                 id SERIAL PRIMARY KEY,
@@ -292,7 +292,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)
+        // ១៤. តារាងត្រួតពិនិត្យកុងតឺន័រខូច (Damaged Containers)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS damaged_containers (
                 id SERIAL PRIMARY KEY,
@@ -310,7 +310,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
+        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_yard_locations (
                 id SERIAL PRIMARY KEY,
@@ -328,7 +328,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)
+        // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_repair_logs (
                 id SERIAL PRIMARY KEY,
@@ -349,7 +349,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out)
+        // ១៧. តារាងការចេញកុងតឺន័រ (Container Gate-Out)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_gate_out (
                 id SERIAL PRIMARY KEY,
@@ -368,7 +368,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៨. តារាងប្រតិបត្តិការទីលាន (Yard Operations)
+        // ១៨. តារាងប្រតិបត្តិការទីលាន (Yard Operations)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS yard_operations (
                 id SERIAL PRIMARY KEY,
@@ -384,7 +384,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៩. តារាងកត់ត្រាការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out)
+        // ១៩. តារាងកត់ត្រាការចូល/ចេញទំនិញ (Cargo Gate-In / Gate-Out)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS cargo_gate_logs (
                 id SERIAL PRIMARY KEY,
@@ -401,7 +401,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២០. តារាងគ្រប់គ្រងក្រុមសន្តិសុខ (Security Logs)
+        // ២០. តារាងគ្រប់គ្រងក្រុមសន្តិសុខ (Security Logs)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS security_logs (
                 id SERIAL PRIMARY KEY,
@@ -416,7 +416,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២១. តារាងប្រព័ន្ធ WMS / OMS (Warehouse & Order Management Systems)
+        // ២១. តារាងប្រព័ន្ធ WMS / OMS (Warehouse & Order Management Systems)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS wms_oms_records (
                 id SERIAL PRIMARY KEY,
@@ -429,7 +429,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២២. តារាងគ្រប់គ្រង CCTV និង Network (IT Infrastructure)
+        // ២២. តារាងគ្រប់គ្រង CCTV និង Network (IT Infrastructure)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS it_cctv_networks (
                 id SERIAL PRIMARY KEY,
@@ -443,7 +443,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៣. តារាងមុខតំណែងការងារ (Job Vacancies)
+        // ២៣. តារាងមុខតំណែងការងារ (Job Vacancies)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS job_vacancies (
                 id SERIAL PRIMARY KEY,
@@ -455,7 +455,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៤. តារាងទំនាក់ទំនងជាមួយអតិថិជន (Customer Relations)
+        // ២៤. តារាងទំនាក់ទំនងជាមួយអតិថិជន (Customer Relations)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS customer_relations (
                 id SERIAL PRIMARY KEY,
@@ -469,7 +469,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៥. តារាងការដោះស្រាយបញ្ហា / ការតវ៉ា (Dispute & Complaint Resolution)
+        // ២៥. តារាងការដោះស្រាយបញ្ហា / ការតវ៉ា (Dispute & Complaint Resolution)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS dispute_resolutions (
                 id SERIAL PRIMARY KEY,
@@ -484,7 +484,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៦. តារាងស្វែងរកប្រភព និងការគាំទ្រទូទៅ (Sourcing & General Support)
+        // ២៦. តារាងស្វែងរកប្រភព និងការគាំទ្រទូទៅ (Sourcing & General Support)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS sourcing_support (
                 id SERIAL PRIMARY KEY,
@@ -499,7 +499,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៧. តារាងការគ្រប់គ្រងឯកសារគយ (Customs Document Management)
+        // ២៧. តារាងការគ្រប់គ្រងឯកសារគយ (Customs Document Management)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_documents (
                 id SERIAL PRIMARY KEY,
@@ -518,7 +518,7 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_url TEXT;`);
         await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_path VARCHAR(255);`);
 
-        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management)
+        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_system_data (
                 id SERIAL PRIMARY KEY,
@@ -537,7 +537,7 @@ async function initializeDatabase() {
         `);
         await client.query(`ALTER TABLE customs_system_data ADD COLUMN IF NOT EXISTS pdf_path VARCHAR(255);`);
 
-        // ២៩. តារាងអ្នកកាន់ឯកសារគយ (Document Controller / Handler)
+        // ២៩. តារាងអ្នកកាន់ឯកសារគយ (Document Controller / Handler)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS document_handlers (
                 id SERIAL PRIMARY KEY,
@@ -552,7 +552,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣០. តារាងគ្រប់គ្រងឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse Records - BWH)
+        // ៣០. តារាងគ្រប់គ្រងឃ្លាំងទំនិញពន្ធដារ (Bonded Warehouse Records - BWH)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS bonded_warehouse_records (
                 id SERIAL PRIMARY KEY,
@@ -574,7 +574,7 @@ async function initializeDatabase() {
             ALTER TABLE bonded_warehouse_records ADD COLUMN IF NOT EXISTS previous_days INT DEFAULT 0;
         `);
 
-        // ៣១. តារាងត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory Monitoring)
+        // ៣១. តារាងត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ (Duty-Unpaid Inventory Monitoring)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS duty_unpaid_inventory (
                 id SERIAL PRIMARY KEY,
@@ -593,7 +593,7 @@ async function initializeDatabase() {
         `);
         await client.query(`ALTER TABLE duty_unpaid_inventory ADD COLUMN IF NOT EXISTS vehicle_vin VARCHAR(100);`);
 
-        // ៣២. តារាងអ្នកប្រើប្រាស់ប្រព័ន្ធ (System Users & Roles)
+        // ៣២. តារាងអ្នកប្រើប្រាស់ប្រព័ន្ធ (System Users & Roles)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS system_users (
                 id SERIAL PRIMARY KEY,
@@ -608,7 +608,7 @@ async function initializeDatabase() {
         `);
         await client.query(`ALTER TABLE system_users ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'Active';`);
 
-        // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH)
+        // ៣៣. តារាងគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_permit_records (
                 id SERIAL PRIMARY KEY,
@@ -631,7 +631,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣៤. តារាងប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Logs) - PostgreSQL
+        // ៣៤. តារាងប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Logs)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS activity_logs (
                 id SERIAL PRIMARY KEY,
@@ -642,7 +642,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣៥. តារាងគ្រប់គ្រងវិក្កយបត្រ (Tax & Commercial Invoices)
+        // ៣៥. តារាងគ្រប់គ្រងវិក្កយបត្រ (Tax & Commercial Invoices)[cite: 7]
         await client.query(`
             CREATE TABLE IF NOT EXISTS tax_invoices (
                 id SERIAL PRIMARY KEY,
@@ -684,7 +684,7 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS manifest_number VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS doc_type VARCHAR(10);`);
 
-        // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត
+        // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត[cite: 7]
         const checkUser = await client.query('SELECT COUNT(*) FROM system_users');
         if (parseInt(checkUser.rows[0].count) === 0) {
             await client.query(`
@@ -713,7 +713,7 @@ async function initializeDatabase() {
 }
 
 // ==========================================
-// API Routes: Authentication (Login)
+// API Routes: Authentication (Login)[cite: 7]
 // ==========================================
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
@@ -755,7 +755,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// Self-Ping
+// Self-Ping[cite: 7]
 const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
 if (RENDER_EXTERNAL_URL) {
     setInterval(() => {
@@ -766,7 +766,7 @@ if (RENDER_EXTERNAL_URL) {
 }
 
 // ==========================================
-// API Routes: Register
+// API Routes: Register[cite: 7]
 // ==========================================
 app.post('/api/auth/register', async (req, res) => {
     const { username, password, full_name, role, dept_id } = req.body;
@@ -803,7 +803,7 @@ app.post('/api/users', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: User Management
+// API Routes: User Management[cite: 7]
 // ==========================================
 app.get('/api/users', async (req, res) => {
     try {
@@ -816,7 +816,7 @@ app.get('/api/users', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: ប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Logs APIs)
+// API Routes: ប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Logs APIs)[cite: 7]
 // ==========================================
 app.get('/api/fleet/cargo-gates/:id/activities', async (req, res) => {
     const { id } = req.params;
@@ -851,7 +851,7 @@ app.post('/api/fleet/activity-logs', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: គ្រប់គ្រងបញ្ជីវិក្កយបត្រ (Invoice List APIs)
+// API Routes: គ្រប់គ្រងបញ្ជីវិក្កយបត្រ (Invoice List APIs)[cite: 7]
 // ==========================================
 app.get('/api/tax-invoices', async (req, res) => {
     try {
@@ -899,7 +899,7 @@ app.get('/views/invoice-list.html', (req, res) => {
 });
 
 // ==========================================
-// API Routes: ស្ថិតិវិក្កយបត្រ និងការរក្សាទុកវិក្កយបត្រ
+// API Routes: ស្ថិតិវិក្កយបត្រ និងការរក្សាទុកវិក្កយបត្រ[cite: 7]
 // ==========================================
 app.get('/api/invoices/stats', async (req, res) => {
     const { customerName } = req.query;
@@ -1031,7 +1031,7 @@ app.put('/api/users/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: កែប្រែ និងលុបចំណាយ (Expenses)
+// API Routes: កែប្រែ និងលុបចំណាយ (Expenses)[cite: 7]
 // ==========================================
 app.put('/api/expenses/:id', async (req, res) => {
     const { id } = req.params;
@@ -1071,7 +1071,7 @@ app.delete('/api/expenses/:id', async (req, res) => {
     }
 });
 
-// Accounts Receivable updates
+// Accounts Receivable updates[cite: 7]
 app.put('/api/receivables/:id', async (req, res) => {
     const { id } = req.params;
     const { customer_name, amount, invoice_date, due_date, status, description } = req.body;
@@ -1110,7 +1110,7 @@ app.delete('/api/receivables/:id', async (req, res) => {
     }
 });
 
-// Revenue Updates
+// Revenue Updates[cite: 7]
 app.put('/api/revenues/:id', async (req, res) => {
     const { id } = req.params;
     const { revenue_date, category, description, amount, received_by } = req.body;
@@ -1183,7 +1183,7 @@ app.put('/api/bwh-records/:id/renew', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Cargo Gates
+// API Routes: Cargo Gates[cite: 7]
 // ==========================================
 app.get('/api/fleet/cargo-gates', async (req, res) => {
     try {
@@ -1266,7 +1266,7 @@ app.delete('/api/fleet/cargo-gates/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Customs Permit & Document Control (BWH)
+// API Routes: Customs Permit & Document Control (BWH)[cite: 7]
 // ==========================================
 app.get('/api/customs-permits', async (req, res) => {
     try {
@@ -1389,7 +1389,7 @@ app.put('/api/customs-permits/:id', async (req, res) => {
 });
 
 // ==========================================
-// HTML Routes សម្រាប់បើកទំព័រ Views ផ្សេងៗ
+// HTML Routes សម្រាប់បើកទំព័រ Views ផ្សេងៗ[cite: 7]
 // ==========================================
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'index.html'));
@@ -1524,7 +1524,7 @@ app.get('/views/customs-permit-control.html', (req, res) => {
 });
 
 // ==========================================
-// API Routes: Bonded Warehouse (BWH In/Out)
+// API Routes: Bonded Warehouse (BWH In/Out)[cite: 7]
 // ==========================================
 app.get('/api/bwh-records', async (req, res) => {
     try {
@@ -1654,7 +1654,7 @@ app.put('/api/bwh-records/:id/duty-status', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Duty-Unpaid Inventory
+// API Routes: Duty-Unpaid Inventory[cite: 7]
 // ==========================================
 app.get('/api/duty-unpaid-inventory', async (req, res) => {
     try {
@@ -1711,7 +1711,7 @@ app.delete('/api/duty-unpaid-inventory/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Document Handlers
+// API Routes: Document Handlers[cite: 7]
 // ==========================================
 app.get('/api/document-handlers', async (req, res) => {
     try {
@@ -1774,7 +1774,7 @@ app.delete('/api/document-handlers/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Customs System Data
+// API Routes: Customs System Data (🌟 គាំទ្រ File Upload PDF និង Delete File)[cite: 7]
 // ==========================================
 app.get('/api/customs-system-data', async (req, res) => {
     try {
@@ -1814,6 +1814,7 @@ app.put('/api/customs-system-data/:id', upload.single('pdf_file'), async (req, r
 
         if (req.file) {
             const pdf_path = `/uploads/${req.file.filename}`;
+            // 💡 លុប File PDF ចាស់ចោលប្រសិនបើមានការ Upload ថ្មីមកជំនួស[cite: 7]
             const oldFileQuery = await pool.query('SELECT pdf_path FROM customs_system_data WHERE id = $1', [id]);
             if (oldFileQuery.rows.length > 0 && oldFileQuery.rows[0].pdf_path) {
                 const oldFilePath = path.join(__dirname, oldFileQuery.rows[0].pdf_path);
@@ -1853,6 +1854,7 @@ app.put('/api/customs-system-data/:id', upload.single('pdf_file'), async (req, r
 app.delete('/api/customs-system-data/:id', async (req, res) => {
     const { id } = req.params;
     try {
+        // 💡 លុប File PDF លើ Server ផងដែរ ប្រសិនបើមាន[cite: 7]
         const fileQuery = await pool.query('SELECT pdf_path FROM customs_system_data WHERE id = $1', [id]);
         if (fileQuery.rows.length > 0 && fileQuery.rows[0].pdf_path) {
             const filePath = path.join(__dirname, fileQuery.rows[0].pdf_path);
@@ -1870,7 +1872,7 @@ app.delete('/api/customs-system-data/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Customs Documents
+// API Routes: Customs Documents[cite: 7]
 // ==========================================
 app.get('/api/customs-documents', async (req, res) => {
     try {
@@ -1910,14 +1912,6 @@ app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res
 
         if (req.file) {
             const pdf_path = `/uploads/${req.file.filename}`;
-            const oldFileQuery = await pool.query('SELECT pdf_path FROM customs_documents WHERE id = $1', [id]);
-            if (oldFileQuery.rows.length > 0 && oldFileQuery.rows[0].pdf_path) {
-                const oldFilePath = path.join(__dirname, oldFileQuery.rows[0].pdf_path);
-                if (fs.existsSync(oldFilePath)) {
-                    fs.unlinkSync(oldFilePath);
-                }
-            }
-
             query = `
                 UPDATE customs_documents 
                 SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8, pdf_path = $9
@@ -1966,7 +1960,7 @@ app.delete('/api/customs-documents/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Sourcing Support
+// API Routes: Sourcing Support[cite: 7]
 // ==========================================
 app.get('/api/sourcing-support', async (req, res) => {
     try {
@@ -2029,7 +2023,7 @@ app.delete('/api/sourcing-support/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Dispute Resolutions
+// API Routes: Dispute Resolutions[cite: 7]
 // ==========================================
 app.get('/api/dispute-resolutions', async (req, res) => {
     try {
@@ -2092,7 +2086,7 @@ app.delete('/api/dispute-resolutions/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Customer Relations
+// API Routes: Customer Relations[cite: 7]
 // ==========================================
 app.get('/api/customer-relations', async (req, res) => {
     try {
@@ -2155,7 +2149,7 @@ app.delete('/api/customer-relations/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Job Vacancies
+// API Routes: Job Vacancies[cite: 7]
 // ==========================================
 app.get('/api/jobs', async (req, res) => {
     try {
@@ -2184,7 +2178,7 @@ app.post('/api/jobs', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: IT CCTV & Network
+// API Routes: IT CCTV & Network[cite: 7]
 // ==========================================
 app.get('/api/it-cctv', async (req, res) => {
     try {
@@ -2224,7 +2218,7 @@ app.delete('/api/it-cctv/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Employees
+// API Routes: Employees[cite: 7]
 // ==========================================
 app.get('/api/employees', async (req, res) => {
     try {
@@ -2250,7 +2244,7 @@ app.post('/api/employees', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Attendance Logs
+// API Routes: Attendance Logs[cite: 7]
 // ==========================================
 app.get('/api/attendance/logs', async (req, res) => {
     const { from, to, search } = req.query;
@@ -2286,7 +2280,7 @@ app.get('/api/attendance/logs', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Inventory
+// API Routes: Inventory[cite: 7]
 // ==========================================
 app.get('/api/inventory', async (req, res) => {
     const { search, category } = req.query;
@@ -2355,7 +2349,7 @@ app.put('/api/inventory/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Payroll
+// API Routes: Payroll[cite: 7]
 // ==========================================
 app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => {
     const { employee_code, pay_month } = req.params;
@@ -2465,7 +2459,7 @@ app.put('/api/payroll/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Revenues
+// API Routes: Revenues[cite: 7]
 // ==========================================
 app.get('/api/revenues', async (req, res) => {
     const { from, to } = req.query;
@@ -2501,7 +2495,7 @@ app.post('/api/revenues', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Accounts Receivable
+// API Routes: Accounts Receivable[cite: 7]
 // ==========================================
 app.get('/api/receivables', async (req, res) => {
     const { from, to } = req.query;
@@ -2537,7 +2531,7 @@ app.post('/api/receivables', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Expenses
+// API Routes: Expenses[cite: 7]
 // ==========================================
 app.get('/api/expenses', async (req, res) => {
     const { from, to } = req.query;
@@ -2573,7 +2567,7 @@ app.post('/api/expenses', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Financial Summary
+// API Routes: Financial Summary[cite: 7]
 // ==========================================
 app.get('/api/financial/summary', async (req, res) => {
     const { from, to } = req.query;
@@ -2619,7 +2613,7 @@ app.get('/api/financial/summary', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Fleet Vehicles
+// API Routes: Fleet Vehicles[cite: 7]
 // ==========================================
 app.get('/api/fleet/vehicles', async (req, res) => {
     try {
@@ -2645,7 +2639,7 @@ app.post('/api/fleet/vehicles', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Drivers
+// API Routes: Drivers[cite: 7]
 // ==========================================
 app.get('/api/fleet/drivers', async (req, res) => {
     try {
@@ -2671,7 +2665,7 @@ app.post('/api/fleet/drivers', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Transport Dispatches
+// API Routes: Transport Dispatches[cite: 7]
 // ==========================================
 app.get('/api/fleet/dispatches', async (req, res) => {
     const { from, to, search } = req.query;
@@ -2758,7 +2752,7 @@ app.put('/api/fleet/dispatches/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Fuel Logs
+// API Routes: Fuel Logs[cite: 7]
 // ==========================================
 app.get('/api/fleet/fuel', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
@@ -2806,7 +2800,7 @@ app.post('/api/fleet/fuel', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Maintenance Logs
+// API Routes: Maintenance Logs[cite: 7]
 // ==========================================
 app.get('/api/fleet/maintenance', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
@@ -2881,7 +2875,7 @@ app.post('/api/fleet/maintenance', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Transport Plans
+// API Routes: Transport Plans[cite: 7]
 // ==========================================
 app.get('/api/fleet/transport-plans', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
@@ -2972,7 +2966,7 @@ app.put('/api/fleet/transport-plans/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Damaged Containers
+// API Routes: Damaged Containers[cite: 7]
 // ==========================================
 app.get('/api/fleet/damaged-containers', async (req, res) => {
     const { from, to, severity_level, shipping_line } = req.query;
@@ -3069,7 +3063,7 @@ app.put('/api/fleet/damaged-containers/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Container Yard Locations
+// API Routes: Container Yard Locations[cite: 7]
 // ==========================================
 app.get('/api/fleet/container-yard', async (req, res) => {
     const { block_code, status, shipping_line } = req.query;
@@ -3161,7 +3155,7 @@ app.put('/api/fleet/container-yard/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Container Repair Logs
+// API Routes: Container Repair Logs[cite: 7]
 // ==========================================
 app.get('/api/fleet/container-repairs', async (req, res) => {
     const { status, container_number } = req.query;
@@ -3308,7 +3302,7 @@ app.put('/api/fleet/container-repairs/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Container Gate-Out
+// API Routes: Container Gate-Out[cite: 7]
 // ==========================================
 app.get('/api/fleet/container-gate-out', async (req, res) => {
     const { from, to, container_number } = req.query;
@@ -3433,7 +3427,7 @@ app.put('/api/fleet/container-gate-out/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Yard Operations
+// API Routes: Yard Operations[cite: 7]
 // ==========================================
 app.get('/api/fleet/yard-operations', async (req, res) => {
     try {
@@ -3523,7 +3517,7 @@ app.delete('/api/fleet/yard-operations/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Security Logs
+// API Routes: Security Logs[cite: 7]
 // ==========================================
 app.get('/api/fleet/security-logs', async (req, res) => {
     try {
@@ -3587,7 +3581,7 @@ app.delete('/api/fleet/security-logs/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: WMS / OMS
+// API Routes: WMS / OMS[cite: 7]
 // ==========================================
 app.get('/api/wms-oms', async (req, res) => {
     try {
@@ -3615,7 +3609,7 @@ app.post('/api/wms-oms', async (req, res) => {
     }
 });
 
-// ចាប់ផ្តើមដំណើរការ Server
+// ចាប់ផ្តើមដំណើរការ Server[cite: 7]
 initializeDatabase().then(() => {
     app.listen(PORT, () => {
         console.log(`Server is running on http://localhost:${PORT}`);
