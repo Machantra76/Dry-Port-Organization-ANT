@@ -17,8 +17,8 @@
             color: #333;
         }
         .main-container {
-            max-width: 1350px;
-            margin: 30px auto;
+            max-width: 1000px;
+            margin: 40px auto;
             background: #ffffff;
             padding: 30px;
             border-radius: 12px;
@@ -39,6 +39,24 @@
         }
         .btn-back:hover {
             background: linear-gradient(135deg, #0369a1, #075985);
+            color: white;
+            transform: translateY(-1px);
+        }
+        .btn-jump-table {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            font-weight: 500;
+            border-radius: 8px;
+            padding: 10px 18px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.25);
+            transition: all 0.2s;
+        }
+        .btn-jump-table:hover {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
             color: white;
             transform: translateY(-1px);
         }
@@ -84,8 +102,6 @@
             border-color: #0d9488;
             box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.15);
         }
-        
-        /* 🎨 ប៊ូតុងរចនាថ្មីស្មើគ្នា */
         .btn-primary-custom {
             background: linear-gradient(135deg, #0d9488, #0f766e);
             border: none;
@@ -103,7 +119,6 @@
             transform: translateY(-1px);
             color: white;
         }
-
         .btn-secondary-custom {
             background: linear-gradient(135deg, #64748b, #475569);
             border: none;
@@ -121,114 +136,17 @@
             transform: translateY(-1px);
             color: white;
         }
-
-        .btn-jump-table {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            border: none;
-            color: white;
-            font-weight: 500;
-            border-radius: 8px;
-            padding: 10px 18px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.25);
-            transition: all 0.2s;
-        }
-        .btn-jump-table:hover {
-            background: linear-gradient(135deg, #7c3aed, #6d28d9);
-            color: white;
-            transform: translateY(-1px);
-        }
-
-        .btn-filter-custom {
-            background: linear-gradient(135deg, #6366f1, #4f46e5);
-            border: none;
-            color: white;
-            font-weight: 600;
-            border-radius: 8px;
-            padding: 10px 14px;
-            box-shadow: 0 3px 10px rgba(99, 102, 241, 0.25);
-            transition: all 0.2s;
-            width: 100%;
-        }
-        .btn-filter-custom:hover {
-            background: linear-gradient(135deg, #4f46e5, #4338ca);
-            color: white;
-        }
-
-        .btn-reset-custom {
-            background-color: #e2e8f0;
-            border: none;
-            color: #334155;
-            font-weight: 600;
-            border-radius: 8px;
-            padding: 10px 14px;
-            transition: all 0.2s;
-            width: 100%;
-        }
-        .btn-reset-custom:hover {
-            background-color: #cbd5e1;
-            color: #1e293b;
-        }
-
-        .btn-print-custom {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-            border: none;
-            color: white;
-            font-weight: 600;
-            border-radius: 8px;
-            padding: 10px 14px;
-            box-shadow: 0 3px 10px rgba(245, 158, 11, 0.25);
-            transition: all 0.2s;
-            width: 100%;
-        }
-        .btn-print-custom:hover {
-            background: linear-gradient(135deg, #d97706, #b45309);
-            color: white;
-        }
-
-        .table-custom-header {
-            background-color: #1e3a8a !important;
-            color: white !important;
-            text-align: center;
-            vertical-align: middle;
-            font-size: 0.9rem;
-        }
-        .table tbody td {
-            vertical-align: middle;
-            font-size: 0.88rem;
-            text-align: center;
-        }
-        .filter-action-bar {
-            background-color: #f8fafc;
-            padding: 20px;
-            border-radius: 10px;
-            border: 1px solid #e2e8f0;
-            margin-bottom: 20px;
-        }
-
-        @media print {
-            @page {
-                size: landscape;
-                margin: 10mm;
-            }
-            .no-print { display: none !important; }
-            body { background: white; }
-            .main-container { box-shadow: none; padding: 0; max-width: 100%; }
-        }
     </style>
 </head>
 <body>
 
 <div class="main-container">
-    <!-- ប៊ូតុងត្រឡប់ក្រោយ និង ប៊ូតុងទៅកាន់តារាងបញ្ជី -->
-    <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+    <!-- ប៊ូតុងត្រឡប់ក្រោយ និង ប៊ូតុងទៅកាន់ទំព័រតារាងបញ្ជី -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <a href="/" class="btn-back">
             <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅផ្ទាំងដើមវិញ
         </a>
-        <a href="#tableSection" class="btn-jump-table">
+        <a href="/customs-records.html" class="btn-jump-table">
             <i class="fa-solid fa-table-list"></i> មើលតារាងបញ្ជីទិន្នន័យប្រព័ន្ធគយ
         </a>
     </div>
@@ -237,8 +155,8 @@
     <h2 class="page-title">ការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ</h2>
     <p class="page-subtitle">CUSTOMS SYSTEM DATA ENTRY MANAGEMENT</p>
 
-    <!-- 🌟 SECTION 1: Form បញ្ចូលទិន្នន័យប្រព័ន្ធគយថ្មី -->
-    <div class="section-card no-print" id="formSection">
+    <!-- Form បញ្ចូលទិន្នន័យប្រព័ន្ធគយថ្មី -->
+    <div class="section-card">
         <div class="section-card-title"><i class="fa-solid fa-database me-2"></i> បញ្ចូលទិន្នន័យប្រព័ន្ធគយថ្មី (New Customs System Data Entry)</div>
         <form id="customsDataForm">
             <input type="hidden" id="editId" value="">
@@ -312,90 +230,17 @@
             </div>
         </form>
     </div>
-
-    <!-- 🌟 SECTION 2: តារាងបង្ហាញទិន្នន័យប្រព័ន្ធគយ (Customs System Data Records) -->
-    <div class="section-card" id="tableSection">
-        <div class="section-card-title mb-3 d-flex justify-content-between align-items-center">
-            <span><i class="fa-solid fa-table-list me-2"></i> តារាងបញ្ជីទិន្នន័យប្រព័ន្ធគយ (Customs System Data Records)</span>
-            <a href="#formSection" class="btn btn-sm btn-outline-primary no-print">
-                <i class="fa-solid fa-arrow-up me-1"></i> ឡើងទៅទฟាំរក្សារទុកទិន្នន័យ
-            </a>
-        </div>
-
-        <!-- ផ្នែកស្វែងរក, From Date, To Date និងប៊ូតុងស្មើគ្នា -->
-        <div class="filter-action-bar no-print">
-            <div class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label">ស្វែងរក (កូដប្រព័ន្ធ / ក្រុមហ៊ុន):</label>
-                    <input type="text" class="form-control" id="searchInput" placeholder="វាយស្វែងរក...">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">កាលបរិច្ឆេទចាប់ពី (From Date):</label>
-                    <input type="date" class="form-control" id="fromDate">
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label">ដល់កាលបរិច្ឆេទ (To Date):</label>
-                    <input type="date" class="form-control" id="toDate">
-                </div>
-                
-                <!-- 💡 ប៊ូតុង ត្រង, សារថ្មី និង បោះពុម្ព PDF រៀបចំក្នុងជួរដេកស្មើគ្នា -->
-                <div class="col-md-3">
-                    <div class="row g-2">
-                        <div class="col-4">
-                            <button class="btn btn-filter-custom" onclick="filterCustomsData()" title="ត្រង">
-                                <i class="fa-solid fa-filter"></i>
-                            </button>
-                        </div>
-                        <div class="col-4">
-                            <button class="btn btn-reset-custom" onclick="resetFilter()" title="កំណត់ឡើងវិញ">
-                                <i class="fa-solid fa-rotate-right"></i>
-                            </button>
-                        </div>
-                        <div class="col-4">
-                            <button class="btn btn-print-custom" onclick="window.print()" title="បោះពុម្ព PDF">
-                                <i class="fa-solid fa-print"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- តារាងបង្ហាញទិន្នន័យ -->
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th class="table-custom-header">ល.រ (No.)</th>
-                        <th class="table-custom-header">កូដប្រព័ន្ធ / សេចក្តីប្រកាស</th>
-                        <th class="table-custom-header">ឈ្មោះក្រុមហ៊ុន</th>
-                        <th class="table-custom-header">ប្រភេទប្រតិបត្តិការ</th>
-                        <th class="table-custom-header">កាលបរិច្ឆេទ</th>
-                        <th class="table-custom-header">មន្ត្រីប្រតិបត្តិករ</th>
-                        <th class="table-custom-header">លេខយោង / ឯកសារ</th>
-                        <th class="table-custom-header">ស្ថានភាព</th>
-                        <th class="table-custom-header no-print">សកម្មភាព</th>
-                    </tr>
-                </thead>
-                <tbody id="customsTableBody">
-                    <tr><td colspan="9" class="text-center text-muted py-4">កំពុងទាញយកទិន្នន័យ...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
 </div>
 
 <!-- Bootstrap 5 JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    let customsList = [];
-    let availableDocuments = []; // ឃ្លាំងទុករក្សាទុកទិន្នន័យឯកសារយោង
+    let availableDocuments = [];
 
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('entry_date').value = new Date().toISOString().split('T')[0];
         loadDocumentDropdown();
-        loadCustomsData();
     });
 
     async function loadDocumentDropdown() {
@@ -418,7 +263,6 @@
         }
     }
 
-    // 💡 មុខងារ Auto-Fill ឈ្មោះក្រុមហ៊ុន នៅពេលជ្រើសរើស លេខឯកសារយោង
     function onReferenceChange() {
         const selectedRefNo = document.getElementById('reference_number').value;
         const companyInput = document.getElementById('company_name');
@@ -428,92 +272,12 @@
             return;
         }
 
-        // ស្វែងរកឯកសារយោងដែលត្រូវគ្នា
         const matchedDoc = availableDocuments.find(doc => doc.document_number === selectedRefNo);
         if (matchedDoc && matchedDoc.company_name) {
             companyInput.value = matchedDoc.company_name;
         } else {
             companyInput.value = '';
         }
-    }
-
-    async function loadCustomsData() {
-        try {
-            const response = await fetch('/api/customs-system-data');
-            customsList = await response.json();
-            renderTable(customsList);
-        } catch (err) {
-            console.error('Error loading customs system data:', err);
-            document.getElementById('customsTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
-        }
-    }
-
-    function renderTable(data) {
-        const tbody = document.getElementById('customsTableBody');
-        tbody.innerHTML = '';
-
-        if (!Array.isArray(data) || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">ពុំមានទិន្នន័យប្រព័ន្ធគយទេ</td></tr>`;
-            return;
-        }
-
-        data.forEach((item, index) => {
-            let statusBadge = 'bg-secondary';
-            if (item.system_status === 'Completed') statusBadge = 'bg-success';
-            else if (item.system_status === 'Processing') statusBadge = 'bg-primary';
-            else if (item.system_status === 'Pending') statusBadge = 'bg-warning text-dark';
-            else if (item.system_status === 'Error') statusBadge = 'bg-danger';
-
-            const row = `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td class="fw-bold text-primary">${item.sys_code}</td>
-                    <td>${item.company_name}</td>
-                    <td><span class="badge bg-dark">${item.transaction_type}</span></td>
-                    <td>${item.entry_date ? item.entry_date.split('T')[0] : '-'}</td>
-                    <td>${item.operator_name}</td>
-                    <td>${item.reference_number || '-'}</td>
-                    <td><span class="badge ${statusBadge}">${item.system_status}</span></td>
-                    <td class="no-print">
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editCustomsData(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCustomsData(${item.id})" title="លុប"><i class="fa-solid fa-trash"></i></button>
-                    </td>
-                </tr>
-            `;
-            tbody.innerHTML += row;
-        });
-    }
-
-    function filterCustomsData() {
-        const keyword = document.getElementById('searchInput').value.toLowerCase();
-        const fromDate = document.getElementById('fromDate').value;
-        const toDate = document.getElementById('toDate').value;
-
-        const filtered = customsList.filter(item => {
-            const matchesKeyword = 
-                (item.sys_code && item.sys_code.toLowerCase().includes(keyword)) || 
-                (item.company_name && item.company_name.toLowerCase().includes(keyword));
-
-            let matchesDate = true;
-            if (item.entry_date) {
-                const itemDate = item.entry_date.split('T')[0];
-                if (fromDate && itemDate < fromDate) matchesDate = false;
-                if (toDate && itemDate > toDate) matchesDate = false;
-            } else if (fromDate || toDate) {
-                matchesDate = false;
-            }
-
-            return matchesKeyword && matchesDate;
-        });
-
-        renderTable(filtered);
-    }
-
-    function resetFilter() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('fromDate').value = '';
-        document.getElementById('toDate').value = '';
-        renderTable(customsList);
     }
 
     function resetForm() {
@@ -555,7 +319,6 @@
                 alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានចុះបញ្ជីទិន្នន័យប្រព័ន្ធគយថ្មីដោយជោគជ័យ!');
                 resetForm();
                 loadDocumentDropdown();
-                loadCustomsData();
             } else {
                 alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
             }
@@ -563,46 +326,6 @@
             console.error('Error submitting form:', err);
             alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
         }
-    });
-
-    function editCustomsData(id) {
-        const item = customsList.find(d => d.id === id);
-        if (!item) return;
-
-        document.getElementById('editId').value = item.id;
-        document.getElementById('sys_code').value = item.sys_code;
-        document.getElementById('reference_number').value = item.reference_number || '';
-        document.getElementById('company_name').value = item.company_name; // កំណត់ឈ្មោះក្រុមហ៊ុនតាមទិន្នន័យដែលមានស្រាប់
-        document.getElementById('transaction_type').value = item.transaction_type;
-        document.getElementById('entry_date').value = item.entry_date ? item.entry_date.split('T')[0] : '';
-        document.getElementById('system_status').value = item.system_status;
-        document.getElementById('operator_name').value = item.operator_name;
-        document.getElementById('customs_office').value = item.customs_office || '';
-        document.getElementById('remarks').value = item.remarks || '';
-
-        document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យប្រព័ន្ធគយ`;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    async function deleteCustomsData(id) {
-        if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?")) {
-            try {
-                const response = await fetch(`/api/customs-system-data/${id}`, { method: 'DELETE' });
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    alert('បានលុបដោយជោគជ័យ!');
-                    loadCustomsData();
-                } else {
-                    alert('មិនអាចលុបបានទេ!');
-                }
-            } catch (err) {
-                console.error('Error deleting record:', err);
-            }
-        }
-    }
-
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        filterCustomsData();
     });
 </script>
 
