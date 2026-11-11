@@ -42,8 +42,10 @@ const pool = new Pool({
 });
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// 🌟 កំណត់ Limit 50mb ដើម្បីការពារ Error 413 (Payload Too Large) ពេលបញ្ជូនទិន្នន័យធំៗ
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/views', express.static(path.join(__dirname, 'views')));
 app.use('/uploads', express.static(uploadDir)); // 🌟 សម្រាប់ឱ្យ Frontend អាចចូលទៅយកឯកសារ PDF ដែលបាន Upload
@@ -1934,7 +1936,7 @@ app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error updating customs document:', err);
-        res.status(500).json({ success: false, error: 'Server error' });
+        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -3205,7 +3207,7 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
                     success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចយកមកជួសជុលបានទេ!` 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចយកមកជួសជុលได้ទេ!` 
                 });
             }
         }
