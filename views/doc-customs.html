@@ -322,19 +322,26 @@
             </a>
         </div>
 
-        <!-- ផ្នែកស្វែងរក, From Date, To Date និងប៊ូតុងស្មើគ្នា -->
+        <!-- ផ្នែកស្វែងរក, ត្រងតាមច្រកទ្វារ, From Date, To Date និងប៊ូតុង -->
         <div class="filter-action-bar no-print">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label class="form-label">ស្វែងរក (កូដប្រព័ន្ធ / ក្រុមហ៊ុន):</label>
                     <input type="text" class="form-control" id="searchInput" placeholder="វាយស្វែងរក...">
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">កាលបរិច្ឆេទចាប់ពី (From Date):</label>
+                <!-- 🌟 បន្ថែមប្រអប់ត្រងតាម ច្រកទ្វារ ឬការិយាល័យគយ -->
+                <div class="col-md-2">
+                    <label class="form-label">ច្រកទ្វារ/ការិយាល័យ:</label>
+                    <select class="form-select" id="filterOffice" onchange="filterCustomsData()">
+                        <option value="">-- ទាំងអស់ --</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">កាលបរិច្ឆេទចាប់ពី (From):</label>
                     <input type="date" class="form-control" id="fromDate">
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label">ដល់កាលបរិច្ឆេទ (To Date):</label>
+                <div class="col-md-2">
+                    <label class="form-label">ដល់កាលបរិច្ឆេទ (To):</label>
                     <input type="date" class="form-control" id="toDate">
                 </div>
                 
@@ -442,10 +449,25 @@
             const response = await fetch('/api/customs-system-data');
             customsList = await response.json();
             renderTable(customsList);
+            populateOfficeDropdown(customsList); // 🌟 បំពេញបញ្ជីច្រកទ្វារក្នុង Dropdown ស្វ័យប្រវត្តិ
         } catch (err) {
             console.error('Error loading customs system data:', err);
             document.getElementById('customsTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
         }
+    }
+
+    // 🌟 មុខងារបំពេញបញ្ជីច្រកទ្វារគយក្នុង Dropdown ត្រង
+    function populateOfficeDropdown(data) {
+        const officeSelect = document.getElementById('filterOffice');
+        const offices = [...new Set(data.map(item => item.customs_office).filter(Boolean))];
+        
+        officeSelect.innerHTML = '<option value="">-- ទាំងអស់ --</option>';
+        offices.forEach(office => {
+            const option = document.createElement('option');
+            option.value = office;
+            option.textContent = office;
+            officeSelect.appendChild(option);
+        });
     }
 
     function renderTable(data) {
@@ -486,6 +508,7 @@
 
     function filterCustomsData() {
         const keyword = document.getElementById('searchInput').value.toLowerCase();
+        const selectedOffice = document.getElementById('filterOffice').value; // 🌟 យកតម្លៃច្រកទ្វារដែលបានជ្រើសរើស
         const fromDate = document.getElementById('fromDate').value;
         const toDate = document.getElementById('toDate').value;
 
@@ -493,6 +516,9 @@
             const matchesKeyword = 
                 (item.sys_code && item.sys_code.toLowerCase().includes(keyword)) || 
                 (item.company_name && item.company_name.toLowerCase().includes(keyword));
+
+            // 🌟 ពិនិត្យការផ្គូផ្គងច្រកទ្វារគយ
+            const matchesOffice = !selectedOffice || item.customs_office === selectedOffice;
 
             let matchesDate = true;
             if (item.entry_date) {
@@ -503,7 +529,7 @@
                 matchesDate = false;
             }
 
-            return matchesKeyword && matchesDate;
+            return matchesKeyword && matchesOffice && matchesDate;
         });
 
         renderTable(filtered);
@@ -511,6 +537,7 @@
 
     function resetFilter() {
         document.getElementById('searchInput').value = '';
+        document.getElementById('filterOffice').value = ''; // 🌟 ផ្ដល់តម្លៃច្រកទ្វារឱ្យនៅទទេវិញ
         document.getElementById('fromDate').value = '';
         document.getElementById('toDate').value = '';
         renderTable(customsList);
@@ -572,7 +599,7 @@
         document.getElementById('editId').value = item.id;
         document.getElementById('sys_code').value = item.sys_code;
         document.getElementById('reference_number').value = item.reference_number || '';
-        document.getElementById('company_name').value = item.company_name; // កំណត់ឈ្មោះក្រុមហ៊ុនតាមទិន្នន័យដែលមានស្រាប់
+        document.getElementById('company_name').value = item.company_name;
         document.getElementById('transaction_type').value = item.transaction_type;
         document.getElementById('entry_date').value = item.entry_date ? item.entry_date.split('T')[0] : '';
         document.getElementById('system_status').value = item.system_status;
