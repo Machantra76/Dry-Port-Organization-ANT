@@ -228,7 +228,8 @@
             <div class="row g-3">
                 <div class="col-md-6">
                     <label class="form-label">លេខឯកសារ / លេខប្រកាសជំនាញ (Document / Declaration No.):</label>
-                    <input type="text" class="form-control" id="document_number" placeholder="ឧ. DECL-2026-00123" required>
+                    <!-- 💡 ដក required ចេញ ដើម្បីអាចទុកទំនេរមិនបាច់បញ្ចូលក៏បាន -->
+                    <input type="text" class="form-control" id="document_number" placeholder="ឧ. DECL-2026-00123 (មិនบังคับ)">
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">ឈ្មោះក្រុមហ៊ុន ឬម្ចាស់ទំនិញ (Company / Owner Name):</label>
@@ -392,7 +393,6 @@
             else if (item.status === 'Pending') statusBadge = 'bg-warning text-dark';
             else if (item.status === 'Rejected') statusBadge = 'bg-danger';
 
-            // 🌟 ពិនិត្យមើល has_pdf និងតភ្ជាប់ទៅកាន់ API Endpoint របស់ ID ផ្ទាល់ (បើមានបង្ហាញប៊ូតុងពណ៌បៃតង បើគ្មានបង្ហាញពណ៌ប្រផេះ Disabled)
             let downloadBtn = '';
             if (item.has_pdf) {
                 downloadBtn = `<a href="/api/customs-documents/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
@@ -400,10 +400,11 @@
                 downloadBtn = `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
             }
 
+            // 💡 បានលុបប៊ូតុងលុប (Delete Button) ចេញពីទីនេះ
             const row = `
                 <tr>
                     <td>${index + 1}</td>
-                    <td class="fw-bold text-primary">${item.document_number}</td>
+                    <td class="fw-bold text-primary">${item.document_number || '-'}</td>
                     <td>${item.company_name}</td>
                     <td><span class="badge bg-secondary">${item.document_type}</span></td>
                     <td>${item.document_date ? item.document_date.split('T')[0] : '-'}</td>
@@ -412,8 +413,7 @@
                     <td><span class="badge ${statusBadge}">${item.status}</span></td>
                     <td class="no-print action-column">
                         ${downloadBtn}
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="editDocument(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteDocument(${item.id})" title="លុប"><i class="fa-solid fa-trash"></i></button>
+                        <button class="btn btn-sm btn-outline-primary" onclick="editDocument(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
                     </td>
                 </tr>
             `;
@@ -464,7 +464,21 @@
         e.preventDefault();
 
         const editId = document.getElementById('editId').value;
+        const docNumber = document.getElementById('document_number').value.trim();
         const pdfFile = document.getElementById('pdf_file').files[0];
+
+        // 💡 ពិនិត្យមិនឱ្យស្ទួនលេខឯកសារ (document_number) (ប្រសិនបើមានការបញ្ចូល)
+        if (docNumber !== '') {
+            const existingMatch = documentDataList.find(item => 
+                item.document_number && 
+                item.document_number.trim().toLowerCase() === docNumber.toLowerCase() && 
+                item.id != editId
+            );
+            if (existingMatch) {
+                alert(`លេខឯកសារ / លេខប្រកាស "${docNumber}" នេះមានរួចហើយក្នុងប្រព័ន្ធ! សូមប្រើប្រាស់លេខផ្សេងដើម្បីជៀសវាងការស្ទួន។`);
+                return;
+            }
+        }
 
         if (pdfFile && pdfFile.size > 10 * 1024 * 1024) {
             alert('ឯកសារ PDF ធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំទាបជាង 10MB។');
@@ -472,7 +486,7 @@
         }
 
         const formData = new FormData();
-        formData.append('document_number', document.getElementById('document_number').value);
+        formData.append('document_number', docNumber);
         formData.append('company_name', document.getElementById('company_name').value);
         formData.append('document_type', document.getElementById('document_type').value);
         formData.append('document_date', document.getElementById('document_date').value);
@@ -518,7 +532,7 @@
         if (!item) return;
 
         document.getElementById('editId').value = item.id;
-        document.getElementById('document_number').value = item.document_number;
+        document.getElementById('document_number').value = item.document_number || '';
         document.getElementById('company_name').value = item.company_name;
         document.getElementById('document_type').value = item.document_type;
         document.getElementById('document_date').value = item.document_date ? item.document_date.split('T')[0] : '';
@@ -529,23 +543,6 @@
 
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យ`;
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    async function deleteDocument(id) {
-        if (confirm("តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?")) {
-            try {
-                const response = await fetch(`/api/customs-documents/${id}`, { method: 'DELETE' });
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    alert('បានលុបដោយជោគជ័យ!');
-                    loadDocuments();
-                } else {
-                    alert('មិនអាចលុបបានទេ!');
-                }
-            } catch (err) {
-                console.error('Error deleting document record:', err);
-            }
-        }
     }
 
     document.getElementById('searchInput').addEventListener('keyup', function() {
