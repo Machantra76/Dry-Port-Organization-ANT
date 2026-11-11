@@ -392,13 +392,10 @@
             else if (item.status === 'Pending') statusBadge = 'bg-warning text-dark';
             else if (item.status === 'Rejected') statusBadge = 'bg-danger';
 
+            // 🌟 ឆែកមើល has_pdf និងហៅទៅកាន់ API ID សម្រាប់បង្ហាញប៊ូតុង PDF
             let downloadBtn = '';
-            if (item.pdf_path) {
-                let pdfHref = item.pdf_path;
-                if (!pdfHref.startsWith('data:') && !pdfHref.startsWith('http')) {
-                    pdfHref = `${window.location.origin}${item.pdf_path}`;
-                }
-                downloadBtn = `<a href="${pdfHref}" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
+            if (item.has_pdf) {
+                downloadBtn = `<a href="/api/customs-documents/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
             }
 
             const row = `
@@ -461,7 +458,6 @@
         document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ`;
     }
 
-    // 🌟 កែប្រែប្រើប្រាស់ FormData ជំនួសឱ្យ JSON ដើម្បីផ្ញើឯកសារ PDF ទៅកាន់ Multer របស់ Server
     document.getElementById('documentForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -493,7 +489,7 @@
 
             const response = await fetch(url, {
                 method: method,
-                body: formData // មិនបាច់ដាក់ headers 'Content-Type': 'application/json' ទេ ព្រោះ FormData កំណត់ multipart/form-data ให้อัตโนมัติ
+                body: formData 
             });
 
             const contentType = response.headers.get("content-type");
@@ -511,7 +507,7 @@
             }
         } catch (err) {
             console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server ឬទំហំឯកសារធំពេក: ' + err.message);
+            alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ Server ឬទំហំឯកសារធំពេក: ' + err.message);
         }
     });
 
