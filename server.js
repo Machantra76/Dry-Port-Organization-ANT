@@ -2,9 +2,38 @@ const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
 const cors = require('cors');
+const multer = require('multer'); // 🌟 បន្ថែមไลบรารี multer សម្រាប់គ្រប់គ្រងការ Upload ឯកសារ PDF
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// 🌟 កំណត់កន្លែងរក្សាទុក Folder សម្រាប់ File Uploads (PDF) និងបង្កើតស្វ័យប្រវត្តបើគ្មាន
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// 🌟 កំណត់ការកំណត់ Multer សម្រាប់រក្សាទុកឯកសារ PDF
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/');
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, uniqueSuffix + '-' + file.originalname);
+    }
+});
+const upload = multer({ 
+    storage: storage,
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'application/pdf') {
+            cb(null, true);
+        } else {
+            cb(new Error('សូមអនុញ្ញាតតែឯកសារប្រភេទ PDF ប៉ុណ្ណោះ!'), false);
+        }
+    }
+});
 
 // ការតភ្ជាប់ PostgreSQL Database
 const pool = new Pool({
@@ -17,6 +46,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/views', express.static(path.join(__dirname, 'views')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // 🌟 បើក Static Path សម្រាប់ចូលមើល/ទាញយក PDF
+
 async function processPendingSchedules() {
     try {
         const result = await pool.query(
@@ -42,6 +73,7 @@ async function processPendingSchedules() {
         return { count: 0, success: 0, error: err.message };
     }
 }
+
 app.get('/api/run-cron', async (req, res) => {
     try {
         const nowUTC = new Date();
@@ -484,7 +516,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management)
+        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management) - 🌟 បានបន្ថែម column pdf_path ទីនេះ
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_system_data (
                 id SERIAL PRIMARY KEY,
@@ -497,9 +529,12 @@ async function initializeDatabase() {
                 reference_number VARCHAR(100),
                 customs_office VARCHAR(150),
                 remarks TEXT,
+                pdf_path VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        // 🌟 ធានាថា column pdf_path ត្រូវបាន add បើ table មានរួចហើយ
+        await client.query(`ALTER TABLE customs_system_data ADD COLUMN IF NOT EXISTS pdf_path VARCHAR(255);`);
 
         // ២៩. តារាងអ្នកកាន់ឯកសារគយ (Document Controller / Handler)
         await client.query(`
@@ -606,7 +641,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣៥. តារាងគ្រប់គ្រងវិក្កយបត្រ (Tax & Commercial Invoices) - 🌟 បានបន្ថែម address_kh នៅទីនេះ
+        // ៣៥. តារាងគ្រប់គ្រងវិក្កយបត្រ (Tax & Commercial Invoices)
         await client.query(`
             CREATE TABLE IF NOT EXISTS tax_invoices (
                 id SERIAL PRIMARY KEY,
@@ -648,7 +683,7 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS manifest_number VARCHAR(100);`);
         await client.query(`ALTER TABLE customs_permit_records ADD COLUMN IF NOT EXISTS doc_type VARCHAR(10);`);
 
-        // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត (ប្រសិនបើទិន្នន័យទទេ)
+        // បញ្ចូលគណនី Default ចូល Database ស្វ័យប្រវត្ត
         const checkUser = await client.query('SELECT COUNT(*) FROM system_users');
         if (parseInt(checkUser.rows[0].count) === 0) {
             await client.query(`
@@ -730,7 +765,7 @@ if (RENDER_EXTERNAL_URL) {
 }
 
 // ==========================================
-// API Routes: Register
+// API Routes: Register & Users
 // ==========================================
 app.post('/api/auth/register', async (req, res) => {
     const { username, password, full_name, role, dept_id } = req.body;
@@ -766,9 +801,6 @@ app.post('/api/users', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: User Management
-// ==========================================
 app.get('/api/users', async (req, res) => {
     try {
         const result = await pool.query('SELECT id, username, full_name, role, dept_id, status, created_at FROM system_users ORDER BY id DESC');
@@ -779,10 +811,8 @@ app.get('/api/users', async (req, res) => {
     }
 });
 
-
-
 // ==========================================
-// API Routes: ប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Logs APIs)
+// API Routes: Activity Logs
 // ==========================================
 app.get('/api/fleet/cargo-gates/:id/activities', async (req, res) => {
     const { id } = req.params;
@@ -807,7 +837,7 @@ app.post('/api/fleet/activity-logs', async (req, res) => {
             INSERT INTO activity_logs (username, action_type, details) 
             VALUES ($1, $2, $3) RETURNING *;
         `;
-        const values = [username || 'បុគ្គលិកប្រតិបត្តិการ', action_type, details];
+        const values = [username || 'បុគ្គលិកប្រតិបត្តិការ', action_type, details];
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
@@ -817,7 +847,7 @@ app.post('/api/fleet/activity-logs', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: គ្រប់គ្រងបញ្ជីវិក្កយបត្រ (Invoice List APIs)
+// API Routes: Tax Invoices
 // ==========================================
 app.get('/api/tax-invoices', async (req, res) => {
     try {
@@ -864,9 +894,6 @@ app.get('/views/invoice-list.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'invoice-list.html'));
 });
 
-// ==========================================
-// API Routes: ស្ថិតិវិក្កយបត្រ និងការរក្សាទុកវិក្កយបត្រ (🌟 កែសម្រួលទទួល address_kh និង address)
-// ==========================================
 app.get('/api/invoices/stats', async (req, res) => {
     const { customerName } = req.query;
     if (!customerName) {
@@ -963,6 +990,9 @@ app.put('/api/tax-invoices/:id', async (req, res) => {
     }
 });
 
+// ==========================================
+// API Routes: Users & Expenses Updates
+// ==========================================
 app.put('/api/users/:id', async (req, res) => {
     const { id } = req.params;
     const { status, password, full_name, role, dept_id } = req.body;
@@ -996,9 +1026,6 @@ app.put('/api/users/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: កែប្រែ និងលុបចំណាយ (Expenses)
-// ==========================================
 app.put('/api/expenses/:id', async (req, res) => {
     const { id } = req.params;
     const { expense_date, category, description, amount, paid_to } = req.body;
@@ -1037,7 +1064,6 @@ app.delete('/api/expenses/:id', async (req, res) => {
     }
 });
 
-// Accounts Receivable updates
 app.put('/api/receivables/:id', async (req, res) => {
     const { id } = req.params;
     const { customer_name, amount, invoice_date, due_date, status, description } = req.body;
@@ -1076,7 +1102,6 @@ app.delete('/api/receivables/:id', async (req, res) => {
     }
 });
 
-// Revenue Updates
 app.put('/api/revenues/:id', async (req, res) => {
     const { id } = req.params;
     const { revenue_date, category, description, amount, received_by } = req.body;
@@ -1232,7 +1257,7 @@ app.delete('/api/fleet/cargo-gates/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Customs Permit & Document Control (BWH)
+// API Routes: Customs Permits
 // ==========================================
 app.get('/api/customs-permits', async (req, res) => {
     try {
@@ -1740,7 +1765,7 @@ app.delete('/api/document-handlers/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Customs System Data
+// API Routes: Customs System Data (🌟 កែសម្រួលទទួល File PDF Upload)
 // ==========================================
 app.get('/api/customs-system-data', async (req, res) => {
     try {
@@ -1752,32 +1777,48 @@ app.get('/api/customs-system-data', async (req, res) => {
     }
 });
 
-app.post('/api/customs-system-data', async (req, res) => {
+app.post('/api/customs-system-data', upload.single('pdf_file'), async (req, res) => {
     const { sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks } = req.body;
+    const pdf_path = req.file ? req.file.path : null; // 🌟 យក path របស់ File PDF មកသိမ်း
     try {
         const query = `
-            INSERT INTO customs_system_data (sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
+            INSERT INTO customs_system_data (sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, pdf_path)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
         `;
-        const values = [sys_code, company_name, transaction_type, entry_date, system_status || 'Pending', operator_name, reference_number, customs_office, remarks];
+        const values = [sys_code, company_name, transaction_type, entry_date, system_status || 'Pending', operator_name, reference_number, customs_office, remarks, pdf_path];
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error saving customs system data:', err);
-        res.status(500).json({ error: 'Server error (លេខកូដប្រព័ន្ធអាចមានរួចហើយ)' });
+        res.status(500).json({ success: false, error: 'Server error (លេខកូដប្រព័ន្ធអាចមានរួចហើយ)' });
     }
 });
 
-app.put('/api/customs-system-data/:id', async (req, res) => {
+app.put('/api/customs-system-data/:id', upload.single('pdf_file'), async (req, res) => {
     const { id } = req.params;
     const { sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks } = req.body;
+    
     try {
-        const query = `
-            UPDATE customs_system_data 
-            SET sys_code = $1, company_name = $2, transaction_type = $3, entry_date = $4, system_status = $5, operator_name = $6, reference_number = $7, customs_office = $8, remarks = $9
-            WHERE id = $10 RETURNING *;
-        `;
-        const values = [sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, id];
+        let query, values;
+        if (req.file) {
+            // ប្រសិនបើមាន upload file pdf ថ្មី
+            const pdf_path = req.file.path;
+            query = `
+                UPDATE customs_system_data 
+                SET sys_code = $1, company_name = $2, transaction_type = $3, entry_date = $4, system_status = $5, operator_name = $6, reference_number = $7, customs_office = $8, remarks = $9, pdf_path = $10
+                WHERE id = $11 RETURNING *;
+            `;
+            values = [sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, pdf_path, id];
+        } else {
+            // បើគ្មាន file ថ្មីទេ រក្សាទុក pdf_path ចាស់ដដែល
+            query = `
+                UPDATE customs_system_data 
+                SET sys_code = $1, company_name = $2, transaction_type = $3, entry_date = $4, system_status = $5, operator_name = $6, reference_number = $7, customs_office = $8, remarks = $9
+                WHERE id = $10 RETURNING *;
+            `;
+            values = [sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, id];
+        }
+
         const result = await pool.query(query, values);
 
         if (result.rows.length === 0) {
@@ -1787,13 +1828,21 @@ app.put('/api/customs-system-data/:id', async (req, res) => {
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         console.error('Error updating customs system data:', err);
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json({ success: false, error: 'Server error' });
     }
 });
 
 app.delete('/api/customs-system-data/:id', async (req, res) => {
     const { id } = req.params;
     try {
+        // ស្រង់យក path file មកលុបចេញពី server ផងដើម្បីកុំឱ្យធ្ងន់ storage
+        const checkFile = await pool.query('SELECT pdf_path FROM customs_system_data WHERE id = $1', [id]);
+        if (checkFile.rows.length > 0 && checkFile.rows[0].pdf_path) {
+            if (fs.existsSync(checkFile.rows[0].pdf_path)) {
+                fs.unlinkSync(checkFile.rows[0].pdf_path);
+            }
+        }
+
         await pool.query('DELETE FROM customs_system_data WHERE id = $1', [id]);
         res.json({ success: true, message: 'Deleted successfully' });
     } catch (err) {
@@ -2365,7 +2414,7 @@ app.put('/api/payroll/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Revenues
+// API Routes: Revenues, Accounts Receivable, Expenses
 // ==========================================
 app.get('/api/revenues', async (req, res) => {
     const { from, to } = req.query;
@@ -2400,9 +2449,6 @@ app.post('/api/revenues', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Accounts Receivable
-// ==========================================
 app.get('/api/receivables', async (req, res) => {
     const { from, to } = req.query;
     try {
@@ -2436,9 +2482,6 @@ app.post('/api/receivables', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Expenses
-// ==========================================
 app.get('/api/expenses', async (req, res) => {
     const { from, to } = req.query;
     try {
@@ -2472,9 +2515,6 @@ app.post('/api/expenses', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Financial Summary
-// ==========================================
 app.get('/api/financial/summary', async (req, res) => {
     const { from, to } = req.query;
     try {
@@ -2519,7 +2559,7 @@ app.get('/api/financial/summary', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Fleet Vehicles
+// API Routes: Fleet, Vehicles, Drivers, Dispatches, Fuel, Maintenance, Plans, Containers, Yard, Repairs, Gate-Out, Yard-Ops, Security, WMS
 // ==========================================
 app.get('/api/fleet/vehicles', async (req, res) => {
     try {
@@ -2544,9 +2584,6 @@ app.post('/api/fleet/vehicles', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Drivers
-// ==========================================
 app.get('/api/fleet/drivers', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM drivers ORDER BY id DESC');
@@ -2570,9 +2607,6 @@ app.post('/api/fleet/drivers', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Transport Dispatches
-// ==========================================
 app.get('/api/fleet/dispatches', async (req, res) => {
     const { from, to, search } = req.query;
     try {
@@ -2613,13 +2647,8 @@ app.post('/api/fleet/dispatches', async (req, res) => {
             `;
             const result = await client.query(query, [dispatch_code, vehicle_code, driver_name, destination, dispatch_date, status || 'Dispatched', notes]);
 
-            await client.query(`
-                UPDATE fleet_vehicles SET status = 'On Mission' WHERE plate_number = $1
-            `, [vehicle_code]);
-
-            await client.query(`
-                UPDATE drivers SET status = 'On Duty' WHERE full_name = $1
-            `, [driver_name]);
+            await client.query(`UPDATE fleet_vehicles SET status = 'On Mission' WHERE plate_number = $1`, [vehicle_code]);
+            await client.query(`UPDATE drivers SET status = 'On Duty' WHERE full_name = $1`, [driver_name]);
 
             await client.query('COMMIT');
             res.status(201).json({ success: true, data: result.rows[0] });
@@ -2657,9 +2686,6 @@ app.put('/api/fleet/dispatches/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Fuel Logs
-// ==========================================
 app.get('/api/fleet/fuel', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
     try {
@@ -2705,9 +2731,6 @@ app.post('/api/fleet/fuel', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Maintenance Logs
-// ==========================================
 app.get('/api/fleet/maintenance', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
     try {
@@ -2748,23 +2771,14 @@ app.post('/api/fleet/maintenance', async (req, res) => {
             `;
             const mStatus = status || 'Completed';
             const result = await client.query(query, [
-                vehicle_code, 
-                maintenance_date, 
-                service_type, 
-                description, 
-                parseFloat(cost) || 0, 
-                service_provider, 
-                mStatus
+                vehicle_code, maintenance_date, service_type, description, 
+                parseFloat(cost) || 0, service_provider, mStatus
             ]);
 
             if (mStatus === 'In Progress') {
-                await client.query(`
-                    UPDATE fleet_vehicles SET status = 'In Maintenance' WHERE vehicle_code = $1
-                `, [vehicle_code]);
+                await client.query(`UPDATE fleet_vehicles SET status = 'In Maintenance' WHERE vehicle_code = $1`, [vehicle_code]);
             } else {
-                await client.query(`
-                    UPDATE fleet_vehicles SET status = 'Available' WHERE vehicle_code = $1
-                `, [vehicle_code]);
+                await client.query(`UPDATE fleet_vehicles SET status = 'Available' WHERE vehicle_code = $1`, [vehicle_code]);
             }
 
             await client.query('COMMIT');
@@ -2780,9 +2794,6 @@ app.post('/api/fleet/maintenance', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Transport Plans
-// ==========================================
 app.get('/api/fleet/transport-plans', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
     try {
@@ -2821,19 +2832,9 @@ app.post('/api/fleet/transport-plans', async (req, res) => {
                 INSERT INTO transport_plans (cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes, status) 
                 VALUES ($1, $2, $3, $4, $5, $6, $7, 'Planned') RETURNING *;
             `;
-            const result = await client.query(query, [
-                cargo_code, 
-                vehicle_code, 
-                origin, 
-                destination, 
-                departure_date, 
-                driver_name, 
-                notes
-            ]);
+            const result = await client.query(query, [cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes]);
 
-            await client.query(`
-                UPDATE fleet_vehicles SET status = 'On Mission' WHERE vehicle_code = $1
-            `, [vehicle_code]);
+            await client.query(`UPDATE fleet_vehicles SET status = 'On Mission' WHERE vehicle_code = $1`, [vehicle_code]);
 
             await client.query('COMMIT');
             res.status(201).json({ success: true, data: result.rows[0] });
@@ -2871,9 +2872,6 @@ app.put('/api/fleet/transport-plans/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Damaged Containers
-// ==========================================
 app.get('/api/fleet/damaged-containers', async (req, res) => {
     const { from, to, severity_level, shipping_line } = req.query;
     try {
@@ -2919,16 +2917,9 @@ app.post('/api/fleet/damaged-containers', async (req, res) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
         `;
         const result = await pool.query(query, [
-            container_number, 
-            container_size || "40'", 
-            container_type || "DC", 
-            shipping_line || null, 
-            inspection_date, 
-            damage_location, 
-            severity_level, 
-            inspector_name, 
-            description, 
-            status || 'Pending Repair'
+            container_number, container_size || "40'", container_type || "DC", 
+            shipping_line || null, inspection_date, damage_location, severity_level, 
+            inspector_name, description, status || 'Pending Repair'
         ]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
@@ -2968,9 +2959,6 @@ app.put('/api/fleet/damaged-containers/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Container Yard Locations
-// ==========================================
 app.get('/api/fleet/container-yard', async (req, res) => {
     const { block_code, status, shipping_line } = req.query;
     try {
@@ -3013,16 +3001,9 @@ app.post('/api/fleet/container-yard', async (req, res) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
         `;
         const result = await pool.query(query, [
-            container_number, 
-            container_size || "40'", 
-            container_type || "DC", 
-            shipping_line || null, 
-            block_code, 
-            parseInt(row_number) || 1, 
-            parseInt(tier_number) || 1, 
-            status || 'Stored', 
-            updated_date, 
-            notes
+            container_number, container_size || "40'", container_type || "DC", 
+            shipping_line || null, block_code, parseInt(row_number) || 1, 
+            parseInt(tier_number) || 1, status || 'Stored', updated_date, notes
         ]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
@@ -3060,9 +3041,6 @@ app.put('/api/fleet/container-yard/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Container Repair Logs
-// ==========================================
 app.get('/api/fleet/container-repairs', async (req, res) => {
     const { status, container_number } = req.query;
     try {
@@ -3124,19 +3102,9 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *;
         `;
         const result = await client.query(query, [
-            container_number, 
-            container_size || "40'", 
-            container_type || "DC", 
-            shipping_line || null, 
-            repair_date, 
-            block_code || null, 
-            parseInt(row_number) || 1, 
-            parseInt(tier_number) || 1, 
-            repair_type, 
-            parseFloat(cost) || 0, 
-            technician_name, 
-            repairStatus, 
-            notes
+            container_number, container_size || "40'", container_type || "DC", shipping_line || null, 
+            repair_date, block_code || null, parseInt(row_number) || 1, parseInt(tier_number) || 1, 
+            repair_type, parseFloat(cost) || 0, technician_name, repairStatus, notes
         ]);
 
         const yardStatus = repairStatus === 'Completed' ? 'Stored' : 'In Repair';
@@ -3207,9 +3175,6 @@ app.put('/api/fleet/container-repairs/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Container Gate-Out
-// ==========================================
 app.get('/api/fleet/container-gate-out', async (req, res) => {
     const { from, to, container_number } = req.query;
     try {
@@ -3258,7 +3223,7 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
                     success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out បានទេ!` 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out ได้ទេ!` 
                 });
             }
         }
@@ -3269,17 +3234,9 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *;
         `;
         const result = await client.query(query, [
-            container_number, 
-            container_size || "40'", 
-            container_type || "DC", 
-            shipping_line || null, 
-            gate_out_date || new Date(), 
-            truck_plate_number, 
-            driver_name, 
-            destination, 
-            bill_of_lading, 
-            released_by, 
-            notes
+            container_number, container_size || "40'", container_type || "DC", shipping_line || null, 
+            gate_out_date || new Date(), truck_plate_number, driver_name, destination, 
+            bill_of_lading, released_by, notes
         ]);
 
         await client.query(`
@@ -3332,9 +3289,6 @@ app.put('/api/fleet/container-gate-out/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Yard Operations
-// ==========================================
 app.get('/api/fleet/yard-operations', async (req, res) => {
     try {
         const query = 'SELECT * FROM yard_operations ORDER BY operation_date DESC';
@@ -3422,9 +3376,6 @@ app.delete('/api/fleet/yard-operations/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: Security Logs
-// ==========================================
 app.get('/api/fleet/security-logs', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM security_logs ORDER BY id DESC');
@@ -3486,9 +3437,6 @@ app.delete('/api/fleet/security-logs/:id', async (req, res) => {
     }
 });
 
-// ==========================================
-// API Routes: WMS / OMS
-// ==========================================
 app.get('/api/wms-oms', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM wms_oms_records ORDER BY id DESC');
