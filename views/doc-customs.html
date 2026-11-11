@@ -259,11 +259,10 @@
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">លេខកូដប្រព័ន្ធ / សេចក្តីប្រកាស ( System / Declaration Code):</label>
-                    <!-- 💡 ដក required ចេញ ដើម្បីអាចទុកទំនេរមិនបាច់បញ្ចូលក៏បាន -->
                     <input type="text" class="form-control" id="sys_code" placeholder="ឧ. SYS-DECL-2026-001 (មិនบังคับ)">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">ប្រភេទប្រតិបត្តិការប្រព័ន្ធ (Transaction Type):</label>
+                    <label class="form-label">ប្រភេទប្រតិបត្តិการប្រព័ន្ធ (Transaction Type):</label>
                     <select class="form-select" id="transaction_type" required>
                         <option value="ASYCUDA Input">ការបញ្ចូលទិន្នន័យក្នុងប្រព័ន្ធ ASYCUDA</option>
                         <option value="Manifest Registration">ការចុះបញ្ជីទំនិញនាំចូល/ចេញ (Manifest)</option>
@@ -301,7 +300,7 @@
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">កំណត់សម្គាល់បន្ថែម (Remarks / Notes):</label>
-                    <textarea class="form-control" id="remarks" rows="2" placeholder="បញ្ជាក់ព័ត៌មានលម្អិតបន្ថែមពីការបញ្ចូលទិន្នន័យ..."></textarea>
+                    <textarea class="form-control" id="remarks" rows="2" placeholder="បញ្ជាក់ព័ត៌មានលម្អិតបន្ថែមពីการបញ្ចូលទិន្នន័យ..."></textarea>
                 </div>
                 
                 <!-- ប៊ូតុងរក្សាទុក និង ចុះបញ្ជីថ្មី -->
@@ -498,7 +497,6 @@
                 downloadBtn = `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
             }
 
-            // 💡 បានលុបប៊ូតុងលុប (Delete Button) ចេញពីទីនេះ
             const row = `
                 <tr>
                     <td>${index + 1}</td>
@@ -569,19 +567,6 @@
         const editId = document.getElementById('editId').value;
         const sysCode = document.getElementById('sys_code').value.trim();
         const pdfFile = document.getElementById('pdf_file').files[0];
-
-        // 💡 ពិនិត្យមិនឱ្យស្ទួនកូដប្រព័ន្ធ (sys_code) (ប្រសិនបើមានការបញ្ចូល sys_code)
-        if (sysCode !== '') {
-            const existingMatch = customsList.find(item => 
-                item.sys_code && 
-                item.sys_code.trim().toLowerCase() === sysCode.toLowerCase() && 
-                item.id != editId
-            );
-            if (existingMatch) {
-                alert(`លេខកូដប្រព័ន្ធ "${sysCode}" នេះមានរួចហើយក្នុងប្រព័ន្ធ! សូមប្រើប្រាស់កូដផ្សេងដើម្បីជៀសវាងការស្ទួន។`);
-                return;
-            }
-        }
 
         if (pdfFile && pdfFile.size > 10 * 1024 * 1024) {
             alert('ឯកសារ PDF ធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំទាបជាង 10MB។');
