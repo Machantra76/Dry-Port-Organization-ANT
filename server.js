@@ -1832,51 +1832,7 @@ app.post('/api/customs-documents', async (req, res) => {
         res.status(500).json({ error: 'Server error (លេខឯកសារអាចមានរួចហើយ)' });
     }
 });
-app.post('/api/customs-documents', upload.single('pdf_file'), async (req, res) => {
-    const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
-    
-    try {
-        let pdfUrl = null;
-        
-        // ពិនិត្យមើលថាតើ User បាន Upload ไฟล์ PDF មកជាមួយដែរឬទេ?
-        if (req.file) {
-            // ហៅ function សម្រាប់ Upload ទៅកាន់ Cloud Hosting (ឧទាហរណ៍: Cloudinary)
-            pdfUrl = await uploadPdfToHosting(req.file.buffer); 
-        }
 
-        // คำสั่ง INSERT ចូល Database PostgreSQL រួមទាំង pdfUrl
-        const query = `
-            INSERT INTO customs_documents 
-            (document_number, company_name, document_type, document_date, status, officer_name, reference_no, pdf_url, notes)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
-            RETURNING *;
-        `;
-        
-        const values = [
-            document_number, 
-            company_name, 
-            document_type, 
-            document_date, 
-            status || 'Pending', 
-            officer_name, 
-            reference_no || null, 
-            pdfUrl, // Link PDF ដែលបានពី Cloud
-            notes || null
-        ];
-
-        const result = await pool.query(query, values);
-        
-        res.json({ 
-            success: true, 
-            message: 'បានរក្សាទុកឯកសារ និង PDF ដោយជោគជ័យ!', 
-            data: result.rows[0] 
-        });
-
-    } catch (err) {
-        console.error('Error saving customs document with PDF:', err);
-        res.status(500).json({ success: false, error: 'Server error: ' + err.message });
-    }
-});
 
 app.put('/api/customs-documents/:id', async (req, res) => {
     const { id } = req.params;
