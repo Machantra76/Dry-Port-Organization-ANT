@@ -2,14 +2,29 @@ const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
 const cors = require('cors');
-const multer = require('multer'); // 🌟 ប្រើសម្រាប់ Upload ក្នុង Memory
+const multer = require('multer'); // 🌟 បន្ថែម Multer សម្រាប់ការ Upload ឯកសារ PDF
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 🌟 ប្រើ Memory Storage ដើម្បីកុំឱ្យបាត់ឯកសារពេល Server Restart (Render Free Tier)
+// 🌟 កំណត់ទីតាំងរក្សាទុកឯកសារ PDF Uploaded
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, uploadDir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, 'pdf-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
 const upload = multer({ 
-    storage: multer.memoryStorage(),
+    storage: storage,
     limits: { fileSize: 10 * 1024 * 1024 }, // កំណត់ទំហំអតិបរមា 10MB
     fileFilter: (req, file, cb) => {
         if (file.mimetype === 'application/pdf') {
@@ -31,6 +46,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/views', express.static(path.join(__dirname, 'views')));
+app.use('/uploads', express.static(uploadDir)); // 🌟 សម្រាប់ឱ្យ Frontend អាចចូលទៅយកឯកសារ PDF ដែលបាន Upload
 
 async function processPendingSchedules() {
     try {
@@ -57,7 +73,6 @@ async function processPendingSchedules() {
         return { count: 0, success: 0, error: err.message };
     }
 }
-
 app.get('/api/run-cron', async (req, res) => {
     try {
         const nowUTC = new Date();
@@ -496,13 +511,14 @@ async function initializeDatabase() {
                 officer_name VARCHAR(150) NOT NULL,
                 reference_no VARCHAR(100),
                 notes TEXT,
-                pdf_data TEXT,
+                pdf_path VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_data TEXT;`);
+        await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_url TEXT;`);
+        await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_path VARCHAR(255);`);
 
-        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management)
+        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management) - 🌟 เพิ่มคอลัมน์ pdf_path
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_system_data (
                 id SERIAL PRIMARY KEY,
@@ -515,11 +531,11 @@ async function initializeDatabase() {
                 reference_number VARCHAR(100),
                 customs_office VARCHAR(150),
                 remarks TEXT,
-                pdf_data TEXT,
+                pdf_path VARCHAR(255),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-        await client.query(`ALTER TABLE customs_system_data ADD COLUMN IF NOT EXISTS pdf_data TEXT;`);
+        await client.query(`ALTER TABLE customs_system_data ADD COLUMN IF NOT EXISTS pdf_path VARCHAR(255);`);
 
         // ២៩. តារាងអ្នកកាន់ឯកសារគយ (Document Controller / Handler)
         await client.query(`
@@ -615,7 +631,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ៣៤. តារាងប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Logs)
+        // ៣៤. តារាងប្រវត្តិសកម្មភាពប្រព័ន្ធ (Activity Logs) - PostgreSQL
         await client.query(`
             CREATE TABLE IF NOT EXISTS activity_logs (
                 id SERIAL PRIMARY KEY,
@@ -687,7 +703,7 @@ async function initializeDatabase() {
         }
 
         await client.query('COMMIT');
-        console.log('Database tables initialized successfully with Base64 PDF storage.');
+        console.log('Database tables initialized successfully.');
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('Error initializing database tables:', err);
@@ -739,8 +755,18 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
+// Self-Ping
+const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
+if (RENDER_EXTERNAL_URL) {
+    setInterval(() => {
+        axios.get(`${RENDER_EXTERNAL_URL}/api/run-cron`)
+            .then(() => console.log('🔄 [Self-Ping] Server triggered successfully!'))
+            .catch(err => console.error('⚠️ [Self-Ping Error]:', err.message));
+    }, 10 * 60 * 1000);
+}
+
 // ==========================================
-// API Routes: Register & Users
+// API Routes: Register
 // ==========================================
 app.post('/api/auth/register', async (req, res) => {
     const { username, password, full_name, role, dept_id } = req.body;
@@ -776,6 +802,9 @@ app.post('/api/users', async (req, res) => {
     }
 });
 
+// ==========================================
+// API Routes: User Management
+// ==========================================
 app.get('/api/users', async (req, res) => {
     try {
         const result = await pool.query('SELECT id, username, full_name, role, dept_id, status, created_at FROM system_users ORDER BY id DESC');
@@ -783,55 +812,6 @@ app.get('/api/users', async (req, res) => {
     } catch (err) {
         console.error('Error fetching users:', err);
         res.status(500).json({ error: 'Server error' });
-    }
-});
-
-app.put('/api/users/:id', async (req, res) => {
-    const { id } = req.params;
-    const { status, password, full_name, role, dept_id } = req.body;
-    try {
-        let query = 'UPDATE system_users SET ';
-        let fields = [];
-        let values = [];
-        let idx = 1;
-
-        if (status) { fields.push(`status = $${idx++}`); values.push(status); }
-        if (password) { fields.push(`password = $${idx++}`); values.push(password); }
-        if (full_name) { fields.push(`full_name = $${idx++}`); values.push(full_name); }
-        if (role) { fields.push(`role = $${idx++}`); values.push(role); }
-        if (dept_id) { fields.push(`dept_id = $${idx++}`); values.push(dept_id); }
-
-        if (fields.length === 0) {
-            return res.status(400).json({ success: false, error: 'គ្មានទិន្នន័យត្រូវកែប្រែទេ' });
-        }
-
-        query += fields.join(', ') + ` WHERE id = $${idx} RETURNING id, username, full_name, role, dept_id, status;`;
-        values.push(id);
-
-        const result = await pool.query(query, values);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញ User នេះទេ' });
-        }
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        console.error('Error updating user:', err);
-        res.status(500).json({ success: false, error: 'Server error' });
-    }
-});
-
-app.put('/api/users/:id/status', async (req, res) => {
-    const { id } = req.params;
-    const { status } = req.body;
-    try {
-        const query = 'UPDATE system_users SET status = $1 WHERE id = $2 RETURNING id, username, full_name, role, dept_id, status;';
-        const result = await pool.query(query, [status, id]);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញ User នេះទេ' });
-        }
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        console.error('Error updating user status:', err);
-        res.status(500).json({ success: false, error: 'Server error' });
     }
 });
 
@@ -911,6 +891,16 @@ app.delete('/api/tax-invoices/:id', async (req, res) => {
     }
 });
 
+app.get('/invoice-list.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'invoice-list.html'));
+});
+app.get('/views/invoice-list.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'views', 'invoice-list.html'));
+});
+
+// ==========================================
+// API Routes: ស្ថិតិវិក្កយបត្រ និងការរក្សាទុកវិក្កយបត្រ
+// ==========================================
 app.get('/api/invoices/stats', async (req, res) => {
     const { customerName } = req.query;
     if (!customerName) {
@@ -1007,8 +997,41 @@ app.put('/api/tax-invoices/:id', async (req, res) => {
     }
 });
 
+app.put('/api/users/:id', async (req, res) => {
+    const { id } = req.params;
+    const { status, password, full_name, role, dept_id } = req.body;
+    try {
+        let query = 'UPDATE system_users SET ';
+        let fields = [];
+        let values = [];
+        let idx = 1;
+
+        if (status) { fields.push(`status = $${idx++}`); values.push(status); }
+        if (password) { fields.push(`password = $${idx++}`); values.push(password); }
+        if (full_name) { fields.push(`full_name = $${idx++}`); values.push(full_name); }
+        if (role) { fields.push(`role = $${idx++}`); values.push(role); }
+        if (dept_id) { fields.push(`dept_id = $${idx++}`); values.push(dept_id); }
+
+        if (fields.length === 0) {
+            return res.status(400).json({ success: false, error: 'គ្មានទិន្នន័យត្រូវកែប្រែទេ' });
+        }
+
+        query += fields.join(', ') + ` WHERE id = $${idx} RETURNING id, username, full_name, role, dept_id, status;`;
+        values.push(id);
+
+        const result = await pool.query(query, values);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញ User នេះទេ' });
+        }
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating user:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
 // ==========================================
-// API Routes: Expenses, Receivables, Revenues
+// API Routes: កែប្រែ និងលុបចំណាយ (Expenses)
 // ==========================================
 app.put('/api/expenses/:id', async (req, res) => {
     const { id } = req.params;
@@ -1029,6 +1052,7 @@ app.put('/api/expenses/:id', async (req, res) => {
 
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error updating expense:', err);
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យចំណាយ: ' + err.message });
     }
 });
@@ -1042,10 +1066,12 @@ app.delete('/api/expenses/:id', async (req, res) => {
         }
         res.json({ success: true, message: 'បានលុបទិន្នន័យចំណាយដោយជោគជ័យ' });
     } catch (err) {
+        console.error('Error deleting expense:', err);
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការលុបទិន្នន័យចំណាយ' });
     }
 });
 
+// Accounts Receivable updates
 app.put('/api/receivables/:id', async (req, res) => {
     const { id } = req.params;
     const { customer_name, amount, invoice_date, due_date, status, description } = req.body;
@@ -1065,6 +1091,7 @@ app.put('/api/receivables/:id', async (req, res) => {
 
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error updating receivable:', err);
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យ: ' + err.message });
     }
 });
@@ -1078,10 +1105,12 @@ app.delete('/api/receivables/:id', async (req, res) => {
         }
         res.json({ success: true, message: 'បានលុបទិន្នន័យដោយជោគជ័យ' });
     } catch (err) {
+        console.error('Error deleting receivable:', err);
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការលុបទិន្នន័យ' });
     }
 });
 
+// Revenue Updates
 app.put('/api/revenues/:id', async (req, res) => {
     const { id } = req.params;
     const { revenue_date, category, description, amount, received_by } = req.body;
@@ -1100,6 +1129,7 @@ app.put('/api/revenues/:id', async (req, res) => {
 
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error updating revenue:', err);
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យប្រាក់ចំណូល' });
     }
 });
@@ -1113,7 +1143,24 @@ app.delete('/api/revenues/:id', async (req, res) => {
         }
         res.json({ success: true, message: 'បានលុបទិន្នន័យដោយជោគជ័យ' });
     } catch (err) {
+        console.error('Error deleting revenue:', err);
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការលុបទិន្នន័យ' });
+    }
+});
+
+app.put('/api/users/:id/status', async (req, res) => {
+    const { id } = req.params;
+    const { status } = req.body;
+    try {
+        const query = 'UPDATE system_users SET status = $1 WHERE id = $2 RETURNING id, username, full_name, role, dept_id, status;';
+        const result = await pool.query(query, [status, id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញ User នេះទេ' });
+        }
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating user status:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
     }
 });
 
@@ -1130,6 +1177,7 @@ app.put('/api/bwh-records/:id/renew', async (req, res) => {
         await pool.query(query, [current_days, record_date, id]);
         res.json({ success: true, message: 'បានបន្តកាលបរិច្ឆេទថ្មី និងរក្សាទុកប្រវត្តិដោយជោគជ័យ!' });
     } catch (err) {
+        console.error('Error renewing BWH record:', err);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -1157,6 +1205,7 @@ app.get('/api/fleet/cargo-gates', async (req, res) => {
         const result = await pool.query('SELECT * FROM cargo_gates ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
+        console.error('❌ [Cargo Gate Get Error]:', err.message);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -1164,12 +1213,28 @@ app.get('/api/fleet/cargo-gates', async (req, res) => {
 app.post('/api/fleet/cargo-gates', async (req, res) => {
     const { cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes } = req.body;
     try {
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS cargo_gates (
+                id SERIAL PRIMARY KEY,
+                cargo_code VARCHAR(100),
+                container_number VARCHAR(100),
+                gate_type VARCHAR(100),
+                gate_date TIMESTAMP WITH TIME ZONE,
+                owner_name VARCHAR(150),
+                container_qty VARCHAR(50),
+                company_name VARCHAR(150),
+                status VARCHAR(100),
+                notes TEXT,
+                created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
         const result = await pool.query(
             `INSERT INTO cargo_gates (cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;`,
             [cargo_code, container_number, gate_type, gate_date, owner_name, container_qty, company_name, status, notes]
         );
         res.json({ success: true, message: 'បានរក្សាទុកទិន្នន័យដោយជោគជ័យ!', data: result.rows[0] });
     } catch (err) {
+        console.error('❌ [Cargo Gate Insert Error]:', err.message);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -1184,6 +1249,7 @@ app.put('/api/fleet/cargo-gates/:id', async (req, res) => {
         );
         res.json({ success: true, message: 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!', data: result.rows[0] });
     } catch (err) {
+        console.error('❌ [Cargo Gate Update Error]:', err.message);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -1194,6 +1260,7 @@ app.delete('/api/fleet/cargo-gates/:id', async (req, res) => {
         await pool.query('DELETE FROM cargo_gates WHERE id = $1', [id]);
         res.json({ success: true, message: 'បានលុបដោយជោគជ័យ!' });
     } catch (err) {
+        console.error('❌ [Cargo Gate Delete Error]:', err.message);
         res.status(500).json({ success: false, error: err.message });
     }
 });
@@ -1212,6 +1279,7 @@ app.get('/api/customs-permits', async (req, res) => {
         const result = await pool.query(query);
         res.json(result.rows);
     } catch (err) {
+        console.error('Error fetching customs permits:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -1224,19 +1292,42 @@ app.post('/api/customs-permits', async (req, res) => {
     } = req.body;
     
     try {
+        if (vehicle_vin && permit_number) {
+            const checkExist = await pool.query(
+                'SELECT id FROM customs_permit_records WHERE permit_number = $1 AND vehicle_vin = $2',
+                [permit_number, vehicle_vin]
+            );
+            if (checkExist.rows.length > 0) {
+                return res.status(400).json({ success: false, error: 'លេខលិខិតអនុញ្ញាត និងលេខតួឡាន (VIN) នេះមានរួចហើយក្នុងប្រព័ន្ធ!' });
+            }
+        }
+
         const query = `
             INSERT INTO customs_permit_records 
             (permit_number, bonded_record_id, container_number, vehicle_vin, customs_reg_number, manifest_number, doc_type, cargo_description, company_name, permit_type, issue_date, expiry_date, status, officer_name, notes)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *;
         `;
         const values = [
-            permit_number, bonded_record_id || null, container_number || 'N/A', vehicle_vin || null,
-            customs_reg_number || null, manifest_number || null, doc_type || 'I', cargo_description,
-            company_name, permit_type, issue_date, expiry_date || null, status || 'Active', officer_name, notes || null
+            permit_number,
+            bonded_record_id || null,
+            container_number || 'N/A',
+            vehicle_vin || null,
+            customs_reg_number || null,
+            manifest_number || null,
+            doc_type || 'I',
+            cargo_description,
+            company_name,
+            permit_type,
+            issue_date,
+            expiry_date || null,
+            status || 'Active',
+            officer_name,
+            notes || null
         ];
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error saving customs permit:', err);
         res.status(500).json({ success: false, error: 'Server error: ' + err.message });
     }
 });
@@ -1247,6 +1338,7 @@ app.delete('/api/customs-permits/:id', async (req, res) => {
         await pool.query('DELETE FROM customs_permit_records WHERE id = $1', [id]);
         res.json({ success: true, message: 'Deleted successfully' });
     } catch (err) {
+        console.error('Error deleting customs permit:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -1268,9 +1360,22 @@ app.put('/api/customs-permits/:id', async (req, res) => {
             WHERE id = $16 RETURNING *;
         `;
         const values = [
-            permit_number || null, bonded_record_id || null, container_number || 'N/A', vehicle_vin || null,
-            customs_reg_number, manifest_number || null, doc_type || 'I', cargo_description,
-            company_name, permit_type, issue_date, expiry_date || null, status || 'Active', officer_name, notes || null, id
+            permit_number || null,
+            bonded_record_id || null,
+            container_number || 'N/A',
+            vehicle_vin || null,
+            customs_reg_number,
+            manifest_number || null,
+            doc_type || 'I',
+            cargo_description,
+            company_name,
+            permit_type,
+            issue_date,
+            expiry_date || null,
+            status || 'Active',
+            officer_name,
+            notes || null,
+            id
         ];
         const result = await pool.query(query, values);
         if (result.rows.length === 0) {
@@ -1278,395 +1383,8 @@ app.put('/api/customs-permits/:id', async (req, res) => {
         }
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error updating customs permit:', err);
         res.status(500).json({ success: false, error: 'Server error: ' + err.message });
-    }
-});
-
-// ==========================================
-// API Routes: Bonded Warehouse (BWH In/Out)
-// ==========================================
-app.get('/api/bwh-records', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM bonded_warehouse_records ORDER BY record_date DESC, id DESC');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-app.post('/api/bwh-records', async (req, res) => {
-    const { container_number, vehicle_vin, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status } = req.body;
-    try {
-        const formattedDate = record_date ? new Date(record_date) : new Date();
-        const query = `
-            INSERT INTO bonded_warehouse_records (container_number, vehicle_vin, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;
-        `;
-        const values = [container_number || 'N/A', vehicle_vin || null, cargo_name, owner_name, movement_type, formattedDate, parseInt(days_in_bonded) || 0, customs_status];
-        const result = await pool.query(query, values);
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-
-app.delete('/api/bwh-records/:id', async (req, res) => {
-    const { id } = req.params;
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
-        await client.query('DELETE FROM duty_unpaid_inventory WHERE bonded_record_id = $1', [id]);
-        const result = await client.query('DELETE FROM bonded_warehouse_records WHERE id = $1 RETURNING *;', [id]);
-
-        if (result.rows.length === 0) {
-            await client.query('ROLLBACK');
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យ BWH នេះទេ' });
-        }
-
-        await client.query('COMMIT');
-        res.json({ success: true, message: 'បានលុបទិន្នន័យដោយជោគជ័យ' });
-    } catch (err) {
-        await client.query('ROLLBACK');
-        res.status(500).json({ success: false, error: 'Server error' });
-    } finally {
-        client.release();
-    }
-});
-
-app.put('/api/bwh-records/:id', async (req, res) => {
-    const { id } = req.params;
-    const { container_number, vehicle_vin, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status } = req.body;
-    
-    try {
-        const query = `
-            UPDATE bonded_warehouse_records 
-            SET container_number = $1, vehicle_vin = $2, cargo_name = $3, owner_name = $4, movement_type = $5, record_date = $6, days_in_bonded = $7, customs_status = $8
-            WHERE id = $9 RETURNING *;
-        `;
-        const values = [container_number || 'N/A', vehicle_vin || null, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status, id];
-        const result = await pool.query(query, values);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យ BWH នេះទេ។' });
-        }
-
-        const statusLower = (customs_status || '').toLowerCase();
-        if (statusLower.includes('បានបង់ពន្ធរួច') || statusLower.includes('paid') || statusLower.includes('released')) {
-            await pool.query('DELETE FROM duty_unpaid_inventory WHERE bonded_record_id = $1', [id]);
-        }
-
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        res.status(500).json({ success: false, error: err.message });
-    }
-});
-
-app.put('/api/bwh-records/:id/duty-status', async (req, res) => {
-    const { id } = req.params;
-    const { duty_status } = req.body;
-    const client = await pool.connect();
-    try {
-        await client.query('BEGIN');
-        await client.query('UPDATE bonded_warehouse_records SET customs_status = $1 WHERE id = $2', [duty_status, id]);
-
-        const statusLower = (duty_status || '').toLowerCase();
-        if (statusLower.includes('បានបង់ពន្ធរួច') || statusLower.includes('paid') || statusLower.includes('released')) {
-            await client.query('DELETE FROM duty_unpaid_inventory WHERE bonded_record_id = $1', [id]);
-        }
-
-        await client.query('COMMIT');
-        res.json({ success: true, message: 'បានអាប់ដេតស្ថានភាពដោយជោគជ័យ!' });
-    } catch (err) {
-        await client.query('ROLLBACK');
-        res.status(500).json({ success: false, error: err.message });
-    } finally {
-        client.release();
-    }
-});
-
-// ==========================================
-// API Routes: Duty-Unpaid Inventory
-// ==========================================
-app.get('/api/duty-unpaid-inventory', async (req, res) => {
-    try {
-        const query = `
-            SELECT dui.*, bwr.movement_type, bwr.customs_status as bwh_status 
-            FROM duty_unpaid_inventory dui
-            LEFT JOIN bonded_warehouse_records bwr ON dui.bonded_record_id = bwr.id
-            ORDER BY dui.id DESC;
-        `;
-        const result = await pool.query(query);
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-app.post('/api/duty-unpaid-inventory', async (req, res) => {
-    const { container_number, vehicle_vin, cargo_name, owner_name, bonded_record_id, entry_date, quantity, unit, tax_status, warehouse_location } = req.body;
-    try {
-        const query = `
-            INSERT INTO duty_unpaid_inventory (container_number, vehicle_vin, cargo_name, owner_name, bonded_record_id, entry_date, quantity, unit, tax_status, warehouse_location)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
-        `;
-        const values = [container_number || 'N/A', vehicle_vin || null, cargo_name, owner_name, bonded_record_id || null, entry_date, parseInt(quantity) || 0, unit || 'Pallets', tax_status || 'Pending Duty Payment', warehouse_location];
-        const result = await pool.query(query, values);
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-app.delete('/api/duty-unpaid-inventory/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        await pool.query('DELETE FROM duty_unpaid_inventory WHERE id = $1', [id]);
-        res.json({ success: true, message: 'Deleted successfully' });
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-// ==========================================
-// API Routes: Document Handlers
-// ==========================================
-app.get('/api/document-handlers', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT * FROM document_handlers ORDER BY id DESC');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-app.post('/api/document-handlers', async (req, res) => {
-    const { handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status, remarks } = req.body;
-    try {
-        const query = `
-            INSERT INTO document_handlers (handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status, remarks)
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
-        `;
-        const values = [handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status || 'Active', remarks];
-        const result = await pool.query(query, values);
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-app.put('/api/document-handlers/:id', async (req, res) => {
-    const { id } = req.params;
-    const { handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status, remarks } = req.body;
-    try {
-        const query = `
-            UPDATE document_handlers 
-            SET handler_name = $1, handler_code = $2, handler_role = $3, assigned_doc_ref = $4, assignment_date = $5, handler_status = $6, remarks = $7
-            WHERE id = $8 RETURNING *;
-        `;
-        const values = [handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status, remarks, id];
-        const result = await pool.query(query, values);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
-        }
-
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-app.delete('/api/document-handlers/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        await pool.query('DELETE FROM document_handlers WHERE id = $1', [id]);
-        res.json({ success: true, message: 'Deleted successfully' });
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-// ==========================================
-// API Routes: Customs System Data (🌟 Base64 PDF Storage & Viewing)
-// ==========================================
-app.get('/api/customs-system-data', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT id, sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, CASE WHEN pdf_data IS NOT NULL THEN true ELSE false END as has_pdf FROM customs_system_data ORDER BY id DESC');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-app.get('/api/customs-system-data/:id/pdf', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const result = await pool.query('SELECT pdf_data, sys_code FROM customs_system_data WHERE id = $1', [id]);
-        if (result.rows.length === 0 || !result.rows[0].pdf_data) {
-            return res.status(404).send('រកមិនឃើញឯកសារ PDF ទេ!');
-        }
-
-        const pdfBuffer = Buffer.from(result.rows[0].pdf_data, 'base64');
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="customs-sys-${result.rows[0].sys_code}.pdf"`);
-        res.send(pdfBuffer);
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
-});
-
-app.post('/api/customs-system-data', upload.single('pdf_file'), async (req, res) => {
-    const { sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks } = req.body;
-    let pdf_data = req.file ? req.file.buffer.toString('base64') : null;
-
-    try {
-        const query = `
-            INSERT INTO customs_system_data (sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, pdf_data)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
-        `;
-        const values = [sys_code, company_name, transaction_type, entry_date, system_status || 'Pending', operator_name, reference_number, customs_office, remarks, pdf_data];
-        const result = await pool.query(query, values);
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        res.status(500).json({ success: false, error: 'Server error (លេខកូដប្រព័ន្ធអាចមានរួចហើយ)' });
-    }
-});
-
-app.put('/api/customs-system-data/:id', upload.single('pdf_file'), async (req, res) => {
-    const { id } = req.params;
-    const { sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks } = req.body;
-    
-    try {
-        let query = '';
-        let values = [];
-
-        if (req.file) {
-            const pdf_data = req.file.buffer.toString('base64');
-            query = `
-                UPDATE customs_system_data 
-                SET sys_code = $1, company_name = $2, transaction_type = $3, entry_date = $4, system_status = $5, operator_name = $6, reference_number = $7, customs_office = $8, remarks = $9, pdf_data = $10
-                WHERE id = $11 RETURNING *;
-            `;
-            values = [sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, pdf_data, id];
-        } else {
-            query = `
-                UPDATE customs_system_data 
-                SET sys_code = $1, company_name = $2, transaction_type = $3, entry_date = $4, system_status = $5, operator_name = $6, reference_number = $7, customs_office = $8, remarks = $9
-                WHERE id = $10 RETURNING *;
-            `;
-            values = [sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, id];
-        }
-
-        const result = await pool.query(query, values);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
-        }
-
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        res.status(500).json({ success: false, error: 'Server error' });
-    }
-});
-
-app.delete('/api/customs-system-data/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        await pool.query('DELETE FROM customs_system_data WHERE id = $1', [id]);
-        res.json({ success: true, message: 'Deleted successfully' });
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-// ==========================================
-// API Routes: Customs Documents (🌟 Base64 PDF Storage & Viewing)
-// ==========================================
-app.get('/api/customs-documents', async (req, res) => {
-    try {
-        const result = await pool.query('SELECT id, document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, CASE WHEN pdf_data IS NOT NULL THEN true ELSE false END as has_pdf, created_at FROM customs_documents ORDER BY id DESC');
-        res.json(result.rows);
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-
-app.get('/api/customs-documents/:id/pdf', async (req, res) => {
-    const { id } = req.params;
-    try {
-        const result = await pool.query('SELECT pdf_data, document_number FROM customs_documents WHERE id = $1', [id]);
-        if (result.rows.length === 0 || !result.rows[0].pdf_data) {
-            return res.status(404).send('រកមិនឃើញឯកសារ PDF ទេ!');
-        }
-
-        const pdfBuffer = Buffer.from(result.rows[0].pdf_data, 'base64');
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="doc-${result.rows[0].document_number}.pdf"`);
-        res.send(pdfBuffer);
-    } catch (err) {
-        res.status(500).send('Server error');
-    }
-});
-
-app.post('/api/customs-documents', upload.single('pdf_file'), async (req, res) => {
-    const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
-    let pdf_data = req.file ? req.file.buffer.toString('base64') : null;
-
-    try {
-        const query = `
-            INSERT INTO customs_documents (document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_data)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
-        `;
-        const values = [document_number, company_name, document_type, document_date, status || 'Pending', officer_name, reference_no, notes, pdf_data];
-        const result = await pool.query(query, values);
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        res.status(500).json({ success: false, error: 'Server error (លេខឯកសារអាចមានរួចហើយ)' });
-    }
-});
-
-app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res) => {
-    const { id } = req.params;
-    const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
-    
-    try {
-        let query = '';
-        let values = [];
-
-        if (req.file) {
-            const pdf_data = req.file.buffer.toString('base64');
-            query = `
-                UPDATE customs_documents 
-                SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8, pdf_data = $9
-                WHERE id = $10 RETURNING *;
-            `;
-            values = [document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_data, id];
-        } else {
-            query = `
-                UPDATE customs_documents 
-                SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8
-                WHERE id = $9 RETURNING *;
-            `;
-            values = [document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, id];
-        }
-
-        const result = await pool.query(query, values);
-        if (result.rows.length === 0) {
-            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
-        }
-
-        res.json({ success: true, data: result.rows[0] });
-    } catch (err) {
-        res.status(500).json({ success: false, error: 'Server error' });
-    }
-});
-
-app.delete('/api/customs-documents/:id', async (req, res) => {
-    const { id } = req.params;
-    try {
-        await pool.query('DELETE FROM customs_documents WHERE id = $1', [id]);
-        res.json({ success: true, message: 'Deleted successfully' });
-    } catch (err) {
-        res.status(500).json({ error: 'Server error' });
     }
 });
 
@@ -1679,14 +1397,6 @@ app.get('/', (req, res) => {
 
 app.get('/billing-cashier.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'views', 'billing-cashier.html'));
-});
-
-app.get('/invoice-list.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'invoice-list.html'));
-});
-
-app.get('/views/invoice-list.html', (req, res) => {
-    res.sendFile(path.join(__dirname, 'views', 'invoice-list.html'));
 });
 
 app.get('/views/hr-in-out.html', (req, res) => {
@@ -1814,13 +1524,450 @@ app.get('/views/customs-permit-control.html', (req, res) => {
 });
 
 // ==========================================
-// API Routes: Sourcing, Dispute, Customer Relations, Jobs, IT CCTV, HR, Inventory, Payroll, Fleet, etc.
+// API Routes: Bonded Warehouse (BWH In/Out)
+// ==========================================
+app.get('/api/bwh-records', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM bonded_warehouse_records ORDER BY record_date DESC, id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching BWH records:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/bwh-records', async (req, res) => {
+    const { container_number, vehicle_vin, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status } = req.body;
+    try {
+        const formattedDate = record_date ? new Date(record_date) : new Date();
+
+        const query = `
+            INSERT INTO bonded_warehouse_records (container_number, vehicle_vin, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;
+        `;
+        const values = [
+            container_number || 'N/A', 
+            vehicle_vin || null,
+            cargo_name, 
+            owner_name, 
+            movement_type, 
+            formattedDate, 
+            parseInt(days_in_bonded) || 0, 
+            customs_status
+        ];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving BWH record:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.delete('/api/bwh-records/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+            await client.query('DELETE FROM duty_unpaid_inventory WHERE bonded_record_id = $1', [id]);
+            const result = await client.query('DELETE FROM bonded_warehouse_records WHERE id = $1 RETURNING *;', [id]);
+
+            if (result.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យ BWH នេះទេ' });
+            }
+
+            await client.query('COMMIT');
+            res.json({ success: true, message: 'បានលុបទិន្នន័យដោយជោគជ័យ' });
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+    } catch (err) {
+        console.error('Error deleting BWH record:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+app.put('/api/bwh-records/:id', async (req, res) => {
+    const { id } = req.params;
+    const { container_number, vehicle_vin, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status } = req.body;
+    
+    try {
+        const query = `
+            UPDATE bonded_warehouse_records 
+            SET container_number = $1, vehicle_vin = $2, cargo_name = $3, owner_name = $4, movement_type = $5, record_date = $6, days_in_bonded = $7, customs_status = $8
+            WHERE id = $9 RETURNING *;
+        `;
+        const values = [container_number || 'N/A', vehicle_vin || null, cargo_name, owner_name, movement_type, record_date, days_in_bonded, customs_status, id];
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យ BWH នេះទេ។' });
+        }
+
+        const statusLower = (customs_status || '').toLowerCase();
+        if (statusLower.includes('បានបង់ពន្ធរួច') || statusLower.includes('paid') || statusLower.includes('released')) {
+            await pool.query('DELETE FROM duty_unpaid_inventory WHERE bonded_record_id = $1', [id]);
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating BWH record:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.put('/api/bwh-records/:id/duty-status', async (req, res) => {
+    const { id } = req.params;
+    const { duty_status } = req.body;
+    
+    try {
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            await client.query(
+                'UPDATE bonded_warehouse_records SET customs_status = $1 WHERE id = $2',
+                [duty_status, id]
+            );
+
+            const statusLower = (duty_status || '').toLowerCase();
+            if (statusLower.includes('បានបង់ពន្ធរួច') || statusLower.includes('paid') || statusLower.includes('released')) {
+                await client.query('DELETE FROM duty_unpaid_inventory WHERE bonded_record_id = $1', [id]);
+            }
+
+            await client.query('COMMIT');
+            res.json({ success: true, message: 'បានអាប់ដេតស្ថានភាព និងលុបចេញពីស្តុកមិនទាន់បង់ពន្ធដោយជោគជ័យ!' });
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+    } catch (err) {
+        console.error('Error updating duty status:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// ==========================================
+// API Routes: Duty-Unpaid Inventory
+// ==========================================
+app.get('/api/duty-unpaid-inventory', async (req, res) => {
+    try {
+        const query = `
+            SELECT dui.*, bwr.movement_type, bwr.customs_status as bwh_status 
+            FROM duty_unpaid_inventory dui
+            LEFT JOIN bonded_warehouse_records bwr ON dui.bonded_record_id = bwr.id
+            ORDER BY dui.id DESC;
+        `;
+        const result = await pool.query(query);
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching duty-unpaid inventory:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/duty-unpaid-inventory', async (req, res) => {
+    const { container_number, vehicle_vin, cargo_name, owner_name, bonded_record_id, entry_date, quantity, unit, tax_status, warehouse_location } = req.body;
+    try {
+        const query = `
+            INSERT INTO duty_unpaid_inventory (container_number, vehicle_vin, cargo_name, owner_name, bonded_record_id, entry_date, quantity, unit, tax_status, warehouse_location)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
+        `;
+        const values = [
+            container_number || 'N/A', 
+            vehicle_vin || null,
+            cargo_name, 
+            owner_name, 
+            bonded_record_id || null, 
+            entry_date, 
+            parseInt(quantity) || 0, 
+            unit || 'Pallets', 
+            tax_status || 'Pending Duty Payment', 
+            warehouse_location
+        ];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving duty-unpaid inventory:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.delete('/api/duty-unpaid-inventory/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM duty_unpaid_inventory WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting duty-unpaid inventory:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// ==========================================
+// API Routes: Document Handlers
+// ==========================================
+app.get('/api/document-handlers', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM document_handlers ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching document handlers:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/document-handlers', async (req, res) => {
+    const { handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status, remarks } = req.body;
+    try {
+        const query = `
+            INSERT INTO document_handlers (handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status, remarks)
+            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+        `;
+        const values = [handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status || 'Active', remarks];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving document handler:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.put('/api/document-handlers/:id', async (req, res) => {
+    const { id } = req.params;
+    const { handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status, remarks } = req.body;
+    try {
+        const query = `
+            UPDATE document_handlers 
+            SET handler_name = $1, handler_code = $2, handler_role = $3, assigned_doc_ref = $4, assignment_date = $5, handler_status = $6, remarks = $7
+            WHERE id = $8 RETURNING *;
+        `;
+        const values = [handler_name, handler_code, handler_role, assigned_doc_ref, assignment_date, handler_status, remarks, id];
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating document handler:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.delete('/api/document-handlers/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        await pool.query('DELETE FROM document_handlers WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting document handler:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// ==========================================
+// API Routes: Customs System Data (🌟 កែសម្រួលគាំទ្រ File Upload PDF និង Delete File)
+// ==========================================
+app.get('/api/customs-system-data', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT * FROM customs_system_data ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching customs system data:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/customs-system-data', upload.single('pdf_file'), async (req, res) => {
+    const { sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks } = req.body;
+    const pdf_path = req.file ? `/uploads/${req.file.filename}` : null;
+
+    try {
+        const query = `
+            INSERT INTO customs_system_data (sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, pdf_path)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
+        `;
+        const values = [sys_code, company_name, transaction_type, entry_date, system_status || 'Pending', operator_name, reference_number, customs_office, remarks, pdf_path];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving customs system data:', err);
+        res.status(500).json({ success: false, error: 'Server error (លេខកូដប្រព័ន្ធអាចមានរួចហើយ)' });
+    }
+});
+
+app.put('/api/customs-system-data/:id', upload.single('pdf_file'), async (req, res) => {
+    const { id } = req.params;
+    const { sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks } = req.body;
+    
+    try {
+        let query = '';
+        let values = [];
+
+        if (req.file) {
+            const pdf_path = `/uploads/${req.file.filename}`;
+            // 💡 លុប File PDF ចាស់ចោលប្រសិនបើមានការ Upload ថ្មីមកជំនួស
+            const oldFileQuery = await pool.query('SELECT pdf_path FROM customs_system_data WHERE id = $1', [id]);
+            if (oldFileQuery.rows.length > 0 && oldFileQuery.rows[0].pdf_path) {
+                const oldFilePath = path.join(__dirname, oldFileQuery.rows[0].pdf_path);
+                if (fs.existsSync(oldFilePath)) {
+                    fs.unlinkSync(oldFilePath);
+                }
+            }
+
+            query = `
+                UPDATE customs_system_data 
+                SET sys_code = $1, company_name = $2, transaction_type = $3, entry_date = $4, system_status = $5, operator_name = $6, reference_number = $7, customs_office = $8, remarks = $9, pdf_path = $10
+                WHERE id = $11 RETURNING *;
+            `;
+            values = [sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, pdf_path, id];
+        } else {
+            query = `
+                UPDATE customs_system_data 
+                SET sys_code = $1, company_name = $2, transaction_type = $3, entry_date = $4, system_status = $5, operator_name = $6, reference_number = $7, customs_office = $8, remarks = $9
+                WHERE id = $10 RETURNING *;
+            `;
+            values = [sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, id];
+        }
+
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating customs system data:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+app.delete('/api/customs-system-data/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        // 💡 លុប File PDF លើ Server ផងដែរ ប្រសិនបើមាន
+        const fileQuery = await pool.query('SELECT pdf_path FROM customs_system_data WHERE id = $1', [id]);
+        if (fileQuery.rows.length > 0 && fileQuery.rows[0].pdf_path) {
+            const filePath = path.join(__dirname, fileQuery.rows[0].pdf_path);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+
+        await pool.query('DELETE FROM customs_system_data WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting customs system data:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// ==========================================
+// API Routes: Customs Documents
+// ==========================================
+app.get('/api/customs-documents', async (req, res) => {
+    try {
+        const result = await pool.query('SELECT id, document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_path, created_at FROM customs_documents ORDER BY id DESC');
+        res.json(result.rows);
+    } catch (err) {
+        console.error('Error fetching customs documents:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+app.post('/api/customs-documents', upload.single('pdf_file'), async (req, res) => {
+    const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
+    const pdf_path = req.file ? `/uploads/${req.file.filename}` : null;
+
+    try {
+        const query = `
+            INSERT INTO customs_documents (document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_path)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *;
+        `;
+        const values = [document_number, company_name, document_type, document_date, status || 'Pending', officer_name, reference_no, notes, pdf_path];
+        const result = await pool.query(query, values);
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error saving customs document:', err);
+        res.status(500).json({ success: false, error: 'Server error (លេខឯកសារអាចមានរួចហើយ)' });
+    }
+});
+
+app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res) => {
+    const { id } = req.params;
+    const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
+    
+    try {
+        let query = '';
+        let values = [];
+
+        if (req.file) {
+            const pdf_path = `/uploads/${req.file.filename}`;
+            query = `
+                UPDATE customs_documents 
+                SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8, pdf_path = $9
+                WHERE id = $10 RETURNING *;
+            `;
+            values = [document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_path, id];
+        } else {
+            query = `
+                UPDATE customs_documents 
+                SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8
+                WHERE id = $9 RETURNING *;
+            `;
+            values = [document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, id];
+        }
+
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating customs document:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+app.delete('/api/customs-documents/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const fileQuery = await pool.query('SELECT pdf_path FROM customs_documents WHERE id = $1', [id]);
+        if (fileQuery.rows.length > 0 && fileQuery.rows[0].pdf_path) {
+            const filePath = path.join(__dirname, fileQuery.rows[0].pdf_path);
+            if (fs.existsSync(filePath)) {
+                fs.unlinkSync(filePath);
+            }
+        }
+
+        await pool.query('DELETE FROM customs_documents WHERE id = $1', [id]);
+        res.json({ success: true, message: 'Deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting customs document:', err);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+// ==========================================
+// API Routes: Sourcing Support
 // ==========================================
 app.get('/api/sourcing-support', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM sourcing_support ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
+        console.error('Error fetching sourcing support records:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -1836,6 +1983,7 @@ app.post('/api/sourcing-support', async (req, res) => {
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error saving sourcing support record:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -1851,10 +1999,15 @@ app.put('/api/sourcing-support/:id', async (req, res) => {
         `;
         const values = [request_title, requester_name, category, priority_level, request_date, status, description, id];
         const result = await pool.query(query, values);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ error: 'Server error' });
+        console.error('Error updating sourcing support record:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
     }
 });
 
@@ -1864,15 +2017,20 @@ app.delete('/api/sourcing-support/:id', async (req, res) => {
         await pool.query('DELETE FROM sourcing_support WHERE id = $1', [id]);
         res.json({ success: true, message: 'Deleted successfully' });
     } catch (err) {
+        console.error('Error deleting sourcing support record:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
+// ==========================================
+// API Routes: Dispute Resolutions
+// ==========================================
 app.get('/api/dispute-resolutions', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM dispute_resolutions ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
+        console.error('Error fetching dispute resolutions:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -1888,6 +2046,7 @@ app.post('/api/dispute-resolutions', async (req, res) => {
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error saving dispute resolution:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -1903,10 +2062,15 @@ app.put('/api/dispute-resolutions/:id', async (req, res) => {
         `;
         const values = [complainant_name, phone, dispute_type, severity_level, dispute_date, status, description, id];
         const result = await pool.query(query, values);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ error: 'Server error' });
+        console.error('Error updating dispute resolution:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
     }
 });
 
@@ -1916,15 +2080,20 @@ app.delete('/api/dispute-resolutions/:id', async (req, res) => {
         await pool.query('DELETE FROM dispute_resolutions WHERE id = $1', [id]);
         res.json({ success: true, message: 'Deleted successfully' });
     } catch (err) {
+        console.error('Error deleting dispute resolution:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
+// ==========================================
+// API Routes: Customer Relations
+// ==========================================
 app.get('/api/customer-relations', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM customer_relations ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
+        console.error('Error fetching customer relations:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -1940,6 +2109,7 @@ app.post('/api/customer-relations', async (req, res) => {
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error saving customer relation:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -1955,10 +2125,15 @@ app.put('/api/customer-relations/:id', async (req, res) => {
         `;
         const values = [customer_name, phone, contact_type, contact_date, status, description, id];
         const result = await pool.query(query, values);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ error: 'Server error' });
+        console.error('Error updating customer relation:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
     }
 });
 
@@ -1968,15 +2143,20 @@ app.delete('/api/customer-relations/:id', async (req, res) => {
         await pool.query('DELETE FROM customer_relations WHERE id = $1', [id]);
         res.json({ success: true, message: 'Deleted successfully' });
     } catch (err) {
+        console.error('Error deleting customer relation:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
+// ==========================================
+// API Routes: Job Vacancies
+// ==========================================
 app.get('/api/jobs', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM job_vacancies ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
+        console.error('Error fetching jobs:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -1992,15 +2172,20 @@ app.post('/api/jobs', async (req, res) => {
         const result = await pool.query(query, values);
         res.json({ success: true, message: 'បានរក្សាទុកតំណែងការងារដោយជោគជ័យ!', data: result.rows[0] });
     } catch (err) {
+        console.error('Error saving job vacancy:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
+// ==========================================
+// API Routes: IT CCTV & Network
+// ==========================================
 app.get('/api/it-cctv', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM it_cctv_networks ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
+        console.error('Error fetching IT CCTV/Network:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -2016,6 +2201,7 @@ app.post('/api/it-cctv', async (req, res) => {
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error saving IT CCTV/Network:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -2026,10 +2212,14 @@ app.delete('/api/it-cctv/:id', async (req, res) => {
         await pool.query('DELETE FROM it_cctv_networks WHERE id = $1', [id]);
         res.json({ success: true, message: 'Deleted successfully' });
     } catch (err) {
+        console.error('Error deleting IT CCTV/Network:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
+// ==========================================
+// API Routes: Employees
+// ==========================================
 app.get('/api/employees', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM employees ORDER BY id DESC');
@@ -2049,10 +2239,13 @@ app.post('/api/employees', async (req, res) => {
         const result = await pool.query(query, [employee_code, full_name, department, position]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ error: 'កំហុស៖ លេខកូដបុគ្គលិកអាចមានរួចហើយ' });
+        res.status(500).json({ error: 'កំហុស៖ លេខកូដបុគ្គលិកអាចមានរួចហើយ ឬទិន្នន័យមិនត្រឹមត្រូវ' });
     }
 });
 
+// ==========================================
+// API Routes: Attendance Logs
+// ==========================================
 app.get('/api/attendance/logs', async (req, res) => {
     const { from, to, search } = req.query;
     try {
@@ -2078,6 +2271,7 @@ app.get('/api/attendance/logs', async (req, res) => {
         }
 
         query += ` ORDER BY a.work_date DESC, a.check_in_time DESC`;
+
         const result = await pool.query(query, params);
         res.json(result.rows);
     } catch (err) {
@@ -2085,6 +2279,9 @@ app.get('/api/attendance/logs', async (req, res) => {
     }
 });
 
+// ==========================================
+// API Routes: Inventory
+// ==========================================
 app.get('/api/inventory', async (req, res) => {
     const { search, category } = req.query;
     try {
@@ -2105,6 +2302,7 @@ app.get('/api/inventory', async (req, res) => {
         }
 
         query += ` ORDER BY id DESC`;
+
         const result = await pool.query(query, params);
         res.json(result.rows);
     } catch (err) {
@@ -2138,18 +2336,28 @@ app.put('/api/inventory/:id', async (req, res) => {
         `;
         const values = [item_code, item_name, category, parseInt(quantity) || 0, unit, status || 'Available', holder_or_location, id];
         const result = await pool.query(query, values);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យសម្ភារៈនេះទេ' });
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យសម្ភារៈនេះទេ' });
+        }
+
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error updating inventory:', err);
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យសម្ភារៈ' });
     }
 });
 
+// ==========================================
+// API Routes: Payroll
+// ==========================================
 app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => {
     const { employee_code, pay_month } = req.params;
     try {
         const empResult = await pool.query('SELECT * FROM employees WHERE employee_code = $1', [employee_code]);
-        if (empResult.rows.length === 0) return res.status(404).json({ error: 'រកមិនឃើញកូដបុគ្គលិកនេះទេ' });
+        if (empResult.rows.length === 0) {
+            return res.status(404).json({ error: 'រកមិនឃើញកូដបុគ្គលិកនេះទេ' });
+        }
         const employee = empResult.rows[0];
 
         const [year, month] = pay_month.split('-').map(Number);
@@ -2173,6 +2381,7 @@ app.get('/api/payroll/calculate/:employee_code/:pay_month', async (req, res) => 
             absent_days: absentDays
         });
     } catch (err) {
+        console.error('Error calculating absence:', err);
         res.status(500).json({ error: 'មានបញ្ហាក្នុងការគណនាវត្តមាន' });
     }
 });
@@ -2195,6 +2404,7 @@ app.post('/api/payroll', async (req, res) => {
         const deduct = parseFloat(deduction) || 0; 
         const pDebt = parseFloat(previous_debt) || 0;
         const nDebt = parseFloat(new_debt) || 0;
+        
         const net_salary = (bSalary + allow + ot) - deduct;
 
         const query = `
@@ -2206,6 +2416,7 @@ app.post('/api/payroll', async (req, res) => {
         ]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error saving payroll:', err);
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាប្រាក់បៀវត្សរ៍' });
     }
 });
@@ -2220,6 +2431,7 @@ app.put('/api/payroll/:id', async (req, res) => {
         const deduct = parseFloat(deduction) || 0; 
         const pDebt = parseFloat(previous_debt) || 0;
         const nDebt = parseFloat(new_debt) || 0;
+        
         const net_salary = (bSalary + allow + ot) - deduct;
 
         const query = `
@@ -2234,22 +2446,32 @@ app.put('/api/payroll/:id', async (req, res) => {
             branch || 'ANT DRY PORT', employee_code, full_name, bSalary, allow, ot, deduct, pDebt, nDebt, net_salary, pay_month, note || null, parseInt(present_days) || 26, parseInt(absent_days) || 0, id
         ];
         const result = await pool.query(query, values);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យប្រាក់បៀវត្សរ៍នេះទេ' });
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យប្រាក់បៀវត្សរ៍នេះទេ' });
+        }
+
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error updating payroll:', err);
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យប្រាក់បៀវត្សរ៍' });
     }
 });
 
+// ==========================================
+// API Routes: Revenues
+// ==========================================
 app.get('/api/revenues', async (req, res) => {
     const { from, to } = req.query;
     try {
         let query = 'SELECT * FROM revenues WHERE 1=1';
         let params = [];
+        
         if (from && to) {
             query += ' AND revenue_date BETWEEN $1 AND $2';
             params.push(from, to);
         }
+        
         query += ' ORDER BY revenue_date DESC, id DESC';
         const result = await pool.query(query, params);
         res.json(result.rows);
@@ -2272,15 +2494,20 @@ app.post('/api/revenues', async (req, res) => {
     }
 });
 
+// ==========================================
+// API Routes: Accounts Receivable
+// ==========================================
 app.get('/api/receivables', async (req, res) => {
     const { from, to } = req.query;
     try {
         let query = 'SELECT * FROM accounts_receivable WHERE 1=1';
         let params = [];
+        
         if (from && to) {
             query += ' AND invoice_date BETWEEN $1 AND $2';
             params.push(from, to);
         }
+        
         query += ' ORDER BY invoice_date DESC, id DESC';
         const result = await pool.query(query, params);
         res.json(result.rows);
@@ -2303,15 +2530,20 @@ app.post('/api/receivables', async (req, res) => {
     }
 });
 
+// ==========================================
+// API Routes: Expenses
+// ==========================================
 app.get('/api/expenses', async (req, res) => {
     const { from, to } = req.query;
     try {
         let query = 'SELECT * FROM expenses WHERE 1=1';
         let params = [];
+        
         if (from && to) {
             query += ' AND expense_date BETWEEN $1 AND $2';
             params.push(from, to);
         }
+        
         query += ' ORDER BY expense_date DESC, id DESC';
         const result = await pool.query(query, params);
         res.json(result.rows);
@@ -2334,6 +2566,9 @@ app.post('/api/expenses', async (req, res) => {
     }
 });
 
+// ==========================================
+// API Routes: Financial Summary
+// ==========================================
 app.get('/api/financial/summary', async (req, res) => {
     const { from, to } = req.query;
     try {
@@ -2344,7 +2579,8 @@ app.get('/api/financial/summary', async (req, res) => {
                 SUM(amount) as total_receivable, 
                 SUM(CASE WHEN status = 'Paid' THEN amount ELSE 0 END) as total_paid, 
                 SUM(CASE WHEN status = 'Pending' THEN amount ELSE 0 END) as total_pending 
-            FROM accounts_receivable WHERE 1=1
+            FROM accounts_receivable 
+            WHERE 1=1
         `;
         let params = [];
 
@@ -2371,10 +2607,14 @@ app.get('/api/financial/summary', async (req, res) => {
             total_pending: parseFloat(recResult.rows[0].total_pending) || 0
         });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'មិនអាចទាញយកទិន្នន័យរបាយការណ៍ហិរញ្ញវត្ថុបានទេ' });
     }
 });
 
+// ==========================================
+// API Routes: Fleet Vehicles
+// ==========================================
 app.get('/api/fleet/vehicles', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM fleet_vehicles ORDER BY id DESC');
@@ -2398,6 +2638,9 @@ app.post('/api/fleet/vehicles', async (req, res) => {
     }
 });
 
+// ==========================================
+// API Routes: Drivers
+// ==========================================
 app.get('/api/fleet/drivers', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM drivers ORDER BY id DESC');
@@ -2421,22 +2664,28 @@ app.post('/api/fleet/drivers', async (req, res) => {
     }
 });
 
+// ==========================================
+// API Routes: Transport Dispatches
+// ==========================================
 app.get('/api/fleet/dispatches', async (req, res) => {
     const { from, to, search } = req.query;
     try {
         let query = 'SELECT * FROM transport_dispatches WHERE 1=1';
         let params = [];
         let paramIndex = 1;
+        
         if (from && to) {
             query += ` AND dispatch_date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
             params.push(from, to);
             paramIndex += 2;
         }
+
         if (search) {
             query += ` AND (vehicle_code ILIKE $${paramIndex} OR driver_name ILIKE $${paramIndex} OR dispatch_code ILIKE $${paramIndex})`;
             params.push(`%${search}%`);
             paramIndex += 1;
         }
+        
         query += ' ORDER BY dispatch_date DESC, id DESC';
         const result = await pool.query(query, params);
         res.json(result.rows);
@@ -2447,23 +2696,35 @@ app.get('/api/fleet/dispatches', async (req, res) => {
 
 app.post('/api/fleet/dispatches', async (req, res) => {
     const { dispatch_code, vehicle_code, driver_name, destination, dispatch_date, status, notes } = req.body;
-    const client = await pool.connect();
     try {
-        await client.query('BEGIN');
-        const query = `
-            INSERT INTO transport_dispatches (dispatch_code, vehicle_code, driver_name, destination, dispatch_date, status, notes) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
-        `;
-        const result = await client.query(query, [dispatch_code, vehicle_code, driver_name, destination, dispatch_date, status || 'Dispatched', notes]);
-        await client.query(`UPDATE fleet_vehicles SET status = 'On Mission' WHERE plate_number = $1`, [vehicle_code]);
-        await client.query(`UPDATE drivers SET status = 'On Duty' WHERE full_name = $1`, [driver_name]);
-        await client.query('COMMIT');
-        res.status(201).json({ success: true, data: result.rows[0] });
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            const query = `
+                INSERT INTO transport_dispatches (dispatch_code, vehicle_code, driver_name, destination, dispatch_date, status, notes) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+            `;
+            const result = await client.query(query, [dispatch_code, vehicle_code, driver_name, destination, dispatch_date, status || 'Dispatched', notes]);
+
+            await client.query(`
+                UPDATE fleet_vehicles SET status = 'On Mission' WHERE plate_number = $1
+            `, [vehicle_code]);
+
+            await client.query(`
+                UPDATE drivers SET status = 'On Duty' WHERE full_name = $1
+            `, [driver_name]);
+
+            await client.query('COMMIT');
+            res.status(201).json({ success: true, data: result.rows[0] });
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
     } catch (err) {
-        await client.query('ROLLBACK');
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការបញ្ជូនរថយន្តដឹកជញ្ជូន' });
-    } finally {
-        client.release();
     }
 });
 
@@ -2474,32 +2735,44 @@ app.put('/api/fleet/dispatches/:id', async (req, res) => {
         const query = `
             UPDATE transport_dispatches 
             SET vehicle_code = $1, driver_name = $2, destination = $3, notes = $4, status = $5
-            WHERE id = $6 RETURNING *;
+            WHERE id = $6 
+            RETURNING *;
         `;
         const result = await pool.query(query, [vehicle_code, driver_name, destination, notes, status, id]);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យការដឹកជញ្ជូននេះទេ' });
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យការដឹកជញ្ជូននេះទេ' });
+        }
+
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យ' });
+        console.error('Error updating dispatch:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការដោះដូររថយន្ត និងអ្នកបើកបរ' });
     }
 });
 
+// ==========================================
+// API Routes: Fuel Logs
+// ==========================================
 app.get('/api/fleet/fuel', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
     try {
         let query = 'SELECT * FROM fuel_logs WHERE 1=1';
         let params = [];
         let paramIndex = 1;
+        
         if (from && to) {
             query += ` AND log_date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
             params.push(from, to);
             paramIndex += 2;
         }
+
         if (vehicle_code) {
             query += ` AND vehicle_code = $${paramIndex}`;
             params.push(vehicle_code);
             paramIndex += 1;
         }
+        
         query += ' ORDER BY log_date DESC, id DESC';
         const result = await pool.query(query, params);
         res.json(result.rows);
@@ -2514,6 +2787,7 @@ app.post('/api/fleet/fuel', async (req, res) => {
         const l = parseFloat(liters) || 0;
         const cpl = parseFloat(cost_per_liter) || 0;
         const total_cost = l * cpl;
+
         const query = `
             INSERT INTO fuel_logs (vehicle_code, log_date, liters, cost_per_liter, total_cost, current_mileage, filled_by) 
             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
@@ -2525,22 +2799,28 @@ app.post('/api/fleet/fuel', async (req, res) => {
     }
 });
 
+// ==========================================
+// API Routes: Maintenance Logs
+// ==========================================
 app.get('/api/fleet/maintenance', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
     try {
         let query = 'SELECT * FROM maintenance_logs WHERE 1=1';
         let params = [];
         let paramIndex = 1;
+        
         if (from && to) {
             query += ` AND maintenance_date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
             params.push(from, to);
             paramIndex += 2;
         }
+
         if (vehicle_code) {
             query += ` AND vehicle_code = $${paramIndex}`;
             params.push(vehicle_code);
             paramIndex += 1;
         }
+        
         query += ' ORDER BY maintenance_date DESC, id DESC';
         const result = await pool.query(query, params);
         res.json(result.rows);
@@ -2551,48 +2831,71 @@ app.get('/api/fleet/maintenance', async (req, res) => {
 
 app.post('/api/fleet/maintenance', async (req, res) => {
     const { vehicle_code, maintenance_date, service_type, description, cost, service_provider, status } = req.body;
-    const client = await pool.connect();
     try {
-        await client.query('BEGIN');
-        const mStatus = status || 'Completed';
-        const query = `
-            INSERT INTO maintenance_logs (vehicle_code, maintenance_date, service_type, description, cost, service_provider, status) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
-        `;
-        const result = await client.query(query, [vehicle_code, maintenance_date, service_type, description, parseFloat(cost) || 0, service_provider, mStatus]);
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
 
-        if (mStatus === 'In Progress') {
-            await client.query(`UPDATE fleet_vehicles SET status = 'In Maintenance' WHERE vehicle_code = $1`, [vehicle_code]);
-        } else {
-            await client.query(`UPDATE fleet_vehicles SET status = 'Available' WHERE vehicle_code = $1`, [vehicle_code]);
+            const query = `
+                INSERT INTO maintenance_logs (vehicle_code, maintenance_date, service_type, description, cost, service_provider, status) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
+            `;
+            const mStatus = status || 'Completed';
+            const result = await client.query(query, [
+                vehicle_code, 
+                maintenance_date, 
+                service_type, 
+                description, 
+                parseFloat(cost) || 0, 
+                service_provider, 
+                mStatus
+            ]);
+
+            if (mStatus === 'In Progress') {
+                await client.query(`
+                    UPDATE fleet_vehicles SET status = 'In Maintenance' WHERE vehicle_code = $1
+                `, [vehicle_code]);
+            } else {
+                await client.query(`
+                    UPDATE fleet_vehicles SET status = 'Available' WHERE vehicle_code = $1
+                `, [vehicle_code]);
+            }
+
+            await client.query('COMMIT');
+            res.status(201).json({ success: true, data: result.rows[0] });
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
         }
-
-        await client.query('COMMIT');
-        res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        await client.query('ROLLBACK');
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការថែទាំយានយន្ត' });
-    } finally {
-        client.release();
     }
 });
 
+// ==========================================
+// API Routes: Transport Plans
+// ==========================================
 app.get('/api/fleet/transport-plans', async (req, res) => {
     const { from, to, vehicle_code } = req.query;
     try {
         let query = 'SELECT * FROM transport_plans WHERE 1=1';
         let params = [];
         let paramIndex = 1;
+        
         if (from && to) {
             query += ` AND departure_date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
             params.push(from, to);
             paramIndex += 2;
         }
+
         if (vehicle_code) {
             query += ` AND vehicle_code = $${paramIndex}`;
             params.push(vehicle_code);
             paramIndex += 1;
         }
+        
         query += ' ORDER BY departure_date DESC, id DESC';
         const result = await pool.query(query, params);
         res.json(result.rows);
@@ -2603,22 +2906,39 @@ app.get('/api/fleet/transport-plans', async (req, res) => {
 
 app.post('/api/fleet/transport-plans', async (req, res) => {
     const { cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes } = req.body;
-    const client = await pool.connect();
     try {
-        await client.query('BEGIN');
-        const query = `
-            INSERT INTO transport_plans (cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes, status) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, 'Planned') RETURNING *;
-        `;
-        const result = await client.query(query, [cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes]);
-        await client.query(`UPDATE fleet_vehicles SET status = 'On Mission' WHERE vehicle_code = $1`, [vehicle_code]);
-        await client.query('COMMIT');
-        res.status(201).json({ success: true, data: result.rows[0] });
+        const client = await pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            const query = `
+                INSERT INTO transport_plans (cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes, status) 
+                VALUES ($1, $2, $3, $4, $5, $6, $7, 'Planned') RETURNING *;
+            `;
+            const result = await client.query(query, [
+                cargo_code, 
+                vehicle_code, 
+                origin, 
+                destination, 
+                departure_date, 
+                driver_name, 
+                notes
+            ]);
+
+            await client.query(`
+                UPDATE fleet_vehicles SET status = 'On Mission' WHERE vehicle_code = $1
+            `, [vehicle_code]);
+
+            await client.query('COMMIT');
+            res.status(201).json({ success: true, data: result.rows[0] });
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
     } catch (err) {
-        await client.query('ROLLBACK');
         res.status(500).json({ error: 'កំហុសក្នុងការបង្កើតផែនការដឹកជញ្ជូនទំនិញ' });
-    } finally {
-        client.release();
     }
 });
 
@@ -2629,37 +2949,50 @@ app.put('/api/fleet/transport-plans/:id', async (req, res) => {
         const query = `
             UPDATE transport_plans 
             SET cargo_code = $1, vehicle_code = $2, origin = $3, destination = $4, departure_date = $5, driver_name = $6, notes = $7, status = $8
-            WHERE id = $9 RETURNING *;
+            WHERE id = $9 
+            RETURNING *;
         `;
         const result = await pool.query(query, [cargo_code, vehicle_code, origin, destination, departure_date, driver_name, notes, status, id]);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យផែនការដឹកជញ្ជូននេះទេ' });
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យផែនការដឹកជញ្ជូននេះទេ' });
+        }
+
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យ' });
+        console.error('Error updating transport plan:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែ/ដោះដូរផែនការដឹកជញ្ជូន' });
     }
 });
 
+// ==========================================
+// API Routes: Damaged Containers
+// ==========================================
 app.get('/api/fleet/damaged-containers', async (req, res) => {
     const { from, to, severity_level, shipping_line } = req.query;
     try {
         let query = 'SELECT * FROM damaged_containers WHERE 1=1';
         let params = [];
         let paramIndex = 1;
+        
         if (from && to) {
             query += ` AND inspection_date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
             params.push(from, to);
             paramIndex += 2;
         }
+
         if (severity_level) {
             query += ` AND severity_level = $${paramIndex}`;
             params.push(severity_level);
             paramIndex += 1;
         }
+
         if (shipping_line) {
             query += ` AND shipping_line ILIKE $${paramIndex}`;
             params.push(`%${shipping_line}%`);
             paramIndex += 1;
         }
+        
         query += ' ORDER BY inspection_date DESC, id DESC';
         const result = await pool.query(query, params);
         res.json(result.rows);
@@ -2669,59 +3002,94 @@ app.get('/api/fleet/damaged-containers', async (req, res) => {
 });
 
 app.post('/api/fleet/damaged-containers', async (req, res) => {
-    const { container_number, container_size, container_type, shipping_line, inspection_date, damage_location, severity_level, inspector_name, description, status } = req.body;
+    const { 
+        container_number, container_size, container_type, shipping_line, 
+        inspection_date, damage_location, severity_level, inspector_name, description, status 
+    } = req.body;
     try {
         const query = `
             INSERT INTO damaged_containers 
             (container_number, container_size, container_type, shipping_line, inspection_date, damage_location, severity_level, inspector_name, description, status) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
         `;
-        const result = await pool.query(query, [container_number, container_size || "40'", container_type || "DC", shipping_line || null, inspection_date, damage_location, severity_level, inspector_name, description, status || 'Pending Repair']);
+        const result = await pool.query(query, [
+            container_number, 
+            container_size || "40'", 
+            container_type || "DC", 
+            shipping_line || null, 
+            inspection_date, 
+            damage_location, 
+            severity_level, 
+            inspector_name, 
+            description, 
+            status || 'Pending Repair'
+        ]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាកុងតឺន័រខូច' });
     }
 });
 
 app.put('/api/fleet/damaged-containers/:id', async (req, res) => {
     const { id } = req.params;
-    const { container_number, container_size, container_type, shipping_line, inspection_date, damage_location, severity_level, inspector_name, status, description } = req.body;
+    const { 
+        container_number, container_size, container_type, shipping_line, 
+        inspection_date, damage_location, severity_level, inspector_name, status, description 
+    } = req.body;
     try {
         const query = `
             UPDATE damaged_containers 
             SET container_number = $1, container_size = $2, container_type = $3, shipping_line = $4, 
                 inspection_date = $5, damage_location = $6, severity_level = $7, inspector_name = $8, status = $9, description = $10
-            WHERE id = $11 RETURNING *;
+            WHERE id = $11 
+            RETURNING *;
         `;
-        const result = await pool.query(query, [container_number, container_size, container_type, shipping_line, inspection_date, damage_location, severity_level, inspector_name, status, description, id]);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យកុងតឺន័រខូចនេះទេ' });
+        const values = [
+            container_number, container_size, container_type, shipping_line, 
+            inspection_date, damage_location, severity_level, inspector_name, status, description, id
+        ];
+        const result = await pool.query(query, values);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យកុងតឺន័រខូចនេះទេ' });
+        }
+
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យ' });
+        console.error('Error updating damaged container:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែ/ដោះដូរទិន្នន័យ' });
     }
 });
 
+// ==========================================
+// API Routes: Container Yard Locations
+// ==========================================
 app.get('/api/fleet/container-yard', async (req, res) => {
     const { block_code, status, shipping_line } = req.query;
     try {
         let query = 'SELECT * FROM container_yard_locations WHERE 1=1';
         let params = [];
         let paramIndex = 1;
+        
         if (block_code) {
             query += ` AND block_code = $${paramIndex}`;
             params.push(block_code);
             paramIndex += 1;
         }
+
         if (status) {
             query += ` AND status = $${paramIndex}`;
             params.push(status);
             paramIndex += 1;
         }
+
         if (shipping_line) {
             query += ` AND shipping_line ILIKE $${paramIndex}`;
             params.push(`%${shipping_line}%`);
             paramIndex += 1;
         }
+        
         query += ' ORDER BY updated_date DESC, id DESC';
         const result = await pool.query(query, params);
         res.json(result.rows);
@@ -2738,9 +3106,21 @@ app.post('/api/fleet/container-yard', async (req, res) => {
             (container_number, container_size, container_type, shipping_line, block_code, row_number, tier_number, status, updated_date, notes) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
         `;
-        const result = await pool.query(query, [container_number, container_size || "40'", container_type || "DC", shipping_line || null, block_code, parseInt(row_number) || 1, parseInt(tier_number) || 1, status || 'Stored', updated_date, notes]);
+        const result = await pool.query(query, [
+            container_number, 
+            container_size || "40'", 
+            container_type || "DC", 
+            shipping_line || null, 
+            block_code, 
+            parseInt(row_number) || 1, 
+            parseInt(tier_number) || 1, 
+            status || 'Stored', 
+            updated_date, 
+            notes
+        ]);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាទីតាំងកុងតឺន័រ' });
     }
 });
@@ -2753,32 +3133,49 @@ app.put('/api/fleet/container-yard/:id', async (req, res) => {
             UPDATE container_yard_locations 
             SET container_number = $1, container_size = $2, container_type = $3, shipping_line = $4, 
                 block_code = $5, row_number = $6, tier_number = $7, status = $8, updated_date = $9, notes = $10
-            WHERE id = $11 RETURNING *;
+            WHERE id = $11 
+            RETURNING *;
         `;
-        const result = await pool.query(query, [container_number, container_size, container_type, shipping_line, block_code, parseInt(row_number) || 1, parseInt(tier_number) || 1, status, updated_date, notes, id]);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យទីតាំងកុងតឺន័រនេះទេ' });
+        const values = [
+            container_number, container_size, container_type, shipping_line, 
+            block_code, parseInt(row_number) || 1, parseInt(tier_number) || 1, 
+            status, updated_date, notes, id
+        ];
+        const result = await pool.query(query, values);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យទីតាំងកុងតឺន័រនេះទេ' });
+        }
+
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យ' });
+        console.error('Error updating container yard location:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែ/ដោះដូរទិន្នន័យ' });
     }
 });
 
+// ==========================================
+// API Routes: Container Repair Logs
+// ==========================================
 app.get('/api/fleet/container-repairs', async (req, res) => {
     const { status, container_number } = req.query;
     try {
         let query = 'SELECT * FROM container_repair_logs WHERE 1=1';
         let params = [];
         let paramIndex = 1;
+        
         if (status) {
             query += ` AND status = $${paramIndex}`;
             params.push(status);
             paramIndex += 1;
         }
+
         if (container_number) {
             query += ` AND container_number ILIKE $${paramIndex}`;
             params.push(`%${container_number}%`);
             paramIndex += 1;
         }
+        
         query += ' ORDER BY repair_date DESC, id DESC';
         const result = await pool.query(query, params);
         res.json(result.rows);
@@ -2788,17 +3185,30 @@ app.get('/api/fleet/container-repairs', async (req, res) => {
 });
 
 app.post('/api/fleet/container-repairs', async (req, res) => {
-    const { container_number, container_size, container_type, shipping_line, repair_date, block_code, row_number, tier_number, repair_type, cost, technician_name, status, notes } = req.body;
+    const { 
+        container_number, container_size, container_type, shipping_line, 
+        repair_date, block_code, row_number, tier_number, 
+        repair_type, cost, technician_name, status, notes 
+    } = req.body;
+    
     const repairStatus = status || 'In Progress';
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const yardCheck = await client.query(`SELECT status FROM container_yard_locations WHERE container_number = $1`, [container_number]);
+
+        const yardCheck = await client.query(
+            `SELECT status FROM container_yard_locations WHERE container_number = $1`, 
+            [container_number]
+        );
+
         if (yardCheck.rows.length > 0) {
             const currentYardStatus = yardCheck.rows[0].status;
             if (currentYardStatus === 'Gate-Out' || currentYardStatus === 'In Repair') {
                 await client.query('ROLLBACK');
-                return res.status(400).json({ success: false, error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ!` });
+                return res.status(400).json({ 
+                    success: false, 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចយកមកជួសជុលបានទេ!` 
+                });
             }
         }
 
@@ -2807,16 +3217,35 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
             (container_number, container_size, container_type, shipping_line, repair_date, block_code, row_number, tier_number, repair_type, cost, technician_name, status, notes) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *;
         `;
-        const result = await client.query(query, [container_number, container_size || "40'", container_type || "DC", shipping_line || null, repair_date, block_code || null, parseInt(row_number) || 1, parseInt(tier_number) || 1, repair_type, parseFloat(cost) || 0, technician_name, repairStatus, notes]);
+        const result = await client.query(query, [
+            container_number, 
+            container_size || "40'", 
+            container_type || "DC", 
+            shipping_line || null, 
+            repair_date, 
+            block_code || null, 
+            parseInt(row_number) || 1, 
+            parseInt(tier_number) || 1, 
+            repair_type, 
+            parseFloat(cost) || 0, 
+            technician_name, 
+            repairStatus, 
+            notes
+        ]);
 
         const yardStatus = repairStatus === 'Completed' ? 'Stored' : 'In Repair';
-        await client.query(`UPDATE container_yard_locations SET status = $1, updated_date = CURRENT_DATE WHERE container_number = $2`, [yardStatus, container_number]);
+        await client.query(`
+            UPDATE container_yard_locations 
+            SET status = $1, updated_date = CURRENT_DATE 
+            WHERE container_number = $2
+        `, [yardStatus, container_number]);
 
         await client.query('COMMIT');
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
         await client.query('ROLLBACK');
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកត់ត្រាការជួសជុល' });
+        console.error('Error saving container repair and updating yard:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកត់ត្រាការជួសជុល និងធ្វើបច្ចុប្បន្នភាពស្តុក' });
     } finally {
         client.release();
     }
@@ -2824,52 +3253,76 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
 
 app.put('/api/fleet/container-repairs/:id', async (req, res) => {
     const { id } = req.params;
-    const { container_number, container_size, container_type, shipping_line, repair_date, block_code, row_number, tier_number, repair_type, cost, technician_name, status, notes } = req.body;
+    const { 
+        container_number, container_size, container_type, shipping_line, 
+        repair_date, block_code, row_number, tier_number, 
+        repair_type, cost, technician_name, status, notes 
+    } = req.body;
+
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
+
         const query = `
             UPDATE container_repair_logs 
             SET container_number = $1, container_size = $2, container_type = $3, shipping_line = $4, 
                 repair_date = $5, block_code = $6, row_number = $7, tier_number = $8, 
                 repair_type = $9, cost = $10, technician_name = $11, status = $12, notes = $13
-            WHERE id = $14 RETURNING *;
+            WHERE id = $14 
+            RETURNING *;
         `;
-        const result = await client.query(query, [container_number, container_size, container_type, shipping_line, repair_date, block_code || null, parseInt(row_number) || 1, parseInt(tier_number) || 1, repair_type, parseFloat(cost) || 0, technician_name, status, notes, id]);
+        const values = [
+            container_number, container_size, container_type, shipping_line, 
+            repair_date, block_code || null, parseInt(row_number) || 1, parseInt(tier_number) || 1, 
+            repair_type, parseFloat(cost) || 0, technician_name, status, notes, id
+        ];
+        const result = await client.query(query, values);
+        
         if (result.rows.length === 0) {
             await client.query('ROLLBACK');
             return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
         }
 
         const yardStatus = status === 'Completed' ? 'Stored' : 'In Repair';
-        await client.query(`UPDATE container_yard_locations SET status = $1, updated_date = CURRENT_DATE WHERE container_number = $2`, [yardStatus, container_number]);
+        await client.query(`
+            UPDATE container_yard_locations 
+            SET status = $1, updated_date = CURRENT_DATE 
+            WHERE container_number = $2
+        `, [yardStatus, container_number]);
 
         await client.query('COMMIT');
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
         await client.query('ROLLBACK');
+        console.error('Error updating container repair:', err);
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យ' });
     } finally {
         client.release();
     }
 });
 
+// ==========================================
+// API Routes: Container Gate-Out
+// ==========================================
 app.get('/api/fleet/container-gate-out', async (req, res) => {
     const { from, to, container_number } = req.query;
     try {
         let query = 'SELECT * FROM container_gate_out WHERE 1=1';
         let params = [];
         let paramIndex = 1;
+        
         if (from && to) {
             query += ` AND gate_out_date::date BETWEEN $${paramIndex} AND $${paramIndex + 1}`;
             params.push(from, to);
             paramIndex += 2;
         }
+
         if (container_number) {
             query += ` AND container_number ILIKE $${paramIndex}`;
             params.push(`%${container_number}%`);
             paramIndex += 1;
         }
+        
         query += ' ORDER BY gate_out_date DESC, id DESC';
         const result = await pool.query(query, params);
         res.json(result.rows);
@@ -2879,16 +3332,28 @@ app.get('/api/fleet/container-gate-out', async (req, res) => {
 });
 
 app.post('/api/fleet/container-gate-out', async (req, res) => {
-    const { container_number, container_size, container_type, shipping_line, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes } = req.body;
+    const { 
+        container_number, container_size, container_type, shipping_line, 
+        gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes 
+    } = req.body;
+    
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
-        const yardCheck = await client.query(`SELECT status FROM container_yard_locations WHERE container_number = $1`, [container_number]);
+
+        const yardCheck = await client.query(
+            `SELECT status FROM container_yard_locations WHERE container_number = $1`, 
+            [container_number]
+        );
+
         if (yardCheck.rows.length > 0) {
             const currentYardStatus = yardCheck.rows[0].status;
             if (currentYardStatus === 'Gate-Out' || currentYardStatus === 'In Repair') {
                 await client.query('ROLLBACK');
-                return res.status(400).json({ success: false, error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ!` });
+                return res.status(400).json({ 
+                    success: false, 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out បានទេ!` 
+                });
             }
         }
 
@@ -2897,14 +3362,31 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
             (container_number, container_size, container_type, shipping_line, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *;
         `;
-        const result = await client.query(query, [container_number, container_size || "40'", container_type || "DC", shipping_line || null, gate_out_date || new Date(), truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes]);
+        const result = await client.query(query, [
+            container_number, 
+            container_size || "40'", 
+            container_type || "DC", 
+            shipping_line || null, 
+            gate_out_date || new Date(), 
+            truck_plate_number, 
+            driver_name, 
+            destination, 
+            bill_of_lading, 
+            released_by, 
+            notes
+        ]);
 
-        await client.query(`UPDATE container_yard_locations SET status = 'Gate-Out', updated_date = CURRENT_DATE WHERE container_number = $1`, [container_number]);
+        await client.query(`
+            UPDATE container_yard_locations 
+            SET status = 'Gate-Out', updated_date = CURRENT_DATE 
+            WHERE container_number = $1
+        `, [container_number]);
 
         await client.query('COMMIT');
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
         await client.query('ROLLBACK');
+        console.error(err);
         res.status(500).json({ error: 'កំហុសក្នុងការកត់ត្រាការចេញកុងតឺន័រ (Gate-Out)' });
     } finally {
         client.release();
@@ -2913,62 +3395,109 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
 
 app.put('/api/fleet/container-gate-out/:id', async (req, res) => {
     const { id } = req.params;
-    const { container_number, container_size, container_type, shipping_line, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes } = req.body;
+    const { 
+        container_number, container_size, container_type, shipping_line, 
+        gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes 
+    } = req.body;
     try {
         const query = `
             UPDATE container_gate_out 
             SET container_number = $1, container_size = $2, container_type = $3, shipping_line = $4, 
                 gate_out_date = $5, truck_plate_number = $6, driver_name = $7, destination = $8, 
                 bill_of_lading = $9, released_by = $10, notes = $11
-            WHERE id = $12 RETURNING *;
+            WHERE id = $12 
+            RETURNING *;
         `;
-        const result = await pool.query(query, [container_number, container_size, container_type, shipping_line, gate_out_date, truck_plate_number, driver_name, destination, bill_of_lading, released_by, notes, id]);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        const values = [
+            container_number, container_size, container_type, shipping_line, 
+            gate_out_date, truck_plate_number, driver_name, destination, 
+            bill_of_lading, released_by, notes, id
+        ];
+        const result = await pool.query(query, values);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យការចេញកុងតឺន័រនេះទេ' });
+        }
+
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែទិន្នន័យ' });
+        console.error('Error updating container gate-out:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែ/ដោះដូរទិន្នន័យ' });
     }
 });
 
+// ==========================================
+// API Routes: Yard Operations
+// ==========================================
 app.get('/api/fleet/yard-operations', async (req, res) => {
     try {
         const query = 'SELECT * FROM yard_operations ORDER BY operation_date DESC';
         const result = await pool.query(query);
         res.json(result.rows);
     } catch (err) {
+        console.error('Error fetching yard operations:', err);
         res.status(500).json({ success: false, error: 'Database error' });
     }
 });
 
 app.post('/api/fleet/yard-operations', async (req, res) => {
     try {
-        const { container_number, operation_type, yard_location, operation_date, equipment_used, operator_name, status, notes } = req.body;
+        const { 
+            container_number, operation_type, yard_location, 
+            operation_date, equipment_used, operator_name, status, notes 
+        } = req.body;
+
+        if (!container_number || !operation_type || !yard_location || !operation_date || !operator_name || !status) {
+            return res.status(400).json({ success: false, error: 'សូមបំពេញព័ត៌មានដែលចាំបាច់ឱ្យបានគ្រប់គ្រាន់!' });
+        }
+
         const query = `
             INSERT INTO yard_operations 
             (container_number, operation_type, yard_location, operation_date, equipment_used, operator_name, status, notes) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *;
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+            RETURNING *;
         `;
-        const result = await pool.query(query, [container_number, operation_type, yard_location, operation_date, equipment_used || null, operator_name, status, notes || null]);
+        const values = [
+            container_number, operation_type, yard_location, 
+            operation_date, equipment_used || null, operator_name, status, notes || null
+        ];
+
+        const result = await pool.query(query, values);
         res.status(201).json({ success: true, data: result.rows[0] });
     } catch (err) {
-        res.status(500).json({ success: false, error: 'Database error' });
+        console.error('Error saving yard operation:', err);
+        res.status(500).json({ success: false, error: 'មិនអាចរក្សាទុកទិន្នន័យក្នុង Database បានទេ' });
     }
 });
 
 app.put('/api/fleet/yard-operations/:id', async (req, res) => {
     const { id } = req.params;
     try {
-        const { container_number, operation_type, yard_location, operation_date, equipment_used, operator_name, status, notes } = req.body;
+        const { 
+            container_number, operation_type, yard_location, 
+            operation_date, equipment_used, operator_name, status, notes 
+        } = req.body;
+
         const query = `
             UPDATE yard_operations 
             SET container_number = $1, operation_type = $2, yard_location = $3, 
                 operation_date = $4, equipment_used = $5, operator_name = $6, status = $7, notes = $8
-            WHERE id = $9 RETURNING *;
+            WHERE id = $9 
+            RETURNING *;
         `;
-        const result = await pool.query(query, [container_number, operation_type, yard_location, operation_date, equipment_used || null, operator_name, status, notes || null, id]);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        const values = [
+            container_number, operation_type, yard_location, 
+            operation_date, equipment_used || null, operator_name, status, notes || null, id
+        ];
+
+        const result = await pool.query(query, values);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error updating yard operation:', err);
         res.status(500).json({ success: false, error: 'Database error' });
     }
 });
@@ -2977,18 +3506,25 @@ app.delete('/api/fleet/yard-operations/:id', async (req, res) => {
     const { id } = req.params;
     try {
         const result = await pool.query('DELETE FROM yard_operations WHERE id = $1 RETURNING *;', [id]);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
         res.json({ success: true, message: 'Deleted successfully' });
     } catch (err) {
+        console.error('Error deleting yard operation:', err);
         res.status(500).json({ success: false, error: 'Database error' });
     }
 });
 
+// ==========================================
+// API Routes: Security Logs
+// ==========================================
 app.get('/api/fleet/security-logs', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM security_logs ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
+        console.error('Error fetching security logs:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -3000,9 +3536,11 @@ app.post('/api/fleet/security-logs', async (req, res) => {
             INSERT INTO security_logs (guard_name, shift_time, post_location, log_date, event_type, status, notes)
             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *;
         `;
-        const result = await pool.query(query, [guard_name, shift_time, post_location, log_date, event_type, status, notes]);
+        const values = [guard_name, shift_time, post_location, log_date, event_type, status, notes];
+        const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error saving security log:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -3014,12 +3552,19 @@ app.put('/api/fleet/security-logs/:id', async (req, res) => {
         const query = `
             UPDATE security_logs 
             SET guard_name = $1, shift_time = $2, post_location = $3, log_date = $4, event_type = $5, status = $6, notes = $7
-            WHERE id = $8 RETURNING *;
+            WHERE id = $8 
+            RETURNING *;
         `;
-        const result = await pool.query(query, [guard_name, shift_time, post_location, log_date, event_type, status, notes, id]);
-        if (result.rows.length === 0) return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យសន្តិសុខនេះទេ' });
+        const values = [guard_name, shift_time, post_location, log_date, event_type, status, notes, id];
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យសន្តិសុខនេះទេ' });
+        }
+
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error updating security log:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
@@ -3030,16 +3575,21 @@ app.delete('/api/fleet/security-logs/:id', async (req, res) => {
         await pool.query('DELETE FROM security_logs WHERE id = $1', [id]);
         res.json({ success: true, message: 'Deleted successfully' });
     } catch (err) {
+        console.error('Error deleting security log:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
 
+// ==========================================
+// API Routes: WMS / OMS
+// ==========================================
 app.get('/api/wms-oms', async (req, res) => {
     try {
         const result = await pool.query('SELECT * FROM wms_oms_records ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
-        res.status(500).json({ error: 'Server error' });
+        console.error('Error fetching WMS/OMS records:', err);
+        res.status(500).json({ error: 'Server.js error' });
     }
 });
 
@@ -3050,9 +3600,11 @@ app.post('/api/wms-oms', async (req, res) => {
             INSERT INTO wms_oms_records (item_code, item_name, system_type, quantity, location_status)
             VALUES ($1, $2, $3, $4, $5) RETURNING *;
         `;
-        const result = await pool.query(query, [item_code, item_name, system_type, parseInt(quantity) || 0, location_status]);
+        const values = [item_code, item_name, system_type, parseInt(quantity) || 0, location_status];
+        const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
+        console.error('Error saving WMS/OMS record:', err);
         res.status(500).json({ error: 'Server error' });
     }
 });
