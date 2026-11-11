@@ -1906,6 +1906,46 @@ app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
+// ==========================================
+// API Routes: Customs Documents (Update with PDF Upload)
+// ==========================================
+app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res) => {
+    const { id } = req.params;
+    const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
+    
+    try {
+        let query = '';
+        let values = [];
+
+        if (req.file) {
+            const pdf_path = `/uploads/${req.file.filename}`;
+            query = `
+                UPDATE customs_documents 
+                SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8, pdf_path = $9
+                WHERE id = $10 RETURNING *;
+            `;
+            values = [document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_path, id];
+        } else {
+            query = `
+                UPDATE customs_documents 
+                SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8
+                WHERE id = $9 RETURNING *;
+            `;
+            values = [document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, id];
+        }
+
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យនេះទេ' });
+        }
+
+        res.json({ success: true, data: result.rows[0] });
+    } catch (err) {
+        console.error('Error updating customs document:', err);
+        res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
 
 app.delete('/api/customs-documents/:id', async (req, res) => {
     const { id } = req.params;
