@@ -335,7 +335,6 @@
         <div class="filter-action-bar no-print">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <!-- 💡 បានកែប្រែ Label និង Placeholder ឱ្យរួមបញ្ចូល លេខយោង / ឯកសារ -->
                     <label class="form-label">ស្វែងរក (កូដ / ក្រុមហ៊ុន / លេខយោង):</label>
                     <input type="text" class="form-control" id="searchInput" placeholder="វាយស្វែងរក...">
                 </div>
@@ -519,17 +518,21 @@
     }
 
     function filterCustomsData() {
-        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
         const selectedOffice = document.getElementById('filterOffice').value;
         const fromDate = document.getElementById('fromDate').value;
         const toDate = document.getElementById('toDate').value;
 
         const filtered = customsList.filter(item => {
-            // 💡 បានបន្ថែម (item.reference_number && item.reference_number.toLowerCase().includes(keyword)) ចូលក្នុងកលខណ្ឌស្វែងរក
-            const matchesKeyword = 
-                (item.sys_code && item.sys_code.toLowerCase().includes(keyword)) || 
-                (item.company_name && item.company_name.toLowerCase().includes(keyword)) ||
-                (item.reference_number && item.reference_number.toLowerCase().includes(keyword));
+            // Safe check សម្រាប់ Keyword (ការពារ Error กรณี Data ខ្លះ null/undefined)
+            const sysCodeStr = (item.sys_code || '').toLowerCase();
+            const companyStr = (item.company_name || '').toLowerCase();
+            const refNoStr = (item.reference_number || '').toLowerCase();
+
+            const matchesKeyword = !keyword || 
+                sysCodeStr.includes(keyword) || 
+                companyStr.includes(keyword) || 
+                refNoStr.includes(keyword);
 
             const matchesOffice = !selectedOffice || item.customs_office === selectedOffice;
 
@@ -639,6 +642,7 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // 💡 ភ្ជាប់ព្រឹត្តិការណ៍ keyup ឱ្យដំណើរការស្វែងរកស្វ័យប្រវត្តិ
     document.getElementById('searchInput').addEventListener('keyup', function() {
         filterCustomsData();
     });
