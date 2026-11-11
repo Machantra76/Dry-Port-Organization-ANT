@@ -392,10 +392,12 @@
             else if (item.status === 'Pending') statusBadge = 'bg-warning text-dark';
             else if (item.status === 'Rejected') statusBadge = 'bg-danger';
 
-            // 🌟 ឆែកមើល has_pdf និងហៅទៅកាន់ API ID សម្រាប់បង្ហាញប៊ូតុង PDF
+            // 🌟 កូដបង្ហាញប៊ូតុង PDF (ប្រសិនបើมี pdf_path នឹងបង្ហាញប៊ូតុងពណ៌បៃតង ຖ້າគ្មានទេបង្ហាញប៊ូតុងពណ៌ប្រផេះ)
             let downloadBtn = '';
-            if (item.has_pdf) {
+            if (item.pdf_path) {
                 downloadBtn = `<a href="/api/customs-documents/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
+            } else {
+                downloadBtn = `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
             }
 
             const row = `
@@ -507,7 +509,7 @@
             }
         } catch (err) {
             console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ Server ឬទំហំឯកសារធំពេក: ' + err.message);
+            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server ឬទំហំឯកសារធំពេក: ' + err.message);
         }
     });
 
