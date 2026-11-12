@@ -487,7 +487,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៧. តារាងការគ្រប់គ្រងឯកសារគយ (Customs Document Management)
+        // ២៧. តារាងការគ្រប់គ្រងឯកសារគយ (Customs Document Management) - បន្ថែម Columns សម្រាប់ DO PDF
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_documents (
                 id SERIAL PRIMARY KEY,
@@ -501,15 +501,18 @@ async function initializeDatabase() {
                 notes TEXT,
                 pdf_data TEXT,
                 has_pdf BOOLEAN DEFAULT FALSE,
+                do_pdf_data TEXT,
+                has_do_pdf BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
         await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS pdf_data TEXT;`);
         await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS has_pdf BOOLEAN DEFAULT FALSE;`);
-        // ដក UNIQUE Constraint ចេញពី document_number ដើម្បីអាចទុកទទេ ឬស្ទួនបានបើចាំបាច់ ប៉ុន្តែយើងនឹងពិនិត្យកូដផ្ទៀងផ្ទាត់កុំឱ្យស្ទួនខាងក្រោម
+        await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS do_pdf_data TEXT;`);
+        await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS has_do_pdf BOOLEAN DEFAULT FALSE;`);
         await client.query(`ALTER TABLE customs_documents DROP CONSTRAINT IF EXISTS customs_documents_document_number_key;`).catch(() => {});
 
-        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management)
+        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management) - បន្ថែម Columns សម្រាប់ Manifest PDF
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_system_data (
                 id SERIAL PRIMARY KEY,
@@ -524,11 +527,15 @@ async function initializeDatabase() {
                 remarks TEXT,
                 pdf_data TEXT,
                 has_pdf BOOLEAN DEFAULT FALSE,
+                manifest_pdf_data TEXT,
+                has_manifest_pdf BOOLEAN DEFAULT FALSE,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
         await client.query(`ALTER TABLE customs_system_data ADD COLUMN IF NOT EXISTS pdf_data TEXT;`);
         await client.query(`ALTER TABLE customs_system_data ADD COLUMN IF NOT EXISTS has_pdf BOOLEAN DEFAULT FALSE;`);
+        await client.query(`ALTER TABLE customs_system_data ADD COLUMN IF NOT EXISTS manifest_pdf_data TEXT;`);
+        await client.query(`ALTER TABLE customs_system_data ADD COLUMN IF NOT EXISTS has_manifest_pdf BOOLEAN DEFAULT FALSE;`);
 
         // ២៩. តារាងអ្នកកាន់ឯកសារគយ (Document Controller / Handler)
         await client.query(`
@@ -1767,11 +1774,11 @@ app.delete('/api/document-handlers/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Customs System Data (Base64 Storage)
+// API Routes: Customs System Data (Base64 Storage - Supports Manifest PDF)
 // ==========================================
 app.get('/api/customs-system-data', async (req, res) => {
     try {
-        const result = await pool.query('SELECT id, sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, has_pdf, created_at FROM customs_system_data ORDER BY id DESC');
+        const result = await pool.query('SELECT id, sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, has_pdf, has_manifest_pdf, created_at FROM customs_system_data ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching customs system data:', err);
@@ -1779,22 +1786,32 @@ app.get('/api/customs-system-data', async (req, res) => {
     }
 });
 
-app.post('/api/customs-system-data', upload.single('pdf_file'), async (req, res) => {
+app.post('/api/customs-system-data', upload.fields([
+    { name: 'pdf_file', maxCount: 1 },
+    { name: 'manifest_pdf_file', maxCount: 1 }
+]), async (req, res) => {
     const { sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks } = req.body;
     
     let pdf_data = null;
     let has_pdf = false;
-    if (req.file) {
-        pdf_data = `data:application/pdf;base64,${req.file.buffer.toString('base64')}`;
+    if (req.files && req.files.pdf_file) {
+        pdf_data = `data:application/pdf;base64,${req.files.pdf_file[0].buffer.toString('base64')}`;
         has_pdf = true;
+    }
+
+    let manifest_pdf_data = null;
+    let has_manifest_pdf = false;
+    if (req.files && req.files.manifest_pdf_file) {
+        manifest_pdf_data = `data:application/pdf;base64,${req.files.manifest_pdf_file[0].buffer.toString('base64')}`;
+        has_manifest_pdf = true;
     }
 
     try {
         const query = `
-            INSERT INTO customs_system_data (sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, pdf_data, has_pdf)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *;
+            INSERT INTO customs_system_data (sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, pdf_data, has_pdf, manifest_pdf_data, has_manifest_pdf)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *;
         `;
-        const values = [sys_code, company_name, transaction_type, entry_date, system_status || 'Pending', operator_name, reference_number, customs_office, remarks, pdf_data, has_pdf];
+        const values = [sys_code, company_name, transaction_type, entry_date, system_status || 'Pending', operator_name, reference_number, customs_office, remarks, pdf_data, has_pdf, manifest_pdf_data, has_manifest_pdf];
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
@@ -1803,31 +1820,37 @@ app.post('/api/customs-system-data', upload.single('pdf_file'), async (req, res)
     }
 });
 
-app.put('/api/customs-system-data/:id', upload.single('pdf_file'), async (req, res) => {
+app.put('/api/customs-system-data/:id', upload.fields([
+    { name: 'pdf_file', maxCount: 1 },
+    { name: 'manifest_pdf_file', maxCount: 1 }
+]), async (req, res) => {
     const { id } = req.params;
     const { sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks } = req.body;
     
     try {
-        let query = '';
-        let values = [];
+        let updateFields = [
+            'sys_code = $1', 'company_name = $2', 'transaction_type = $3', 'entry_date = $4', 
+            'system_status = $5', 'operator_name = $6', 'reference_number = $7', 'customs_office = $8', 'remarks = $9'
+        ];
+        let values = [sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks];
+        let idx = 10;
 
-        if (req.file) {
-            const pdf_data = `data:application/pdf;base64,${req.file.buffer.toString('base64')}`;
-            const has_pdf = true;
-            query = `
-                UPDATE customs_system_data 
-                SET sys_code = $1, company_name = $2, transaction_type = $3, entry_date = $4, system_status = $5, operator_name = $6, reference_number = $7, customs_office = $8, remarks = $9, pdf_data = $10, has_pdf = $11
-                WHERE id = $12 RETURNING *;
-            `;
-            values = [sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, pdf_data, has_pdf, id];
-        } else {
-            query = `
-                UPDATE customs_system_data 
-                SET sys_code = $1, company_name = $2, transaction_type = $3, entry_date = $4, system_status = $5, operator_name = $6, reference_number = $7, customs_office = $8, remarks = $9
-                WHERE id = $10 RETURNING *;
-            `;
-            values = [sys_code, company_name, transaction_type, entry_date, system_status, operator_name, reference_number, customs_office, remarks, id];
+        if (req.files && req.files.pdf_file) {
+            const pdf_data = `data:application/pdf;base64,${req.files.pdf_file[0].buffer.toString('base64')}`;
+            updateFields.push(`pdf_data = $${idx++}`);
+            updateFields.push(`has_pdf = $${idx++}`);
+            values.push(pdf_data, true);
         }
+
+        if (req.files && req.files.manifest_pdf_file) {
+            const manifest_pdf_data = `data:application/pdf;base64,${req.files.manifest_pdf_file[0].buffer.toString('base64')}`;
+            updateFields.push(`manifest_pdf_data = $${idx++}`);
+            updateFields.push(`has_manifest_pdf = $${idx++}`);
+            values.push(manifest_pdf_data, true);
+        }
+
+        values.push(id);
+        const query = `UPDATE customs_system_data SET ${updateFields.join(', ')} WHERE id = $${idx} RETURNING *;`;
 
         const result = await pool.query(query, values);
 
@@ -1854,11 +1877,11 @@ app.delete('/api/customs-system-data/:id', async (req, res) => {
 });
 
 // ==========================================
-// API Routes: Customs Documents (Base64 Storage)
+// API Routes: Customs Documents (Base64 Storage - Supports DO PDF)
 // ==========================================
 app.get('/api/customs-documents', async (req, res) => {
     try {
-        const result = await pool.query('SELECT id, document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, has_pdf, created_at FROM customs_documents ORDER BY id DESC');
+        const result = await pool.query('SELECT id, document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, has_pdf, has_do_pdf, created_at FROM customs_documents ORDER BY id DESC');
         res.json(result.rows);
     } catch (err) {
         console.error('Error fetching customs documents:', err);
@@ -1891,6 +1914,30 @@ app.get('/api/customs-documents/:id/pdf', async (req, res) => {
 });
 
 // ==========================================
+// API Route: មើល ឬទាញយកឯកសារ DO PDF របស់ Customs Documents ពី Database
+// ==========================================
+app.get('/api/customs-documents/:id/do-pdf', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('SELECT do_pdf_data FROM customs_documents WHERE id = $1', [id]);
+        if (result.rows.length === 0 || !result.rows[0].do_pdf_data) {
+            return res.status(404).send('រកមិនឃើញឯកសារ DO PDF សម្រាប់ទិន្នន័យនេះទេ');
+        }
+
+        const base64Str = result.rows[0].do_pdf_data;
+        const base64Data = base64Str.split(';base64,').pop();
+        const buffer = Buffer.from(base64Data, 'base64');
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline; filename="DO-document.pdf"');
+        res.send(buffer);
+    } catch (err) {
+        console.error('Error serving DO PDF:', err);
+        res.status(500).send('Server error');
+    }
+});
+
+// ==========================================
 // API Route: មើល ឬទាញយកឯកសារ PDF របស់ Customs System Data ពី Database
 // ==========================================
 app.get('/api/customs-system-data/:id/pdf', async (req, res) => {
@@ -1914,8 +1961,35 @@ app.get('/api/customs-system-data/:id/pdf', async (req, res) => {
     }
 });
 
-// 🌟 POST Customs Document ជាមួយ Duplicate Check (ការពារកុំឱ្យស្ទួនលេខឯកសារ)
-app.post('/api/customs-documents', upload.single('pdf_file'), async (req, res) => {
+// ==========================================
+// API Route: មើល ឬទាញយកឯកសារ Manifest PDF របស់ Customs System Data ពី Database
+// ==========================================
+app.get('/api/customs-system-data/:id/manifest-pdf', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const result = await pool.query('SELECT manifest_pdf_data FROM customs_system_data WHERE id = $1', [id]);
+        if (result.rows.length === 0 || !result.rows[0].manifest_pdf_data) {
+            return res.status(404).send('រកមិនឃើញឯកសារ Manifest PDF សម្រាប់ទិន្នន័យនេះទេ');
+        }
+
+        const base64Str = result.rows[0].manifest_pdf_data;
+        const base64Data = base64Str.split(';base64,').pop();
+        const buffer = Buffer.from(base64Data, 'base64');
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'inline; filename="Manifest-document.pdf"');
+        res.send(buffer);
+    } catch (err) {
+        console.error('Error serving Manifest PDF:', err);
+        res.status(500).send('Server error');
+    }
+});
+
+// 🌟 POST Customs Document ជាមួយ Duplicate Check និង Upload DO PDF
+app.post('/api/customs-documents', upload.fields([
+    { name: 'pdf_file', maxCount: 1 },
+    { name: 'do_pdf_file', maxCount: 1 }
+]), async (req, res) => {
     const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
     
     try {
@@ -1932,16 +2006,23 @@ app.post('/api/customs-documents', upload.single('pdf_file'), async (req, res) =
 
         let pdf_data = null;
         let has_pdf = false;
-        if (req.file) {
-            pdf_data = `data:application/pdf;base64,${req.file.buffer.toString('base64')}`;
+        if (req.files && req.files.pdf_file) {
+            pdf_data = `data:application/pdf;base64,${req.files.pdf_file[0].buffer.toString('base64')}`;
             has_pdf = true;
         }
 
+        let do_pdf_data = null;
+        let has_do_pdf = false;
+        if (req.files && req.files.do_pdf_file) {
+            do_pdf_data = `data:application/pdf;base64,${req.files.do_pdf_file[0].buffer.toString('base64')}`;
+            has_do_pdf = true;
+        }
+
         const query = `
-            INSERT INTO customs_documents (document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_data, has_pdf)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING *;
+            INSERT INTO customs_documents (document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_data, has_pdf, do_pdf_data, has_do_pdf)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *;
         `;
-        const values = [trimmedDocNum || null, company_name, document_type, document_date, status || 'Pending', officer_name, reference_no, notes, pdf_data, has_pdf];
+        const values = [trimmedDocNum || null, company_name, document_type, document_date, status || 'Pending', officer_name, reference_no, notes, pdf_data, has_pdf, do_pdf_data, has_do_pdf];
         const result = await pool.query(query, values);
         res.json({ success: true, data: result.rows[0] });
     } catch (err) {
@@ -1950,8 +2031,11 @@ app.post('/api/customs-documents', upload.single('pdf_file'), async (req, res) =
     }
 });
 
-// 🌟 PUT Customs Document ជាមួយ Duplicate Check (ការពារកុំឱ្យស្ទួនពេលកែប្រែ)
-app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res) => {
+// 🌟 PUT Customs Document ជាមួយ Duplicate Check និង Upload DO PDF
+app.put('/api/customs-documents/:id', upload.fields([
+    { name: 'pdf_file', maxCount: 1 },
+    { name: 'do_pdf_file', maxCount: 1 }
+]), async (req, res) => {
     const { id } = req.params;
     const { document_number, company_name, document_type, document_date, status, officer_name, reference_no, notes } = req.body;
     
@@ -1967,26 +2051,29 @@ app.put('/api/customs-documents/:id', upload.single('pdf_file'), async (req, res
             }
         }
 
-        let query = '';
-        let values = [];
+        let updateFields = [
+            'document_number = $1', 'company_name = $2', 'document_type = $3', 'document_date = $4', 
+            'status = $5', 'officer_name = $6', 'reference_no = $7', 'notes = $8'
+        ];
+        let values = [trimmedDocNum || null, company_name, document_type, document_date, status, officer_name, reference_no, notes];
+        let idx = 9;
 
-        if (req.file) {
-            const pdf_data = `data:application/pdf;base64,${req.file.buffer.toString('base64')}`;
-            const has_pdf = true;
-            query = `
-                UPDATE customs_documents 
-                SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8, pdf_data = $9, has_pdf = $10
-                WHERE id = $11 RETURNING *;
-            `;
-            values = [trimmedDocNum || null, company_name, document_type, document_date, status, officer_name, reference_no, notes, pdf_data, has_pdf, id];
-        } else {
-            query = `
-                UPDATE customs_documents 
-                SET document_number = $1, company_name = $2, document_type = $3, document_date = $4, status = $5, officer_name = $6, reference_no = $7, notes = $8
-                WHERE id = $9 RETURNING *;
-            `;
-            values = [trimmedDocNum || null, company_name, document_type, document_date, status, officer_name, reference_no, notes, id];
+        if (req.files && req.files.pdf_file) {
+            const pdf_data = `data:application/pdf;base64,${req.files.pdf_file[0].buffer.toString('base64')}`;
+            updateFields.push(`pdf_data = $${idx++}`);
+            updateFields.push(`has_pdf = $${idx++}`);
+            values.push(pdf_data, true);
         }
+
+        if (req.files && req.files.do_pdf_file) {
+            const do_pdf_data = `data:application/pdf;base64,${req.files.do_pdf_file[0].buffer.toString('base64')}`;
+            updateFields.push(`do_pdf_data = $${idx++}`);
+            updateFields.push(`has_do_pdf = $${idx++}`);
+            values.push(do_pdf_data, true);
+        }
+
+        values.push(id);
+        const query = `UPDATE customs_documents SET ${updateFields.join(', ')} WHERE id = $${idx} RETURNING *;`;
 
         const result = await pool.query(query, values);
 
