@@ -142,7 +142,7 @@
             border-radius: 12px;
             background: linear-gradient(to right, #e2e8f0, #cbd5e1);
             position: relative;
-            overflow: hidden;
+            overflow: visible; /* ឲ្យរូបភាពនាវាលេចចេញក្រៅបារបន្តិចបានស្អាត */
             box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
             margin-bottom: 5px;
         }
@@ -160,19 +160,16 @@
         }
         .ship-icon {
             position: absolute;
-            top: -10px;
+            top: -14px; /* កំណត់ទីតាំងកម្ពស់ឱ្យនាវារត់លើគែមបន្ទាត់ Progress Bar ចំកណ្តាលស្អាត */
             transform: translateX(-50%);
             transition: left 0.6s ease;
-            background: transparent;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
+            z-index: 5;
         }
         .container-ship-img {
-            width: 48px;
+            width: 45px; /* កំណត់ប្រវែងទទឹងរូបភាពនាវាកុងតឺន័រឱ្យសមល្មម */
             height: auto;
             object-fit: contain;
+            filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3));
         }
         .vessel-logo-img {
             width: 22px;
@@ -783,7 +780,24 @@
                             <div class="progress progress-container">
                                 <div class="progress-bar-ocean" style="width: ${progressInfo.percent}%;"></div>
                                 <div class="ship-icon" style="left: ${progressInfo.percent}%;" title="${progressInfo.percent}%">
-                                    <i class="fa-solid fa-ship text-danger fs-5" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));"></i>
+                                    <svg class="container-ship-img" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
+                                        <!-- ตัวเรือ (Hull) -->
+                                        <path d="M 5 32 L 15 42 L 100 42 L 115 32 Z" fill="#475569"/>
+                                        <path d="M 3 28 L 117 28 L 115 32 L 5 32 Z" fill="#db2777"/>
+                                        <path d="M 8 32 L 12 40 L 98 40 L 102 32 Z" fill="#0f172a"/>
+                                        <!-- កាប៊ីននាវា (Bridge) -->
+                                        <rect x="95" y="14" width="16" height="14" fill="#cbd5e1" rx="2"/>
+                                        <rect x="100" y="10" width="8" height="4" fill="#64748b"/>
+                                        <line x1="104" y1="4" x2="104" y2="10" stroke="#64748b" stroke-width="2"/>
+                                        <!-- កុងតឺន័រដឹកលើនាវា (Containers) -->
+                                        <rect x="12" y="16" width="15" height="12" fill="#cbd5e1"/>
+                                        <rect x="14" y="18" width="11" height="8" fill="#e2e8f0"/>
+                                        <rect x="29" y="16" width="15" height="12" fill="#db2777"/>
+                                        <rect x="46" y="16" width="15" height="12" fill="#cbd5e1"/>
+                                        <rect x="48" y="18" width="11" height="8" fill="#e2e8f0"/>
+                                        <rect x="63" y="16" width="15" height="12" fill="#db2777"/>
+                                        <rect x="80" y="16" width="13" height="12" fill="#cbd5e1"/>
+                                    </svg>
                                 </div>
                             </div>
                             <span class="small text-secondary d-block mt-1 fw-bold">${progressInfo.statusLabel}</span>
