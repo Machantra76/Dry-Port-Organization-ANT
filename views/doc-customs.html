@@ -293,14 +293,22 @@
                     <label class="form-label">ច្រកទ្វារ ឬការិយាល័យគយ (Customs Office / Gate):</label>
                     <input type="text" class="form-control" id="customs_office" placeholder="ឧ. ការិយាល័យគយ និងរដ្ឋាករកំពង់ផែស្វយ័តភ្នំពេញ">
                 </div>
-                <!-- 💡 Upload PDF Document -->
+                
+                <!-- ឯកសារ PDF ទូទៅ -->
                 <div class="col-md-6">
-                    <label class="form-label">ឯកសារ PDF (Upload PDF Document):</label>
+                    <label class="form-label">ឯកសារ PDF ទូទៅ (Upload PDF Document):</label>
                     <input type="file" class="form-control" id="pdf_file" accept="application/pdf">
                 </div>
+
+                <!-- 💡 ឯកសារ PDF សម្រាប់ Manifest ដាច់ដោយឡែក -->
                 <div class="col-md-6">
+                    <label class="form-label text-primary fw-bold"><i class="fa-solid fa-file-arrow-up"></i> ឯកសារ PDF ឈ្មោះ "Manifest":</label>
+                    <input type="file" class="form-control border-primary" id="manifest_pdf_file" accept="application/pdf">
+                </div>
+
+                <div class="col-md-12">
                     <label class="form-label">កំណត់សម្គាល់បន្ថែម (Remarks / Notes):</label>
-                    <textarea class="form-control" id="remarks" rows="2" placeholder="បញ្ជាក់ព័ត៌មានលម្អិតបន្ថែមពីการបញ្ចូលទិន្នន័យ..."></textarea>
+                    <textarea class="form-control" id="remarks" rows="2" placeholder="បញ្ជាក់ព័ត៌មានលម្អិតបន្ថែមពីការបញ្ចូលទិន្នន័យ..."></textarea>
                 </div>
                 
                 <!-- ប៊ូតុងរក្សាទុក និង ចុះបញ្ជីថ្មី -->
@@ -491,10 +499,19 @@
             else if (item.system_status === 'Error') statusBadge = 'bg-danger';
 
             let downloadBtn = '';
+            
+            // 1. ប៊ូតុងទាញយក PDF ទូទៅ
             if (item.has_pdf) {
-                downloadBtn = `<a href="/api/customs-system-data/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
+                downloadBtn += `<a href="/api/customs-system-data/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF ទូទៅ"><i class="fa-solid fa-file-pdf"></i> PDF</a>`;
             } else {
-                downloadBtn = `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
+                downloadBtn += `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF ទូទៅ"><i class="fa-solid fa-file-pdf"></i> PDF</button>`;
+            }
+
+            // 💡 2. ប៊ូតុងទាញយក Manifest PDF ដាក់បង្ហាញដាច់ដោយឡែកយ៉ាងច្បាស់
+            if (item.has_manifest_pdf) {
+                downloadBtn += `<a href="/api/customs-system-data/${item.id}/manifest-pdf" class="btn btn-sm btn-outline-primary me-1 fw-bold" target="_blank" title="មើល ឬទាញយក Manifest PDF"><i class="fa-solid fa-file-arrow-down"></i> Manifest</a>`;
+            } else {
+                downloadBtn += `<button class="btn btn-sm btn-outline-secondary me-1 text-muted" disabled title="គ្មានឯកសារ Manifest PDF"><i class="fa-solid fa-file-arrow-down"></i> Manifest</button>`;
             }
 
             const row = `
@@ -509,7 +526,7 @@
                     <td><span class="badge ${statusBadge}">${item.system_status}</span></td>
                     <td class="no-print action-column">
                         ${downloadBtn}
-                        <button class="btn btn-sm btn-outline-primary" onclick="editCustomsData(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-sm btn-outline-dark" onclick="editCustomsData(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
                     </td>
                 </tr>
             `;
@@ -524,7 +541,6 @@
         const toDate = document.getElementById('toDate').value;
 
         const filtered = customsList.filter(item => {
-            // Safe check សម្រាប់ Keyword (ការពារ Error กรณี Data ខ្លះ null/undefined)
             const sysCodeStr = (item.sys_code || '').toLowerCase();
             const companyStr = (item.company_name || '').toLowerCase();
             const refNoStr = (item.reference_number || '').toLowerCase();
@@ -573,8 +589,9 @@
         const editId = document.getElementById('editId').value;
         const sysCode = document.getElementById('sys_code').value.trim();
         const pdfFile = document.getElementById('pdf_file').files[0];
+        const manifestPdfFile = document.getElementById('manifest_pdf_file').files[0]; // យក File Manifest
 
-        if (pdfFile && pdfFile.size > 10 * 1024 * 1024) {
+        if ((pdfFile && pdfFile.size > 10 * 1024 * 1024) || (manifestPdfFile && manifestPdfFile.size > 10 * 1024 * 1024)) {
             alert('ឯកសារ PDF ធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំទាបជាង 10MB។');
             return;
         }
@@ -592,6 +609,11 @@
 
         if (pdfFile) {
             formData.append('pdf_file', pdfFile);
+        }
+        
+        // 💡 បន្ថែម File Manifest ចូលក្នុង FormData ដើម្បីបញ្ជូនទៅ Server
+        if (manifestPdfFile) {
+            formData.append('manifest_pdf_file', manifestPdfFile);
         }
 
         try {
@@ -642,7 +664,6 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 💡 ភ្ជាប់ព្រឹត្តិការណ៍ keyup ឱ្យដំណើរការស្វែងរកស្វ័យប្រវត្តិ
     document.getElementById('searchInput').addEventListener('keyup', function() {
         filterCustomsData();
     });
