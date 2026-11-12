@@ -138,17 +138,18 @@
         .btn-print:hover { background-color: #6d28d9; color: white; }
         
         .progress-container {
-            height: 24px;
-            border-radius: 12px;
-            background: linear-gradient(to right, #e2e8f0, #cbd5e1);
+            height: 12px; /* កាត់បន្ថយកម្ពស់បារឱ្យស្តើងស្អាតដូចបន្ទាត់ */
+            border-radius: 6px;
+            background: #cbd5e1;
             position: relative;
-            overflow: visible; /* ឲ្យរូបភាពនាវាលេចចេញក្រៅបារបន្តិចបានស្អាត */
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 5px;
+            overflow: visible; 
+            margin-top: 10px;
+            margin-bottom: 12px;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
         }
         .progress-bar-ocean {
             height: 100%;
-            border-radius: 12px;
+            border-radius: 6px;
             background: linear-gradient(90deg, #db2777, #ec4899, #f43f5e);
             background-size: 200% 100%;
             animation: waveMotion 3s linear infinite;
@@ -160,16 +161,16 @@
         }
         .ship-icon {
             position: absolute;
-            top: -14px; /* កំណត់ទីតាំងកម្ពស់ឱ្យនាវារត់លើគែមបន្ទាត់ Progress Bar ចំកណ្តាលស្អាត */
+            top: -18px; /* លៃតម្រូវកម្ពស់ឱ្យនាវាកើយជាន់ពីលើបន្ទាត់ Progress Bar យ៉ាងពេញលេញ */
             transform: translateX(-50%);
             transition: left 0.6s ease;
             z-index: 5;
         }
         .container-ship-img {
-            width: 45px; /* កំណត់ប្រវែងទទឹងរូបភាពនាវាកុងតឺន័រឱ្យសមល្មម */
+            width: 48px; /* ទំហំទទឹងនាវាសមល្មមស្អាត */
             height: auto;
             object-fit: contain;
-            filter: drop-shadow(0 3px 4px rgba(0,0,0,0.3));
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25));
         }
         .vessel-logo-img {
             width: 22px;
