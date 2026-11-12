@@ -118,26 +118,46 @@
             border: 1px solid #e2e8f0;
             margin-bottom: 20px;
         }
+        /* 🌟 កែសម្រួលប៊ូតុងតម្រង (ស្វែងរក, កំណត់ឡើងវិញ, បោះពុម្ព PDF) ឱ្យតូចស្តើង និងប្តូរពណ៌បែប Gradient ថ្មី */
         .btn-action-custom {
-            padding: 9px 16px;
-            font-size: 0.85rem;
+            padding: 7px 12px;
+            font-size: 0.8rem;
             font-weight: 500;
-            border-radius: 8px;
+            border-radius: 6px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 5px;
             border: none;
             transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
         }
-        .btn-filter { background-color: #0284c7; color: white; }
-        .btn-filter:hover { background-color: #0369a1; color: white; }
-        .btn-reset { background-color: #f59e0b; color: white; }
-        .btn-reset:hover { background-color: #d97706; color: white; }
-        .btn-print { background-color: #7c3aed; color: white; }
-        .btn-print:hover { background-color: #6d28d9; color: white; }
+        .btn-filter { 
+            background: linear-gradient(135deg, #0284c7, #0369a1); 
+            color: white; 
+        }
+        .btn-filter:hover { 
+            background: linear-gradient(135deg, #0369a1, #075985); 
+            color: white; 
+        }
+        .btn-reset { 
+            background: linear-gradient(135deg, #f59e0b, #d97706); 
+            color: white; 
+        }
+        .btn-reset:hover { 
+            background: linear-gradient(135deg, #d97706, #b45309); 
+            color: white; 
+        }
+        .btn-print { 
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9); 
+            color: white; 
+        }
+        .btn-print:hover { 
+            background: linear-gradient(135deg, #6d28d9, #5b21b6); 
+            color: white; 
+        }
         
-        /* កែសម្រួលខ្សែរបារ Progress Bar ឱ្យតូចស្តើងជាងមុន និងពណ៌ទឹកសមុទ្រ (Ocean Blue) */
+        /* បន្ទាត់ Progress Bar និងរូបនាវា */
         .progress-container {
             height: 4px; 
             border-radius: 2px;
@@ -162,13 +182,13 @@
         }
         .ship-icon {
             position: absolute;
-            top: -16px; /* លៃតម្រូវកម្ពស់ឱ្យរូបនាវាតូចតម្រៀបរត់ចំពីលើបន្ទាត់ស្អាតល្អ */
+            top: -16px;
             transform: translateX(-50%);
             transition: left 0.6s ease;
             z-index: 5;
         }
         .container-ship-img {
-            width: 32px; /* បន្ថយទំហំទទឹងរូបភាពនាវាកុងតឺន័រឱ្យតូចល្មមស្អាត */
+            width: 32px;
             height: auto;
             object-fit: contain;
             filter: drop-shadow(0 1px 2px rgba(0,0,0,0.25));
