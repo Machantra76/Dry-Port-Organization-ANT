@@ -218,7 +218,7 @@
         <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ
     </a>
 
-    <h2 class="page-title">การគ្រប់គ្រងឯកសារគយ</h2>
+    <h2 class="page-title">ការគ្រប់គ្រងឯកសារគយ</h2>
     <p class="page-subtitle">CUSTOMS DOCUMENT MANAGEMENT SYSTEM</p>
 
     <div class="section-card no-print">
@@ -237,8 +237,8 @@
                 <div class="col-md-4">
                     <label class="form-label">ប្រភេទឯកសារគយ (Document Type):</label>
                     <select class="form-select" id="document_type" required>
-                        <!-- 💡 បានបន្ថែមជម្រើស DO (Delivery Order) ទីនេះ -->
-                        <option value="DO">លិខិតបញ្ជាឱ្យទំនិញចេញ / DO (Delivery Order)</option>
+                        <!-- 💡 ជម្រើសប្រភេទឯកសារ DO និងប្រភេទផ្សេងៗ -->
+                        <option value="DO">DO (Delivery Order)</option>
                         <option value="Import Declaration">លិខិតប្រកាសទំនិញចូល (Import Declaration)</option>
                         <option value="Export Declaration">លិខិតប្រកាសទំនិញចេញ (Export Declaration)</option>
                         <option value="Transit Permit">ប័ណ្ណឆ្លងដែន / ត្រង់ស៊ីត (Transit Permit)</option>
@@ -396,6 +396,7 @@
 
             let downloadBtn = '';
             if (item.has_pdf) {
+                // 💡 ប៊ូតុងទាញយកឯកសារ PDF របស់ record នីមួយៗ
                 downloadBtn = `<a href="/api/customs-documents/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
             } else {
                 downloadBtn = `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
