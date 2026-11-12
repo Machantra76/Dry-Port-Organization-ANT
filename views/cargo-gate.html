@@ -149,7 +149,7 @@
         .progress-bar-ocean {
             height: 100%;
             border-radius: 12px;
-            background: linear-gradient(90deg, #0284c7, #0284c7, #0369a1);
+            background: linear-gradient(90deg, #db2777, #ec4899, #f43f5e);
             background-size: 200% 100%;
             animation: waveMotion 3s linear infinite;
             transition: width 0.6s ease;
@@ -160,19 +160,19 @@
         }
         .ship-icon {
             position: absolute;
-            top: -2px;
+            top: -10px;
             transform: translateX(-50%);
-            color: #ffffff;
-            font-size: 1.1rem;
             transition: left 0.6s ease;
-            background: #0284c7;
-            border-radius: 50%;
-            width: 26px;
-            height: 26px;
+            background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
+        }
+        .container-ship-img {
+            width: 42px;
+            height: auto;
+            object-fit: contain;
         }
         .vessel-logo-img {
             width: 22px;
@@ -783,7 +783,7 @@
                             <div class="progress progress-container">
                                 <div class="progress-bar-ocean" style="width: ${progressInfo.percent}%;"></div>
                                 <div class="ship-icon" style="left: ${progressInfo.percent}%;" title="${progressInfo.percent}%">
-                                    <i class="fa-solid fa-ship"></i>
+                                    <img src="https://i.ibb.co/22R03g7/container-ship.png" class="container-ship-img" alt="Container Ship" onerror="this.replaceWith(Object.assign(document.createElement('i'), {className:'fa-solid fa-ship text-danger'}))">
                                 </div>
                             </div>
                             <span class="small text-secondary d-block mt-1 fw-bold">${progressInfo.statusLabel}</span>
