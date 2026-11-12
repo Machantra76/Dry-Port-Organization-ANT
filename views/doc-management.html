@@ -237,8 +237,6 @@
                 <div class="col-md-4">
                     <label class="form-label">ប្រភេទឯកសារគយ (Document Type):</label>
                     <select class="form-select" id="document_type" required>
-                        <!-- 💡 ជម្រើសប្រភេទឯកសារ DO និងប្រភេទផ្សេងៗ -->
-                        <option value="DO">DO (Delivery Order)</option>
                         <option value="Import Declaration">លិខិតប្រកាសទំនិញចូល (Import Declaration)</option>
                         <option value="Export Declaration">លិខិតប្រកាសទំនិញចេញ (Export Declaration)</option>
                         <option value="Transit Permit">ប័ណ្ណឆ្លងដែន / ត្រង់ស៊ីត (Transit Permit)</option>
@@ -267,11 +265,20 @@
                     <label class="form-label">ឯកសារយោង / លេខកុងតឺន័រ (Reference / Container No.):</label>
                     <input type="text" class="form-control" id="reference_no" placeholder="ឧ. CONT1234567 ឬ BL-998877">
                 </div>
+                
+                <!-- ប្រអប់ Upload PDF ធម្មតា -->
                 <div class="col-md-6">
-                    <label class="form-label">ឯកសារ PDF (Upload PDF Document):</label>
+                    <label class="form-label">ឯកសារ PDF ទូទៅ (Upload PDF Document):</label>
                     <input type="file" class="form-control" id="pdf_file" accept="application/pdf">
                 </div>
+
+                <!-- 💡 ប្រអប់ Upload PDF សម្រាប់ "DO" (Delivery Order) -->
                 <div class="col-md-6">
+                    <label class="form-label">ឯកសារ PDF ឈ្មោះ "DO" (Upload DO File):</label>
+                    <input type="file" class="form-control" id="do_pdf_file" accept="application/pdf">
+                </div>
+
+                <div class="col-md-12">
                     <label class="form-label">កំណត់សម្គាល់ ឬព័ត៌មានលម្អិត (Notes / Description):</label>
                     <textarea class="form-control" id="notes" rows="2" placeholder="ព័ត៌មានបន្ថែមទាក់ទងនឹងឯកសារគយនេះ..."></textarea>
                 </div>
@@ -395,11 +402,16 @@
             else if (item.status === 'Rejected') statusBadge = 'bg-danger';
 
             let downloadBtn = '';
+            // ប៊ូតុងទាញយក PDF ធម្មតា
             if (item.has_pdf) {
-                // 💡 ប៊ូតុងទាញយកឯកសារ PDF របស់ record នីមួយៗ
-                downloadBtn = `<a href="/api/customs-documents/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF"><i class="fa-solid fa-file-pdf"></i></a>`;
+                downloadBtn += `<a href="/api/customs-documents/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF ទូទៅ"><i class="fa-solid fa-file-pdf"></i></a>`;
             } else {
-                downloadBtn = `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF"><i class="fa-solid fa-file-pdf"></i></button>`;
+                downloadBtn += `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF ទូទៅ"><i class="fa-solid fa-file-pdf"></i></button>`;
+            }
+
+            // 💡 ប៊ូតុងទាញយក DO PDF (ប្រសិនបើមាន Backend Support សម្រាប់ DO)
+            if (item.has_do_pdf) {
+                downloadBtn += `<a href="/api/customs-documents/${item.id}/do-pdf" class="btn btn-sm btn-outline-warning me-1 text-dark" target="_blank" title="មើល ឬទាញយក DO PDF"><i class="fa-solid fa-file-arrow-down"></i> DO</a>`;
             }
 
             const row = `
@@ -467,8 +479,9 @@
         const editId = document.getElementById('editId').value;
         const docNumber = document.getElementById('document_number').value.trim();
         const pdfFile = document.getElementById('pdf_file').files[0];
+        const doPdfFile = document.getElementById('do_pdf_file').files[0]; // យក File DO
 
-        if (pdfFile && pdfFile.size > 10 * 1024 * 1024) {
+        if ((pdfFile && pdfFile.size > 10 * 1024 * 1024) || (doPdfFile && doPdfFile.size > 10 * 1024 * 1024)) {
             alert('ឯកសារ PDF ធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំទាបជាង 10MB។');
             return;
         }
@@ -485,6 +498,11 @@
 
         if (pdfFile) {
             formData.append('pdf_file', pdfFile);
+        }
+        
+        // 💡 បន្ថែម File DO ចូលក្នុង FormData
+        if (doPdfFile) {
+            formData.append('do_pdf_file', doPdfFile);
         }
 
         try {
