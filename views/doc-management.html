@@ -218,7 +218,7 @@
         <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ
     </a>
 
-    <h2 class="page-title">ការគ្រប់គ្រងឯកសារគយ</h2>
+    <h2 class="page-title">การគ្រប់គ្រងឯកសារគយ</h2>
     <p class="page-subtitle">CUSTOMS DOCUMENT MANAGEMENT SYSTEM</p>
 
     <div class="section-card no-print">
@@ -237,6 +237,8 @@
                 <div class="col-md-4">
                     <label class="form-label">ប្រភេទឯកសារគយ (Document Type):</label>
                     <select class="form-select" id="document_type" required>
+                        <!-- 💡 បានបន្ថែមជម្រើស DO (Delivery Order) ទីនេះ -->
+                        <option value="DO">លិខិតបញ្ជាឱ្យទំនិញចេញ / DO (Delivery Order)</option>
                         <option value="Import Declaration">លិខិតប្រកាសទំនិញចូល (Import Declaration)</option>
                         <option value="Export Declaration">លិខិតប្រកាសទំនិញចេញ (Export Declaration)</option>
                         <option value="Transit Permit">ប័ណ្ណឆ្លងដែន / ត្រង់ស៊ីត (Transit Permit)</option>
@@ -530,7 +532,6 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // 💡 បានបន្ថែមមុខងារនេះដើម្បីឱ្យពេលវាយអក្សរស្វែងរកក្នុង ô searchInput វាធ្វើការត្រងទិន្នន័យស្វ័យប្រវត្តិភ្លាមៗ
     document.getElementById('searchInput').addEventListener('keyup', function() {
         filterDocuments();
     });
