@@ -266,16 +266,16 @@
                     <input type="text" class="form-control" id="reference_no" placeholder="ឧ. CONT1234567 ឬ BL-998877">
                 </div>
                 
-                <!-- ប្រអប់ Upload PDF ធម្មតា -->
+                <!-- ប្រអប់ Upload PDF ទូទៅ -->
                 <div class="col-md-6">
                     <label class="form-label">ឯកសារ PDF ទូទៅ (Upload PDF Document):</label>
                     <input type="file" class="form-control" id="pdf_file" accept="application/pdf">
                 </div>
 
-                <!-- 💡 ប្រអប់ Upload PDF សម្រាប់ "DO" (Delivery Order) -->
+                <!-- 💡 ប្រអប់ Upload PDF សម្រាប់ "DO" (Delivery Order) ដាច់ដោយឡែក -->
                 <div class="col-md-6">
-                    <label class="form-label">ឯកសារ PDF ឈ្មោះ "DO" (Upload DO File):</label>
-                    <input type="file" class="form-control" id="do_pdf_file" accept="application/pdf">
+                    <label class="form-label text-primary fw-bold"><i class="fa-solid fa-file-arrow-up"></i> ឯកសារ PDF ឈ្មោះ "DO" (Delivery Order):</label>
+                    <input type="file" class="form-control border-primary" id="do_pdf_file" accept="application/pdf">
                 </div>
 
                 <div class="col-md-12">
@@ -402,16 +402,19 @@
             else if (item.status === 'Rejected') statusBadge = 'bg-danger';
 
             let downloadBtn = '';
-            // ប៊ូតុងទាញយក PDF ធម្មតា
+            
+            // 1. ប៊ូតុងទាញយក PDF ធម្មតា
             if (item.has_pdf) {
-                downloadBtn += `<a href="/api/customs-documents/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF ទូទៅ"><i class="fa-solid fa-file-pdf"></i></a>`;
+                downloadBtn += `<a href="/api/customs-documents/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF ទូទៅ"><i class="fa-solid fa-file-pdf"></i> PDF</a>`;
             } else {
-                downloadBtn += `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF ទូទៅ"><i class="fa-solid fa-file-pdf"></i></button>`;
+                downloadBtn += `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF ទូទៅ"><i class="fa-solid fa-file-pdf"></i> PDF</button>`;
             }
 
-            // 💡 ប៊ូតុងទាញយក DO PDF (ប្រសិនបើមាន Backend Support សម្រាប់ DO)
+            // 💡 2. ប៊ូតុងទាញយក DO PDF ដាក់បង្ហាញដាច់ដោយឡែកយ៉ាងច្បាស់
             if (item.has_do_pdf) {
-                downloadBtn += `<a href="/api/customs-documents/${item.id}/do-pdf" class="btn btn-sm btn-outline-warning me-1 text-dark" target="_blank" title="មើល ឬទាញយក DO PDF"><i class="fa-solid fa-file-arrow-down"></i> DO</a>`;
+                downloadBtn += `<a href="/api/customs-documents/${item.id}/do-pdf" class="btn btn-sm btn-outline-primary me-1 fw-bold" target="_blank" title="មើល ឬទាញយក DO PDF"><i class="fa-solid fa-file-arrow-down"></i> DO</a>`;
+            } else {
+                downloadBtn += `<button class="btn btn-sm btn-outline-secondary me-1 text-muted" disabled title="គ្មានឯកសារ DO PDF"><i class="fa-solid fa-file-arrow-down"></i> DO</button>`;
             }
 
             const row = `
@@ -426,7 +429,7 @@
                     <td><span class="badge ${statusBadge}">${item.status}</span></td>
                     <td class="no-print action-column">
                         ${downloadBtn}
-                        <button class="btn btn-sm btn-outline-primary" onclick="editDocument(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
+                        <button class="btn btn-sm btn-outline-dark" onclick="editDocument(${item.id})" title="កែប្រែ"><i class="fa-solid fa-pen-to-square"></i></button>
                     </td>
                 </tr>
             `;
@@ -500,7 +503,7 @@
             formData.append('pdf_file', pdfFile);
         }
         
-        // 💡 បន្ថែម File DO ចូលក្នុង FormData
+        // 💡 បន្ថែម File DO ចូលក្នុង FormData ដើម្បីបញ្ជូនទៅ Server
         if (doPdfFile) {
             formData.append('do_pdf_file', doPdfFile);
         }
