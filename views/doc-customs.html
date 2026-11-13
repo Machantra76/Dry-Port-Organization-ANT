@@ -24,6 +24,12 @@
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
+        .top-nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
         .btn-back {
             background: linear-gradient(135deg, #0284c7, #0369a1);
             color: white;
@@ -36,12 +42,52 @@
             gap: 8px;
             box-shadow: 0 4px 10px rgba(2, 132, 199, 0.2);
             transition: all 0.2s;
+            border: none;
+            cursor: pointer;
         }
         .btn-back:hover {
             background: linear-gradient(135deg, #0369a1, #075985);
             color: white;
             transform: translateY(-1px);
         }
+        .btn-nav-table {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            font-weight: 500;
+            border-radius: 8px;
+            padding: 10px 18px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.25);
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-nav-table:hover {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+        }
+        .btn-nav-form {
+            background-color: #059669;
+            color: white;
+            font-weight: 500;
+            border-radius: 8px;
+            padding: 10px 18px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-nav-form:hover {
+            background-color: #047857;
+            color: white;
+        }
+
         .page-title {
             color: #1e3a8a;
             font-weight: 700;
@@ -119,26 +165,6 @@
             background: linear-gradient(135deg, #475569, #334155);
             transform: translateY(-1px);
             color: white;
-        }
-
-        .btn-jump-table {
-            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
-            border: none;
-            color: white;
-            font-weight: 500;
-            border-radius: 8px;
-            padding: 10px 18px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.25);
-            transition: all 0.2s;
-        }
-        .btn-jump-table:hover {
-            background: linear-gradient(135deg, #7c3aed, #6d28d9);
-            color: white;
-            transform: translateY(-1px);
         }
 
         .btn-filter-custom {
@@ -227,14 +253,17 @@
 <body>
 
 <div class="main-container">
-    <!-- ប៊ូតុងត្រឡប់ក្រោយ និង ប៊ូតុងទៅកាន់តារាងបញ្ជី -->
-    <div class="d-flex justify-content-between align-items-center mb-3 no-print">
+    <!-- ប៊ូតុងរុករក និងប្តូរទិដ្ឋភាព -->
+    <div class="top-nav-buttons mb-3 no-print">
         <a href="/" class="btn-back">
             <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅផ្ទាំងដើមវិញ
         </a>
-        <a href="#tableSection" class="btn-jump-table">
+        <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
             <i class="fa-solid fa-table-list"></i> មើលតារាងបញ្ជីទិន្នន័យប្រព័ន្ធគយ
-        </a>
+        </button>
+        <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+            <i class="fa-solid fa-plus-circle"></i> បញ្ចូលទិន្នន័យប្រព័ន្ធគយថ្មី
+        </button>
     </div>
 
     <!-- ចំណងជើងទំព័រ -->
@@ -330,13 +359,10 @@
         </form>
     </div>
 
-    <!-- SECTION 2: តារាងបង្ហាញទិន្នន័យប្រព័ន្ធគយ -->
-    <div class="section-card" id="tableSection">
+    <!-- SECTION 2: តារាងបង្ហាញទិន្នន័យប្រព័ន្ធគយ (លាក់ទុកដំបូង) -->
+    <div class="section-card" id="tableSection" style="display: none;">
         <div class="section-card-title mb-3 d-flex justify-content-between align-items-center">
             <span><i class="fa-solid fa-table-list me-2"></i> តារាងបញ្ជីទិន្នន័យប្រព័ន្ធគយ (Customs System Data Records)</span>
-            <a href="#formSection" class="btn btn-sm btn-outline-primary no-print">
-                <i class="fa-solid fa-arrow-up me-1"></i> ឡើងទៅរក្សារទុកទិន្នន័យ
-            </a>
         </div>
 
         <!-- ផ្នែកស្វែងរក, ត្រងតាមច្រកទ្វារ, From Date, To Date -->
@@ -415,10 +441,36 @@
     let availableDocuments = [];
 
     document.addEventListener('DOMContentLoaded', async () => {
-        document.getElementById('entry_date').value = new Date().toISOString().split('T')[0];
+        const entryDateInput = document.getElementById('entry_date');
+        if (entryDateInput) {
+            entryDateInput.value = new Date().toISOString().split('T')[0];
+        }
         await loadDocumentDropdown();
         await loadCustomsData();
     });
+
+    // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+    function switchSection(section) {
+        const formSection = document.getElementById('formSection');
+        const tableSection = document.getElementById('tableSection');
+        const btnShowTable = document.getElementById('btnShowTable');
+        const btnShowForm = document.getElementById('btnShowForm');
+
+        if (!formSection || !tableSection) return;
+
+        if (section === 'table') {
+            formSection.style.display = 'none';
+            tableSection.style.display = 'block';
+            if (btnShowTable) btnShowTable.style.display = 'none';
+            if (btnShowForm) btnShowForm.style.display = 'inline-flex';
+            loadCustomsData();
+        } else {
+            tableSection.style.display = 'none';
+            formSection.style.display = 'block';
+            if (btnShowForm) btnShowForm.style.display = 'none';
+            if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+        }
+    }
 
     async function loadDocumentDropdown() {
         try {
@@ -427,6 +479,7 @@
             availableDocuments = Array.isArray(docs) ? docs : [];
             
             const select = document.getElementById('reference_number');
+            if (!select) return;
             select.innerHTML = '<option value="">-- ជ្រើសរើសលេខឯកសារគយ --</option>';
             
             availableDocuments.forEach(doc => {
@@ -441,9 +494,11 @@
     }
 
     function onReferenceChange() {
-        const selectedRefNo = document.getElementById('reference_number').value;
+        const refElem = document.getElementById('reference_number');
         const companyInput = document.getElementById('company_name');
+        if (!refElem || !companyInput) return;
 
+        const selectedRefNo = refElem.value;
         if (!selectedRefNo) {
             companyInput.value = '';
             return;
@@ -465,12 +520,16 @@
             populateOfficeDropdown(customsList);
         } catch (err) {
             console.error('Error loading customs system data:', err);
-            document.getElementById('customsTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            const tbody = document.getElementById('customsTableBody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            }
         }
     }
 
     function populateOfficeDropdown(data) {
         const officeSelect = document.getElementById('filterOffice');
+        if (!officeSelect) return;
         const offices = [...new Set(data.map(item => item.customs_office).filter(Boolean))];
         
         officeSelect.innerHTML = '<option value="">-- ទាំងអស់ --</option>';
@@ -484,6 +543,7 @@
 
     function renderTable(data) {
         const tbody = document.getElementById('customsTableBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
 
         if (!Array.isArray(data) || data.length === 0) {
@@ -500,14 +560,12 @@
 
             let downloadBtn = '';
             
-            // 1. ប៊ូតុងទាញយក PDF ទូទៅ
             if (item.has_pdf) {
                 downloadBtn += `<a href="/api/customs-system-data/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF ទូទៅ"><i class="fa-solid fa-file-pdf"></i> PDF</a>`;
             } else {
                 downloadBtn += `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF ទូទៅ"><i class="fa-solid fa-file-pdf"></i> PDF</button>`;
             }
 
-            // 💡 2. ប៊ូតុងទាញយក Manifest PDF ដាក់បង្ហាញដាច់ដោយឡែកយ៉ាងច្បាស់
             if (item.has_manifest_pdf) {
                 downloadBtn += `<a href="/api/customs-system-data/${item.id}/manifest-pdf" class="btn btn-sm btn-outline-primary me-1 fw-bold" target="_blank" title="មើល ឬទាញយក Manifest PDF"><i class="fa-solid fa-file-arrow-down"></i> Manifest</a>`;
             } else {
@@ -535,10 +593,15 @@
     }
 
     function filterCustomsData() {
-        const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
-        const selectedOffice = document.getElementById('filterOffice').value;
-        const fromDate = document.getElementById('fromDate').value;
-        const toDate = document.getElementById('toDate').value;
+        const searchInput = document.getElementById('searchInput');
+        const filterOffice = document.getElementById('filterOffice');
+        const fromDateElem = document.getElementById('fromDate');
+        const toDateElem = document.getElementById('toDate');
+
+        const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        const selectedOffice = filterOffice ? filterOffice.value : '';
+        const fromDate = fromDateElem ? fromDateElem.value : '';
+        const toDate = toDateElem ? toDateElem.value : '';
 
         const filtered = customsList.filter(item => {
             const sysCodeStr = (item.sys_code || '').toLowerCase();
@@ -568,105 +631,152 @@
     }
 
     function resetFilter() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('filterOffice').value = '';
-        document.getElementById('fromDate').value = '';
-        document.getElementById('toDate').value = '';
+        const searchInput = document.getElementById('searchInput');
+        const filterOffice = document.getElementById('filterOffice');
+        const fromDateElem = document.getElementById('fromDate');
+        const toDateElem = document.getElementById('toDate');
+
+        if (searchInput) searchInput.value = '';
+        if (filterOffice) filterOffice.value = '';
+        if (fromDateElem) fromDateElem.value = '';
+        if (toDateElem) toDateElem.value = '';
         renderTable(customsList);
     }
 
     function resetForm() {
-        document.getElementById('customsDataForm').reset();
-        document.getElementById('editId').value = '';
-        document.getElementById('company_name').value = '';
-        document.getElementById('entry_date').value = new Date().toISOString().split('T')[0];
-        document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យប្រព័ន្ធគយ`;
+        const form = document.getElementById('customsDataForm');
+        if (form) form.reset();
+        const editId = document.getElementById('editId');
+        if (editId) editId.value = '';
+        const companyName = document.getElementById('company_name');
+        if (companyName) companyName.value = '';
+        const entryDate = document.getElementById('entry_date');
+        if (entryDate) entryDate.value = new Date().toISOString().split('T')[0];
+        const saveBtn = document.getElementById('saveBtn');
+        if (saveBtn) saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យប្រព័ន្ធគយ`;
     }
 
-    document.getElementById('customsDataForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    const customsDataForm = document.getElementById('customsDataForm');
+    if (customsDataForm) {
+        customsDataForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const editId = document.getElementById('editId').value;
-        const sysCode = document.getElementById('sys_code').value.trim();
-        const pdfFile = document.getElementById('pdf_file').files[0];
-        const manifestPdfFile = document.getElementById('manifest_pdf_file').files[0]; // យក File Manifest
+            const editIdElem = document.getElementById('editId');
+            const sysCodeElem = document.getElementById('sys_code');
+            const pdfFileElem = document.getElementById('pdf_file');
+            const manifestPdfFileElem = document.getElementById('manifest_pdf_file');
 
-        if ((pdfFile && pdfFile.size > 10 * 1024 * 1024) || (manifestPdfFile && manifestPdfFile.size > 10 * 1024 * 1024)) {
-            alert('ឯកសារ PDF ធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំទាបជាង 10MB។');
-            return;
-        }
+            const editId = editIdElem ? editIdElem.value : '';
+            const sysCode = sysCodeElem ? sysCodeElem.value.trim() : '';
+            const pdfFile = pdfFileElem && pdfFileElem.files ? pdfFileElem.files[0] : null;
+            const manifestPdfFile = manifestPdfFileElem && manifestPdfFileElem.files ? manifestPdfFileElem.files[0] : null;
 
-        const formData = new FormData();
-        formData.append('sys_code', sysCode);
-        formData.append('company_name', document.getElementById('company_name').value);
-        formData.append('transaction_type', document.getElementById('transaction_type').value);
-        formData.append('entry_date', document.getElementById('entry_date').value);
-        formData.append('system_status', document.getElementById('system_status').value);
-        formData.append('operator_name', document.getElementById('operator_name').value);
-        formData.append('reference_number', document.getElementById('reference_number').value);
-        formData.append('customs_office', document.getElementById('customs_office').value);
-        formData.append('remarks', document.getElementById('remarks').value);
-
-        if (pdfFile) {
-            formData.append('pdf_file', pdfFile);
-        }
-        
-        // 💡 បន្ថែម File Manifest ចូលក្នុង FormData ដើម្បីបញ្ជូនទៅ Server
-        if (manifestPdfFile) {
-            formData.append('manifest_pdf_file', manifestPdfFile);
-        }
-
-        try {
-            const url = editId ? `/api/customs-system-data/${editId}` : '/api/customs-system-data';
-            const method = editId ? 'PUT' : 'POST';
-
-            const response = await fetch(url, {
-                method: method,
-                body: formData 
-            });
-
-            const contentType = response.headers.get("content-type");
-            if (!contentType || !contentType.includes("application/json")) {
-                throw new Error("Server បានឆ្លើយតបខុសទម្រង់ (អាចមកពី File ធំពេកហួសដែនកំណត់)");
+            if ((pdfFile && pdfFile.size > 10 * 1024 * 1024) || (manifestPdfFile && manifestPdfFile.size > 10 * 1024 * 1024)) {
+                alert('ឯកសារ PDF ធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំទាបជាង 10MB។');
+                return;
             }
 
-            const result = await response.json();
-            if (response.ok && result.success) {
-                alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានចុះបញ្ជីទិន្នន័យប្រព័ន្ធគយថ្មីដោយជោគជ័យ!');
-                resetForm();
-                loadDocumentDropdown();
-                loadCustomsData();
-            } else {
-                alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
+            const formData = new FormData();
+            formData.append('sys_code', sysCode);
+            
+            const companyNameElem = document.getElementById('company_name');
+            const txTypeElem = document.getElementById('transaction_type');
+            const entryDateElem = document.getElementById('entry_date');
+            const sysStatusElem = document.getElementById('system_status');
+            const operatorElem = document.getElementById('operator_name');
+            const refNumElem = document.getElementById('reference_number');
+            const officeElem = document.getElementById('customs_office');
+            const remarksElem = document.getElementById('remarks');
+
+            formData.append('company_name', companyNameElem ? companyNameElem.value : '');
+            formData.append('transaction_type', txTypeElem ? txTypeElem.value : '');
+            formData.append('entry_date', entryDateElem ? entryDateElem.value : '');
+            formData.append('system_status', sysStatusElem ? sysStatusElem.value : '');
+            formData.append('operator_name', operatorElem ? operatorElem.value : '');
+            formData.append('reference_number', refNumElem ? refNumElem.value : '');
+            formData.append('customs_office', officeElem ? officeElem.value : '');
+            formData.append('remarks', remarksElem ? remarksElem.value : '');
+
+            if (pdfFile) {
+                formData.append('pdf_file', pdfFile);
             }
-        } catch (err) {
-            console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server ឬទំហំឯកសារធំពេក: ' + err.message);
-        }
-    });
+            
+            if (manifestPdfFile) {
+                formData.append('manifest_pdf_file', manifestPdfFile);
+            }
+
+            try {
+                const url = editId ? `/api/customs-system-data/${editId}` : '/api/customs-system-data';
+                const method = editId ? 'PUT' : 'POST';
+
+                const response = await fetch(url, {
+                    method: method,
+                    body: formData 
+                });
+
+                const contentType = response.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error("Server បានឆ្លើយតបខុសទម្រង់ (អាចមកពី File ធំពេកហួសដែនកំណត់)");
+                }
+
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានចុះបញ្ជីទិន្នន័យប្រព័ន្ធគយថ្មីដោយជោគជ័យ!');
+                    resetForm();
+                    loadDocumentDropdown();
+                    loadCustomsData();
+                    switchSection('table');
+                } else {
+                    alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
+                }
+            } catch (err) {
+                console.error('Error submitting form:', err);
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server ឬទំហំឯកសារធំពេក: ' + err.message);
+            }
+        });
+    }
 
     function editCustomsData(id) {
         const item = customsList.find(d => d.id === id);
         if (!item) return;
 
-        document.getElementById('editId').value = item.id;
-        document.getElementById('sys_code').value = item.sys_code || '';
-        document.getElementById('reference_number').value = item.reference_number || '';
-        document.getElementById('company_name').value = item.company_name;
-        document.getElementById('transaction_type').value = item.transaction_type;
-        document.getElementById('entry_date').value = item.entry_date ? item.entry_date.split('T')[0] : '';
-        document.getElementById('system_status').value = item.system_status;
-        document.getElementById('operator_name').value = item.operator_name;
-        document.getElementById('customs_office').value = item.customs_office || '';
-        document.getElementById('remarks').value = item.remarks || '';
+        switchSection('form');
 
-        document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យប្រព័ន្ធគយ`;
+        const editId = document.getElementById('editId');
+        const sysCode = document.getElementById('sys_code');
+        const refNo = document.getElementById('reference_number');
+        const companyName = document.getElementById('company_name');
+        const txType = document.getElementById('transaction_type');
+        const entryDate = document.getElementById('entry_date');
+        const sysStatus = document.getElementById('system_status');
+        const operatorName = document.getElementById('operator_name');
+        const customsOffice = document.getElementById('customs_office');
+        const remarks = document.getElementById('remarks');
+        const saveBtn = document.getElementById('saveBtn');
+
+        if (editId) editId.value = item.id;
+        if (sysCode) sysCode.value = item.sys_code || '';
+        if (refNo) refNo.value = item.reference_number || '';
+        if (companyName) companyName.value = item.company_name;
+        if (txType) txType.value = item.transaction_type;
+        if (entryDate) entryDate.value = item.entry_date ? item.entry_date.split('T')[0] : '';
+        if (sysStatus) sysStatus.value = item.system_status;
+        if (operatorName) operatorName.value = item.operator_name;
+        if (customsOffice) customsOffice.value = item.customs_office || '';
+        if (remarks) remarks.value = item.remarks || '';
+
+        if (saveBtn) {
+            saveBtn.innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យប្រព័ន្ធគយ`;
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        filterCustomsData();
-    });
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            filterCustomsData();
+        });
+    }
 </script>
 
 </body>
