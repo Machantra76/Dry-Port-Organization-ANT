@@ -315,7 +315,7 @@
                         <option value="Departed">Departed (បានចាកចេញ)</option>
                         <option value="បានមកដល់ផែ SHV">បានមកដល់ផែ SHV</option>
                         <option value="ទូរ CY (SHV)">ទូរ CY (SHV)</option>
-                          <option value="Delivered">Delivered</option>
+                        <option value="Delivered">Delivered</option>
                     </select>
                 </div>
                 <div class="col-12">
@@ -772,7 +772,7 @@
                     statusBadgeClass = 'bg-warning text-dark';
                 } else if (currentStatus === 'Departed') {
                     statusBadgeClass = 'bg-dark text-white';
-                } else if (currentStatus.includes('បានមកដល់') || currentStatus.includes('CY')) {
+                } else if (currentStatus.includes('បានមកដល់') || currentStatus.includes('CY') || currentStatus === 'Delivered') {
                     statusBadgeClass = 'bg-success';
                 } else if (currentStatus === 'កំពុង Loading') {
                     statusBadgeClass = 'bg-info text-dark';
