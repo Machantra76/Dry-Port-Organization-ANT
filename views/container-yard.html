@@ -34,23 +34,39 @@
             margin-bottom: 40px;
             border: 1px solid #e2e8f0;
         }
-        .btn-back {
-            background-color: #334155;
-            color: #fff;
-            border-radius: 10px;
-            padding: 9px 18px;
-            text-decoration: none;
-            font-size: 14px;
+        .top-nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .btn-back, .btn-nav-table, .btn-nav-form {
             display: inline-flex;
             align-items: center;
-            transition: all 0.2s ease-in-out;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            padding: 9px 18px;
+            border-radius: 10px;
+            font-size: 14px;
             font-weight: 500;
+            font-family: 'Kantumruy Pro', 'Poppins', sans-serif;
+            transition: all 0.2s ease-in-out;
+            border: none;
+            cursor: pointer;
+            height: 42px;
+            box-sizing: border-box;
         }
-        .btn-back:hover {
-            background-color: #1e293b;
-            color: #fff;
-            transform: translateY(-1px);
-        }
+        .btn-back { background-color: #334155; color: #fff; }
+        .btn-back:hover { background-color: #1e293b; color: #fff; transform: translateY(-1px); }
+
+        .btn-nav-table { background-color: #8b5cf6; color: #fff; }
+        .btn-nav-table:hover { background-color: #7c3aed; color: #fff; }
+
+        .btn-nav-form { background-color: #059669; color: #fff; }
+        .btn-nav-form:hover { background-color: #047857; color: #fff; }
+
         .section-title {
             color: var(--primary-color);
             font-weight: 700;
@@ -204,11 +220,17 @@
 <body>
 
     <div class="container">
-        <!-- Back Button -->
-        <div class="pt-4">
+        <!-- ប៊ូតុងរុករក និងប្តូរទិដ្ឋភាពឱ្យមានទំហំស្មើគ្នា -->
+        <div class="top-nav-buttons pt-4">
             <a href="/" class="btn-back">
                 <i class="fas fa-arrow-left me-2"></i> ត្រឡប់ទៅ Dashboard វិញ
             </a>
+            <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
+                <i class="fas fa-table-list me-1"></i> មើលតារាងរបាយការណ៍ និងបញ្ជីសរុប
+            </button>
+            <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+                <i class="fas fa-plus-circle me-1"></i> កត់ត្រាថ្មី (Add New)
+            </button>
         </div>
 
         <div class="container-box">
@@ -219,7 +241,7 @@
             </div>
 
             <!-- Form កត់ត្រាទីតាំងកុងតឺន័រថ្មី -->
-            <div class="card-inner">
+            <div class="card-inner" id="formYardSection">
                 <div class="card-inner-title">
                     <span><i class="fas fa-map-marked-alt text-primary me-2"></i> កត់ត្រាទីតាំងកុងតឺន័រថ្មី (Assign New Yard Location)</span>
                 </div>
@@ -278,7 +300,7 @@
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">កាលបរិច្ឆេទធ្វើបច្ចុប្បន្នភាព</label>
-                            <input type="date" class="form-control" name="updated_date" required>
+                            <input type="date" class="form-control" name="updated_date" id="updated_date" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">ស្ថានភាព (Status)</label>
@@ -303,7 +325,7 @@
             </div>
 
             <!-- តារាងបង្ហាញ និងតម្រៀបទីតាំង (Filter & Table Section) -->
-            <div class="card-inner mt-4" id="historySection">
+            <div class="card-inner mt-4" id="historySection" style="display: none;">
                 <div class="card-inner-title">
                     <span><i class="fas fa-list-alt text-primary me-2"></i> បញ្ជីទីតាំងកុងតឺន័រក្នុងទីធ្លា (Yard Inventory & Mapping)</span>
                 </div>
@@ -479,14 +501,41 @@
         let allYardData = [];
 
         document.addEventListener('DOMContentLoaded', () => {
-            const today = new Date().toISOString().split('T')[0];
-            document.querySelector('input[name="updated_date"]').value = today;
+            const updDate = document.getElementById('updated_date');
+            if (updDate) {
+                updDate.valueAsDate = new Date();
+            }
             loadYardLocations();
         });
+
+        // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+        function switchSection(section) {
+            const formYard = document.getElementById('formYardSection');
+            const historySection = document.getElementById('historySection');
+            const btnShowTable = document.getElementById('btnShowTable');
+            const btnShowForm = document.getElementById('btnShowForm');
+
+            if (!formYard || !historySection) return;
+
+            if (section === 'table') {
+                formYard.style.display = 'none';
+                historySection.style.display = 'block';
+                if (btnShowTable) btnShowTable.style.display = 'none';
+                if (btnShowForm) btnShowForm.style.display = 'inline-flex';
+                loadYardLocations();
+            } else {
+                historySection.style.display = 'none';
+                formYard.style.display = 'block';
+                if (btnShowForm) btnShowForm.style.display = 'none';
+                if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+            }
+        }
 
         function toggleCustomShippingLine() {
             const selectEl = document.getElementById('shippingLineSelect');
             const inputEl = document.getElementById('shippingLineCustomInput');
+            if (!selectEl || !inputEl) return;
+
             if (inputEl.classList.contains('d-none')) {
                 inputEl.classList.remove('d-none');
                 inputEl.removeAttribute('disabled');
@@ -519,14 +568,18 @@
                 }
             } catch (err) {
                 console.error('Error loading data:', err);
-                document.getElementById('yardTableBody').innerHTML = `<tr><td colspan="11" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+                const tbody = document.getElementById('yardTableBody');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="11" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+                }
             }
         }
 
         function populateFilterShippingLines(data) {
             const filterSelect = document.getElementById('filterShippingLine');
+            if (!filterSelect) return;
+
             const currentSelected = filterSelect.value;
-            
             filterSelect.innerHTML = '<option value="">-- ទាំងអស់ --</option>';
 
             const uniqueLines = [...new Set(data.map(item => (item.shipping_line || '').trim()).filter(line => line !== ''))];
@@ -541,7 +594,6 @@
             filterSelect.value = currentSelected;
         }
 
-        // 🛑 កែសម្រួល Function គណនាថ្ងៃ៖ បើ Status ជា Dispatched ឬ Gate-Out ឱ្យឈប់រាប់ថ្ងៃបន្ត
         function calculateDayInYard(item) {
             if (!item.updated_date) return '-';
             const entryDate = new Date(item.updated_date.split('T')[0]);
@@ -550,7 +602,7 @@
             const status = (item.status || '').trim();
 
             if (status === 'Dispatched' || status === 'Gate-Out') {
-                endDate = new Date(item.updated_date.split('T')[0]); // ឈប់រាប់បន្ត គណនាត្រឹមថ្ងៃ Gate-Out
+                endDate = new Date(item.updated_date.split('T')[0]);
             }
 
             endDate.setHours(0, 0, 0, 0);
@@ -564,9 +616,10 @@
 
         function displayTableData(data) {
             const tbody = document.getElementById('yardTableBody');
+            if (!tbody) return;
             tbody.innerHTML = '';
 
-            if (data.length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">ពុំមានទិន្នន័យទីតាំងកុងតឺន័រទេ (No data found)</td></tr>`;
                 return;
             }
@@ -579,6 +632,7 @@
                 else if (item.status === 'Moved') statusBadge = 'bg-warning text-dark';
 
                 const dayInYardText = calculateDayInYard(item);
+                const rowDate = item.updated_date ? item.updated_date.split('T')[0] : '';
 
                 const row = `
                     <tr>
@@ -589,7 +643,7 @@
                         <td><span class="badge bg-dark">${item.block_code}</span></td>
                         <td>ជួរទី ${item.row_number} / ជាន់ទី ${item.tier_number}</td>
                         <td><span class="badge ${statusBadge}">${item.status}</span></td>
-                        <td>${item.updated_date ? item.updated_date.split('T')[0] : ''}</td>
+                        <td>${rowDate}</td>
                         <td><span class="badge bg-danger text-white">${dayInYardText}</span></td>
                         <td>${item.notes || '-'}</td>
                         <td>
@@ -603,59 +657,69 @@
             });
         }
 
-        document.getElementById('filterForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const searchText = document.getElementById('filterContainer').value.trim().toLowerCase();
-            const sizeFilter = document.getElementById('filterSize').value;
-            const shippingLineFilter = document.getElementById('filterShippingLine').value.trim().toLowerCase();
-            const status = document.getElementById('filterStatus').value;
-            const dateFrom = document.getElementById('dateFrom').value;
-            const dateTo = document.getElementById('dateTo').value;
+        const filterFormElem = document.getElementById('filterForm');
+        if (filterFormElem) {
+            filterFormElem.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const searchText = document.getElementById('filterContainer').value.trim().toLowerCase();
+                const sizeFilter = document.getElementById('filterSize').value;
+                const shippingLineFilter = document.getElementById('filterShippingLine').value.trim().toLowerCase();
+                const status = document.getElementById('filterStatus').value;
+                const dateFrom = document.getElementById('dateFrom').value;
+                const dateTo = document.getElementById('dateTo').value;
 
-            const filtered = allYardData.filter(item => {
-                let matchContainer = true;
-                if (searchText) {
-                    const containerNum = (item.container_number || '').toLowerCase();
-                    const last4Digits = containerNum.slice(-4);
-                    matchContainer = containerNum.includes(searchText) || last4Digits.includes(searchText);
-                }
+                const filtered = allYardData.filter(item => {
+                    let matchContainer = true;
+                    if (searchText) {
+                        const containerNum = (item.container_number || '').toLowerCase();
+                        const last4Digits = containerNum.slice(-4);
+                        matchContainer = containerNum.includes(searchText) || last4Digits.includes(searchText);
+                    }
 
-                let matchSize = true;
-                if (sizeFilter) {
-                    matchSize = (item.container_size || '').trim() === sizeFilter.trim();
-                }
+                    let matchSize = true;
+                    if (sizeFilter) {
+                        matchSize = (item.container_size || '').trim() === sizeFilter.trim();
+                    }
 
-                let matchLine = true;
-                if (shippingLineFilter) {
-                    const itemLine = (item.shipping_line || '').trim().toLowerCase();
-                    matchLine = itemLine === shippingLineFilter;
-                }
+                    let matchLine = true;
+                    if (shippingLineFilter) {
+                        const itemLine = (item.shipping_line || '').trim().toLowerCase();
+                        matchLine = itemLine === shippingLineFilter;
+                    }
 
-                let matchStatus = true;
-                if (status && item.status !== status) {
-                    matchStatus = false;
-                }
+                    let matchStatus = true;
+                    if (status && item.status !== status) {
+                        matchStatus = false;
+                    }
 
-                let matchDate = true;
-                if (dateFrom || dateTo) {
-                    const itemDate = item.updated_date ? item.updated_date.split('T')[0] : '';
-                    if (dateFrom && itemDate < dateFrom) matchDate = false;
-                    if (dateTo && itemDate > dateTo) matchDate = false;
-                }
+                    let matchDate = true;
+                    if (dateFrom || dateTo) {
+                        const itemDate = item.updated_date ? item.updated_date.split('T')[0] : '';
+                        if (dateFrom && itemDate < dateFrom) matchDate = false;
+                        if (dateTo && itemDate > dateTo) matchDate = false;
+                    }
 
-                return matchContainer && matchSize && matchLine && matchStatus && matchDate;
+                    return matchContainer && matchSize && matchLine && matchStatus && matchDate;
+                });
+
+                displayTableData(filtered);
             });
-
-            displayTableData(filtered);
-        });
+        }
 
         function resetFilter() {
-            document.getElementById('filterContainer').value = '';
-            document.getElementById('filterSize').value = '';
-            document.getElementById('filterShippingLine').value = '';
-            document.getElementById('filterStatus').value = '';
-            document.getElementById('dateFrom').value = '';
-            document.getElementById('dateTo').value = '';
+            const fCont = document.getElementById('filterContainer');
+            const fSize = document.getElementById('filterSize');
+            const fLine = document.getElementById('filterShippingLine');
+            const fStat = document.getElementById('filterStatus');
+            const dFrom = document.getElementById('dateFrom');
+            const dTo = document.getElementById('dateTo');
+
+            if (fCont) fCont.value = '';
+            if (fSize) fSize.value = '';
+            if (fLine) fLine.value = '';
+            if (fStat) fStat.value = '';
+            if (dFrom) dFrom.value = '';
+            if (dTo) dTo.value = '';
             displayTableData(allYardData);
         }
 
@@ -666,61 +730,85 @@
                 return;
             }
 
-            document.getElementById('edit_id').value = item.id;
-            document.getElementById('edit_container_number').value = item.container_number || '';
-            document.getElementById('edit_container_size').value = item.container_size || "40'";
-            document.getElementById('edit_container_type').value = item.container_type || "DC";
-            document.getElementById('edit_shipping_line').value = item.shipping_line || '';
-            document.getElementById('edit_block_code').value = item.block_code || '';
-            document.getElementById('edit_row_number').value = item.row_number || 1;
-            document.getElementById('edit_tier_number').value = item.tier_number || 1;
-            document.getElementById('edit_updated_date').value = item.updated_date ? item.updated_date.split('T')[0] : '';
-            document.getElementById('edit_status').value = item.status || 'Stored';
-            document.getElementById('edit_notes').value = item.notes || '';
+            const eId = document.getElementById('edit_id');
+            const eNum = document.getElementById('edit_container_number');
+            const eSize = document.getElementById('edit_container_size');
+            const eType = document.getElementById('edit_container_type');
+            const eLine = document.getElementById('edit_shipping_line');
+            const eBlock = document.getElementById('edit_block_code');
+            const eRow = document.getElementById('edit_row_number');
+            const eTier = document.getElementById('edit_tier_number');
+            const eDate = document.getElementById('edit_updated_date');
+            const eStat = document.getElementById('edit_status');
+            const eNotes = document.getElementById('edit_notes');
 
-            const editModal = new bootstrap.Modal(document.getElementById('editYardModal'));
-            editModal.show();
+            if (eId) eId.value = item.id;
+            if (eNum) eNum.value = item.container_number || '';
+            if (eSize) eSize.value = item.container_size || "40'";
+            if (eType) eType.value = item.container_type || "DC";
+            if (eLine) eLine.value = item.shipping_line || '';
+            if (eBlock) eBlock.value = item.block_code || '';
+            if (eRow) eRow.value = item.row_number || 1;
+            if (eTier) eTier.value = item.tier_number || 1;
+            if (eDate) eDate.value = item.updated_date ? item.updated_date.split('T')[0] : '';
+            if (eStat) eStat.value = item.status || 'Stored';
+            if (eNotes) eNotes.value = item.notes || '';
+
+            const editModalEl = document.getElementById('editYardModal');
+            if (editModalEl) {
+                const editModal = new bootstrap.Modal(editModalEl);
+                editModal.show();
+            }
         }
 
-        document.getElementById('editYardForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('edit_id').value;
-            const updatedData = {
-                container_number: document.getElementById('edit_container_number').value.trim(),
-                container_size: document.getElementById('edit_container_size').value,
-                container_type: document.getElementById('edit_container_type').value,
-                shipping_line: document.getElementById('edit_shipping_line').value.trim(),
-                block_code: document.getElementById('edit_block_code').value.trim(),
-                row_number: parseInt(document.getElementById('edit_row_number').value) || 1,
-                tier_number: parseInt(document.getElementById('edit_tier_number').value) || 1,
-                updated_date: document.getElementById('edit_updated_date').value,
-                status: document.getElementById('edit_status').value,
-                notes: document.getElementById('edit_notes').value.trim()
-            };
+        const editYardForm = document.getElementById('editYardForm');
+        if (editYardForm) {
+            editYardForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const idElem = document.getElementById('edit_id');
+                const id = idElem ? idElem.value : '';
+                const updatedData = {
+                    container_number: document.getElementById('edit_container_number').value.trim(),
+                    container_size: document.getElementById('edit_container_size').value,
+                    container_type: document.getElementById('edit_container_type').value,
+                    shipping_line: document.getElementById('edit_shipping_line').value.trim(),
+                    block_code: document.getElementById('edit_block_code').value.trim(),
+                    row_number: parseInt(document.getElementById('edit_row_number').value) || 1,
+                    tier_number: parseInt(document.getElementById('edit_tier_number').value) || 1,
+                    updated_date: document.getElementById('edit_updated_date').value,
+                    status: document.getElementById('edit_status').value,
+                    notes: document.getElementById('edit_notes').value.trim()
+                };
 
-            try {
-                const response = await fetch(`/api/fleet/container-yard/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedData)
-                });
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    alert('បានដោះដូរនិងកែប្រែទីតាំងកុងតឺន័រដោយជោគជ័យ!');
-                    bootstrap.Modal.getInstance(document.getElementById('editYardModal')).hide();
-                    loadYardLocations();
-                } else {
-                    alert('កំហុស៖ ' + (result.error || 'មិនអាចកែប្រែបានទេ'));
+                try {
+                    const response = await fetch(`/api/fleet/container-yard/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedData)
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        alert('បានដោះដូរនិងកែប្រែទីតាំងកុងតឺន័រដោយជោគជ័យ!');
+                        const editModalEl = document.getElementById('editYardModal');
+                        if (editModalEl) {
+                            const modalInstance = bootstrap.Modal.getInstance(editModalEl);
+                            if (modalInstance) modalInstance.hide();
+                        }
+                        loadYardLocations();
+                    } else {
+                        alert('កំហុស៖ ' + (result.error || 'មិនអាចកែប្រែបានទេ'));
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
                 }
-            } catch (err) {
-                console.error(err);
-                alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
-            }
-        });
+            });
+        }
 
         function exportHistoryToPDF() {
             const { jsPDF } = window.jspdf;
             const historyElement = document.getElementById('historySection');
+            if (!historyElement) return;
 
             const filterForm = historyElement.querySelector('#filterForm');
             const actionCells = historyElement.querySelectorAll('th:nth-child(11), td:nth-child(11)');
@@ -759,33 +847,37 @@
             });
         }
 
-        document.getElementById('yardForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const payload = Object.fromEntries(formData.entries());
+        const yardForm = document.getElementById('yardForm');
+        if (yardForm) {
+            yardForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const payload = Object.fromEntries(formData.entries());
 
-            try {
-                const response = await fetch('/api/fleet/container-yard', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                try {
+                    const response = await fetch('/api/fleet/container-yard', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
 
-                const result = await response.json();
-                if (response.ok) {
-                    alert('បានកត់ត្រាទីតាំងកុងតឺន័រដោយជោគជ័យ!');
-                    this.reset();
-                    const today = new Date().toISOString().split('T')[0];
-                    document.querySelector('input[name="updated_date"]').value = today;
-                    loadYardLocations();
-                } else {
-                    alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                    const result = await response.json();
+                    if (response.ok) {
+                        alert('បានកត់ត្រាទីតាំងកុងតឺន័រដោយជោគជ័យ!');
+                        this.reset();
+                        const updDate = document.getElementById('updated_date');
+                        if (updDate) updDate.valueAsDate = new Date();
+                        loadYardLocations();
+                        switchSection('table');
+                    } else {
+                        alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                    }
+                } catch (err) {
+                    console.error('Error saving data:', err);
+                    alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ Server');
                 }
-            } catch (err) {
-                console.error('Error saving data:', err);
-                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ Server');
-            }
-        });
+            });
+        }
     </script>
 </body>
 </html>
