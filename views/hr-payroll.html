@@ -27,11 +27,11 @@
             box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); 
             border: 1px solid #e2e8f0; 
         }
+        .top-nav-buttons { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 25px; }
         .back-btn { 
             display: inline-flex; 
             align-items: center; 
             gap: 8px;
-            margin-bottom: 25px; 
             text-decoration: none; 
             background: #334155; 
             color: white; 
@@ -40,8 +40,14 @@
             font-size: 14px; 
             font-weight: 500;
             transition: all 0.2s; 
+            border: none;
+            cursor: pointer;
         }
         .back-btn:hover { background: #1e293b; color: white; }
+        .btn-nav-table { background: #8b5cf6; color: white; border: none; padding: 9px 18px; border-radius: 10px; font-size: 14px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 500; cursor: pointer; transition: background 0.3s; }
+        .btn-nav-table:hover { background: #7c3aed; }
+        .btn-nav-form { background: #059669; color: white; border: none; padding: 9px 18px; border-radius: 10px; font-size: 14px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 500; cursor: pointer; transition: background 0.3s; }
+        .btn-nav-form:hover { background: #047857; }
         
         h1 { color: var(--primary-color); margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.5px; }
         .eng-sub { color: #64748b; font-size: 13px; text-transform: uppercase; margin-top: 6px; font-weight: 600; letter-spacing: 0.5px; }
@@ -163,8 +169,8 @@
             @page { size: A4 landscape; margin: 10mm; }
             body { background: white; padding: 0; color: #000; font-family: 'Kantumruy Pro', sans-serif !important; }
             .container { box-shadow: none; padding: 0; border: none; max-width: 100%; width: 100%; }
-            .back-btn, #formSectionBox, .print-action-bar, .action-col, th.action-col, td.action-col, .footer-note, #filterBranchWrapper, h1, .eng-sub, #reportTitleHeader { display: none !important; }
-            .section-box { background: white !important; border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; }
+            .top-nav-buttons, #formSectionBox, .print-action-bar, .action-col, th.action-col, td.action-col, .footer-note, #filterBranchWrapper, h1, .eng-sub, #reportTitleHeader { display: none !important; }
+            .section-box { background: white !important; border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; display: block !important; }
             .print-header-title { display: block !important; text-align: center; margin-bottom: 20px; }
             .print-header-title h2 { color: #1e3c72; font-size: 22px; font-weight: 700; margin: 0; }
             .print-header-title p { color: #64748b; font-size: 13px; text-transform: uppercase; margin: 5px 0 0 0; font-weight: 600; letter-spacing: 0.5px; }
@@ -179,13 +185,22 @@
 <body>
 
     <div class="container">
-        <a href="/" class="back-btn">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
+        <!-- ប៊ូតុងរុករក និងប្តូរទិដ្ឋភាព -->
+        <div class="top-nav-buttons no-print">
+            <a href="/" class="back-btn">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
+            <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
+                <i class="fa-solid fa-table-list"></i> មើលតារាងរបាយការណ៍ប្រាក់ខែ
+            </button>
+            <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+                <i class="fa-solid fa-plus-circle"></i> គណនា/កត់ត្រាប្រាក់ខែថ្មី
+            </button>
+        </div>
         
         <h1>ប្រាក់បៀវត្សរ៍ និងអត្ថប្រយោជន៍</h1>
         <div class="eng-sub">Payroll Processing & Benefits Management</div>
         
         <!-- ១. Form គណនា កត់ត្រា និងកែប្រែប្រាក់ខែ -->
-        <div class="section-box" id="formSectionBox">
+        <div class="section-box no-print" id="formSectionBox">
             <h3>🧮 គណនាកត់ត្រា ឬកែប្រែប្រាក់បៀវត្សរ៍</h3>
             <form id="payrollForm">
                 <input type="hidden" id="edit_id">
@@ -275,8 +290,8 @@
             </form>
         </div>
 
-        <!-- ២. តារាងបង្ហាញបញ្ជីប្រាក់ខែ -->
-        <div class="section-box">
+        <!-- ២. តារាងបង្ហាញបញ្ជីប្រាក់ខែ (លាក់ទុកដំបូង) -->
+        <div class="section-box" id="tableSection" style="display: none;">
             <h3 id="reportTitleHeader">📋 របាយការណ៍ប្រាក់បៀវត្សរ៍បុគ្គលិក</h3>
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;" id="filterBranchWrapper">
@@ -327,15 +342,43 @@
         </div>
 
         <div class="footer-note">
-            <p><strong>ចំណាំ៖</strong> ប្រព័ន្ធទាញទិន្នន័យអវត្តមានពីការស្កែនមេដៃមកគណនាកាត់ប្រាក់ខែដោយស្វ័យប្រវត្ត (ផ្អែកលើចំនួនថ្ងៃពិតនៃខែនីមួយៗ ២៨, ៣០ ឬ ៣១ថ្ងៃ) និងគណនាប្រាក់ជំពាក់សរុប។</p>
+            <p><strong>ចំណាំ៖</strong> ប្រព័ន្ធទាញទិន្នន័យអវត្តមានពីការស្កែនមេដៃមកគណនាកាត់ប្រាក់ខែដោយស្វ័យប្រវត្ត (ផ្អែកលើចំនួនថ្ងៃពិតនៃខែនីមួយៗ ២៨, ៣០ ឬ ៣១ថ្ងៃ) និងគណនាប្រាក់ជំពាក់សរុប[cite: 7].</p>
         </div>
     </div>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadPayroll();
+        });
+
+        // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+        function switchSection(section) {
+            const formSection = document.getElementById('formSectionBox');
+            const tableSection = document.getElementById('tableSection');
+            const btnShowTable = document.getElementById('btnShowTable');
+            const btnShowForm = document.getElementById('btnShowForm');
+
+            if (!formSection || !tableSection) return;
+
+            if (section === 'table') {
+                formSection.style.display = 'none';
+                tableSection.style.display = 'block';
+                if (btnShowTable) btnShowTable.style.display = 'none';
+                if (btnShowForm) btnShowForm.style.display = 'inline-flex';
+                loadPayroll();
+            } else {
+                tableSection.style.display = 'none';
+                formSection.style.display = 'block';
+                if (btnShowForm) btnShowForm.style.display = 'none';
+                if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+            }
+        }
+
         function getDaysInSelectedMonth() {
-            const payMonth = document.getElementById('pay_month').value;
+            const payMonthElem = document.getElementById('pay_month');
+            const payMonth = payMonthElem ? payMonthElem.value : '';
             if (!payMonth) return 30;
             const [year, month] = payMonth.split('-').map(Number);
             return new Date(year, month, 0).getDate();
@@ -343,44 +386,64 @@
 
         function updateDaysInMonthInfo() {
             const totalDays = getDaysInSelectedMonth();
-            document.getElementById('attendanceLabel').innerText = `ថ្ងៃវត្តមាន / អវត្តមាន (ខែនេះមាន ${totalDays}ថ្ងៃ):`;
+            const attLabel = document.getElementById('attendanceLabel');
+            if (attLabel) {
+                attLabel.innerText = `ថ្ងៃវត្តមាន / អវត្តមាន (ខែនេះមាន ${totalDays}ថ្ងៃ):`;
+            }
             calculateFromManualAttendance();
         }
 
         function calculateNet() {
-            const base = parseFloat(document.getElementById('base_salary').value) || 0;
-            const allow = parseFloat(document.getElementById('allowance').value) || 0;
-            const ot = parseFloat(document.getElementById('ot_amount').value) || 0;
-            const deduct = parseFloat(document.getElementById('deduction').value) || 0; 
+            const baseElem = document.getElementById('base_salary');
+            const allowElem = document.getElementById('allowance');
+            const otElem = document.getElementById('ot_amount');
+            const deductElem = document.getElementById('deduction');
+            const prevDebtElem = document.getElementById('previous_debt');
+            const newDebtElem = document.getElementById('new_debt');
+
+            const base = baseElem ? parseFloat(baseElem.value) || 0 : 0;
+            const allow = allowElem ? parseFloat(allowElem.value) || 0 : 0;
+            const ot = otElem ? parseFloat(otElem.value) || 0 : 0;
+            const deduct = deductElem ? parseFloat(deductElem.value) || 0 : 0; 
             
-            const prevDebt = parseFloat(document.getElementById('previous_debt').value) || 0;
-            const newDebt = parseFloat(document.getElementById('new_debt').value) || 0;
+            const prevDebt = prevDebtElem ? parseFloat(prevDebtElem.value) || 0 : 0;
+            const newDebt = newDebtElem ? parseFloat(newDebtElem.value) || 0 : 0;
             
-            // គណនាប្រាក់ជំពាក់នៅសល់ឱ្យបានត្រឹមត្រូវ (ជំពាក់ចាស់ + ជំពាក់ថ្មី - ប្រាក់ត្រូវកាត់)
             let totalRemainingDebt = (prevDebt + newDebt) - deduct;
             if (totalRemainingDebt < 0) totalRemainingDebt = 0;
-            document.getElementById('remaining_debt_preview').value = '$' + totalRemainingDebt.toFixed(2);
+            
+            const remDebtPrev = document.getElementById('remaining_debt_preview');
+            if (remDebtPrev) remDebtPrev.value = '$' + totalRemainingDebt.toFixed(2);
 
             const net = (base + allow + ot) - deduct;
-            document.getElementById('net_salary_preview').value = '$' + net.toFixed(2);
+            const netSalaryPrev = document.getElementById('net_salary_preview');
+            if (netSalaryPrev) netSalaryPrev.value = '$' + net.toFixed(2);
         }
 
         function calculateFromManualAttendance() {
-            const absentDays = parseFloat(document.getElementById('absent_days').value) || 0;
-            const baseSalary = parseFloat(document.getElementById('base_salary').value) || 0;
+            const absentElem = document.getElementById('absent_days');
+            const baseElem = document.getElementById('base_salary');
+            const deductElem = document.getElementById('deduction');
+
+            const absentDays = absentElem ? parseFloat(absentElem.value) || 0 : 0;
+            const baseSalary = baseElem ? parseFloat(baseElem.value) || 0 : 0;
             const totalDaysInMonth = getDaysInSelectedMonth();
             
             const dailyRate = baseSalary / totalDaysInMonth; 
             const calculatedDeduction = absentDays * dailyRate;
 
-            document.getElementById('deduction').value = calculatedDeduction.toFixed(2);
+            if (deductElem) deductElem.value = calculatedDeduction.toFixed(2);
             calculateNet();
         }
 
         async function checkAttendanceAndDeduction() {
-            const empCode = document.getElementById('employee_code').value;
-            const payMonth = document.getElementById('pay_month').value;
-            const editId = document.getElementById('edit_id').value;
+            const empCodeElem = document.getElementById('employee_code');
+            const payMonthElem = document.getElementById('pay_month');
+            const editIdElem = document.getElementById('edit_id');
+
+            const empCode = empCodeElem ? empCodeElem.value : '';
+            const payMonth = payMonthElem ? payMonthElem.value : '';
+            const editId = editIdElem ? editIdElem.value : '';
 
             if (editId) return;
 
@@ -389,9 +452,13 @@
                     const res = await fetch(`/api/payroll/calculate/${empCode}/${payMonth}`);
                     if (res.ok) {
                         const data = await res.json();
-                        document.getElementById('full_name').value = data.full_name;
-                        document.getElementById('present_days').value = data.present_days;
-                        document.getElementById('absent_days').value = data.absent_days;
+                        const fullNameElem = document.getElementById('full_name');
+                        const presentDaysElem = document.getElementById('present_days');
+                        const absentDaysElem = document.getElementById('absent_days');
+
+                        if (fullNameElem) fullNameElem.value = data.full_name;
+                        if (presentDaysElem) presentDaysElem.value = data.present_days;
+                        if (absentDaysElem) absentDaysElem.value = data.absent_days;
                         
                         updateDaysInMonthInfo();
                     }
@@ -401,12 +468,19 @@
             }
         }
 
-        document.getElementById('employee_code').addEventListener('blur', checkAttendanceAndDeduction);
-        document.getElementById('pay_month').addEventListener('change', () => {
-            updateDaysInMonthInfo();
-            checkAttendanceAndDeduction();
-        });
-        document.getElementById('base_salary').addEventListener('input', calculateFromManualAttendance);
+        const empCodeElem = document.getElementById('employee_code');
+        if (empCodeElem) empCodeElem.addEventListener('blur', checkAttendanceAndDeduction);
+
+        const payMonthElem = document.getElementById('pay_month');
+        if (payMonthElem) {
+            payMonthElem.addEventListener('change', () => {
+                updateDaysInMonthInfo();
+                checkAttendanceAndDeduction();
+            });
+        }
+
+        const baseSalaryElem = document.getElementById('base_salary');
+        if (baseSalaryElem) baseSalaryElem.addEventListener('input', calculateFromManualAttendance);
 
         let payrollDataList = [];
 
@@ -415,16 +489,20 @@
                 const response = await fetch('/api/payroll');
                 payrollDataList = await response.json();
                 
-                const selectedBranch = document.getElementById('filterBranch').value;
+                const filterBranchElem = document.getElementById('filterBranch');
+                const selectedBranch = filterBranchElem ? filterBranchElem.value : 'ALL';
                 const printTitleP = document.querySelector('#printBranchTitle p');
                 
-                if(selectedBranch === 'ALL') {
-                    printTitleP.innerText = 'Payroll Processing & Benefits Management - គ្រប់សាខាទាំងអស់ (All Branches)';
-                } else {
-                    printTitleP.innerText = `Payroll Processing & Benefits Management - សាខា ${selectedBranch}`;
+                if (printTitleP) {
+                    if (selectedBranch === 'ALL') {
+                        printTitleP.innerText = 'Payroll Processing & Benefits Management - គ្រប់សាខាទាំងអស់ (All Branches)';
+                    } else {
+                        printTitleP.innerText = `Payroll Processing & Benefits Management - សាខា ${selectedBranch}`;
+                    }
                 }
 
                 const tbody = document.getElementById('payrollTableBody');
+                if (!tbody) return;
                 tbody.innerHTML = '';
                 
                 const filteredList = payrollDataList.filter(item => {
@@ -432,7 +510,7 @@
                     return item.branch === selectedBranch;
                 });
 
-                if (!filteredList || filteredList.length === 0) {
+                if (!Array.isArray(filteredList) || filteredList.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="15" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យប្រាក់បៀវត្សរ៍សម្រាប់សាខានេះនៅឡើយទេ</td></tr>';
                     return;
                 }
@@ -482,86 +560,129 @@
             const item = payrollDataList.find(p => p.id === id);
             if (!item) return;
 
-            document.getElementById('edit_id').value = item.id;
-            document.getElementById('branch').value = item.branch || 'ANT DRY PORT';
-            document.getElementById('employee_code').value = item.employee_code;
-            document.getElementById('full_name').value = item.full_name;
-            document.getElementById('pay_month').value = item.pay_month;
-            document.getElementById('base_salary').value = item.base_salary;
-            document.getElementById('allowance').value = item.allowance;
-            document.getElementById('ot_amount').value = item.ot_amount || 0;
-            document.getElementById('deduction').value = item.deduction;
-            document.getElementById('previous_debt').value = item.previous_debt;
-            document.getElementById('new_debt').value = item.new_debt;
-            document.getElementById('note').value = item.note || '';
-            document.getElementById('present_days').value = item.present_days ?? '';
-            document.getElementById('absent_days').value = item.absent_days ?? 0;
+            switchSection('form');
+
+            const editId = document.getElementById('edit_id');
+            const branch = document.getElementById('branch');
+            const employeeCode = document.getElementById('employee_code');
+            const fullName = document.getElementById('full_name');
+            const payMonth = document.getElementById('pay_month');
+            const baseSalary = document.getElementById('base_salary');
+            const allowance = document.getElementById('allowance');
+            const otAmount = document.getElementById('ot_amount');
+            const deduction = document.getElementById('deduction');
+            const previousDebt = document.getElementById('previous_debt');
+            const newDebt = document.getElementById('new_debt');
+            const note = document.getElementById('note');
+            const presentDays = document.getElementById('present_days');
+            const absentDays = document.getElementById('absent_days');
+            const saveBtn = document.getElementById('saveBtn');
+
+            if (editId) editId.value = item.id;
+            if (branch) branch.value = item.branch || 'ANT DRY PORT';
+            if (employeeCode) employeeCode.value = item.employee_code;
+            if (fullName) fullName.value = item.full_name;
+            if (payMonth) payMonth.value = item.pay_month;
+            if (baseSalary) baseSalary.value = item.base_salary;
+            if (allowance) allowance.value = item.allowance;
+            if (otAmount) otAmount.value = item.ot_amount || 0;
+            if (deduction) deduction.value = item.deduction;
+            if (previousDebt) previousDebt.value = item.previous_debt;
+            if (newDebt) newDebt.value = item.new_debt;
+            if (note) note.value = item.note || '';
+            if (presentDays) presentDays.value = item.present_days ?? '';
+            if (absentDays) absentDays.value = item.absent_days ?? 0;
 
             updateDaysInMonthInfo();
             calculateNet();
-            document.getElementById('saveBtn').innerText = 'កែប្រែទិន្នន័យ (Update Payroll)';
-            document.getElementById('saveBtn').style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+
+            if (saveBtn) {
+                saveBtn.innerText = 'កែប្រែទិន្នន័យ (Update Payroll)';
+                saveBtn.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        document.getElementById('payrollForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const editId = document.getElementById('edit_id').value;
-            const base = parseFloat(document.getElementById('base_salary').value) || 0;
-            const allow = parseFloat(document.getElementById('allowance').value) || 0;
-            const ot = parseFloat(document.getElementById('ot_amount').value) || 0;
-            const deduct = parseFloat(document.getElementById('deduction').value) || 0;
-            
-            const netSalary = (base + allow + ot) - deduct;
-            const totalDaysInMonth = getDaysInSelectedMonth();
+        const payrollForm = document.getElementById('payrollForm');
+        if (payrollForm) {
+            payrollForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const editIdElem = document.getElementById('edit_id');
+                const baseElem = document.getElementById('base_salary');
+                const allowElem = document.getElementById('allowance');
+                const otElem = document.getElementById('ot_amount');
+                const deductElem = document.getElementById('deduction');
+                const branchElem = document.getElementById('branch');
+                const empCodeElem = document.getElementById('employee_code');
+                const fullNameElem = document.getElementById('full_name');
+                const prevDebtElem = document.getElementById('previous_debt');
+                const newDebtElem = document.getElementById('new_debt');
+                const payMonthElem = document.getElementById('pay_month');
+                const noteElem = document.getElementById('note');
+                const presentDaysElem = document.getElementById('present_days');
+                const absentDaysElem = document.getElementById('absent_days');
+                const saveBtn = document.getElementById('saveBtn');
+                const netSalaryPrev = document.getElementById('net_salary_preview');
+                const remDebtPrev = document.getElementById('remaining_debt_preview');
 
-            const payload = {
-                branch: document.getElementById('branch').value,
-                employee_code: document.getElementById('employee_code').value,
-                full_name: document.getElementById('full_name').value,
-                base_salary: base,
-                allowance: allow,
-                ot_amount: ot,
-                deduction: deduct,
-                previous_debt: document.getElementById('previous_debt').value,
-                new_debt: document.getElementById('new_debt').value,
-                net_salary: netSalary,
-                pay_month: document.getElementById('pay_month').value,
-                note: document.getElementById('note').value,
-                present_days: document.getElementById('present_days').value || totalDaysInMonth,
-                absent_days: document.getElementById('absent_days').value || 0
-            };
+                const editId = editIdElem ? editIdElem.value : '';
+                const base = baseElem ? parseFloat(baseElem.value) || 0 : 0;
+                const allow = allowElem ? parseFloat(allowElem.value) || 0 : 0;
+                const ot = otElem ? parseFloat(otElem.value) || 0 : 0;
+                const deduct = deductElem ? parseFloat(deductElem.value) || 0 : 0;
+                
+                const netSalary = (base + allow + ot) - deduct;
+                const totalDaysInMonth = getDaysInSelectedMonth();
 
-            try {
-                const url = editId ? `/api/payroll/${editId}` : '/api/payroll';
-                const method = editId ? 'PUT' : 'POST';
+                const payload = {
+                    branch: branchElem ? branchElem.value : 'ANT DRY PORT',
+                    employee_code: empCodeElem ? empCodeElem.value : '',
+                    full_name: fullNameElem ? fullNameElem.value : '',
+                    base_salary: base,
+                    allowance: allow,
+                    ot_amount: ot,
+                    deduction: deduct,
+                    previous_debt: prevDebtElem ? prevDebtElem.value : 0,
+                    new_debt: newDebtElem ? newDebtElem.value : 0,
+                    net_salary: netSalary,
+                    pay_month: payMonthElem ? payMonthElem.value : '',
+                    note: noteElem ? noteElem.value : '',
+                    present_days: presentDaysElem && presentDaysElem.value ? presentDaysElem.value : totalDaysInMonth,
+                    absent_days: absentDaysElem && absentDaysElem.value ? absentDaysElem.value : 0
+                };
 
-                const response = await fetch(url, {
-                    method: method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                try {
+                    const url = editId ? `/api/payroll/${editId}` : '/api/payroll';
+                    const method = editId ? 'PUT' : 'POST';
 
-                const result = await response.json();
-                if (response.ok) {
-                    alert(editId ? 'បានកែប្រែទិន្នន័យប្រាក់បៀវត្សរ៍ដោយជោគជ័យ!' : 'បានរក្សាទុកទិន្នន័យប្រាក់បៀវត្សរ៍ដោយជោគជ័យ!');
-                    document.getElementById('payrollForm').reset();
-                    document.getElementById('edit_id').value = '';
-                    document.getElementById('saveBtn').innerText = 'រក្សាទុកទិន្នន័យប្រាក់ខែ (Save Payroll)';
-                    document.getElementById('saveBtn').style.background = 'linear-gradient(135deg, #059669 0%, #10b981 100%)';
-                    document.getElementById('net_salary_preview').value = '$0.00';
-                    document.getElementById('remaining_debt_preview').value = '$0.00';
-                    loadPayroll();
-                } else {
-                    alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const result = await response.json();
+                    if (response.ok) {
+                        alert(editId ? 'បានកែប្រែទិន្នន័យប្រាក់បៀវត្សរ៍ដោយជោគជ័យ!' : 'បានរក្សាទុកទិន្នន័យប្រាក់បៀវត្សរ៍ដោយជោគជ័យ!');
+                        payrollForm.reset();
+                        if (editIdElem) editIdElem.value = '';
+                        if (saveBtn) {
+                            saveBtn.innerText = 'រក្សាទុកទិន្នន័យប្រាក់ខែ (Save Payroll)';
+                            saveBtn.style.background = 'linear-gradient(135deg, #059669 0%, #10b981 100%)';
+                        }
+                        if (netSalaryPrev) netSalaryPrev.value = '$0.00';
+                        if (remDebtPrev) remDebtPrev.value = '$0.00';
+                        loadPayroll();
+                        switchSection('table');
+                    } else {
+                        alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                    }
+                } catch (err) {
+                    console.error('Error submitting payroll:', err);
                 }
-            } catch (err) {
-                console.error('Error submitting payroll:', err);
-            }
-        });
-
-        loadPayroll();
+            });
+        }
     </script>
 </body>
 </html>
