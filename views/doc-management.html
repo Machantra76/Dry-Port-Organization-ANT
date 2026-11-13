@@ -24,7 +24,12 @@
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
-        
+        .top-nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
         .btn-back {
             background: linear-gradient(135deg, #0284c7, #0369a1);
             color: white;
@@ -37,11 +42,49 @@
             gap: 8px;
             box-shadow: 0 4px 10px rgba(2, 132, 199, 0.2);
             transition: all 0.2s;
+            border: none;
+            cursor: pointer;
         }
         .btn-back:hover {
             background: linear-gradient(135deg, #0369a1, #075985);
             color: white;
             transform: translateY(-1px);
+        }
+        .btn-nav-table {
+            background-color: #0284c7;
+            color: white;
+            font-weight: 500;
+            border-radius: 8px;
+            padding: 10px 18px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-nav-table:hover {
+            background-color: #0369a1;
+            color: white;
+        }
+        .btn-nav-form {
+            background-color: #059669;
+            color: white;
+            font-weight: 500;
+            border-radius: 8px;
+            padding: 10px 18px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-nav-form:hover {
+            background-color: #047857;
+            color: white;
         }
 
         .page-title {
@@ -214,14 +257,23 @@
 <body>
 
 <div class="main-container">
-    <a href="/" class="btn-back no-print">
-        <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ
-    </a>
+    <div class="top-nav-buttons no-print">
+        <a href="/" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ
+        </a>
+        <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
+            <i class="fa-solid fa-table-list"></i> តារាងបញ្ជីគ្រប់គ្រងឯកសារគយ
+        </button>
+        <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+            <i class="fa-solid fa-plus-circle"></i> បញ្ចូលព័ត៌មានឯកសារគយថ្មី
+        </button>
+    </div>
 
     <h2 class="page-title">ការគ្រប់គ្រងឯកសារគយ</h2>
     <p class="page-subtitle">CUSTOMS DOCUMENT MANAGEMENT SYSTEM</p>
 
-    <div class="section-card no-print">
+    <!-- ផ្នែកទី ១: Form កត់ត្រាថ្មី -->
+    <div id="formSection" class="section-card no-print">
         <div class="section-card-title"><i class="fa-solid fa-file-invoice me-2"></i> បញ្ចូលព័ត៌មានឯកសារគយថ្មី (Record New Customs Document)</div>
         <form id="documentForm">
             <input type="hidden" id="editId" value="">
@@ -301,7 +353,8 @@
         </form>
     </div>
 
-    <div class="section-card">
+    <!-- ផ្នែកទី ២: តារាងបង្ហាញទិន្នន័យ (លាក់ទុកដំបូង) -->
+    <div id="tableSection" class="section-card" style="display: none;">
         <div class="section-card-title mb-3"><i class="fa-solid fa-table-list me-2"></i> តារាងបញ្ជីគ្រប់គ្រងឯកសារគយ (Customs Documents List)</div>
 
         <div class="filter-action-bar no-print">
@@ -374,6 +427,27 @@
         loadDocuments();
     });
 
+    // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+    function switchSection(section) {
+        const formSection = document.getElementById('formSection');
+        const tableSection = document.getElementById('tableSection');
+        const btnShowTable = document.getElementById('btnShowTable');
+        const btnShowForm = document.getElementById('btnShowForm');
+
+        if (section === 'table') {
+            formSection.style.display = 'none';
+            tableSection.style.display = 'block';
+            btnShowTable.style.display = 'none';
+            btnShowForm.style.display = 'inline-flex';
+            loadDocuments();
+        } else {
+            tableSection.style.display = 'none';
+            formSection.style.display = 'block';
+            btnShowForm.style.display = 'none';
+            btnShowTable.style.display = 'inline-flex';
+        }
+    }
+
     async function loadDocuments() {
         try {
             const response = await fetch('/api/customs-documents');
@@ -403,14 +477,12 @@
 
             let downloadBtn = '';
             
-            // 1. ប៊ូតុងទាញយក PDF ធម្មតា
             if (item.has_pdf) {
                 downloadBtn += `<a href="/api/customs-documents/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF ទូទៅ"><i class="fa-solid fa-file-pdf"></i> PDF</a>`;
             } else {
                 downloadBtn += `<button class="btn btn-sm btn-outline-secondary me-1" disabled title="គ្មានឯកសារ PDF ទូទៅ"><i class="fa-solid fa-file-pdf"></i> PDF</button>`;
             }
 
-            // 💡 2. ប៊ូតុងទាញយក DO PDF ដាក់បង្ហាញដាច់ដោយឡែកយ៉ាងច្បាស់
             if (item.has_do_pdf) {
                 downloadBtn += `<a href="/api/customs-documents/${item.id}/do-pdf" class="btn btn-sm btn-outline-primary me-1 fw-bold" target="_blank" title="មើល ឬទាញយក DO PDF"><i class="fa-solid fa-file-arrow-down"></i> DO</a>`;
             } else {
@@ -482,7 +554,7 @@
         const editId = document.getElementById('editId').value;
         const docNumber = document.getElementById('document_number').value.trim();
         const pdfFile = document.getElementById('pdf_file').files[0];
-        const doPdfFile = document.getElementById('do_pdf_file').files[0]; // យក File DO
+        const doPdfFile = document.getElementById('do_pdf_file').files[0];
 
         if ((pdfFile && pdfFile.size > 10 * 1024 * 1024) || (doPdfFile && doPdfFile.size > 10 * 1024 * 1024)) {
             alert('ឯកសារ PDF ធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំទាបជាង 10MB។');
@@ -503,7 +575,6 @@
             formData.append('pdf_file', pdfFile);
         }
         
-        // 💡 បន្ថែម File DO ចូលក្នុង FormData ដើម្បីបញ្ជូនទៅ Server
         if (doPdfFile) {
             formData.append('do_pdf_file', doPdfFile);
         }
@@ -527,6 +598,7 @@
                 alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានចុះបញ្ជីឯកសារថ្មីដោយជោគជ័យ!');
                 resetForm();
                 loadDocuments();
+                switchSection('table'); // ស្វ័យប្រវត្តិប្តូរទៅមើលតារាងក្រោយពេលរក្សាទុក
             } else {
                 alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
             }
@@ -539,6 +611,8 @@
     function editDocument(id) {
         const item = documentDataList.find(d => d.id === id);
         if (!item) return;
+
+        switchSection('form'); // ប្តូរមកកាន់ Form ពេលចុចកែប្រែ
 
         document.getElementById('editId').value = item.id;
         document.getElementById('document_number').value = item.document_number || '';
