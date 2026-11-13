@@ -766,8 +766,14 @@
                 else if (gateType.includes('Thailand')) badgeClass = 'bg-warning text-dark';
                 else if (gateType.includes('Vietnam')) badgeClass = 'bg-info text-dark';
                 
+                // 🌟 ពិនិត្យមើល៖ បើ "ទីតាំងលើសមុទ្រ" ស្មើ 100% ឱ្យប្តូរ "ស្ថានភាព" មកជា "បានមកដល់ផែ SHV" ដោយស្វ័យប្រវត្តិ
+                let currentStatus = item.status || '';
+                if (progressInfo.percent === 100 && !currentStatus.includes('CY') && currentStatus !== 'Delivered') {
+                    currentStatus = 'បានមកដល់ផែ SHV';
+                    item.status = 'បានមកដល់ផែ SHV'; // អាប់ដេតក្នុង Array ដើម្បីឱ្យ Modal និង Edit បង្ហាញដូចគ្នា
+                }
+
                 let statusBadgeClass = 'bg-secondary';
-                const currentStatus = item.status || '';
                 if (currentStatus === 'Berthing') {
                     statusBadgeClass = 'bg-warning text-dark';
                 } else if (currentStatus === 'Departed') {
