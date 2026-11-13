@@ -24,6 +24,12 @@
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
+        .top-nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
         .btn-back {
             background-color: #1e3a8a;
             color: white;
@@ -34,10 +40,48 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            transition: background 0.2s;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
         }
         .btn-back:hover {
             background-color: #1e40af;
+            color: white;
+        }
+        .btn-nav-tracking {
+            background-color: #0284c7;
+            color: white;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 8px 16px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-nav-tracking:hover {
+            background-color: #0369a1;
+            color: white;
+        }
+        .btn-nav-form {
+            background-color: #059669;
+            color: white;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 8px 16px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-nav-form:hover {
+            background-color: #047857;
             color: white;
         }
         .page-title {
@@ -118,7 +162,7 @@
             border: 1px solid #e2e8f0;
             margin-bottom: 20px;
         }
-        /* 🌟 កែសម្រួលប៊ូតុងតម្រង (ស្វែងរក, កំណត់ឡើងវិញ, បោះពុម្ព PDF) ឱ្យតូចស្តើង និងប្តូរពណ៌បែប Gradient ថ្មី */
+        /* ប៊ូតុងតម្រង (ស្វែងរក, កំណត់ឡើងវិញ, បោះពុម្ព PDF) */
         .btn-action-custom {
             padding: 7px 12px;
             font-size: 0.8rem;
@@ -210,17 +254,25 @@
 <body>
 
 <div class="main-container">
-    <!-- ប៊ូតុងត្រឡប់ក្រោយ -->
-    <a href="/" class="btn-back no-print">
-        <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ
-    </a>
+    <!-- ប៊ូតុងត្រឡប់ក្រោយ និងប៊ូតុងប្តូរទិដ្ឋភាព -->
+    <div class="top-nav-buttons no-print">
+        <a href="/" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ
+        </a>
+        <button type="button" id="btnShowTracking" class="btn-nav-tracking" onclick="switchSection('tracking')">
+            <i class="fa-solid fa-table-list"></i> តារាងតាមដានការចូល/ចេញទំនិញ
+        </button>
+        <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+            <i class="fa-solid fa-plus-circle"></i> កត់ត្រាការចូល/ចេញទំនិញថ្មី
+        </button>
+    </div>
 
     <!-- ចំណងជើងទំព័រ -->
     <h2 class="page-title">ការគ្រប់គ្រងការចូល/ចេញទំនិញ</h2>
     <p class="page-subtitle">CARGO GATE-IN / GATE-OUT SYSTEM & TRACKING</p>
 
-    <!-- Form កត់ត្រាថ្មី / កែប្រែ -->
-    <div class="section-card no-print">
+    <!-- ផ្នែកទី ១: Form កត់ត្រាថ្មី / កែប្រែ -->
+    <div id="formSection" class="section-card no-print">
         <div class="section-card-title" id="formTitle">កត់ត្រាការចូល/ចេញទំនិញថ្មី</div>
         <form id="cargoGateForm">
             <input type="hidden" id="edit_id">
@@ -334,8 +386,8 @@
         </form>
     </div>
 
-    <!-- តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ -->
-    <div class="section-card">
+    <!-- ផ្នែកទី ២: តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ (លាក់ទុកជាមុន) -->
+    <div id="trackingSection" class="section-card" style="display: none;">
         <div class="section-card-title mb-3">តារាងតាមដានការចូល/ចេញទំនិញ</div>
 
         <!-- ផ្នែកតម្រងស្វែងរក (Filter & Search Bar) -->
@@ -482,7 +534,28 @@
         loadCargoGates();
     });
 
-    // 🌟 មុខងារទាញយករូប Logo ក្រុមហ៊ុននាវាស្វ័យប្រវត្តិ
+    // 🌟 មុខងារប្តូរទិដ្ឋភាពរវាង "កត់ត្រាថ្មី" និង "តារាងតាមដាន"
+    function switchSection(section) {
+        const formSection = document.getElementById('formSection');
+        const trackingSection = document.getElementById('trackingSection');
+        const btnShowTracking = document.getElementById('btnShowTracking');
+        const btnShowForm = document.getElementById('btnShowForm');
+
+        if (section === 'tracking') {
+            formSection.style.display = 'none';
+            trackingSection.style.display = 'block';
+            btnShowTracking.style.display = 'none';
+            btnShowForm.style.display = 'inline-flex';
+            loadCargoGates(); // ទាញទិន្នន័យថ្មីៗមកបង្ហាញក្នុងតារាង
+        } else {
+            trackingSection.style.display = 'none';
+            formSection.style.display = 'block';
+            btnShowForm.style.display = 'none';
+            btnShowTracking.style.display = 'inline-flex';
+        }
+    }
+
+    // មុខងារទាញយករូប Logo ក្រុមហ៊ុននាវាស្វ័យប្រវត្តិ
     function getVesselLogo(vesselText) {
         if (!vesselText || vesselText === '-') {
             return `<i class="fa-solid fa-ship text-info me-1"></i>`;
@@ -519,7 +592,7 @@
         return `<i class="fa-solid fa-ship text-info me-1"></i>`;
     }
 
-    // 🌟 កំណត់ម៉ោងបច្ចុប្បន្ននៅកម្ពុជា (Asia/Phnom_Penh) ទុកជាមូលដ្ឋានគ្រឹះដំបូង (អាចប្តូរដោយដៃបានសេរី)
+    // កំណត់ម៉ោងបច្ចុប្បន្ននៅកម្ពុជា (Asia/Phnom_Penh)
     function setLocalDateTime() {
         const now = new Date();
         const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -545,7 +618,7 @@
         document.getElementById('gate_date').value = `${year}-${month}-${day}T${hour}:${minute}`;
     }
 
-    // 🌟 ការដាក់ស្នើទិន្នន័យ (Submit/Edit) ដោយរក្សាថ្ងៃម៉ោងពិតប្រាកដដែលបានជ្រើសរើសដោយដៃ
+    // ការដាក់ស្នើទិន្នន័យ (Submit/Edit)
     document.getElementById('cargoGateForm').addEventListener('submit', async (e) => {
         e.preventDefault();
 
@@ -562,7 +635,6 @@
             cargo_code: document.getElementById('cargo_code').value,
             container_number: document.getElementById('container_number').value,
             gate_type: document.getElementById('gate_type').value,
-            // 🌟 ផ្ញើតម្លៃថ្ងៃ និងម៉ោងផ្ទាល់ដោយមិនប្តូរទៅ UTC ធ្វើឱ្យលែងខុសថ្ងៃខែ
             gate_date: rawDateVal ? new Date(rawDateVal).toISOString() : null,
             owner_name: document.getElementById('owner_name').value,
             container_qty: document.getElementById('container_qty').value,
@@ -641,6 +713,8 @@
                 alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានរក្សាទុកទិន្នន័យខ្លោងទ្វារដោយជោគជ័យ!');
                 cancelEdit();
                 loadCargoGates();
+                // ប្តូរទៅមើលតារាងបន្ទាប់ពីរក្សាទុករួច (ប្រសិនបើចង់ឱ្យនៅទំព័រ Form ដដែល អាចលុបបន្ទាត់ខាងក្រោមនេះចេញបាន)
+                switchSection('tracking');
             } else {
                 alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
             }
@@ -766,11 +840,10 @@
                 else if (gateType.includes('Thailand')) badgeClass = 'bg-warning text-dark';
                 else if (gateType.includes('Vietnam')) badgeClass = 'bg-info text-dark';
                 
-                // 🌟 ពិនិត្យមើល៖ បើ "ទីតាំងលើសមុទ្រ" ស្មើ 100% ឱ្យប្តូរ "ស្ថានភាព" មកជា "បានមកដល់ផែ SHV" ដោយស្វ័យប្រវត្តិ
                 let currentStatus = item.status || '';
                 if (progressInfo.percent === 100 && !currentStatus.includes('CY') && currentStatus !== 'Delivered') {
                     currentStatus = 'បានមកដល់ផែ SHV';
-                    item.status = 'បានមកដល់ផែ SHV'; // អាប់ដេតក្នុង Array ដើម្បីឱ្យ Modal និង Edit បង្ហាញដូចគ្នា
+                    item.status = 'បានមកដល់ផែ SHV';
                 }
 
                 let statusBadgeClass = 'bg-secondary';
@@ -810,15 +883,12 @@
                                 <div class="progress-bar-ocean" style="width: ${progressInfo.percent}%;"></div>
                                 <div class="ship-icon" style="left: ${progressInfo.percent}%;" title="${progressInfo.percent}%">
                                     <svg class="container-ship-img" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
-                                        <!-- ตัวเรือ (Hull) -->
                                         <path d="M 5 32 L 15 42 L 100 42 L 115 32 Z" fill="#475569"/>
                                         <path d="M 3 28 L 117 28 L 115 32 L 5 32 Z" fill="#0284c7"/>
                                         <path d="M 8 32 L 12 40 L 98 40 L 102 32 Z" fill="#0f172a"/>
-                                        <!-- កាប៊ីននាវា (Bridge) -->
                                         <rect x="95" y="14" width="16" height="14" fill="#cbd5e1" rx="2"/>
                                         <rect x="100" y="10" width="8" height="4" fill="#64748b"/>
                                         <line x1="104" y1="4" x2="104" y2="10" stroke="#64748b" stroke-width="2"/>
-                                        <!-- កុងតឺន័រដឹកលើនាវា (Containers) -->
                                         <rect x="12" y="16" width="15" height="12" fill="#cbd5e1"/>
                                         <rect x="14" y="18" width="11" height="8" fill="#e2e8f0"/>
                                         <rect x="29" y="16" width="15" height="12" fill="#0284c7"/>
@@ -980,6 +1050,9 @@
         const item = allCargoData[index];
         if (!item) return;
 
+        // បើកផ្នែក Form មកបង្ហាញវិញនៅពេលចុចកែប្រែ
+        switchSection('form');
+
         document.getElementById('edit_id').value = item.id;
         document.getElementById('cargo_code').value = item.cargo_code || '';
         document.getElementById('container_number').value = item.container_number || '';
@@ -1045,7 +1118,7 @@
         document.getElementById('cargoGateForm').reset();
         document.getElementById('edit_id').value = '';
         document.getElementById('formTitle').innerText = 'កត់ត្រាការចូល/ចេញទំនិញថ្មី';
-        document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យខ្លោងទ្វារ';
+        document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ Submit';
         document.getElementById('cancelEditBtn').style.display = 'none';
 
         setLocalDateTime();
