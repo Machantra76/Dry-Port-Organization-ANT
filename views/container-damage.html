@@ -34,23 +34,39 @@
             margin-bottom: 40px;
             border: 1px solid #e2e8f0;
         }
-        .btn-back {
-            background-color: #334155;
-            color: #fff;
-            border-radius: 10px;
-            padding: 9px 18px;
-            text-decoration: none;
-            font-size: 14px;
+        .top-nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .btn-back, .btn-nav-table, .btn-nav-form {
             display: inline-flex;
             align-items: center;
-            transition: all 0.2s ease-in-out;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            padding: 9px 18px;
+            border-radius: 10px;
+            font-size: 14px;
             font-weight: 500;
+            font-family: 'Kantumruy Pro', 'Poppins', sans-serif;
+            transition: all 0.2s ease-in-out;
+            border: none;
+            cursor: pointer;
+            height: 42px;
+            box-sizing: border-box;
         }
-        .btn-back:hover {
-            background-color: #1e293b;
-            color: #fff;
-            transform: translateY(-1px);
-        }
+        .btn-back { background-color: #334155; color: #fff; }
+        .btn-back:hover { background-color: #1e293b; color: #fff; transform: translateY(-1px); }
+
+        .btn-nav-table { background-color: #8b5cf6; color: #fff; }
+        .btn-nav-table:hover { background-color: #7c3aed; color: #fff; }
+
+        .btn-nav-form { background-color: #059669; color: #fff; }
+        .btn-nav-form:hover { background-color: #047857; color: #fff; }
+
         .section-title {
             color: var(--primary-color);
             font-weight: 700;
@@ -206,11 +222,17 @@
 <body>
 
     <div class="container">
-        <!-- Back Button -->
-        <div class="pt-4">
+        <!-- ប៊ូតុងរុករក និងប្តូរទិដ្ឋភាពឱ្យមានទំហំស្មើគ្នា -->
+        <div class="top-nav-buttons pt-4">
             <a href="/" class="btn-back">
-                <i class="fas fa-arrow-left me-2"></i> ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)
+                <i class="fas fa-arrow-left me-2"></i> ត្រឡប់ទៅ Dashboard វិញ
             </a>
+            <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
+                <i class="fas fa-table-list me-1"></i> មើលតារាងរបាយការណ៍ និងបញ្ជីសរុប
+            </button>
+            <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+                <i class="fas fa-plus-circle me-1"></i> កត់ត្រាថ្មី (Add New)
+            </button>
         </div>
 
         <div class="container-box">
@@ -221,7 +243,7 @@
             </div>
 
             <!-- Form កត់ត្រាកុងតឺន័រខូចថ្មី -->
-            <div class="card-inner">
+            <div class="card-inner" id="formContainerSection">
                 <div class="card-inner-title">
                     <span><i class="fas fa-plus-circle me-2"></i> កត់ត្រាកុងតឺន័រខូចថ្មី (Record New Damaged Container)</span>
                 </div>
@@ -271,7 +293,7 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">ថ្ងៃខែត្រួតពិនិត្យ (Inspection Date):</label>
-                            <input type="date" class="form-control" name="inspection_date" required>
+                            <input type="date" class="form-control" name="inspection_date" id="inspection_date" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">ទីតាំងខូចខាត (Damage Location):</label>
@@ -312,7 +334,7 @@
             </div>
 
             <!-- របាយការណ៍ និងការតម្រៀបទិន្នន័យ (Report & Filter Section) -->
-            <div class="card-inner mt-4" id="historySection">
+            <div class="card-inner mt-4" id="historySection" style="display: none;">
                 <div class="card-inner-title">
                     <span><i class="fas fa-table me-2"></i> តារាងរបាយការណ៍ និងការត្រងទិន្នន័យ (Container Report & Filter)</span>
                 </div>
@@ -487,14 +509,41 @@
         let allDamagedData = [];
 
         document.addEventListener('DOMContentLoaded', () => {
-            const today = new Date().toISOString().split('T')[0];
-            document.querySelector('input[name="inspection_date"]').value = today;
+            const inspDate = document.getElementById('inspection_date');
+            if (inspDate) {
+                inspDate.valueAsDate = new Date();
+            }
             loadDamagedContainers();
         });
+
+        // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+        function switchSection(section) {
+            const formSection = document.getElementById('formContainerSection');
+            const historySection = document.getElementById('historySection');
+            const btnShowTable = document.getElementById('btnShowTable');
+            const btnShowForm = document.getElementById('btnShowForm');
+
+            if (!formSection || !historySection) return;
+
+            if (section === 'table') {
+                formSection.style.display = 'none';
+                historySection.style.display = 'block';
+                if (btnShowTable) btnShowTable.style.display = 'none';
+                if (btnShowForm) btnShowForm.style.display = 'inline-flex';
+                loadDamagedContainers();
+            } else {
+                historySection.style.display = 'none';
+                formSection.style.display = 'block';
+                if (btnShowForm) btnShowForm.style.display = 'none';
+                if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+            }
+        }
 
         function toggleCustomShippingLine() {
             const selectEl = document.getElementById('shippingLineSelect');
             const inputEl = document.getElementById('shippingLineCustomInput');
+            if (!selectEl || !inputEl) return;
+
             if (inputEl.classList.contains('d-none')) {
                 inputEl.classList.remove('d-none');
                 inputEl.removeAttribute('disabled');
@@ -526,15 +575,19 @@
                 }
             } catch (err) {
                 console.error('Error loading data:', err);
-                document.getElementById('containerTableBody').innerHTML = `<tr><td colspan="11" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+                const tbody = document.getElementById('containerTableBody');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="11" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+                }
             }
         }
 
         function displayTableData(data) {
             const tbody = document.getElementById('containerTableBody');
+            if (!tbody) return;
             tbody.innerHTML = '';
 
-            if (data.length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">ពុំមានទិន្នន័យកុងតឺន័រខូចទេ (No data found)</td></tr>`;
                 return;
             }
@@ -549,13 +602,14 @@
                 if (item.status === 'Resolved') statusBadge = 'bg-success text-white';
                 else if (item.status === 'In Repair') statusBadge = 'bg-primary text-white';
 
+                const rowDate = item.inspection_date ? item.inspection_date.split('T')[0] : '';
                 const row = `
                     <tr>
                         <td>${index + 1}</td>
                         <td><strong>${item.container_number}</strong></td>
                         <td><span class="badge bg-info text-dark">${item.container_size || "40'"} / ${item.container_type || "DC"}</span></td>
                         <td><span class="fw-semibold text-dark">${item.shipping_line || '-'}</span></td>
-                        <td>${item.inspection_date ? item.inspection_date.split('T')[0] : ''}</td>
+                        <td>${rowDate}</td>
                         <td>${item.damage_location}</td>
                         <td><span class="badge ${badgeClass}">${item.severity_level}</span></td>
                         <td>${item.inspector_name}</td>
@@ -572,55 +626,64 @@
             });
         }
 
-        document.getElementById('filterForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const searchText = document.getElementById('filterContainer').value.trim().toLowerCase();
-            const shippingLineFilter = document.getElementById('filterShippingLine').value.trim().toLowerCase();
-            const severity = document.getElementById('filterSeverity').value;
-            const fromDate = document.getElementById('filterFrom').value;
-            const toDate = document.getElementById('filterTo').value;
+        const filterFormElem = document.getElementById('filterForm');
+        if (filterFormElem) {
+            filterFormElem.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const searchText = document.getElementById('filterContainer').value.trim().toLowerCase();
+                const shippingLineFilter = document.getElementById('filterShippingLine').value.trim().toLowerCase();
+                const severity = document.getElementById('filterSeverity').value;
+                const fromDate = document.getElementById('filterFrom').value;
+                const toDate = document.getElementById('filterTo').value;
 
-            const filtered = allDamagedData.filter(item => {
-                let matchContainer = true;
-                if (searchText) {
-                    const containerNum = (item.container_number || '').toLowerCase();
-                    const last4Digits = containerNum.slice(-4);
-                    matchContainer = containerNum.includes(searchText) || last4Digits.includes(searchText);
-                }
-
-                let matchLine = true;
-                if (shippingLineFilter) {
-                    const itemLine = (item.shipping_line || '').trim().toLowerCase();
-                    if (shippingLineFilter === 'other') {
-                        const standardLines = ['hmm', 'msc', 'cma cgm', 'evergreen', 'maersk', 'one'];
-                        matchLine = !standardLines.includes(itemLine);
-                    } else {
-                        matchLine = itemLine === shippingLineFilter;
+                const filtered = allDamagedData.filter(item => {
+                    let matchContainer = true;
+                    if (searchText) {
+                        const containerNum = (item.container_number || '').toLowerCase();
+                        const last4Digits = containerNum.slice(-4);
+                        matchContainer = containerNum.includes(searchText) || last4Digits.includes(searchText);
                     }
-                }
 
-                let matchSeverity = true;
-                if (severity && item.severity_level !== severity) {
-                    matchSeverity = false;
-                }
+                    let matchLine = true;
+                    if (shippingLineFilter) {
+                        const itemLine = (item.shipping_line || '').trim().toLowerCase();
+                        if (shippingLineFilter === 'other') {
+                            const standardLines = ['hmm', 'msc', 'cma cgm', 'evergreen', 'maersk', 'one'];
+                            matchLine = !standardLines.includes(itemLine);
+                        } else {
+                            matchLine = itemLine === shippingLineFilter;
+                        }
+                    }
 
-                let matchDate = true;
-                const itemDateOnly = item.inspection_date ? item.inspection_date.split('T')[0] : '';
-                if (fromDate && itemDateOnly < fromDate) matchDate = false;
-                if (toDate && itemDateOnly > toDate) matchDate = false;
+                    let matchSeverity = true;
+                    if (severity && item.severity_level !== severity) {
+                        matchSeverity = false;
+                    }
 
-                return matchContainer && matchLine && matchSeverity && matchDate;
+                    let matchDate = true;
+                    const itemDateOnly = item.inspection_date ? item.inspection_date.split('T')[0] : '';
+                    if (fromDate && itemDateOnly < fromDate) matchDate = false;
+                    if (toDate && itemDateOnly > toDate) matchDate = false;
+
+                    return matchContainer && matchLine && matchSeverity && matchDate;
+                });
+
+                displayTableData(filtered);
             });
-
-            displayTableData(filtered);
-        });
+        }
 
         function resetFilter() {
-            document.getElementById('filterContainer').value = '';
-            document.getElementById('filterShippingLine').value = '';
-            document.getElementById('filterSeverity').value = '';
-            document.getElementById('filterFrom').value = '';
-            document.getElementById('filterTo').value = '';
+            const fCont = document.getElementById('filterContainer');
+            const fLine = document.getElementById('filterShippingLine');
+            const fSev = document.getElementById('filterSeverity');
+            const fFrom = document.getElementById('filterFrom');
+            const fTo = document.getElementById('filterTo');
+
+            if (fCont) fCont.value = '';
+            if (fLine) fLine.value = '';
+            if (fSev) fSev.value = '';
+            if (fFrom) fFrom.value = '';
+            if (fTo) fTo.value = '';
             displayTableData(allDamagedData);
         }
 
@@ -631,61 +694,85 @@
                 return;
             }
 
-            document.getElementById('edit_id').value = item.id;
-            document.getElementById('edit_container_number').value = item.container_number || '';
-            document.getElementById('edit_container_size').value = item.container_size || "40'";
-            document.getElementById('edit_container_type').value = item.container_type || "DC";
-            document.getElementById('edit_shipping_line').value = item.shipping_line || '';
-            document.getElementById('edit_inspection_date').value = item.inspection_date ? item.inspection_date.split('T')[0] : '';
-            document.getElementById('edit_damage_location').value = item.damage_location || '';
-            document.getElementById('edit_severity_level').value = item.severity_level || 'Minor';
-            document.getElementById('edit_inspector_name').value = item.inspector_name || '';
-            document.getElementById('edit_status').value = item.status || 'Pending Repair';
-            document.getElementById('edit_description').value = item.description || '';
+            const eId = document.getElementById('edit_id');
+            const eNum = document.getElementById('edit_container_number');
+            const eSize = document.getElementById('edit_container_size');
+            const eType = document.getElementById('edit_container_type');
+            const eLine = document.getElementById('edit_shipping_line');
+            const eDate = document.getElementById('edit_inspection_date');
+            const eLoc = document.getElementById('edit_damage_location');
+            const eSev = document.getElementById('edit_severity_level');
+            const eInsp = document.getElementById('edit_inspector_name');
+            const eStat = document.getElementById('edit_status');
+            const eDesc = document.getElementById('edit_description');
 
-            const editModal = new bootstrap.Modal(document.getElementById('editContainerModal'));
-            editModal.show();
+            if (eId) eId.value = item.id;
+            if (eNum) eNum.value = item.container_number || '';
+            if (eSize) eSize.value = item.container_size || "40'";
+            if (eType) eType.value = item.container_type || "DC";
+            if (eLine) eLine.value = item.shipping_line || '';
+            if (eDate) eDate.value = item.inspection_date ? item.inspection_date.split('T')[0] : '';
+            if (eLoc) eLoc.value = item.damage_location || '';
+            if (eSev) eSev.value = item.severity_level || 'Minor';
+            if (eInsp) eInsp.value = item.inspector_name || '';
+            if (eStat) eStat.value = item.status || 'Pending Repair';
+            if (eDesc) eDesc.value = item.description || '';
+
+            const editModalEl = document.getElementById('editContainerModal');
+            if (editModalEl) {
+                const editModal = new bootstrap.Modal(editModalEl);
+                editModal.show();
+            }
         }
 
-        document.getElementById('editContainerForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const id = document.getElementById('edit_id').value;
-            const updatedData = {
-                container_number: document.getElementById('edit_container_number').value.trim(),
-                container_size: document.getElementById('edit_container_size').value,
-                container_type: document.getElementById('edit_container_type').value,
-                shipping_line: document.getElementById('edit_shipping_line').value.trim(),
-                inspection_date: document.getElementById('edit_inspection_date').value,
-                damage_location: document.getElementById('edit_damage_location').value.trim(),
-                severity_level: document.getElementById('edit_severity_level').value,
-                inspector_name: document.getElementById('edit_inspector_name').value.trim(),
-                status: document.getElementById('edit_status').value,
-                description: document.getElementById('edit_description').value.trim()
-            };
+        const editContainerForm = document.getElementById('editContainerForm');
+        if (editContainerForm) {
+            editContainerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const idElem = document.getElementById('edit_id');
+                const id = idElem ? idElem.value : '';
+                const updatedData = {
+                    container_number: document.getElementById('edit_container_number').value.trim(),
+                    container_size: document.getElementById('edit_container_size').value,
+                    container_type: document.getElementById('edit_container_type').value,
+                    shipping_line: document.getElementById('edit_shipping_line').value.trim(),
+                    inspection_date: document.getElementById('edit_inspection_date').value,
+                    damage_location: document.getElementById('edit_damage_location').value.trim(),
+                    severity_level: document.getElementById('edit_severity_level').value,
+                    inspector_name: document.getElementById('edit_inspector_name').value.trim(),
+                    status: document.getElementById('edit_status').value,
+                    description: document.getElementById('edit_description').value.trim()
+                };
 
-            try {
-                const response = await fetch(`/api/fleet/damaged-containers/${id}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(updatedData)
-                });
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    alert('បានដោះដូរនិងកែប្រែព័ត៌មានដោយជោគជ័យ!');
-                    bootstrap.Modal.getInstance(document.getElementById('editContainerModal')).hide();
-                    loadDamagedContainers();
-                } else {
-                    alert('កំហុស៖ ' + (result.error || 'មិនអាចកែប្រែបានទេ'));
+                try {
+                    const response = await fetch(`/api/fleet/damaged-containers/${id}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedData)
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        alert('បានដោះដូរនិងកែប្រែព័ត៌មានដោយជោគជ័យ!');
+                        const editModalEl = document.getElementById('editContainerModal');
+                        if (editModalEl) {
+                            const modalInstance = bootstrap.Modal.getInstance(editModalEl);
+                            if (modalInstance) modalInstance.hide();
+                        }
+                        loadDamagedContainers();
+                    } else {
+                        alert('កំហុស៖ ' + (result.error || 'មិនអាចកែប្រែបានទេ'));
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
                 }
-            } catch (err) {
-                console.error(err);
-                alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
-            }
-        });
+            });
+        }
 
         function exportHistoryToPDF() {
             const { jsPDF } = window.jspdf;
             const historyElement = document.getElementById('historySection');
+            if (!historyElement) return;
 
             const filterForm = historyElement.querySelector('#filterForm');
             const actionCells = historyElement.querySelectorAll('th:nth-child(11), td:nth-child(11)');
@@ -724,33 +811,37 @@
             });
         }
 
-        document.getElementById('containerForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const payload = Object.fromEntries(formData.entries());
+        const containerForm = document.getElementById('containerForm');
+        if (containerForm) {
+            containerForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const payload = Object.fromEntries(formData.entries());
 
-            try {
-                const response = await fetch('/api/fleet/damaged-containers', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                try {
+                    const response = await fetch('/api/fleet/damaged-containers', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
 
-                const result = await response.json();
-                if (response.ok) {
-                    alert('បានកត់ត្រាទិន្នន័យកុងតឺន័រខូចដោយជោគជ័យ!');
-                    this.reset();
-                    const today = new Date().toISOString().split('T')[0];
-                    document.querySelector('input[name="inspection_date"]').value = today;
-                    loadDamagedContainers();
-                } else {
-                    alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                    const result = await response.json();
+                    if (response.ok) {
+                        alert('បានកត់ត្រាទិន្នន័យកុងតឺន័រខូចដោយជោគជ័យ!');
+                        this.reset();
+                        const inspDate = document.getElementById('inspection_date');
+                        if (inspDate) inspDate.valueAsDate = new Date();
+                        loadDamagedContainers();
+                        switchSection('table');
+                    } else {
+                        alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                    }
+                } catch (err) {
+                    console.error('Error saving data:', err);
+                    alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ Server');
                 }
-            } catch (err) {
-                console.error('Error saving data:', err);
-                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ Server');
-            }
-        });
+            });
+        }
     </script>
 </body>
 </html>
