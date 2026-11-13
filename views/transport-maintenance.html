@@ -24,19 +24,39 @@
             box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
             padding: 30px;
         }
-        .btn-custom-back {
-            background-color: #1d3557;
-            color: white;
-            border-radius: 8px;
-            padding: 8px 16px;
+        .top-nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .btn-custom-back, .btn-nav-table, .btn-nav-form {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 8px;
             font-size: 14px;
+            font-weight: 500;
+            font-family: 'Battambang', sans-serif;
+            transition: all 0.2s;
             border: none;
+            cursor: pointer;
+            height: 42px;
+            box-sizing: border-box;
         }
-        .btn-custom-back:hover {
-            background-color: #112238;
-            color: white;
-        }
+        .btn-custom-back { background-color: #1d3557; color: white; }
+        .btn-custom-back:hover { background-color: #112238; color: white; }
+
+        .btn-nav-table { background-color: #8b5cf6; color: white; }
+        .btn-nav-table:hover { background-color: #7c3aed; color: white; }
+
+        .btn-nav-form { background-color: #1cc88a; color: white; }
+        .btn-nav-form:hover { background-color: #13855c; color: white; }
+
         .section-box {
             border: 1px solid #e3e6f0;
             border-radius: 10px;
@@ -109,10 +129,16 @@
 
 <div class="main-container">
     <!-- Top Navigation & Title -->
-    <div class="mb-4 no-print">
+    <div class="top-nav-buttons no-print">
         <a href="transport-fleet.html" class="btn-custom-back">
             <i class="fa-solid fa-arrow-left me-2"></i> ត្រឡប់ទៅ Transport Fleet វិញ
         </a>
+        <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
+            <i class="fa-solid fa-table-list me-1"></i> មើលតារាងរបាយការណ៍ និងបញ្ជីសរុប
+        </button>
+        <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+            <i class="fa-solid fa-plus-circle me-1"></i> កត់ត្រាថ្មី (Add New)
+        </button>
     </div>
 
     <div class="mb-4">
@@ -141,7 +167,7 @@
         <div class="tab-pane fade show active" id="fuel-content" role="tabpanel">
             
             <!-- Form Box -->
-            <div class="section-box no-print">
+            <div class="section-box no-print" id="formFuelSection">
                 <div class="section-title text-primary"><i class="fa-solid fa-plus-circle me-2"></i>កត់ត្រាប្រេងឥន្ធនៈថ្មី (Record New Fuel Log)</div>
                 <form id="fuelForm">
                     <div class="row">
@@ -153,7 +179,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">កាលបរិច្ឆេទ (Log Date):</label>
-                            <input type="date" class="form-control" name="log_date" required>
+                            <input type="date" class="form-control" name="log_date" id="log_date" required>
                         </div>
                     </div>
                     <div class="row">
@@ -179,7 +205,7 @@
             </div>
 
             <!-- Table Box -->
-            <div class="section-box">
+            <div class="section-box" id="tableFuelSection">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <div class="section-title mb-0"><i class="fa-solid fa-list me-2"></i>បញ្ជីប្រវត្តិចាក់ប្រេងឥន្ធនៈ (Fuel History)</div>
                     <button onclick="window.print()" class="btn btn-secondary btn-sm no-print"><i class="fa-solid fa-print me-1"></i> បោះពុម្ព / រក្សាទុក PDF (Print / Save PDF)</button>
@@ -221,7 +247,7 @@
         <div class="tab-pane fade" id="maintenance-content" role="tabpanel">
             
             <!-- Form Box -->
-            <div class="section-box no-print">
+            <div class="section-box no-print" id="formMaintenanceSection">
                 <div class="section-title text-success"><i class="fa-solid fa-plus-circle me-2"></i>កត់ត្រាការថែទាំយានយន្ត (Record Maintenance)</div>
                 <form id="maintenanceForm">
                     <div class="row">
@@ -233,7 +259,7 @@
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">កាលបរិច្ឆេទ (Maintenance Date):</label>
-                            <input type="date" class="form-control" name="maintenance_date" required>
+                            <input type="date" class="form-control" name="maintenance_date" id="maintenance_date" required>
                         </div>
                     </div>
                     <div class="row">
@@ -266,7 +292,7 @@
             </div>
 
             <!-- Table Box -->
-            <div class="section-box">
+            <div class="section-box" id="tableMaintenanceSection">
                 <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                     <div class="section-title mb-0"><i class="fa-solid fa-list me-2"></i>បញ្ជីប្រវត្តិថែទាំយានយន្ត (Maintenance History)</div>
                     <button onclick="window.print()" class="btn btn-secondary btn-sm no-print"><i class="fa-solid fa-print me-1"></i> បោះពុម្ព / រក្សាទុក PDF (Print / Save PDF)</button>
@@ -307,7 +333,52 @@
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // ទាញយកបញ្ជីរថយន្តមកដាក់ក្នុង Dropdown[cite: 14]
+    document.addEventListener('DOMContentLoaded', () => {
+        const logDate = document.getElementById('log_date');
+        const maintDate = document.getElementById('maintenance_date');
+        if (logDate) logDate.valueAsDate = new Date();
+        if (maintDate) maintDate.valueAsDate = new Date();
+
+        loadVehiclesDropdown();
+        loadFuelLogs();
+        loadMaintenanceLogs();
+    });
+
+    // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+    function switchSection(section) {
+        const formFuel = document.getElementById('formFuelSection');
+        const tableFuel = document.getElementById('tableFuelSection');
+        const formMaint = document.getElementById('formMaintenanceSection');
+        const tableMaint = document.getElementById('tableMaintenanceSection');
+        
+        const btnShowTable = document.getElementById('btnShowTable');
+        const btnShowForm = document.getElementById('btnShowForm');
+
+        if (section === 'table') {
+            if (formFuel) formFuel.style.display = 'none';
+            if (tableFuel) tableFuel.style.display = 'block';
+
+            if (formMaint) formMaint.style.display = 'none';
+            if (tableMaint) tableMaint.style.display = 'block';
+
+            if (btnShowTable) btnShowTable.style.display = 'none';
+            if (btnShowForm) btnShowForm.style.display = 'inline-flex';
+
+            loadFuelLogs();
+            loadMaintenanceLogs();
+        } else {
+            if (formFuel) formFuel.style.display = 'block';
+            if (tableFuel) tableFuel.style.display = 'none';
+
+            if (formMaint) formMaint.style.display = 'block';
+            if (tableMaint) tableMaint.style.display = 'none';
+
+            if (btnShowForm) btnShowForm.style.display = 'none';
+            if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+        }
+    }
+
+    // ទាញយកបញ្ជីរថយន្តមកដាក់ក្នុង Dropdown
     async function loadVehiclesDropdown() {
         try {
             const res = await fetch('/api/fleet/vehicles');
@@ -315,21 +386,24 @@
             const selects = document.querySelectorAll('.vehicle-select');
             selects.forEach(select => {
                 select.innerHTML = '<option value="">-- ជ្រើសរើសរថយន្ត --</option>';
-                vehicles.forEach(v => {
-                    select.innerHTML += `<option value="${v.vehicle_code}">${v.vehicle_code} - ${v.model} (${v.plate_number})</option>`;
-                });
+                if (Array.isArray(vehicles)) {
+                    vehicles.forEach(v => {
+                        select.innerHTML += `<option value="${v.vehicle_code}">${v.vehicle_code} - ${v.model} (${v.plate_number})</option>`;
+                    });
+                }
             });
         } catch (err) {
             console.error('Error loading vehicles:', err);
         }
     }
 
-    // ទាញយកទិន្នន័យប្រេងឥន្ធនៈ និងគណនា Total[cite: 14]
+    // ទាញយកទិន្នន័យប្រេងឥន្ធនៈ និងគណនា Total
     async function loadFuelLogs() {
         try {
             const res = await fetch('/api/fleet/fuel');
             const data = await res.json();
             const tbody = document.querySelector('#fuelTable tbody');
+            if (!tbody) return;
             tbody.innerHTML = '';
             
             let sumLiters = 0;
@@ -337,8 +411,9 @@
             let sumMileage = 0;
             let sumCostPerLiter = 0;
 
-            if (data.length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">ពុំមានទិន្នន័យប្រេងឥន្ធនៈទេ</td></tr>`;
+                return;
             }
 
             data.forEach((item, index) => {
@@ -352,11 +427,12 @@
                 sumMileage += mileage;
                 sumCostPerLiter += costPerLiter;
 
+                const rowDate = item.log_date ? item.log_date.split('T')[0] : '-';
                 tbody.innerHTML += `
                     <tr>
                         <td>${index + 1}</td>
                         <td><strong>${item.vehicle_code}</strong></td>
-                        <td>${item.log_date.split('T')[0]}</td>
+                        <td>${rowDate}</td>
                         <td>${liters.toFixed(2)} លីត្រ</td>
                         <td>$${costPerLiter.toFixed(2)}</td>
                         <td><span class="text-danger fw-bold">$${totalCost.toFixed(2)}</span></td>
@@ -367,28 +443,35 @@
             });
 
             // បង្ហាញលទ្ធផល Total ក្នុង Tfoot
-            document.getElementById('totalLiters').innerText = sumLiters.toFixed(2) + ' លីត្រ';
-            document.getElementById('avgCostPerLiter').innerText = data.length > 0 ? '$' + (sumCostPerLiter / data.length).toFixed(2) : '$0.00';
-            document.getElementById('totalFuelCost').innerText = '$' + sumTotalCost.toFixed(2);
-            document.getElementById('totalMileage').innerText = sumMileage.toLocaleString() + ' Km';
+            const totalLitersElem = document.getElementById('totalLiters');
+            const avgCostElem = document.getElementById('avgCostPerLiter');
+            const totalFuelCostElem = document.getElementById('totalFuelCost');
+            const totalMileageElem = document.getElementById('totalMileage');
+
+            if (totalLitersElem) totalLitersElem.innerText = sumLiters.toFixed(2) + ' លីត្រ';
+            if (avgCostElem) avgCostElem.innerText = data.length > 0 ? '$' + (sumCostPerLiter / data.length).toFixed(2) : '$0.00';
+            if (totalFuelCostElem) totalFuelCostElem.innerText = '$' + sumTotalCost.toFixed(2);
+            if (totalMileageElem) totalMileageElem.innerText = sumMileage.toLocaleString() + ' Km';
 
         } catch (err) {
             console.error('Error loading fuel logs:', err);
         }
     }
 
-    // ទាញយកទិន្នន័យការថែទាំ និងគណនា Total[cite: 14]
+    // ទាញយកទិន្នន័យការថែទាំ និងគណនា Total
     async function loadMaintenanceLogs() {
         try {
             const res = await fetch('/api/fleet/maintenance');
             const data = await res.json();
             const tbody = document.querySelector('#maintenanceTable tbody');
+            if (!tbody) return;
             tbody.innerHTML = '';
 
             let sumMaintenanceCost = 0;
 
-            if (data.length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">ពុំមានទិន្នន័យថែទាំយានយន្តទេ</td></tr>`;
+                return;
             }
 
             data.forEach((item, index) => {
@@ -396,11 +479,12 @@
                 sumMaintenanceCost += cost;
 
                 let badgeClass = item.status === 'Completed' ? 'bg-success' : 'bg-warning text-dark';
+                const rowDate = item.maintenance_date ? item.maintenance_date.split('T')[0] : '-';
                 tbody.innerHTML += `
                     <tr>
                         <td>${index + 1}</td>
                         <td><strong>${item.vehicle_code}</strong></td>
-                        <td>${item.maintenance_date.split('T')[0]}</td>
+                        <td>${rowDate}</td>
                         <td>${item.service_type}</td>
                         <td>${item.description || '-'}</td>
                         <td><span class="text-danger fw-bold">$${cost.toFixed(2)}</span></td>
@@ -410,64 +494,71 @@
                 `;
             });
 
-            document.getElementById('totalMaintenanceCost').innerText = '$' + sumMaintenanceCost.toFixed(2);
+            const totalMaintCostElem = document.getElementById('totalMaintenanceCost');
+            if (totalMaintCostElem) totalMaintCostElem.innerText = '$' + sumMaintenanceCost.toFixed(2);
 
         } catch (err) {
             console.error('Error loading maintenance logs:', err);
         }
     }
 
-    // បញ្ជូនទិន្នន័យចាក់ប្រេង[cite: 14]
-    document.getElementById('fuelForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = Object.fromEntries(new FormData(e.target).entries());
-        try {
-            const res = await fetch('/api/fleet/fuel', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            const result = await res.json();
-            if (result.success) {
-                alert('កត់ត្រាប្រេងឥន្ធនៈបានជោគជ័យ!');
-                e.target.reset();
-                loadFuelLogs();
-            } else {
-                alert('កំហុស៖ ' + result.error);
+    // បញ្ជូនទិន្នន័យចាក់ប្រេង
+    const fuelForm = document.getElementById('fuelForm');
+    if (fuelForm) {
+        fuelForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = Object.fromEntries(new FormData(e.target).entries());
+            try {
+                const res = await fetch('/api/fleet/fuel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert('កត់ត្រាប្រេងឥន្ធនៈបានជោគជ័យ!');
+                    e.target.reset();
+                    const logDate = document.getElementById('log_date');
+                    if (logDate) logDate.valueAsDate = new Date();
+                    loadFuelLogs();
+                    switchSection('table');
+                } else {
+                    alert('កំហុស៖ ' + result.error);
+                }
+            } catch (err) {
+                alert('មានបញ្ហាក្នុងការបញ្ជូនទិន្នន័យ');
             }
-        } catch (err) {
-            alert('មានបញ្ហាក្នុងការបញ្ជូនទិន្នន័យ');
-        }
-    });
+        });
+    }
 
-    // បញ្ជូនទិន្នន័យថែទាំយានយន្ត[cite: 14]
-    document.getElementById('maintenanceForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = Object.fromEntries(new FormData(e.target).entries());
-        try {
-            const res = await fetch('/api/fleet/maintenance', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            const result = await res.json();
-            if (result.success) {
-                alert('កត់ត្រាការថែទាំយានយន្តបានជោគជ័យ!');
-                e.target.reset();
-                loadMaintenanceLogs();
-            } else {
-                alert('កំហុស៖ ' + result.error);
+    // បញ្ជូនទិន្នន័យថែទាំយានយន្ត
+    const maintenanceForm = document.getElementById('maintenanceForm');
+    if (maintenanceForm) {
+        maintenanceForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = Object.fromEntries(new FormData(e.target).entries());
+            try {
+                const res = await fetch('/api/fleet/maintenance', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert('កត់ត្រាការថែទាំយានយន្តបានជោគជ័យ!');
+                    e.target.reset();
+                    const maintDate = document.getElementById('maintenance_date');
+                    if (maintDate) maintDate.valueAsDate = new Date();
+                    loadMaintenanceLogs();
+                    switchSection('table');
+                } else {
+                    alert('កំហុស៖ ' + result.error);
+                }
+            } catch (err) {
+                alert('មានបញ្ហាក្នុងការបញ្ជូនទិន្នន័យ');
             }
-        } catch (err) {
-            alert('មានបញ្ហាក្នុងការបញ្ជូនទិន្នន័យ');
-        }
-    });
-
-    window.onload = () => {
-        loadVehiclesDropdown();
-        loadFuelLogs();
-        loadMaintenanceLogs();
-    };
+        });
+    }
 </script>
 </body>
 </html>
