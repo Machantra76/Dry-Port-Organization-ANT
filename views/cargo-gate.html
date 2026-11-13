@@ -118,7 +118,6 @@
             border: 1px solid #e2e8f0;
             margin-bottom: 20px;
         }
-        /* 🌟 កែសម្រួលប៊ូតុងតម្រង (ស្វែងរក, កំណត់ឡើងវិញ, បោះពុម្ព PDF) ឱ្យតូចស្តើង និងប្តូរពណ៌បែប Gradient ថ្មី */
         .btn-action-custom {
             padding: 7px 12px;
             font-size: 0.8rem;
@@ -132,32 +131,13 @@
             transition: all 0.2s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
         }
-        .btn-filter { 
-            background: linear-gradient(135deg, #0284c7, #0369a1); 
-            color: white; 
-        }
-        .btn-filter:hover { 
-            background: linear-gradient(135deg, #0369a1, #075985); 
-            color: white; 
-        }
-        .btn-reset { 
-            background: linear-gradient(135deg, #f59e0b, #d97706); 
-            color: white; 
-        }
-        .btn-reset:hover { 
-            background: linear-gradient(135deg, #d97706, #b45309); 
-            color: white; 
-        }
-        .btn-print { 
-            background: linear-gradient(135deg, #8b5cf6, #6d28d9); 
-            color: white; 
-        }
-        .btn-print:hover { 
-            background: linear-gradient(135deg, #6d28d9, #5b21b6); 
-            color: white; 
-        }
+        .btn-filter { background: linear-gradient(135deg, #0284c7, #0369a1); color: white; }
+        .btn-filter:hover { background: linear-gradient(135deg, #0369a1, #075985); color: white; }
+        .btn-reset { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
+        .btn-reset:hover { background: linear-gradient(135deg, #d97706, #b45309); color: white; }
+        .btn-print { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
+        .btn-print:hover { background: linear-gradient(135deg, #6d28d9, #5b21b6); color: white; }
         
-        /* បន្ទាត់ Progress Bar និងរូបនាវា */
         .progress-container {
             height: 4px; 
             border-radius: 2px;
@@ -766,11 +746,10 @@
                 else if (gateType.includes('Thailand')) badgeClass = 'bg-warning text-dark';
                 else if (gateType.includes('Vietnam')) badgeClass = 'bg-info text-dark';
                 
-                // 🌟 ពិនិត្យមើល៖ បើ "ទីតាំងលើសមុទ្រ" ស្មើ 100% ឱ្យប្តូរ "ស្ថានភាព" មកជា "បានមកដល់ផែ SHV" ដោយស្វ័យប្រវត្តិ
                 let currentStatus = item.status || '';
                 if (progressInfo.percent === 100 && !currentStatus.includes('CY') && currentStatus !== 'Delivered') {
                     currentStatus = 'បានមកដល់ផែ SHV';
-                    item.status = 'បានមកដល់ផែ SHV'; // អាប់ដេតក្នុង Array ដើម្បីឱ្យ Modal និង Edit បង្ហាញដូចគ្នា
+                    item.status = 'បានមកដល់ផែ SHV'; 
                 }
 
                 let statusBadgeClass = 'bg-secondary';
@@ -784,9 +763,10 @@
                     statusBadgeClass = 'bg-info text-dark';
                 }
 
-                let trackingUrl = `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(vesselText)}`;
+                // 🌟 កន្លែងភ្ជាប់ Link ទៅកាន់ MarineTraffic ជំនួស VesselFinder
+                let trackingUrl = `https://www.marinetraffic.com/en/ais/index/ships/all/keyword:${encodeURIComponent(vesselText)}`;
                 if (vesselText === '-' || !vesselText) {
-                    trackingUrl = `https://www.vesselfinder.com`;
+                    trackingUrl = `https://www.marinetraffic.com`;
                 }
 
                 const vesselLogoHtml = getVesselLogo(vesselText);
@@ -797,7 +777,10 @@
                         <td class="fw-bold text-primary">${item.cargo_code || '-'}</td>
                         <td>${item.container_number || '-'}</td>
                         <td>
-                            <div class="fw-bold text-dark d-flex align-items-center justify-content-center">${vesselLogoHtml} ${vesselText}</div>
+                            <div class="fw-bold text-dark d-flex align-items-center justify-content-center">
+                                ${vesselLogoHtml} 
+                                <a href="${trackingUrl}" target="_blank" class="text-decoration-none text-primary fw-bold" title="ចុចเพื่อមើលលើ MarineTraffic">${vesselText}</a>
+                            </div>
                             <div class="small text-muted">Voy: ${voyText}</div>
                         </td>
                         <td>
@@ -810,15 +793,12 @@
                                 <div class="progress-bar-ocean" style="width: ${progressInfo.percent}%;"></div>
                                 <div class="ship-icon" style="left: ${progressInfo.percent}%;" title="${progressInfo.percent}%">
                                     <svg class="container-ship-img" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
-                                        <!-- ตัวเรือ (Hull) -->
                                         <path d="M 5 32 L 15 42 L 100 42 L 115 32 Z" fill="#475569"/>
                                         <path d="M 3 28 L 117 28 L 115 32 L 5 32 Z" fill="#0284c7"/>
                                         <path d="M 8 32 L 12 40 L 98 40 L 102 32 Z" fill="#0f172a"/>
-                                        <!-- កាប៊ីននាវា (Bridge) -->
                                         <rect x="95" y="14" width="16" height="14" fill="#cbd5e1" rx="2"/>
                                         <rect x="100" y="10" width="8" height="4" fill="#64748b"/>
                                         <line x1="104" y1="4" x2="104" y2="10" stroke="#64748b" stroke-width="2"/>
-                                        <!-- កុងតឺន័រដឹកលើនាវា (Containers) -->
                                         <rect x="12" y="16" width="15" height="12" fill="#cbd5e1"/>
                                         <rect x="14" y="18" width="11" height="8" fill="#e2e8f0"/>
                                         <rect x="29" y="16" width="15" height="12" fill="#0284c7"/>
@@ -834,7 +814,7 @@
                         <td><span class="badge ${statusBadgeClass}">${currentStatus}</span></td>
                         <td class="no-print">
                             <div class="d-flex justify-content-center gap-1">
-                                <a href="${trackingUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="មើលទីតាំងនាវាលើផែនទីសមុទ្រ (Live Map)">
+                                <a href="${trackingUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="មើលទីតាំងនាវាលើ MarineTraffic">
                                     <i class="fa-solid fa-map-location-dot"></i>
                                 </a>
                                 <button class="btn btn-sm btn-outline-info" title="មើលព័ត៌មានលម្អិត" onclick="showDetails(${index})">
@@ -894,9 +874,11 @@
             cleanNotes = parts.slice(3).join('|').trim();
         }
 
+        let modalTrackingUrl = `https://www.marinetraffic.com/en/ais/index/ships/all/keyword:${encodeURIComponent(vesselText)}`;
+
         document.getElementById('modal_cargo_code').innerText = item.cargo_code || '-';
         document.getElementById('modal_container_number').innerText = item.container_number || '-';
-        document.getElementById('modal_vessel_info').innerText = `${vesselText} (Voy: ${voyText})`;
+        document.getElementById('modal_vessel_info').innerHTML = `<a href="${modalTrackingUrl}" target="_blank" class="text-primary text-decoration-none fw-bold">${vesselText}</a> (Voy: ${voyText})`;
         document.getElementById('modal_gate_type').innerText = item.gate_type || '-';
         document.getElementById('modal_port_discharge').innerText = podText;
         document.getElementById('modal_gate_date').innerText = formattedDate;
@@ -908,7 +890,7 @@
 
         const trackingBtn = document.getElementById('modal_tracking_btn');
         if (vesselText && vesselText !== '-') {
-            trackingBtn.href = `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(vesselText)}`;
+            trackingBtn.href = modalTrackingUrl;
             trackingBtn.style.display = 'inline-block';
         } else {
             trackingBtn.style.display = 'none';
