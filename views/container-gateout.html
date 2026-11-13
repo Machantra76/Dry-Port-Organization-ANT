@@ -34,23 +34,39 @@
             padding: 35px;
             border: 1px solid #e2e8f0;
         }
-        .btn-back {
-            background-color: #334155;
-            color: #ffffff;
-            font-weight: 500;
-            padding: 9px 18px;
-            border-radius: 10px;
-            text-decoration: none;
+        .top-nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .btn-back, .btn-nav-table, .btn-nav-form {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            padding: 9px 18px;
+            border-radius: 10px;
             font-size: 14px;
+            font-weight: 500;
+            font-family: 'Kantumruy Pro', 'Poppins', sans-serif;
             transition: all 0.2s ease-in-out;
+            border: none;
+            cursor: pointer;
+            height: 42px;
+            box-sizing: border-box;
         }
-        .btn-back:hover {
-            background-color: #1e293b;
-            color: #ffffff;
-            transform: translateY(-1px);
-        }
+        .btn-back { background-color: #334155; color: #fff; }
+        .btn-back:hover { background-color: #1e293b; color: #fff; transform: translateY(-1px); }
+
+        .btn-nav-table { background-color: #8b5cf6; color: #fff; }
+        .btn-nav-table:hover { background-color: #7c3aed; color: #fff; }
+
+        .btn-nav-form { background-color: #059669; color: #fff; }
+        .btn-nav-form:hover { background-color: #047857; color: #fff; }
+
         .page-title {
             color: var(--primary-color);
             font-weight: 700;
@@ -219,11 +235,17 @@
 <body>
 
     <div class="main-container">
-        <!-- Back Button -->
-        <div>
+        <!-- ប៊ូតុងរុករក និងប្តូរទិដ្ឋភាពឱ្យមានទំហំស្មើគ្នា -->
+        <div class="top-nav-buttons">
             <a href="/" class="btn-back">
                 <i class="fa-solid fa-arrow-left me-2"></i> ត្រឡប់ទៅ Dashboard វិញ
             </a>
+            <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
+                <i class="fa-solid fa-table-list me-1"></i> មើលតារាងរបាយការណ៍ និងបញ្ជីសរុប
+            </button>
+            <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+                <i class="fa-solid fa-plus-circle me-1"></i> កត់ត្រាថ្មី (Add New)
+            </button>
         </div>
 
         <!-- Title Header -->
@@ -231,7 +253,7 @@
         <div class="page-subtitle">CONTAINER GATE-OUT MANAGEMENT & DISPATCH SYSTEM</div>
 
         <!-- Section: Record New Gate-Out -->
-        <div class="section-card">
+        <div class="section-card" id="formGateOutSection">
             <div class="section-header">
                 <span><i class="fa-solid fa-circle-plus text-success me-2"></i> កត់ត្រាការចេញកុងតឺន័រថ្មី (Record New Gate-Out)</span>
             </div>
@@ -305,7 +327,7 @@
         </div>
 
         <!-- Section: Search Filter & History Records Table -->
-        <div class="section-card" id="historySection">
+        <div class="section-card" id="historySection" style="display: none;">
             <div class="section-header">
                 <span><i class="fa-solid fa-list-check text-primary me-2"></i> បញ្ជីប្រវត្តិកុងតឺន័រចេញ (Gate-Out History Records)</span>
             </div>
@@ -403,6 +425,29 @@
             fetchGateOutData();
         });
 
+        // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+        function switchSection(section) {
+            const formSection = document.getElementById('formGateOutSection');
+            const historySection = document.getElementById('historySection');
+            const btnShowTable = document.getElementById('btnShowTable');
+            const btnShowForm = document.getElementById('btnShowForm');
+
+            if (!formSection || !historySection) return;
+
+            if (section === 'table') {
+                formSection.style.display = 'none';
+                historySection.style.display = 'block';
+                if (btnShowTable) btnShowTable.style.display = 'none';
+                if (btnShowForm) btnShowForm.style.display = 'inline-flex';
+                fetchGateOutData();
+            } else {
+                historySection.style.display = 'none';
+                formSection.style.display = 'block';
+                if (btnShowForm) btnShowForm.style.display = 'none';
+                if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+            }
+        }
+
         async function fetchYardContainers() {
             try {
                 const response = await fetch('/api/fleet/container-yard?status=Stored');
@@ -410,6 +455,7 @@
                 if (Array.isArray(data)) {
                     availableYardContainers = data;
                     const selectEl = document.getElementById('container_number');
+                    if (!selectEl) return;
                     selectEl.innerHTML = '<option value="">-- ជ្រើសរើសកុងតឺន័រក្នុងស្តុក --</option>';
                     data.forEach(item => {
                         const opt = document.createElement('option');
@@ -424,16 +470,23 @@
         }
 
         function onContainerSelected() {
-            const selectedContainerNo = document.getElementById('container_number').value;
+            const containerNumElem = document.getElementById('container_number');
+            if (!containerNumElem) return;
+            const selectedContainerNo = containerNumElem.value;
             const found = availableYardContainers.find(i => i.container_number === selectedContainerNo);
+            
+            const sizeEl = document.getElementById('container_size');
+            const typeEl = document.getElementById('container_type');
+            const lineEl = document.getElementById('shippingLineInput');
+
             if (found) {
-                document.getElementById('container_size').value = found.container_size || "40'";
-                document.getElementById('container_type').value = found.container_type || "DC";
-                document.getElementById('shippingLineInput').value = found.shipping_line || '';
+                if (sizeEl) sizeEl.value = found.container_size || "40'";
+                if (typeEl) typeEl.value = found.container_type || "DC";
+                if (lineEl) lineEl.value = found.shipping_line || '';
             } else {
-                document.getElementById('container_size').value = "40'";
-                document.getElementById('container_type').value = "DC";
-                document.getElementById('shippingLineInput').value = '';
+                if (sizeEl) sizeEl.value = "40'";
+                if (typeEl) typeEl.value = "DC";
+                if (lineEl) lineEl.value = '';
             }
         }
 
@@ -452,14 +505,18 @@
                 }
             } catch (err) {
                 console.error('Error fetching data:', err);
-                document.getElementById('gateOutTableBody').innerHTML = `<tr><td colspan="11" class="text-center text-danger py-3">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+                const tbody = document.getElementById('gateOutTableBody');
+                if (tbody) {
+                    tbody.innerHTML = `<tr><td colspan="11" class="text-center text-danger py-3">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+                }
             }
         }
 
         function populateFilterShippingLines(data) {
             const filterSelect = document.getElementById('filterShippingLine');
+            if (!filterSelect) return;
+
             const currentSelected = filterSelect.value;
-            
             filterSelect.innerHTML = '<option value="">-- ទាំងអស់ --</option>';
 
             const uniqueLines = [...new Set(data.map(item => (item.shipping_line || '').trim()).filter(line => line !== ''))];
@@ -476,9 +533,10 @@
 
         function displayData(data) {
             const tbody = document.getElementById('gateOutTableBody');
+            if (!tbody) return;
             tbody.innerHTML = '';
 
-            if (data.length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="11" class="empty-text">រកមិនឃើញទិន្នន័យកុងតឺន័រចេញទេ[cite: 8]</td></tr>`;
                 return;
             }
@@ -515,59 +573,68 @@
             });
         }
 
-        document.getElementById('filterForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const searchText = document.getElementById('filterContainer').value.trim().toLowerCase();
-            const shippingLineFilter = document.getElementById('filterShippingLine').value.trim().toLowerCase();
-            const sizeFilter = document.getElementById('filterSize').value;
-            const fromDate = document.getElementById('filterFrom').value;
-            const toDate = document.getElementById('filterTo').value;
+        const filterFormElem = document.getElementById('filterForm');
+        if (filterFormElem) {
+            filterFormElem.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const searchText = document.getElementById('filterContainer').value.trim().toLowerCase();
+                const shippingLineFilter = document.getElementById('filterShippingLine').value.trim().toLowerCase();
+                const sizeFilter = document.getElementById('filterSize').value;
+                const fromDate = document.getElementById('filterFrom').value;
+                const toDate = document.getElementById('filterTo').value;
 
-            const filtered = allGateOutData.filter(item => {
-                let matchContainer = true;
-                if (searchText) {
-                    const containerNum = (item.container_number || '').toLowerCase();
-                    const last4Digits = containerNum.slice(-4);
-                    matchContainer = containerNum.includes(searchText) || last4Digits.includes(searchText);
-                }
+                const filtered = allGateOutData.filter(item => {
+                    let matchContainer = true;
+                    if (searchText) {
+                        const containerNum = (item.container_number || '').toLowerCase();
+                        const last4Digits = containerNum.slice(-4);
+                        matchContainer = containerNum.includes(searchText) || last4Digits.includes(searchText);
+                    }
 
-                let matchLine = true;
-                if (shippingLineFilter) {
-                    const itemLine = (item.shipping_line || '').trim().toLowerCase();
-                    matchLine = itemLine === shippingLineFilter;
-                }
+                    let matchLine = true;
+                    if (shippingLineFilter) {
+                        const itemLine = (item.shipping_line || '').trim().toLowerCase();
+                        matchLine = itemLine === shippingLineFilter;
+                    }
 
-                let matchSize = true;
-                if (sizeFilter) {
-                    matchSize = (item.container_size || '').trim() === sizeFilter.trim();
-                }
+                    let matchSize = true;
+                    if (sizeFilter) {
+                        matchSize = (item.container_size || '').trim() === sizeFilter.trim();
+                    }
 
-                let matchDate = true;
-                const itemDateOnly = item.gate_out_date ? item.gate_out_date.split('T')[0] : '';
-                if (fromDate && itemDateOnly < fromDate) matchDate = false;
-                if (toDate && itemDateOnly > toDate) matchDate = false;
+                    let matchDate = true;
+                    const itemDateOnly = item.gate_out_date ? item.gate_out_date.split('T')[0] : '';
+                    if (fromDate && itemDateOnly < fromDate) matchDate = false;
+                    if (toDate && itemDateOnly > toDate) matchDate = false;
 
-                return matchContainer && matchLine && matchSize && matchDate;
+                    return matchContainer && matchLine && matchSize && matchDate;
+                });
+
+                displayData(filtered);
             });
-
-            displayData(filtered);
-        });
+        }
 
         function resetFilter() {
-            document.getElementById('filterContainer').value = '';
-            document.getElementById('filterShippingLine').value = '';
-            document.getElementById('filterSize').value = '';
-            document.getElementById('filterFrom').value = '';
-            document.getElementById('filterTo').value = '';
+            const fCont = document.getElementById('filterContainer');
+            const fLine = document.getElementById('filterShippingLine');
+            const fSize = document.getElementById('filterSize');
+            const fFrom = document.getElementById('filterFrom');
+            const fTo = document.getElementById('filterTo');
+
+            if (fCont) fCont.value = '';
+            if (fLine) fLine.value = '';
+            if (fSize) fSize.value = '';
+            if (fFrom) fFrom.value = '';
+            if (fTo) fTo.value = '';
             displayData(allGateOutData);
         }
 
         function exportHistoryToPDF() {
             const { jsPDF } = window.jspdf;
             const historyElement = document.getElementById('historySection');
+            if (!historyElement) return;
 
             const filterForm = historyElement.querySelector('#filterForm');
-            
             if(filterForm) filterForm.style.display = 'none';
 
             html2canvas(historyElement, { scale: 2 }).then(canvas => {
@@ -599,42 +666,53 @@
             });
         }
 
-        document.getElementById('gateOutForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        const gateOutForm = document.getElementById('gateOutForm');
+        if (gateOutForm) {
+            gateOutForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
 
-            const formData = {
-                container_number: document.getElementById('container_number').value,
-                container_size: document.getElementById('container_size').value,
-                container_type: document.getElementById('container_type').value,
-                shipping_line: document.getElementById('shippingLineInput').value,
-                gate_out_date: document.getElementById('gate_out_date').value,
-                truck_plate_number: document.getElementById('truck_plate_number').value.trim(),
-                driver_name: document.getElementById('driver_name').value.trim(),
-                destination: document.getElementById('destination').value.trim(),
-                bill_of_lading: document.getElementById('bill_of_lading').value.trim(),
-                released_by: document.getElementById('released_by').value.trim(),
-                notes: document.getElementById('notes').value.trim()
-            };
+                const formData = {
+                    container_number: document.getElementById('container_number').value,
+                    container_size: document.getElementById('container_size').value,
+                    container_type: document.getElementById('container_type').value,
+                    shipping_line: document.getElementById('shippingLineInput').value,
+                    gate_out_date: document.getElementById('gate_out_date').value,
+                    truck_plate_number: document.getElementById('truck_plate_number').value.trim(),
+                    driver_name: document.getElementById('driver_name').value.trim(),
+                    destination: document.getElementById('destination').value.trim(),
+                    bill_of_lading: document.getElementById('bill_of_lading').value.trim(),
+                    released_by: document.getElementById('released_by').value.trim(),
+                    notes: document.getElementById('notes').value.trim()
+                };
 
-            try {
-                const response = await fetch('/api/fleet/container-gate-out', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(formData)
-                });
+                try {
+                    const response = await fetch('/api/fleet/container-gate-out', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
 
-                const result = await response.json();
-                if (response.ok && result.success) {
-                    alert('កត់ត្រាការចេញកុងតឺន័រ និងកាត់ស្តុកបានជោគជ័យ!');
-                    location.reload();
-                } else {
-                    alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកទិន្នន័យបានទេ'));
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        alert('កត់ត្រាការចេញកុងតឺន័រ និងកាត់ស្តុកបានជោគជ័យ!');
+                        gateOutForm.reset();
+                        const now = new Date();
+                        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                        const dateInput = document.getElementById('gate_out_date');
+                        if(dateInput) dateInput.value = now.toISOString().slice(0, 16);
+                        
+                        fetchYardContainers();
+                        fetchGateOutData();
+                        switchSection('table');
+                    } else {
+                        alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកទិន្នន័យបានទេ'));
+                    }
+                } catch (err) {
+                    console.error('Error saving data:', err);
+                    alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
                 }
-            } catch (err) {
-                console.error('Error saving data:', err);
-                alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
-            }
-        });
+            });
+        }
     </script>
 </body>
 </html>
