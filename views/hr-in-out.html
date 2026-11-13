@@ -8,8 +8,14 @@
     <style>
         body { font-family: 'Kantumruy Pro', sans-serif; background-color: #f0f4f8; margin: 0; padding: 30px; color: #334155; }
         .container { max-width: 1100px; margin: 0 auto; background: white; padding: 35px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; background: #2a5298; color: white; padding: 8px 16px; border-radius: 6px; font-size: 14px; transition: background 0.3s; }
+        .top-nav-buttons { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
+        .back-btn { display: inline-block; text-decoration: none; background: #2a5298; color: white; padding: 8px 16px; border-radius: 6px; font-size: 14px; transition: background 0.3s; border: none; cursor: pointer; }
         .back-btn:hover { background: #1e3c72; }
+        .btn-nav-table { background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 500; cursor: pointer; transition: background 0.3s; }
+        .btn-nav-table:hover { background: #7c3aed; }
+        .btn-nav-form { background: #059669; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 500; cursor: pointer; transition: background 0.3s; }
+        .btn-nav-form:hover { background: #047857; }
+
         h1 { color: #1e3c72; margin: 0; font-size: 26px; }
         .eng-sub { color: #64748b; font-size: 14px; text-transform: uppercase; margin-top: 5px; font-weight: 600; letter-spacing: 0.5px; }
         
@@ -40,7 +46,7 @@
             .container { box-shadow: none; padding: 0; max-width: 100%; width: 100%; border: none; }
             
             /* លាក់ផ្នែក Form ចុះឈ្មោះ, ប៊ូតុង, ប្រអប់ Filter, និងចំណងជើងទំព័រដើម */
-            .back-btn, 
+            .top-nav-buttons, 
             #addEmployeeSection, 
             .filter-section, 
             .footer-note, 
@@ -50,7 +56,7 @@
                 display: none !important; 
             }
             
-            .section-box { background: white !important; border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; }
+            .section-box { background: white !important; border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; display: block !important; }
             
             /* បង្ហាញចំណងជើងស្អាតពេល Print PDF */
             .print-header-title {
@@ -73,13 +79,22 @@
 <body>
 
     <div class="container">
-        <a href="/" class="back-btn">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
+        <!-- ប៊ូតុងរុករក និងប្តូរទិដ្ឋភាព -->
+        <div class="top-nav-buttons no-print">
+            <a href="/" class="back-btn">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
+            <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
+                <i class="fa-solid fa-table-list"></i> មើលតារាងប្រវត្តិវត្តមាន
+            </button>
+            <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+                <i class="fa-solid fa-plus-circle"></i> ចុះឈ្មោះបុគ្គលិកថ្មី
+            </button>
+        </div>
         
         <h1>វត្តមាន ម៉ោងចេញ/ចូល</h1>
         <div class="eng-sub">Staff Attendance Check-in / Check-out System</div>
         
-        <!-- ១. Form សម្រាប់ចុះឈ្មោះបុគ្គលិកថ្មី (ដាក់ id="addEmployeeSection" ដើម្បីងាយលាក់ពេល Print) -->
-        <div class="section-box" id="addEmployeeSection">
+        <!-- ១. Form សម្រាប់ចុះឈ្មោះបុគ្គលិកថ្មី -->
+        <div class="section-box no-print" id="addEmployeeSection">
             <h3>ចុះឈ្មោះបុគ្គលិកថ្មី (Add Employee)</h3>
             <form id="employeeForm">
                 <div class="form-row">
@@ -106,12 +121,12 @@
             </form>
         </div>
 
-        <!-- ២. តារាងបង្ហាញប្រវត្តិកត់ត្រាម៉ោងចេញ/ចូល -->
-        <div class="section-box">
+        <!-- ២. តារាងបង្ហាញប្រវត្តិកត់ត្រាម៉ោងចេញ/ចូល (លាក់ទុកដំបូង) -->
+        <div class="section-box" id="tableSection" style="display: none;">
             <h3 id="tableOriginalTitle">ប្រវត្តិកត់ត្រាម៉ោង ចេញ/ចូល ប្រចាំថ្ងៃ (Attendance Logs)</h3>
             
             <!-- Filter & Search Controls -->
-            <div class="filter-section">
+            <div class="filter-section no-print">
                 <div>
                     <label style="font-size: 12px; color: #64748b;">ចាប់ពីថ្ងៃទី (From):</label>
                     <input type="date" id="fromDate">
@@ -155,7 +170,7 @@
         </div>
 
         <div class="footer-note">
-            <p><strong>ចំណាំ៖</strong> ទំព័រនេះតភ្ជាប់ទិន្នន័យផ្ទាល់ជាមួយ Neon PostgreSQL Database និងម៉ាស៊ីនស្កេនវត្តមាន (ZKTeco Biometric Machine)។</p>
+            <p><strong>ចំណាំ៖</strong> ទំព័រនេះតភ្ជាប់ទិន្នន័យផ្ទាល់ជាមួយ Neon PostgreSQL Database និងម៉ាស៊ីនស្កេនវត្តមាន (ZKTeco Biometric Machine)[cite: 5].</p>
         </div>
     </div>
 
@@ -163,10 +178,43 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script>
+        let allAttendanceData = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadAttendanceLogs();
+        });
+
+        // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+        function switchSection(section) {
+            const formSection = document.getElementById('addEmployeeSection');
+            const tableSection = document.getElementById('tableSection');
+            const btnShowTable = document.getElementById('btnShowTable');
+            const btnShowForm = document.getElementById('btnShowForm');
+
+            if (!formSection || !tableSection) return;
+
+            if (section === 'table') {
+                formSection.style.display = 'none';
+                tableSection.style.display = 'block';
+                if (btnShowTable) btnShowTable.style.display = 'none';
+                if (btnShowForm) btnShowForm.style.display = 'inline-flex';
+                loadAttendanceLogs();
+            } else {
+                tableSection.style.display = 'none';
+                formSection.style.display = 'block';
+                if (btnShowForm) btnShowForm.style.display = 'none';
+                if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+            }
+        }
+
         async function loadAttendanceLogs() {
-            const from = document.getElementById('fromDate').value;
-            const to = document.getElementById('toDate').value;
-            const search = document.getElementById('searchInput').value;
+            const fromElem = document.getElementById('fromDate');
+            const toElem = document.getElementById('toDate');
+            const searchElem = document.getElementById('searchInput');
+
+            const from = fromElem ? fromElem.value : '';
+            const to = toElem ? toElem.value : '';
+            const search = searchElem ? searchElem.value : '';
 
             let url = '/api/attendance/logs?';
             if (from && to) url += `from=${from}&to=${to}&`;
@@ -175,25 +223,27 @@
             try {
                 const response = await fetch(url);
                 const data = await response.json();
+                allAttendanceData = Array.isArray(data) ? data : [];
                 
                 const tbody = document.getElementById('attendanceLogsTableBody');
+                if (!tbody) return;
                 tbody.innerHTML = '';
                 
-                if (data.length === 0) {
+                if (allAttendanceData.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យស្កេនវត្តមាននៅឡើយទេ</td></tr>';
                     return;
                 }
 
-                data.forEach(item => {
+                allAttendanceData.forEach(item => {
                     const checkIn = item.check_in_time ? new Date(item.check_in_time).toLocaleTimeString() : '-';
                     const checkOut = item.check_out_time ? new Date(item.check_out_time).toLocaleTimeString() : '<span class="badge-in">កំពុងបំពេញការងារ</span>';
-                    const workDate = new Date(item.work_date).toISOString().split('T')[0];
+                    const workDate = item.work_date ? new Date(item.work_date).toISOString().split('T')[0] : '-';
 
                     const row = `<tr>
                         <td>${workDate}</td>
-                        <td><strong>${item.employee_code}</strong></td>
-                        <td>${item.full_name}</td>
-                        <td>${item.department}</td>
+                        <td><strong>${item.employee_code || '-'}</strong></td>
+                        <td>${item.full_name || '-'}</td>
+                        <td>${item.department || '-'}</td>
                         <td><span class="badge-in">${checkIn}</span></td>
                         <td>${checkOut}</td>
                     </tr>`;
@@ -204,39 +254,47 @@
             }
         }
 
-        document.getElementById('employeeForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const employee_code = document.getElementById('employee_code').value;
-            const full_name = document.getElementById('full_name').value;
-            const department = document.getElementById('department').value;
-            const position = document.getElementById('position').value;
+        const employeeForm = document.getElementById('employeeForm');
+        if (employeeForm) {
+            employeeForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const codeElem = document.getElementById('employee_code');
+                const nameElem = document.getElementById('full_name');
+                const deptElem = document.getElementById('department');
+                const posElem = document.getElementById('position');
 
-            try {
-                const response = await fetch('/api/employees', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ employee_code, full_name, department, position })
-                });
+                const employee_code = codeElem ? codeElem.value : '';
+                const full_name = nameElem ? nameElem.value : '';
+                const department = deptElem ? deptElem.value : '';
+                const position = posElem ? posElem.value : '';
 
-                const result = await response.json();
-                if (response.ok) {
-                    alert('បានចុះឈ្មោះបុគ្គលិកដោយជោគជ័យ!');
-                    document.getElementById('employeeForm').reset();
-                    loadAttendanceLogs();
-                } else {
-                    alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                try {
+                    const response = await fetch('/api/employees', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ employee_code, full_name, department, position })
+                    });
+
+                    const result = await response.json();
+                    if (response.ok) {
+                        alert('បានចុះឈ្មោះបុគ្គលិកដោយជោគជ័យ!');
+                        employeeForm.reset();
+                        loadAttendanceLogs();
+                        switchSection('table');
+                    } else {
+                        alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                    }
+                } catch (err) {
+                    console.error('Error submitting employee:', err);
                 }
-            } catch (err) {
-                console.error('Error submitting employee:', err);
-            }
-        });
+            });
+        }
 
         function printAttendance() {
             window.print();
         }
 
-        loadAttendanceLogs();
         setInterval(loadAttendanceLogs, 5000);
     </script>
 
