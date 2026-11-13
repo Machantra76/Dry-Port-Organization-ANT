@@ -8,8 +8,14 @@
     <style>
         body { font-family: 'Kantumruy Pro', sans-serif; background-color: #f0f4f8; margin: 0; padding: 30px; color: #334155; }
         .container { max-width: 1100px; margin: 0 auto; background: white; padding: 35px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-        .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; background: #2a5298; color: white; padding: 8px 16px; border-radius: 6px; font-size: 14px; transition: background 0.3s; }
+        .top-nav-buttons { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 20px; }
+        .back-btn { display: inline-block; text-decoration: none; background: #2a5298; color: white; padding: 8px 16px; border-radius: 6px; font-size: 14px; transition: background 0.3s; border: none; cursor: pointer; }
         .back-btn:hover { background: #1e3c72; }
+        .btn-nav-table { background: #8b5cf6; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 500; cursor: pointer; transition: background 0.3s; }
+        .btn-nav-table:hover { background: #7c3aed; }
+        .btn-nav-form { background: #059669; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-size: 14px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 500; cursor: pointer; transition: background 0.3s; }
+        .btn-nav-form:hover { background: #047857; }
+
         h1 { color: #1e3c72; margin: 0; font-size: 26px; }
         .eng-sub { color: #64748b; font-size: 14px; text-transform: uppercase; margin-top: 5px; font-weight: 600; letter-spacing: 0.5px; }
         
@@ -39,7 +45,7 @@
             body { background: white; padding: 0; color: #000; font-family: 'Kantumruy Pro', sans-serif !important; }
             .container { box-shadow: none; padding: 0; max-width: 100%; width: 100%; border: none; }
             
-            .back-btn, 
+            .top-nav-buttons, 
             #addAssetSection, 
             .filter-section, 
             .footer-note, 
@@ -52,7 +58,7 @@
                 display: none !important; 
             }
             
-            .section-box { background: white !important; border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; }
+            .section-box { background: white !important; border: none !important; box-shadow: none !important; margin-top: 0 !important; padding: 0 !important; display: block !important; }
             
             .print-header-title {
                 display: block !important;
@@ -74,13 +80,22 @@
 <body>
 
     <div class="container">
-        <a href="/" class="back-btn">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
+        <!-- ប៊ូតុងរុករក និងប្តូរទិដ្ឋភាព -->
+        <div class="top-nav-buttons no-print">
+            <a href="/" class="back-btn">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
+            <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
+                <i class="fa-solid fa-table-list"></i> មើលតារាងបញ្ជីសារពើភណ្ឌ
+            </button>
+            <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+                <i class="fa-solid fa-plus-circle"></i> បន្ថែមសម្ភារៈថ្មី
+            </button>
+        </div>
         
         <h1>ទ្រព្យសម្បត្តិ និងស្តុក</h1>
         <div class="eng-sub">Asset, Stock & Inventory Management</div>
         
         <!-- ១. Form សម្រាប់បន្ថែម ឬកែប្រែសម្ភារៈ/ទ្រព្យសម្បត្តិ -->
-        <div class="section-box" id="addAssetSection">
+        <div class="section-box no-print" id="addAssetSection">
             <h3 id="formTitleText">បន្ថែមសម្ភារៈ ឬទ្រព្យសម្បត្តិថ្មី (Add New Asset / Stock Item)</h3>
             <form id="inventoryForm">
                 <input type="hidden" id="edit_id">
@@ -134,11 +149,11 @@
             </form>
         </div>
 
-        <!-- ២. តារាងបង្ហាញបញ្ជីទ្រព្យសម្បត្តិ និងស្តុក -->
-        <div class="section-box">
+        <!-- ២. តារាងបង្ហាញបញ្ជីទ្រព្យសម្បត្តិ និងស្តុក (លាក់ទុកដំបូង) -->
+        <div class="section-box" id="tableSection" style="display: none;">
             <h3 id="tableOriginalTitle">បញ្ជីសារពើភណ្ឌ និងស្តុកប្រចាំថ្ងៃ (Asset & Inventory List)</h3>
             
-            <div class="filter-section">
+            <div class="filter-section no-print">
                 <div>
                     <label style="font-size: 12px; color: #64748b;">ស្វែងរក (Search Code/Name/Holder):</label>
                     <input type="text" id="searchInput" placeholder="ស្វែងរក...">
@@ -185,7 +200,7 @@
         </div>
 
         <div class="footer-note">
-            <p><strong>ចំណាំ៖</strong> ទំព័រនេះប្រើប្រាស់សម្រាប់គ្រប់គ្រងទ្រព្យសកម្ម គ្រឿងបរិក្ខារ និងស្តុកបម្រុងក្នុងឃ្លាំងតភ្ជាប់ជាមួយ PostgreSQL Database។</p>
+            <p><strong>ចំណាំ៖</strong> ទំព័រនេះប្រើប្រាស់សម្រាប់គ្រប់គ្រងទ្រព្យសកម្ម គ្រឿងបរិក្ខារ និងស្តុកបម្រុងក្នុងឃ្លាំងតភ្ជាប់ជាមួយ PostgreSQL Database[cite: 6].</p>
         </div>
     </div>
 
@@ -195,9 +210,39 @@
     <script>
         let inventoryDataList = [];
 
+        document.addEventListener('DOMContentLoaded', () => {
+            loadInventory();
+        });
+
+        // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+        function switchSection(section) {
+            const formSection = document.getElementById('addAssetSection');
+            const tableSection = document.getElementById('tableSection');
+            const btnShowTable = document.getElementById('btnShowTable');
+            const btnShowForm = document.getElementById('btnShowForm');
+
+            if (!formSection || !tableSection) return;
+
+            if (section === 'table') {
+                formSection.style.display = 'none';
+                tableSection.style.display = 'block';
+                if (btnShowTable) btnShowTable.style.display = 'none';
+                if (btnShowForm) btnShowForm.style.display = 'inline-flex';
+                loadInventory();
+            } else {
+                tableSection.style.display = 'none';
+                formSection.style.display = 'block';
+                if (btnShowForm) btnShowForm.style.display = 'none';
+                if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+            }
+        }
+
         async function loadInventory() {
-            const search = document.getElementById('searchInput').value;
-            const category = document.getElementById('categoryFilter').value;
+            const searchElem = document.getElementById('searchInput');
+            const categoryElem = document.getElementById('categoryFilter');
+
+            const search = searchElem ? searchElem.value : '';
+            const category = categoryElem ? categoryElem.value : '';
 
             let url = '/api/inventory?';
             if (search) url += `search=${encodeURIComponent(search)}&`;
@@ -208,9 +253,10 @@
                 inventoryDataList = await response.json();
                 
                 const tbody = document.getElementById('inventoryTableBody');
+                if (!tbody) return;
                 tbody.innerHTML = '';
                 
-                if (inventoryDataList.length === 0) {
+                if (!Array.isArray(inventoryDataList) || inventoryDataList.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #64748b; padding: 20px;">មិនទាន់មានទិន្នន័យសម្ភារៈ ឬស្តុកនៅឡើយទេ</td></tr>';
                     return;
                 }
@@ -240,62 +286,92 @@
             const item = inventoryDataList.find(i => i.id === id);
             if (!item) return;
 
-            document.getElementById('edit_id').value = item.id;
-            document.getElementById('item_code').value = item.item_code;
-            document.getElementById('item_name').value = item.item_name;
-            document.getElementById('category').value = item.category;
-            document.getElementById('quantity').value = item.quantity;
-            document.getElementById('unit').value = item.unit;
-            document.getElementById('status').value = item.status;
-            document.getElementById('holder_or_location').value = item.holder_or_location || '';
+            switchSection('form');
 
-            document.getElementById('formTitleText').innerText = 'កែប្រែព័ត៌មានសម្ភារៈ ឬទ្រព្យសម្បត្តិ (Edit Asset / Stock Item)';
-            document.getElementById('saveBtn').innerText = 'កែប្រែទិន្នន័យ (Update Item)';
-            document.getElementById('saveBtn').style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+            const editId = document.getElementById('edit_id');
+            const itemCode = document.getElementById('item_code');
+            const itemName = document.getElementById('item_name');
+            const category = document.getElementById('category');
+            const quantity = document.getElementById('quantity');
+            const unit = document.getElementById('unit');
+            const status = document.getElementById('status');
+            const holderOrLocation = document.getElementById('holder_or_location');
+            const formTitleText = document.getElementById('formTitleText');
+            const saveBtn = document.getElementById('saveBtn');
+
+            if (editId) editId.value = item.id;
+            if (itemCode) itemCode.value = item.item_code;
+            if (itemName) itemName.value = item.item_name;
+            if (category) category.value = item.category;
+            if (quantity) quantity.value = item.quantity;
+            if (unit) unit.value = item.unit;
+            if (status) status.value = item.status;
+            if (holderOrLocation) holderOrLocation.value = item.holder_or_location || '';
+
+            if (formTitleText) formTitleText.innerText = 'កែប្រែព័ត៌មានសម្ភារៈ ឬទ្រព្យសម្បត្តិ (Edit Asset / Stock Item)';
+            if (saveBtn) {
+                saveBtn.innerText = 'កែប្រែទិន្នន័យ (Update Item)';
+                saveBtn.style.background = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+            }
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        document.getElementById('inventoryForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const editId = document.getElementById('edit_id').value;
-            const item_code = document.getElementById('item_code').value;
-            const item_name = document.getElementById('item_name').value;
-            const category = document.getElementById('category').value;
-            const quantity = document.getElementById('quantity').value;
-            const unit = document.getElementById('unit').value;
-            const status = document.getElementById('status').value;
-            const holder_or_location = document.getElementById('holder_or_location').value;
+        const inventoryForm = document.getElementById('inventoryForm');
+        if (inventoryForm) {
+            inventoryForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const editIdElem = document.getElementById('edit_id');
+                const itemCodeElem = document.getElementById('item_code');
+                const itemNameElem = document.getElementById('item_name');
+                const categoryElem = document.getElementById('category');
+                const quantityElem = document.getElementById('quantity');
+                const unitElem = document.getElementById('unit');
+                const statusElem = document.getElementById('status');
+                const holderElem = document.getElementById('holder_or_location');
 
-            // សម្គាល់៖ បើក្នុង server.js របស់អ្នកមិនទាន់មាន PUT route សម្រាប់ inventory អ្នកអាចបង្កើតបន្ថែម ឬប្រើ POST ជំនួសតាមតម្រូវការ
-            const url = editId ? `/api/inventory/${editId}` : '/api/inventory';
-            const method = editId ? 'PUT' : 'POST';
+                const editId = editIdElem ? editIdElem.value : '';
+                const item_code = itemCodeElem ? itemCodeElem.value : '';
+                const item_name = itemNameElem ? itemNameElem.value : '';
+                const category = categoryElem ? categoryElem.value : '';
+                const quantity = quantityElem ? quantityElem.value : '';
+                const unit = unitElem ? unitElem.value : '';
+                const status = statusElem ? statusElem.value : '';
+                const holder_or_location = holderElem ? holderElem.value : '';
 
-            try {
-                const response = await fetch(url, {
-                    method: method,
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ item_code, item_name, category, quantity, unit, status, holder_or_location })
-                });
+                const url = editId ? `/api/inventory/${editId}` : '/api/inventory';
+                const method = editId ? 'PUT' : 'POST';
 
-                const result = await response.json();
-                if (response.ok) {
-                    alert(editId ? 'បានកែប្រែព័ត៌មានដោយជោគជ័យ!' : 'បានរក្សាទុកសម្ភារៈដោយជោគជ័យ!');
-                    document.getElementById('inventoryForm').reset();
-                    document.getElementById('edit_id').value = '';
-                    document.getElementById('formTitleText').innerText = 'បន្ថែមសម្ភារៈ ឬទ្រព្យសម្បត្តិថ្មី (Add New Asset / Stock Item)';
-                    document.getElementById('saveBtn').innerText = 'រក្សាទុកសម្ភារៈ (Save Item)';
-                    document.getElementById('saveBtn').style.background = '#10b981';
-                    loadInventory();
-                } else {
-                    alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ item_code, item_name, category, quantity, unit, status, holder_or_location })
+                    });
+
+                    const result = await response.json();
+                    if (response.ok) {
+                        alert(editId ? 'បានកែប្រែព័ត៌មានដោយជោគជ័យ!' : 'បានរក្សាទុកសម្ភារៈដោយជោគជ័យ!');
+                        inventoryForm.reset();
+                        if (editIdElem) editIdElem.value = '';
+                        
+                        const formTitleText = document.getElementById('formTitleText');
+                        const saveBtn = document.getElementById('saveBtn');
+                        if (formTitleText) formTitleText.innerText = 'បន្ថែមសម្ភារៈ ឬទ្រព្យសម្បត្តិថ្មី (Add New Asset / Stock Item)';
+                        if (saveBtn) {
+                            saveBtn.innerText = 'រក្សាទុកសម្ភារៈ (Save Item)';
+                            saveBtn.style.background = '#10b981';
+                        }
+                        loadInventory();
+                        switchSection('table');
+                    } else {
+                        alert('កំហុស៖ ' + (result.error || 'មិនអាចរក្សាទុកបានទេ'));
+                    }
+                } catch (err) {
+                    console.error('Error submitting inventory:', err);
                 }
-            } catch (err) {
-                console.error('Error submitting inventory:', err);
-            }
-        });
-
-        loadInventory();
+            });
+        }
     </script>
 
 </body>
