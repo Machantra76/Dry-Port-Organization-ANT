@@ -24,19 +24,39 @@
             box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
             padding: 30px;
         }
-        .btn-custom-back {
-            background-color: #1d3557;
-            color: white;
-            border-radius: 8px;
-            padding: 8px 16px;
+        .top-nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .btn-custom-back, .btn-nav-table, .btn-nav-form {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 8px;
             font-size: 14px;
+            font-weight: 500;
+            font-family: 'Battambang', sans-serif;
+            transition: all 0.2s;
             border: none;
+            cursor: pointer;
+            height: 42px;
+            box-sizing: border-box;
         }
-        .btn-custom-back:hover {
-            background-color: #112238;
-            color: white;
-        }
+        .btn-custom-back { background-color: #1d3557; color: white; }
+        .btn-custom-back:hover { background-color: #112238; color: white; }
+
+        .btn-nav-table { background-color: #8b5cf6; color: white; }
+        .btn-nav-table:hover { background-color: #7c3aed; color: white; }
+
+        .btn-nav-form { background-color: #1cc88a; color: white; }
+        .btn-nav-form:hover { background-color: #13855c; color: white; }
+
         .section-box {
             border: 1px solid #e3e6f0;
             border-radius: 10px;
@@ -97,10 +117,16 @@
 
 <div class="main-container">
     <!-- Top Navigation & Title -->
-    <div class="mb-4 no-print">
+    <div class="top-nav-buttons no-print">
         <a href="transport-fleet.html" class="btn-custom-back">
             <i class="fa-solid fa-arrow-left me-2"></i> ត្រឡប់ទៅ Transport Fleet វិញ
         </a>
+        <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
+            <i class="fa-solid fa-table-list me-1"></i> មើលតារាងរបាយការណ៍ និងបញ្ជីសរុប
+        </button>
+        <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+            <i class="fa-solid fa-plus-circle me-1"></i> កត់ត្រាថ្មី (Add New)
+        </button>
     </div>
 
     <div class="mb-4">
@@ -109,7 +135,7 @@
     </div>
 
     <!-- Form Box: បង្កើតផែនការដឹកជញ្ជូនថ្មី -->
-    <div class="section-box no-print">
+    <div class="section-box no-print" id="formPlanSection">
         <div class="section-title text-primary"><i class="fa-solid fa-plus-circle me-2"></i>បង្កើតផែនការដឹកជញ្ជូនថ្មី (Create Transport Plan)</div>
         <form id="transportPlanForm">
             <div class="row">
@@ -137,7 +163,7 @@
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label class="form-label">កាលបរិច្ឆេទចេញដំណើរ (Departure Date):</label>
-                    <input type="date" class="form-control" name="departure_date" required>
+                    <input type="date" class="form-control" name="departure_date" id="departure_date" required>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">ឈ្មោះអ្នកបើកបរ (Driver Name):</label>
@@ -155,7 +181,7 @@
     </div>
 
     <!-- Table Box: បញ្ជីផែនការដឹកជញ្ជូន -->
-    <div class="section-box">
+    <div class="section-box" id="tablePlanSection" style="display: none;">
         <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
             <div class="section-title mb-0"><i class="fa-solid fa-list me-2"></i>បញ្ជីផែនការដឹកជញ្ជូនទំនិញ (Transport Plans List)</div>
             <button onclick="window.print()" class="btn btn-secondary btn-sm no-print"><i class="fa-solid fa-print me-1"></i> បោះពុម្ព / រក្សាទុក PDF (Print / Save PDF)</button>
@@ -167,7 +193,7 @@
                         <th>ល.រ</th>
                         <th>កូដទំនិញ/កុងតឺន័រ</th>
                         <th>កូដរថយន្ត</th>
-                        <th>ដើមทาง -> គោលដៅ</th>
+                        <th>ដើមທາງ -> គោលដៅ</th>
                         <th>កាលបរិច្ឆេទចេញ</th>
                         <th>អ្នកបើកបរ</th>
                         <th>ស្ថានភាព</th>
@@ -252,6 +278,38 @@
 <!-- Bootstrap JS Bundle -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const depDate = document.getElementById('departure_date');
+        if (depDate) depDate.valueAsDate = new Date();
+
+        loadVehiclesDropdown();
+        loadDriversDropdown();
+        loadTransportPlans();
+    });
+
+    // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+    function switchSection(section) {
+        const formPlan = document.getElementById('formPlanSection');
+        const tablePlan = document.getElementById('tablePlanSection');
+        const btnShowTable = document.getElementById('btnShowTable');
+        const btnShowForm = document.getElementById('btnShowForm');
+
+        if (!formPlan || !tablePlan) return;
+
+        if (section === 'table') {
+            formPlan.style.display = 'none';
+            tablePlan.style.display = 'block';
+            if (btnShowTable) btnShowTable.style.display = 'none';
+            if (btnShowForm) btnShowForm.style.display = 'inline-flex';
+            loadTransportPlans();
+        } else {
+            tablePlan.style.display = 'none';
+            formPlan.style.display = 'block';
+            if (btnShowForm) btnShowForm.style.display = 'none';
+            if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+        }
+    }
+
     // ទាញយកបញ្ជីរថយន្តមកដាក់ក្នុង Dropdown
     async function loadVehiclesDropdown() {
         try {
@@ -260,9 +318,11 @@
             const selects = document.querySelectorAll('.vehicle-select');
             selects.forEach(select => {
                 select.innerHTML = '<option value="">-- ជ្រើសរើសរថយន្ត --</option>';
-                vehicles.forEach(v => {
-                    select.innerHTML += `<option value="${v.vehicle_code}">${v.vehicle_code} - ${v.model} (${v.plate_number})</option>`;
-                });
+                if (Array.isArray(vehicles)) {
+                    vehicles.forEach(v => {
+                        select.innerHTML += `<option value="${v.vehicle_code}">${v.vehicle_code} - ${v.model} (${v.plate_number})</option>`;
+                    });
+                }
             });
         } catch (err) {
             console.error('Error loading vehicles:', err);
@@ -277,9 +337,11 @@
             const selects = document.querySelectorAll('.driver-select');
             selects.forEach(select => {
                 select.innerHTML = '<option value="">-- ជ្រើសរើសឈ្មោះអ្នកបើកបរ --</option>';
-                drivers.forEach(d => {
-                    select.innerHTML += `<option value="${d.full_name}">${d.full_name} (${d.phone})</option>`;
-                });
+                if (Array.isArray(drivers)) {
+                    drivers.forEach(d => {
+                        select.innerHTML += `<option value="${d.full_name}">${d.full_name} (${d.phone})</option>`;
+                    });
+                }
             });
         } catch (err) {
             console.error('Error loading drivers:', err);
@@ -292,22 +354,24 @@
             const res = await fetch('/api/fleet/transport-plans');
             const data = await res.json();
             const tbody = document.querySelector('#transportPlanTable tbody');
+            if (!tbody) return;
             tbody.innerHTML = '';
             
-            if (data.length === 0) {
+            if (!Array.isArray(data) || data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">ពុំមានទិន្នន័យផែនការដឹកជញ្ជូនទេ</td></tr>`;
                 return;
             }
 
             data.forEach((item, index) => {
                 let badgeClass = item.status === 'Completed' ? 'bg-success' : (item.status === 'Cancelled' ? 'bg-danger' : 'bg-warning text-dark');
+                const rowDate = item.departure_date ? item.departure_date.split('T')[0] : '-';
                 tbody.innerHTML += `
                     <tr>
                         <td>${index + 1}</td>
                         <td><strong>${item.cargo_code}</strong></td>
                         <td>${item.vehicle_code}</td>
                         <td>${item.origin} ➔ ${item.destination}</td>
-                        <td>${item.departure_date.split('T')[0]}</td>
+                        <td>${rowDate}</td>
                         <td>${item.driver_name}</td>
                         <td><span class="badge ${badgeClass}">${item.status || 'Planned'}</span></td>
                         <td class="no-print">
@@ -325,83 +389,104 @@
 
     // បើក Modal សម្រាប់ដោះដូរ/កែប្រែផែនការ
     function openEditModal(item) {
-        document.getElementById('edit_plan_id').value = item.id;
-        document.getElementById('edit_cargo_code').value = item.cargo_code;
-        document.getElementById('edit_vehicle_code').value = item.vehicle_code;
-        document.getElementById('edit_origin').value = item.origin;
-        document.getElementById('edit_destination').value = item.destination;
-        document.getElementById('edit_departure_date').value = item.departure_date.split('T')[0];
-        document.getElementById('edit_driver_name').value = item.driver_name;
-        document.getElementById('edit_status').value = item.status || 'Planned';
-        document.getElementById('edit_notes').value = item.notes || '';
+        const editId = document.getElementById('edit_plan_id');
+        const editCargo = document.getElementById('edit_cargo_code');
+        const editVeh = document.getElementById('edit_vehicle_code');
+        const editOrig = document.getElementById('edit_origin');
+        const editDest = document.getElementById('edit_destination');
+        const editDate = document.getElementById('edit_departure_date');
+        const editDrv = document.getElementById('edit_driver_name');
+        const editStat = document.getElementById('edit_status');
+        const editNotes = document.getElementById('edit_notes');
 
-        const modal = new bootstrap.Modal(document.getElementById('editPlanModal'));
-        modal.show();
+        if (editId) editId.value = item.id;
+        if (editCargo) editCargo.value = item.cargo_code;
+        if (editVeh) editVeh.value = item.vehicle_code;
+        if (editOrig) editOrig.value = item.origin;
+        if (editDest) editDest.value = item.destination;
+        if (editDate) editDate.value = item.departure_date ? item.departure_date.split('T')[0] : '';
+        if (editDrv) editDrv.value = item.driver_name;
+        if (editStat) editStat.value = item.status || 'Planned';
+        if (editNotes) editNotes.value = item.notes || '';
+
+        const modalElement = document.getElementById('editPlanModal');
+        if (modalElement) {
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
     }
 
     // Handle Form កែប្រែ/ដោះដូរ (Submit Edit Form)
-    document.getElementById('editPlanForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const id = document.getElementById('edit_plan_id').value;
-        const data = {
-            cargo_code: document.getElementById('edit_cargo_code').value,
-            vehicle_code: document.getElementById('edit_vehicle_code').value,
-            origin: document.getElementById('edit_origin').value,
-            destination: document.getElementById('edit_destination').value,
-            departure_date: document.getElementById('edit_departure_date').value,
-            driver_name: document.getElementById('edit_driver_name').value,
-            status: document.getElementById('edit_status').value,
-            notes: document.getElementById('edit_notes').value
-        };
+    const editPlanForm = document.getElementById('editPlanForm');
+    if (editPlanForm) {
+        editPlanForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const idElem = document.getElementById('edit_plan_id');
+            const id = idElem ? idElem.value : '';
+            const data = {
+                cargo_code: document.getElementById('edit_cargo_code').value,
+                vehicle_code: document.getElementById('edit_vehicle_code').value,
+                origin: document.getElementById('edit_origin').value,
+                destination: document.getElementById('edit_destination').value,
+                departure_date: document.getElementById('edit_departure_date').value,
+                driver_name: document.getElementById('edit_driver_name').value,
+                status: document.getElementById('edit_status').value,
+                notes: document.getElementById('edit_notes').value
+            };
 
-        try {
-            const res = await fetch(`/api/fleet/transport-plans/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            const result = await res.json();
-            if (result.success) {
-                alert('បានដោះដូរ និងកែប្រែផែនការដឹកជញ្ជូនដោយជោគជ័យ!');
-                bootstrap.Modal.getInstance(document.getElementById('editPlanModal')).hide();
-                loadTransportPlans();
-            } else {
-                alert('កំហុស៖ ' + result.error);
+            try {
+                const res = await fetch(`/api/fleet/transport-plans/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert('បានដោះដូរ និងកែប្រែផែនការដឹកជញ្ជូនដោយជោគជ័យ!');
+                    const modalElement = document.getElementById('editPlanModal');
+                    if (modalElement) {
+                        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                        if (modalInstance) modalInstance.hide();
+                    }
+                    loadTransportPlans();
+                } else {
+                    alert('កំហុស៖ ' + result.error);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('មានបញ្ហាក្នុងការបញ្ជូនទិន្នន័យទៅកាន់ Server');
             }
-        } catch (err) {
-            console.error(err);
-            alert('មានបញ្ហាក្នុងការបញ្ជូនទិន្នន័យទៅកាន់ Server');
-        }
-    });
+        });
+    }
 
     // បញ្ជូនទិន្នន័យបង្កើតផែនការថ្មី
-    document.getElementById('transportPlanForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = Object.fromEntries(new FormData(e.target).entries());
-        try {
-            const res = await fetch('/api/fleet/transport-plans', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            const result = await res.json();
-            if (result.success) {
-                alert('បង្កើតផែនការដឹកជញ្ជូនបានជោគជ័យ!');
-                e.target.reset();
-                loadTransportPlans();
-            } else {
-                alert('កំហុស៖ ' + result.error);
+    const transportPlanForm = document.getElementById('transportPlanForm');
+    if (transportPlanForm) {
+        transportPlanForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = Object.fromEntries(new FormData(e.target).entries());
+            try {
+                const res = await fetch('/api/fleet/transport-plans', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                const result = await res.json();
+                if (result.success) {
+                    alert('បង្កើតផែនការដឹកជញ្ជូនបានជោគជ័យ!');
+                    transportPlanForm.reset();
+                    const depDate = document.getElementById('departure_date');
+                    if (depDate) depDate.valueAsDate = new Date();
+                    loadTransportPlans();
+                    switchSection('table');
+                } else {
+                    alert('កំហុស៖ ' + result.error);
+                }
+            } catch (err) {
+                alert('មានបញ្ហាក្នុងការបញ្ជូនទិន្នន័យ');
             }
-        } catch (err) {
-            alert('មានបញ្ហាក្នុងការបញ្ជូនទិន្នន័យ');
-        }
-    });
-
-    window.onload = () => {
-        loadVehiclesDropdown();
-        loadDriversDropdown();
-        loadTransportPlans();
-    };
+        });
+    }
 </script>
 </body>
 </html>
