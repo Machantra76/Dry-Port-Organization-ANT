@@ -24,6 +24,12 @@
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
+        .top-nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
         .btn-back {
             background: linear-gradient(135deg, #0284c7, #0369a1);
             color: white;
@@ -36,12 +42,52 @@
             gap: 8px;
             box-shadow: 0 4px 10px rgba(2, 132, 199, 0.2);
             transition: all 0.2s;
+            border: none;
+            cursor: pointer;
         }
         .btn-back:hover {
             background: linear-gradient(135deg, #0369a1, #075985);
             color: white;
             transform: translateY(-1px);
         }
+        .btn-nav-table {
+            background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+            color: white;
+            font-weight: 500;
+            border-radius: 8px;
+            padding: 10px 18px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(139, 92, 246, 0.25);
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-nav-table:hover {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+        }
+        .btn-nav-form {
+            background-color: #059669;
+            color: white;
+            font-weight: 500;
+            border-radius: 8px;
+            padding: 10px 18px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-nav-form:hover {
+            background-color: #047857;
+            color: white;
+        }
+
         .page-title {
             color: #1e3a8a;
             font-weight: 700;
@@ -85,7 +131,6 @@
             box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.15);
         }
         
-        /* 🎨 ប៊ូតុងរចនាថ្មីស្មើគ្នា */
         .btn-primary-custom {
             background: linear-gradient(135deg, #0d9488, #0f766e);
             border: none;
@@ -203,17 +248,25 @@
 <body>
 
 <div class="main-container">
-    <!-- ប៊ូតុងត្រឡប់ក្រោយ -->
-    <a href="/" class="btn-back no-print">
-        <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅផ្ទាំងដើមវិញ (Back to Dashboard)
-    </a>
+    <!-- ប៊ូតុងរុករក និងប្តូរទិដ្ឋភាព -->
+    <div class="top-nav-buttons mb-3 no-print">
+        <a href="/" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅផ្ទាំងដើមវិញ (Back to Dashboard)
+        </a>
+        <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
+            <i class="fa-solid fa-table-list"></i> មើលតារាងបញ្ជីអ្នកកាន់ឯកសារគយ
+        </button>
+        <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+            <i class="fa-solid fa-plus-circle"></i> ចុះឈ្មោះអ្នកកាន់ឯកសារថ្មី
+        </button>
+    </div>
 
     <!-- ចំណងជើងទំព័រ -->
     <h2 class="page-title">អ្នកកាន់ឯកសារគយ</h2>
     <p class="page-subtitle">CUSTOMS DOCUMENT CONTROLLER & HANDLER MANAGEMENT</p>
 
     <!-- Form កត់ត្រាអ្នកកាន់ឯកសារគយថ្មី -->
-    <div class="section-card no-print">
+    <div class="section-card no-print" id="formSection">
         <div class="section-card-title"><i class="fa-solid fa-id-card me-2"></i> ចុះឈ្មោះ ឬចាត់តាំងអ្នកកាន់ឯកសារគយថ្មី (New Handler Assignment)</div>
         <form id="docHandlerForm">
             <input type="hidden" id="editId" value="">
@@ -278,8 +331,8 @@
         </form>
     </div>
 
-    <!-- តារាងបង្ហាញទិន្នន័យអ្នកកាន់ឯកសារគយ -->
-    <div class="section-card">
+    <!-- តារាងបង្ហាញទិន្នន័យអ្នកកាន់ឯកសារគយ (លាក់ទុកដំបូង) -->
+    <div class="section-card" id="tableSection" style="display: none;">
         <div class="section-card-title mb-3"><i class="fa-solid fa-table-list me-2"></i> តារាងបញ្ជីអ្នកកាន់ឯកសារគយ (Customs Document Controllers List)</div>
 
         <!-- ផ្នែកស្វែងរក, From Date, To Date និងប៊ូតុងស្មើគ្នា -->
@@ -351,16 +404,43 @@
     let handlerList = [];
 
     document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('assignment_date').value = new Date().toISOString().split('T')[0];
+        const assignmentDateInput = document.getElementById('assignment_date');
+        if (assignmentDateInput) {
+            assignmentDateInput.value = new Date().toISOString().split('T')[0];
+        }
         loadDocumentDropdown();
         loadDocHandlers();
     });
+
+    // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+    function switchSection(section) {
+        const formSection = document.getElementById('formSection');
+        const tableSection = document.getElementById('tableSection');
+        const btnShowTable = document.getElementById('btnShowTable');
+        const btnShowForm = document.getElementById('btnShowForm');
+
+        if (!formSection || !tableSection) return;
+
+        if (section === 'table') {
+            formSection.style.display = 'none';
+            tableSection.style.display = 'block';
+            if (btnShowTable) btnShowTable.style.display = 'none';
+            if (btnShowForm) btnShowForm.style.display = 'inline-flex';
+            loadDocHandlers();
+        } else {
+            tableSection.style.display = 'none';
+            formSection.style.display = 'block';
+            if (btnShowForm) btnShowForm.style.display = 'none';
+            if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+        }
+    }
 
     async function loadDocumentDropdown() {
         try {
             const response = await fetch('/api/customs-documents');
             const docs = await response.json();
             const select = document.getElementById('assigned_doc_ref');
+            if (!select) return;
             select.innerHTML = '<option value="">-- ជ្រើសរើសលេខឯកសារគយ --</option>';
             
             if (Array.isArray(docs)) {
@@ -383,12 +463,16 @@
             renderTable(handlerList);
         } catch (err) {
             console.error('Error loading document handlers:', err);
-            document.getElementById('docHandlerTableBody').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            const tbody = document.getElementById('docHandlerTableBody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            }
         }
     }
 
     function renderTable(data) {
         const tbody = document.getElementById('docHandlerTableBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
 
         if (!Array.isArray(data) || data.length === 0) {
@@ -423,9 +507,13 @@
     }
 
     function filterDocHandlers() {
-        const keyword = document.getElementById('searchInput').value.toLowerCase();
-        const fromDate = document.getElementById('fromDate').value;
-        const toDate = document.getElementById('toDate').value;
+        const searchInput = document.getElementById('searchInput');
+        const fromDateElem = document.getElementById('fromDate');
+        const toDateElem = document.getElementById('toDate');
+
+        const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        const fromDate = fromDateElem ? fromDateElem.value : '';
+        const toDate = toDateElem ? toDateElem.value : '';
 
         const filtered = handlerList.filter(item => {
             const matchesKeyword = 
@@ -448,72 +536,107 @@
     }
 
     function resetFilter() {
-        document.getElementById('searchInput').value = '';
-        document.getElementById('fromDate').value = '';
-        document.getElementById('toDate').value = '';
+        const searchInput = document.getElementById('searchInput');
+        const fromDateElem = document.getElementById('fromDate');
+        const toDateElem = document.getElementById('toDate');
+
+        if (searchInput) searchInput.value = '';
+        if (fromDateElem) fromDateElem.value = '';
+        if (toDateElem) toDateElem.value = '';
         renderTable(handlerList);
     }
 
     function resetForm() {
-        document.getElementById('docHandlerForm').reset();
-        document.getElementById('editId').value = '';
-        document.getElementById('assignment_date').value = new Date().toISOString().split('T')[0];
-        document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យអ្នកកាន់ឯកសារ`;
+        const form = document.getElementById('docHandlerForm');
+        if (form) form.reset();
+        const editId = document.getElementById('editId');
+        if (editId) editId.value = '';
+        const assignmentDate = document.getElementById('assignment_date');
+        if (assignmentDate) assignmentDate.value = new Date().toISOString().split('T')[0];
+        const saveBtn = document.getElementById('saveBtn');
+        if (saveBtn) saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យអ្នកកាន់ឯកសារ`;
     }
 
-    document.getElementById('docHandlerForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    const docHandlerForm = document.getElementById('docHandlerForm');
+    if (docHandlerForm) {
+        docHandlerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const editId = document.getElementById('editId').value;
-        const payload = {
-            handler_name: document.getElementById('handler_name').value,
-            handler_code: document.getElementById('handler_code').value,
-            handler_role: document.getElementById('handler_role').value,
-            assigned_doc_ref: document.getElementById('assigned_doc_ref').value,
-            assignment_date: document.getElementById('assignment_date').value,
-            handler_status: document.getElementById('handler_status').value,
-            remarks: document.getElementById('remarks').value
-        };
+            const editIdElem = document.getElementById('editId');
+            const handlerNameElem = document.getElementById('handler_name');
+            const handlerCodeElem = document.getElementById('handler_code');
+            const handlerRoleElem = document.getElementById('handler_role');
+            const assignedDocRefElem = document.getElementById('assigned_doc_ref');
+            const assignmentDateElem = document.getElementById('assignment_date');
+            const handlerStatusElem = document.getElementById('handler_status');
+            const remarksElem = document.getElementById('remarks');
 
-        try {
-            const url = editId ? `/api/document-handlers/${editId}` : '/api/document-handlers';
-            const method = editId ? 'PUT' : 'POST';
+            const editId = editIdElem ? editIdElem.value : '';
+            const payload = {
+                handler_name: handlerNameElem ? handlerNameElem.value : '',
+                handler_code: handlerCodeElem ? handlerCodeElem.value : '',
+                handler_role: handlerRoleElem ? handlerRoleElem.value : '',
+                assigned_doc_ref: assignedDocRefElem ? assignedDocRefElem.value : '',
+                assignment_date: assignmentDateElem ? assignmentDateElem.value : '',
+                handler_status: handlerStatusElem ? handlerStatusElem.value : '',
+                remarks: remarksElem ? remarksElem.value : ''
+            };
 
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+            try {
+                const url = editId ? `/api/document-handlers/${editId}` : '/api/document-handlers';
+                const method = editId ? 'PUT' : 'POST';
 
-            const result = await response.json();
-            if (response.ok && result.success) {
-                alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានចុះបញ្ជីអ្នកកាន់ឯកសារថ្មីដោយជោគជ័យ!');
-                resetForm();
-                loadDocumentDropdown();
-                loadDocHandlers();
-            } else {
-                alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានចុះបញ្ជីអ្នកកាន់ឯកសារថ្មីដោយជោគជ័យ!');
+                    resetForm();
+                    loadDocumentDropdown();
+                    loadDocHandlers();
+                    switchSection('table');
+                } else {
+                    alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
+                }
+            } catch (err) {
+                console.error('Error submitting form:', err);
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
             }
-        } catch (err) {
-            console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
-        }
-    });
+        });
+    }
 
     function editDocHandler(id) {
         const item = handlerList.find(d => d.id === id);
         if (!item) return;
 
-        document.getElementById('editId').value = item.id;
-        document.getElementById('handler_name').value = item.handler_name;
-        document.getElementById('handler_code').value = item.handler_code;
-        document.getElementById('handler_role').value = item.handler_role;
-        document.getElementById('assigned_doc_ref').value = item.assigned_doc_ref || '';
-        document.getElementById('assignment_date').value = item.assignment_date ? item.assignment_date.split('T')[0] : '';
-        document.getElementById('handler_status').value = item.handler_status;
-        document.getElementById('remarks').value = item.remarks || '';
+        switchSection('form');
 
-        document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យអ្នកកាន់ឯកសារ`;
+        const editId = document.getElementById('editId');
+        const handlerName = document.getElementById('handler_name');
+        const handlerCode = document.getElementById('handler_code');
+        const handlerRole = document.getElementById('handler_role');
+        const assignedDocRef = document.getElementById('assigned_doc_ref');
+        const assignmentDate = document.getElementById('assignment_date');
+        const handlerStatus = document.getElementById('handler_status');
+        const remarks = document.getElementById('remarks');
+        const saveBtn = document.getElementById('saveBtn');
+
+        if (editId) editId.value = item.id;
+        if (handlerName) handlerName.value = item.handler_name;
+        if (handlerCode) handlerCode.value = item.handler_code;
+        if (handlerRole) handlerRole.value = item.handler_role;
+        if (assignedDocRef) assignedDocRef.value = item.assigned_doc_ref || '';
+        if (assignmentDate) assignmentDate.value = item.assignment_date ? item.assignment_date.split('T')[0] : '';
+        if (handlerStatus) handlerStatus.value = item.handler_status;
+        if (remarks) remarks.value = item.remarks || '';
+
+        if (saveBtn) {
+            saveBtn.innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យអ្នកកាន់ឯកសារ`;
+        }
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -534,9 +657,12 @@
         }
     }
 
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        filterDocHandlers();
-    });
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            filterDocHandlers();
+        });
+    }
 </script>
 
 </body>
