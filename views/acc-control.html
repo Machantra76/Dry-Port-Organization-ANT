@@ -21,18 +21,39 @@
             border-radius: 12px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
-        .back-btn {
-            display: inline-block;
+        .top-nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
             margin-bottom: 20px;
-            text-decoration: none;
-            background: #2a5298;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: background 0.3s;
         }
-        .back-btn:hover { background: #1e3c72; }
+        .back-btn, .btn-nav-table, .btn-nav-form {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'Kantumruy Pro', sans-serif;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            height: 40px;
+            box-sizing: border-box;
+        }
+        .back-btn { background: #2a5298; color: white; }
+        .back-btn:hover { background: #1e3c72; color: white; }
+        
+        .btn-nav-table { background: #8b5cf6; color: white; }
+        .btn-nav-table:hover { background: #7c3aed; color: white; }
+
+        .btn-nav-form { background: #059669; color: white; }
+        .btn-nav-form:hover { background: #047857; color: white; }
+
         h1 { color: #1e3c72; margin: 0; font-size: 26px; }
         .eng-sub {
             color: #64748b;
@@ -106,13 +127,22 @@
 </head>
 <body>
     <div class="container">
-        <a href="/" class="back-btn">&larr; ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)</a>
+        <!-- ប៊ូតុងរុករក និងប្តូរទិដ្ឋភាពឱ្យមានទំហំស្មើគ្នា -->
+        <div class="top-nav-buttons">
+            <a href="/" class="back-btn"><i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ</a>
+            <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
+                <i class="fa-solid fa-table-list"></i> មើលបញ្ជីប្រវត្តិចំណាយ
+            </button>
+            <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+                <i class="fa-solid fa-plus-circle"></i> កត់ត្រាចំណាយថ្មី
+            </button>
+        </div>
         
         <h1>ការគ្រប់គ្រងថវិកា / ចំណាយ</h1>
         <div class="eng-sub">Budget & Expense Control Management</div>
 
         <!-- ទម្រង់កត់ត្រាចំណាយថ្មី -->
-        <div class="section-box">
+        <div class="section-box" id="formSection">
             <h3>កត់ត្រាបانចំណាយថ្មី (Record New Expense)</h3>
             <form id="expenseForm" onsubmit="saveExpense(event)">
                 <div class="form-grid">
@@ -147,8 +177,8 @@
             </form>
         </div>
 
-        <!-- បញ្ជីចំណាយសរុប -->
-        <div class="section-box">
+        <!-- បញ្ជីចំណាយសរុប (លាក់ទុកដំបូង) -->
+        <div class="section-box" id="tableSection" style="display: none;">
             <h3>បញ្ជីប្រវត្តិចំណាយ (Expense History Records)</h3>
             <table>
                 <thead>
@@ -168,26 +198,60 @@
         </div>
     </div>
 
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <script>
-        document.getElementById('expense_date').valueAsDate = new Date();
+        document.addEventListener('DOMContentLoaded', () => {
+            const expenseDateInput = document.getElementById('expense_date');
+            if (expenseDateInput) {
+                expenseDateInput.valueAsDate = new Date();
+            }
+            loadExpenses();
+        });
+
+        // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+        function switchSection(section) {
+            const formSection = document.getElementById('formSection');
+            const tableSection = document.getElementById('tableSection');
+            const btnShowTable = document.getElementById('btnShowTable');
+            const btnShowForm = document.getElementById('btnShowForm');
+
+            if (!formSection || !tableSection) return;
+
+            if (section === 'table') {
+                formSection.style.display = 'none';
+                tableSection.style.display = 'block';
+                if (btnShowTable) btnShowTable.style.display = 'none';
+                if (btnShowForm) btnShowForm.style.display = 'inline-flex';
+                loadExpenses();
+            } else {
+                tableSection.style.display = 'none';
+                formSection.style.display = 'block';
+                if (btnShowForm) btnShowForm.style.display = 'none';
+                if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+            }
+        }
 
         async function loadExpenses() {
             try {
                 const response = await fetch('/api/expenses');
                 const data = await response.json();
                 const tbody = document.getElementById('expenseTableBody');
+                if (!tbody) return;
                 tbody.innerHTML = '';
 
-                if (data.length === 0) {
+                if (!Array.isArray(data) || data.length === 0) {
                     tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #64748b;">គ្មានទិន្នន័យចំណាយនៅឡើយទេ</td></tr>';
                     return;
                 }
 
                 data.forEach((item, index) => {
+                    const rowDate = item.expense_date ? new Date(item.expense_date).toLocaleDateString('km-KH') : '-';
                     const row = `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${new Date(item.expense_date).toLocaleDateString('km-KH')}</td>
+                            <td>${rowDate}</td>
                             <td>${item.category}</td>
                             <td>${item.description || '-'}</td>
                             <td>${item.paid_to}</td>
@@ -198,7 +262,10 @@
                 });
             } catch (err) {
                 console.error(err);
-                alert('មានបញ្ហាក្នុងការទាញយកបញ្ជីចំណាយ');
+                const tbody = document.getElementById('expenseTableBody');
+                if (tbody) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: red;">មានបញ្ហាក្នុងការទាញយកបញ្ជីចំណាយ</td></tr>';
+                }
             }
         }
 
@@ -221,9 +288,12 @@
                 const result = await response.json();
                 if (result.success) {
                     alert('បានកត់ត្រាចំណាយដោយជោគជ័យ!');
-                    document.getElementById('expenseForm').reset();
-                    document.getElementById('expense_date').valueAsDate = new Date();
+                    const expenseForm = document.getElementById('expenseForm');
+                    if (expenseForm) expenseForm.reset();
+                    const expenseDateInput = document.getElementById('expense_date');
+                    if (expenseDateInput) expenseDateInput.valueAsDate = new Date();
                     loadExpenses();
+                    switchSection('table');
                 } else {
                     alert('កំហុស៖ ' + result.error);
                 }
@@ -232,8 +302,6 @@
                 alert('មិនអាចបញ្ជូនទិន្នន័យទៅកាន់ Server បានទេ');
             }
         }
-
-        loadExpenses();
     </script>
 </body>
 </html>
