@@ -24,26 +24,43 @@
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
-        .btn-back {
-            background-color: #1e3a8a;
-            color: white;
-            font-weight: 500;
-            border-radius: 6px;
-            padding: 8px 16px;
-            text-decoration: none;
+        .top-nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .btn-back, .btn-nav-table, .btn-nav-form {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
-            transition: background 0.2s;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'Kantumruy Pro', sans-serif;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            height: 42px;
+            box-sizing: border-box;
         }
-        .btn-back:hover {
-            background-color: #1e40af;
-            color: white;
-        }
+        .btn-back { background-color: #1e3a8a; color: white; }
+        .btn-back:hover { background-color: #1e40af; color: white; }
+
+        .btn-nav-table { background-color: #8b5cf6; color: white; }
+        .btn-nav-table:hover { background-color: #7c3aed; color: white; }
+
+        .btn-nav-form { background-color: #059669; color: white; }
+        .btn-nav-form:hover { background-color: #047857; color: white; }
+
         .page-title {
             color: #1e3a8a;
             font-weight: 700;
-            margin-top: 20px;
+            margin-top: 10px;
             font-size: 1.75rem;
         }
         .page-subtitle {
@@ -77,6 +94,10 @@
             padding: 10px 12px;
             font-size: 0.9rem;
             font-family: 'Kantumruy Pro', sans-serif;
+            height: 45px;
+        }
+        textarea.form-control {
+            height: auto;
         }
         .form-control:focus, .form-select:focus {
             border-color: #1e3a8a;
@@ -128,17 +149,25 @@
 <body>
 
 <div class="main-container">
-    <!-- ប៊ូតុងត្រឡប់ក្រោយ -->
-    <a href="/" class="btn-back no-print">
-        <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)
-    </a>
+    <!-- ប៊ូតុងរុករក និងប្តូរទិដ្ឋភាពឱ្យមានទំហំស្មើគ្នា -->
+    <div class="top-nav-buttons no-print">
+        <a href="/" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ
+        </a>
+        <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
+            <i class="fa-solid fa-table-list me-1"></i> មើលតារាងរបាយការណ៍ និងបញ្ជីសរុប
+        </button>
+        <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+            <i class="fa-solid fa-plus-circle me-1"></i> កត់ត្រាថ្មី (Add New)
+        </button>
+    </div>
 
     <!-- ចំណងជើងទំព័រ -->
     <h2 class="page-title">ទំនាក់ទំនងជាមួយអតិថិជន</h2>
     <p class="page-subtitle">CUSTOMER RELATIONS & FEEDBACK MANAGEMENT SYSTEM</p>
 
     <!-- Form កត់ត្រាព័ត៌មានអតិថិជនថ្មី -->
-    <div class="section-card no-print">
+    <div class="section-card no-print" id="formCustomerSection">
         <div class="section-card-title"><i class="fa-solid fa-headset me-2"></i> កត់ត្រាសំណូមពរ ឬមតិយោបល់អតិថិជនថ្មី (Record Customer Inquiry/Feedback)</div>
         <form id="customerForm">
             <input type="hidden" id="editId" value="">
@@ -186,7 +215,7 @@
     </div>
 
     <!-- តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ -->
-    <div class="section-card">
+    <div class="section-card" id="historySection" style="display: none;">
         <div class="section-card-title mb-3"><i class="fa-solid fa-table-list me-2"></i> តារាងតាមដានទំនាក់ទំនងអតិថិជន (Customer Relations List)</div>
 
         <!-- ផ្នែកស្វែងរក (Search & Filter) -->
@@ -239,23 +268,59 @@
     let customerDataList = [];
 
     document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('contact_date').value = new Date().toISOString().split('T')[0];
+        const contactDateElem = document.getElementById('contact_date');
+        if (contactDateElem) {
+            contactDateElem.value = new Date().toISOString().split('T')[0];
+        }
         loadCustomers();
     });
+
+    // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+    function switchSection(section) {
+        const formSection = document.getElementById('formCustomerSection');
+        const historySection = document.getElementById('historySection');
+        const btnShowTable = document.getElementById('btnShowTable');
+        const btnShowForm = document.getElementById('btnShowForm');
+
+        if (!formSection || !historySection) return;
+
+        if (section === 'table') {
+            formSection.style.display = 'none';
+            historySection.style.display = 'block';
+            if (btnShowTable) btnShowTable.style.display = 'none';
+            if (btnShowForm) btnShowForm.style.display = 'inline-flex';
+            loadCustomers();
+        } else {
+            historySection.style.display = 'none';
+            formSection.style.display = 'block';
+            if (btnShowForm) btnShowForm.style.display = 'none';
+            if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+        }
+    }
 
     async function loadCustomers() {
         try {
             const response = await fetch('/api/customer-relations');
-            customerDataList = await response.json();
-            renderTable(customerDataList);
+            const data = await response.json();
+            if (Array.isArray(data)) {
+                customerDataList = data;
+                renderTable(customerDataList);
+            } else {
+                customerDataList = [];
+                renderTable([]);
+            }
         } catch (err) {
             console.error('Error loading customer relations:', err);
-            document.getElementById('customerTableBody').innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            const tbody = document.getElementById('customerTableBody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="8" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            }
         }
     }
 
     function renderTable(data) {
         const tbody = document.getElementById('customerTableBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
 
         if (!Array.isArray(data) || data.length === 0) {
@@ -269,13 +334,14 @@
             else if (item.status === 'In Progress') badgeClass = 'bg-primary';
             else if (item.status === 'Pending') badgeClass = 'bg-warning text-dark';
 
+            const rowDate = item.contact_date ? item.contact_date.split('T')[0] : '-';
             const row = `
                 <tr>
                     <td>${index + 1}</td>
                     <td class="fw-bold text-primary">${item.customer_name}</td>
                     <td>${item.phone}</td>
                     <td><span class="badge bg-info text-dark">${item.contact_type}</span></td>
-                    <td>${item.contact_date ? item.contact_date.split('T')[0] : '-'}</td>
+                    <td>${rowDate}</td>
                     <td class="text-start">${item.description || '-'}</td>
                     <td><span class="badge ${badgeClass}">${item.status}</span></td>
                     <td class="no-print">
@@ -288,59 +354,81 @@
         });
     }
 
-    document.getElementById('customerForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    const customerForm = document.getElementById('customerForm');
+    if (customerForm) {
+        customerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const editId = document.getElementById('editId').value;
-        const payload = {
-            customer_name: document.getElementById('customer_name').value,
-            phone: document.getElementById('phone').value,
-            contact_type: document.getElementById('contact_type').value,
-            contact_date: document.getElementById('contact_date').value,
-            status: document.getElementById('status').value,
-            description: document.getElementById('description').value
-        };
+            const editIdElem = document.getElementById('editId');
+            const editId = editIdElem ? editIdElem.value : '';
+            const payload = {
+                customer_name: document.getElementById('customer_name').value,
+                phone: document.getElementById('phone').value,
+                contact_type: document.getElementById('contact_type').value,
+                contact_date: document.getElementById('contact_date').value,
+                status: document.getElementById('status').value,
+                description: document.getElementById('description').value
+            };
 
-        try {
-            const url = editId ? `/api/customer-relations/${editId}` : '/api/customer-relations';
-            const method = editId ? 'PUT' : 'POST';
+            try {
+                const url = editId ? `/api/customer-relations/${editId}` : '/api/customer-relations';
+                const method = editId ? 'PUT' : 'POST';
 
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-            const result = await response.json();
-            if (response.ok && result.success) {
-                alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានរក្សាទុកទិន្នន័យដោយជោគជ័យ!');
-                document.getElementById('customerForm').reset();
-                document.getElementById('editId').value = '';
-                document.getElementById('contact_date').value = new Date().toISOString().split('T')[0];
-                document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ`;
-                loadCustomers();
-            } else {
-                alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានរក្សាទុកទិន្នន័យដោយជោគជ័យ!');
+                    customerForm.reset();
+                    if (editIdElem) editIdElem.value = '';
+                    const contactDateElem = document.getElementById('contact_date');
+                    if (contactDateElem) contactDateElem.value = new Date().toISOString().split('T')[0];
+                    
+                    const saveBtn = document.getElementById('saveBtn');
+                    if (saveBtn) saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ`;
+                    
+                    loadCustomers();
+                    switchSection('table');
+                } else {
+                    alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
+                }
+            } catch (err) {
+                console.error('Error submitting form:', err);
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
             }
-        } catch (err) {
-            console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
-        }
-    });
+        });
+    }
 
     function editCustomer(id) {
         const item = customerDataList.find(c => c.id === id);
         if (!item) return;
 
-        document.getElementById('editId').value = item.id;
-        document.getElementById('customer_name').value = item.customer_name;
-        document.getElementById('phone').value = item.phone;
-        document.getElementById('contact_type').value = item.contact_type;
-        document.getElementById('contact_date').value = item.contact_date ? item.contact_date.split('T')[0] : '';
-        document.getElementById('status').value = item.status;
-        document.getElementById('description').value = item.description;
+        const editIdElem = document.getElementById('editId');
+        if (editIdElem) editIdElem.value = item.id;
+        
+        const cName = document.getElementById('customer_name');
+        const cPhone = document.getElementById('phone');
+        const cType = document.getElementById('contact_type');
+        const cDate = document.getElementById('contact_date');
+        const cStat = document.getElementById('status');
+        const cDesc = document.getElementById('description');
+        const saveBtn = document.getElementById('saveBtn');
 
-        document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យ`;
+        if (cName) cName.value = item.customer_name;
+        if (cPhone) cPhone.value = item.phone;
+        if (cType) cType.value = item.contact_type;
+        if (cDate) cDate.value = item.contact_date ? item.contact_date.split('T')[0] : '';
+        if (cStat) cStat.value = item.status;
+        if (cDesc) cDesc.value = item.description;
+
+        if (saveBtn) saveBtn.innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យ`;
+        
+        // ប្តូរទិដ្ឋភាពទៅកាន់ Form វិញពេលចុចកែប្រែ
+        switchSection('form');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -361,14 +449,17 @@
         }
     }
 
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        const keyword = this.value.toLowerCase();
-        const filtered = customerDataList.filter(item => 
-            (item.customer_name && item.customer_name.toLowerCase().includes(keyword)) || 
-            (item.phone && item.phone.toLowerCase().includes(keyword))
-        );
-        renderTable(filtered);
-    });
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const keyword = this.value.toLowerCase();
+            const filtered = customerDataList.filter(item => 
+                (item.customer_name && item.customer_name.toLowerCase().includes(keyword)) || 
+                (item.phone && item.phone.toLowerCase().includes(keyword))
+            );
+            renderTable(filtered);
+        });
+    }
 </script>
 
 </body>
