@@ -24,26 +24,43 @@
             border-radius: 12px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
         }
-        .btn-back {
-            background-color: #1e3a8a;
-            color: white;
-            font-weight: 500;
-            border-radius: 6px;
-            padding: 8px 16px;
-            text-decoration: none;
+        .top-nav-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .btn-back, .btn-nav-table, .btn-nav-form {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
-            transition: background 0.2s;
+            text-decoration: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            font-family: 'Kantumruy Pro', sans-serif;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            height: 42px;
+            box-sizing: border-box;
         }
-        .btn-back:hover {
-            background-color: #1e40af;
-            color: white;
-        }
+        .btn-back { background-color: #1e3a8a; color: white; }
+        .btn-back:hover { background-color: #1e40af; color: white; }
+
+        .btn-nav-table { background-color: #8b5cf6; color: white; }
+        .btn-nav-table:hover { background-color: #7c3aed; color: white; }
+
+        .btn-nav-form { background-color: #ef4444; color: white; }
+        .btn-nav-form:hover { background-color: #dc2626; color: white; }
+
         .page-title {
             color: #1e3a8a;
             font-weight: 700;
-            margin-top: 20px;
+            margin-top: 10px;
             font-size: 1.75rem;
         }
         .page-subtitle {
@@ -77,6 +94,10 @@
             padding: 10px 12px;
             font-size: 0.9rem;
             font-family: 'Kantumruy Pro', sans-serif;
+            height: 45px;
+        }
+        textarea.form-control {
+            height: auto;
         }
         .form-control:focus, .form-select:focus {
             border-color: #1e3a8a;
@@ -128,17 +149,25 @@
 <body>
 
 <div class="main-container">
-    <!-- ប៊ូតុងត្រឡប់ក្រោយ -->
-    <a href="/" class="btn-back no-print">
-        <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ (Back to Dashboard)
-    </a>
+    <!-- ប៊ូតុងរុករក និងប្តូរទិដ្ឋភាពឱ្យមានទំហំស្មើគ្នា -->
+    <div class="top-nav-buttons no-print">
+        <a href="/" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ
+        </a>
+        <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
+            <i class="fa-solid fa-table-list me-1"></i> មើលតារាងរបាយការណ៍ និងបញ្ជីសរុប
+        </button>
+        <button type="button" id="btnShowForm" class="btn-nav-form" style="display: none;" onclick="switchSection('form')">
+            <i class="fa-solid fa-plus-circle me-1"></i> កត់ត្រាថ្មី (Add New)
+        </button>
+    </div>
 
     <!-- ចំណងជើងទំព័រ -->
     <h2 class="page-title">ការដោះស្រាយបញ្ហា / ការតវ៉ា</h2>
     <p class="page-subtitle">DISPUTE & COMPLAINT RESOLUTION SYSTEM</p>
 
     <!-- Form កត់ត្រាព័ត៌មានបណ្តឹង ឬការតវ៉ាថ្មី -->
-    <div class="section-card no-print">
+    <div class="section-card no-print" id="formDisputeSection">
         <div class="section-card-title"><i class="fa-solid fa-triangle-exclamation me-2"></i> កត់ត្រាទំនាស់ ឬបណ្តឹងតវ៉ាថ្មី (Record New Dispute / Complaint)</div>
         <form id="disputeForm">
             <input type="hidden" id="editId" value="">
@@ -197,7 +226,7 @@
     </div>
 
     <!-- តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ -->
-    <div class="section-card">
+    <div class="section-card" id="historySection" style="display: none;">
         <div class="section-card-title mb-3"><i class="fa-solid fa-table-list me-2"></i> តារាងតាមដានការដោះស្រាយបញ្ហា និងការតវ៉ា (Dispute Records List)</div>
 
         <!-- ផ្នែកស្វែងរក (Search & Filter) -->
@@ -252,16 +281,43 @@
     let customerList = [];
 
     document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('dispute_date').value = new Date().toISOString().split('T')[0];
+        const disputeDateElem = document.getElementById('dispute_date');
+        if (disputeDateElem) {
+            disputeDateElem.value = new Date().toISOString().split('T')[0];
+        }
         loadCustomerDropdown();
         loadDisputes();
     });
+
+    // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+    function switchSection(section) {
+        const formSection = document.getElementById('formDisputeSection');
+        const historySection = document.getElementById('historySection');
+        const btnShowTable = document.getElementById('btnShowTable');
+        const btnShowForm = document.getElementById('btnShowForm');
+
+        if (!formSection || !historySection) return;
+
+        if (section === 'table') {
+            formSection.style.display = 'none';
+            historySection.style.display = 'block';
+            if (btnShowTable) btnShowTable.style.display = 'none';
+            if (btnShowForm) btnShowForm.style.display = 'inline-flex';
+            loadDisputes();
+        } else {
+            historySection.style.display = 'none';
+            formSection.style.display = 'block';
+            if (btnShowForm) btnShowForm.style.display = 'none';
+            if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+        }
+    }
 
     async function loadCustomerDropdown() {
         try {
             const response = await fetch('/api/customer-relations');
             customerList = await response.json();
             const select = document.getElementById('complainant_name');
+            if (!select) return;
             select.innerHTML = '<option value="">-- ជ្រើសរើសអតិថិជន --</option>';
 
             if (Array.isArray(customerList)) {
@@ -277,30 +333,44 @@
         }
     }
 
-    document.getElementById('complainant_name').addEventListener('change', function() {
-        const selectedName = this.value;
-        const found = customerList.find(c => c.customer_name === selectedName);
-        const phoneInput = document.getElementById('phone');
-        if (found) {
-            phoneInput.value = found.phone || '';
-        } else {
-            phoneInput.value = '';
-        }
-    });
+    const complainantNameElem = document.getElementById('complainant_name');
+    if (complainantNameElem) {
+        complainantNameElem.addEventListener('change', function() {
+            const selectedName = this.value;
+            const found = customerList.find(c => c.customer_name === selectedName);
+            const phoneInput = document.getElementById('phone');
+            if (!phoneInput) return;
+            if (found) {
+                phoneInput.value = found.phone || '';
+            } else {
+                phoneInput.value = '';
+            }
+        });
+    }
 
     async function loadDisputes() {
         try {
             const response = await fetch('/api/dispute-resolutions');
-            disputeDataList = await response.json();
-            renderTable(disputeDataList);
+            const data = await response.json();
+            if (Array.isArray(data)) {
+                disputeDataList = data;
+                renderTable(disputeDataList);
+            } else {
+                disputeDataList = [];
+                renderTable([]);
+            }
         } catch (err) {
             console.error('Error loading disputes:', err);
-            document.getElementById('disputeTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            const tbody = document.getElementById('disputeTableBody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            }
         }
     }
 
     function renderTable(data) {
         const tbody = document.getElementById('disputeTableBody');
+        if (!tbody) return;
         tbody.innerHTML = '';
 
         if (!Array.isArray(data) || data.length === 0) {
@@ -320,6 +390,7 @@
             else if (item.severity_level === 'Medium') severityBadge = 'bg-warning text-dark';
             else if (item.severity_level === 'Low') severityBadge = 'bg-info text-dark';
 
+            const rowDate = item.dispute_date ? item.dispute_date.split('T')[0] : '-';
             const row = `
                 <tr>
                     <td>${index + 1}</td>
@@ -327,7 +398,7 @@
                     <td>${item.phone}</td>
                     <td><span class="badge bg-secondary">${item.dispute_type}</span></td>
                     <td><span class="badge ${severityBadge}">${item.severity_level}</span></td>
-                    <td>${item.dispute_date ? item.dispute_date.split('T')[0] : '-'}</td>
+                    <td>${rowDate}</td>
                     <td class="text-start">${item.description || '-'}</td>
                     <td><span class="badge ${statusBadge}">${item.status}</span></td>
                     <td class="no-print">
@@ -340,62 +411,85 @@
         });
     }
 
-    document.getElementById('disputeForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    const disputeForm = document.getElementById('disputeForm');
+    if (disputeForm) {
+        disputeForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const editId = document.getElementById('editId').value;
-        const payload = {
-            complainant_name: document.getElementById('complainant_name').value,
-            phone: document.getElementById('phone').value,
-            dispute_type: document.getElementById('dispute_type').value,
-            severity_level: document.getElementById('severity_level').value,
-            dispute_date: document.getElementById('dispute_date').value,
-            status: document.getElementById('status').value,
-            description: document.getElementById('description').value
-        };
+            const editIdElem = document.getElementById('editId');
+            const editId = editIdElem ? editIdElem.value : '';
+            const payload = {
+                complainant_name: document.getElementById('complainant_name').value,
+                phone: document.getElementById('phone').value,
+                dispute_type: document.getElementById('dispute_type').value,
+                severity_level: document.getElementById('severity_level').value,
+                dispute_date: document.getElementById('dispute_date').value,
+                status: document.getElementById('status').value,
+                description: document.getElementById('description').value
+            };
 
-        try {
-            const url = editId ? `/api/dispute-resolutions/${editId}` : '/api/dispute-resolutions';
-            const method = editId ? 'PUT' : 'POST';
+            try {
+                const url = editId ? `/api/dispute-resolutions/${editId}` : '/api/dispute-resolutions';
+                const method = editId ? 'PUT' : 'POST';
 
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
 
-            const result = await response.json();
-            if (response.ok && result.success) {
-                alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានរក្សាទុកទិន្នន័យដោយជោគជ័យ!');
-                document.getElementById('disputeForm').reset();
-                document.getElementById('editId').value = '';
-                document.getElementById('dispute_date').value = new Date().toISOString().split('T')[0];
-                document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ (Save Data)`;
-                loadCustomerDropdown();
-                loadDisputes();
-            } else {
-                alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានរក្សាទុកទិន្នន័យដោយជោគជ័យ!');
+                    disputeForm.reset();
+                    if (editIdElem) editIdElem.value = '';
+                    const disputeDateElem = document.getElementById('dispute_date');
+                    if (disputeDateElem) disputeDateElem.value = new Date().toISOString().split('T')[0];
+                    
+                    const saveBtn = document.getElementById('saveBtn');
+                    if (saveBtn) saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ (Save Data)`;
+                    
+                    loadCustomerDropdown();
+                    loadDisputes();
+                    switchSection('table');
+                } else {
+                    alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
+                }
+            } catch (err) {
+                console.error('Error submitting form:', err);
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
             }
-        } catch (err) {
-            console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
-        }
-    });
+        });
+    }
 
     function editDispute(id) {
         const item = disputeDataList.find(d => d.id === id);
         if (!item) return;
 
-        document.getElementById('editId').value = item.id;
-        document.getElementById('complainant_name').value = item.complainant_name;
-        document.getElementById('phone').value = item.phone;
-        document.getElementById('dispute_type').value = item.dispute_type;
-        document.getElementById('severity_level').value = item.severity_level;
-        document.getElementById('dispute_date').value = item.dispute_date ? item.dispute_date.split('T')[0] : '';
-        document.getElementById('status').value = item.status;
-        document.getElementById('description').value = item.description;
+        const editIdElem = document.getElementById('editId');
+        if (editIdElem) editIdElem.value = item.id;
+        
+        const compName = document.getElementById('complainant_name');
+        const phone = document.getElementById('phone');
+        const dispType = document.getElementById('dispute_type');
+        const sevLevel = document.getElementById('severity_level');
+        const dispDate = document.getElementById('dispute_date');
+        const stat = document.getElementById('status');
+        const desc = document.getElementById('description');
+        const saveBtn = document.getElementById('saveBtn');
 
-        document.getElementById('saveBtn').innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យ (Update Data)`;
+        if (compName) compName.value = item.complainant_name;
+        if (phone) phone.value = item.phone;
+        if (dispType) dispType.value = item.dispute_type;
+        if (sevLevel) sevLevel.value = item.severity_level;
+        if (dispDate) dispDate.value = item.dispute_date ? item.dispute_date.split('T')[0] : '';
+        if (stat) stat.value = item.status;
+        if (desc) desc.value = item.description;
+
+        if (saveBtn) saveBtn.innerHTML = `<i class="fa-solid fa-sync-alt me-2"></i> កែប្រែទិន្នន័យ (Update Data)`;
+        
+        // ប្តូរទិដ្ឋភាពទៅកាន់ Form វិញពេលចុចកែប្រែ
+        switchSection('form');
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -416,14 +510,17 @@
         }
     }
 
-    document.getElementById('searchInput').addEventListener('keyup', function() {
-        const keyword = this.value.toLowerCase();
-        const filtered = disputeDataList.filter(item => 
-            (item.complainant_name && item.complainant_name.toLowerCase().includes(keyword)) || 
-            (item.phone && item.phone.toLowerCase().includes(keyword))
-        );
-        renderTable(filtered);
-    });
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            const keyword = this.value.toLowerCase();
+            const filtered = disputeDataList.filter(item => 
+                (item.complainant_name && item.complainant_name.toLowerCase().includes(keyword)) || 
+                (item.phone && item.phone.toLowerCase().includes(keyword))
+            );
+            renderTable(filtered);
+        });
+    }
 </script>
 
 </body>
