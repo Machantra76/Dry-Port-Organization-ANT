@@ -510,14 +510,15 @@
     }
 
     function filterDocuments() {
-        const keyword = document.getElementById('searchInput').value.toLowerCase();
+        const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
         const fromDate = document.getElementById('fromDate').value;
         const toDate = document.getElementById('toDate').value;
 
         const filtered = documentDataList.filter(item => {
-            const matchesKeyword = 
-                (item.document_number && item.document_number.toLowerCase().includes(keyword)) || 
-                (item.company_name && item.company_name.toLowerCase().includes(keyword));
+            const docNo = (item.document_number || '').toLowerCase();
+            const compName = (item.company_name || '').toLowerCase();
+            
+            const matchesKeyword = docNo.includes(keyword) || compName.includes(keyword);
 
             let matchesDate = true;
             if (item.document_date) {
@@ -598,7 +599,7 @@
                 alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានចុះបញ្ជីឯកសារថ្មីដោយជោគជ័យ!');
                 resetForm();
                 loadDocuments();
-                switchSection('table'); // ស្វ័យប្រវត្តិប្តូរទៅមើលតារាងក្រោយពេលរក្សាទុក
+                switchSection('table'); 
             } else {
                 alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
             }
@@ -612,7 +613,7 @@
         const item = documentDataList.find(d => d.id === id);
         if (!item) return;
 
-        switchSection('form'); // ប្តូរមកកាន់ Form ពេលចុចកែប្រែ
+        switchSection('form'); 
 
         document.getElementById('editId').value = item.id;
         document.getElementById('document_number').value = item.document_number || '';
