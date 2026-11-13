@@ -118,6 +118,7 @@
             border: 1px solid #e2e8f0;
             margin-bottom: 20px;
         }
+        /* 🌟 កែសម្រួលប៊ូតុងតម្រង (ស្វែងរក, កំណត់ឡើងវិញ, បោះពុម្ព PDF) ឱ្យតូចស្តើង និងប្តូរពណ៌បែប Gradient ថ្មី */
         .btn-action-custom {
             padding: 7px 12px;
             font-size: 0.8rem;
@@ -131,13 +132,32 @@
             transition: all 0.2s;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
         }
-        .btn-filter { background: linear-gradient(135deg, #0284c7, #0369a1); color: white; }
-        .btn-filter:hover { background: linear-gradient(135deg, #0369a1, #075985); color: white; }
-        .btn-reset { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; }
-        .btn-reset:hover { background: linear-gradient(135deg, #d97706, #b45309); color: white; }
-        .btn-print { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
-        .btn-print:hover { background: linear-gradient(135deg, #6d28d9, #5b21b6); color: white; }
+        .btn-filter { 
+            background: linear-gradient(135deg, #0284c7, #0369a1); 
+            color: white; 
+        }
+        .btn-filter:hover { 
+            background: linear-gradient(135deg, #0369a1, #075985); 
+            color: white; 
+        }
+        .btn-reset { 
+            background: linear-gradient(135deg, #f59e0b, #d97706); 
+            color: white; 
+        }
+        .btn-reset:hover { 
+            background: linear-gradient(135deg, #d97706, #b45309); 
+            color: white; 
+        }
+        .btn-print { 
+            background: linear-gradient(135deg, #8b5cf6, #6d28d9); 
+            color: white; 
+        }
+        .btn-print:hover { 
+            background: linear-gradient(135deg, #6d28d9, #5b21b6); 
+            color: white; 
+        }
         
+        /* បន្ទាត់ Progress Bar និងរូបនាវា */
         .progress-container {
             height: 4px; 
             border-radius: 2px;
@@ -190,13 +210,16 @@
 <body>
 
 <div class="main-container">
+    <!-- ប៊ូតុងត្រឡប់ក្រោយ -->
     <a href="/" class="btn-back no-print">
         <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ
     </a>
 
+    <!-- ចំណងជើងទំព័រ -->
     <h2 class="page-title">ការគ្រប់គ្រងការចូល/ចេញទំនិញ</h2>
     <p class="page-subtitle">CARGO GATE-IN / GATE-OUT SYSTEM & TRACKING</p>
 
+    <!-- Form កត់ត្រាថ្មី / កែប្រែ -->
     <div class="section-card no-print">
         <div class="section-card-title" id="formTitle">កត់ត្រាការចូល/ចេញទំនិញថ្មី</div>
         <form id="cargoGateForm">
@@ -248,6 +271,7 @@
                         </optgroup>
                     </select>
                 </div>
+                <!-- ផែទម្លាក់ទំនិញ (Port of Discharge) -->
                 <div class="col-md-4">
                     <label class="form-label">ផែទម្លាក់ទំនិញ (Port of Discharge)</label>
                     <select class="form-select" id="port_discharge" required>
@@ -266,7 +290,7 @@
                     <input type="text" class="form-control" id="voyage_number" placeholder="ឧ. 644N">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង ETA</label>
+                    <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង ETA (បំពេញដោយដៃ)</label>
                     <input type="datetime-local" class="form-control" id="gate_date" required>
                 </div>
                 <div class="col-md-4">
@@ -281,6 +305,7 @@
                     <label class="form-label">Shipping Line</label>
                     <input type="text" class="form-control" id="company_name" placeholder="ឧ. ក្រុមហ៊ុន ឡូជីស្ទិក">
                 </div>
+                <!-- Status -->
                 <div class="col-md-4">
                     <label class="form-label">ស្ថានភាព</label>
                     <select class="form-select" id="status">
@@ -309,9 +334,11 @@
         </form>
     </div>
 
+    <!-- តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ -->
     <div class="section-card">
         <div class="section-card-title mb-3">តារាងតាមដានការចូល/ចេញទំនិញ</div>
 
+        <!-- ផ្នែកតម្រងស្វែងរក (Filter & Search Bar) -->
         <div class="filter-action-bar no-print">
             <div class="row g-3 align-items-end">
                 <div class="col-md-3">
@@ -350,6 +377,7 @@
             </div>
         </div>
 
+        <!-- តារាងបង្ហាញទិន្នន័យ -->
         <div class="table-responsive">
             <table class="table table-bordered table-hover">
                 <thead>
@@ -406,7 +434,7 @@
     </div>
 </div>
 
-<!-- Modal សម្រាប់បង្ហាញប្រវត្តិសកម្មភាព -->
+<!-- Modal សម្រាប់បង្ហាញប្រវត្តិសកម្មភាព (Activity Logs) -->
 <div class="modal fade" id="activityModal" tabindex="-1" aria-labelledby="activityModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
@@ -424,7 +452,7 @@
                                 <th>ល.រ</th>
                                 <th>កាលបរិច្ឆេទ/ម៉ោង</th>
                                 <th>សកម្មភាព</th>
-                                <th>អ្នកធ្វើប្រតិបត្តិការ</th>
+                                <th>អ្នកធ្វើប្រតិបត្តិការ (User / Name)</th>
                                 <th>ព័ត៌មានលម្អិត</th>
                             </tr>
                         </thead>
@@ -454,29 +482,44 @@
         loadCargoGates();
     });
 
+    // 🌟 មុខងារទាញយករូប Logo ក្រុមហ៊ុននាវាស្វ័យប្រវត្តិ
     function getVesselLogo(vesselText) {
         if (!vesselText || vesselText === '-') {
             return `<i class="fa-solid fa-ship text-info me-1"></i>`;
         }
+
         const nameUpper = vesselText.toUpperCase();
         let logoUrl = '';
-        if (nameUpper.includes('MAERSK')) logoUrl = 'https://logo.clearbit.com/maersk.com';
-        else if (nameUpper.includes('COSCO')) logoUrl = 'https://logo.clearbit.com/coscoshipping.com';
-        else if (nameUpper.includes('EVER')) logoUrl = 'https://logo.clearbit.com/evergreen-marine.com';
-        else if (nameUpper.includes('ONE')) logoUrl = 'https://logo.clearbit.com/one-line.com';
-        else if (nameUpper.includes('CMA')) logoUrl = 'https://logo.clearbit.com/cma-cgm.com';
-        else if (nameUpper.includes('MSC')) logoUrl = 'https://logo.clearbit.com/msc.com';
-        else if (nameUpper.includes('YANG MING')) logoUrl = 'https://logo.clearbit.com/yangming.com';
-        else if (nameUpper.includes('OOCL')) logoUrl = 'https://logo.clearbit.com/oocl.com';
-        else if (nameUpper.includes('WAN HAI')) logoUrl = 'https://logo.clearbit.com/wanhai.com';
-        else if (nameUpper.includes('HAPAG')) logoUrl = 'https://logo.clearbit.com/hapag-lloyd.com';
+        if (nameUpper.includes('MAERSK')) {
+            logoUrl = 'https://logo.clearbit.com/maersk.com';
+        } else if (nameUpper.includes('COSCO')) {
+            logoUrl = 'https://logo.clearbit.com/coscoshipping.com';
+        } else if (nameUpper.includes('EVER') || nameUpper.includes('EVERGREEN')) {
+            logoUrl = 'https://logo.clearbit.com/evergreen-marine.com';
+        } else if (nameUpper.includes('ONE') || nameUpper.includes('OCEAN NETWORK')) {
+            logoUrl = 'https://logo.clearbit.com/one-line.com';
+        } else if (nameUpper.includes('CMA')) {
+            logoUrl = 'https://logo.clearbit.com/cma-cgm.com';
+        } else if (nameUpper.includes('MSC')) {
+            logoUrl = 'https://logo.clearbit.com/msc.com';
+        } else if (nameUpper.includes('YANG MING') || nameUpper.includes('YANGMING')) {
+            logoUrl = 'https://logo.clearbit.com/yangming.com';
+        } else if (nameUpper.includes('OOCL')) {
+            logoUrl = 'https://logo.clearbit.com/oocl.com';
+        } else if (nameUpper.includes('WAN HAI') || nameUpper.includes('WANHAI')) {
+            logoUrl = 'https://logo.clearbit.com/wanhai.com';
+        } else if (nameUpper.includes('HAPAG')) {
+            logoUrl = 'https://logo.clearbit.com/hapag-lloyd.com';
+        }
 
         if (logoUrl) {
             return `<img src="${logoUrl}" class="vessel-logo-img" onerror="this.onerror=null; this.replaceWith(Object.assign(document.createElement('i'), {className:'fa-solid fa-ship text-info me-1'}));" alt="Logo">`;
         }
+
         return `<i class="fa-solid fa-ship text-info me-1"></i>`;
     }
 
+    // 🌟 កំណត់ម៉ោងបច្ចុប្បន្ននៅកម្ពុជា (Asia/Phnom_Penh) ទុកជាមូលដ្ឋានគ្រឹះដំបូង (អាចប្តូរដោយដៃបានសេរី)
     function setLocalDateTime() {
         const now = new Date();
         const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -488,6 +531,7 @@
             minute: '2-digit',
             hour12: false
         });
+        
         const parts = formatter.formatToParts(now);
         let year, month, day, hour, minute;
         parts.forEach(p => {
@@ -497,11 +541,14 @@
             if (p.type === 'hour') hour = p.value;
             if (p.type === 'minute') minute = p.value;
         });
+
         document.getElementById('gate_date').value = `${year}-${month}-${day}T${hour}:${minute}`;
     }
 
+    // 🌟 ការដាក់ស្នើទិន្នន័យ (Submit/Edit) ដោយរក្សាថ្ងៃម៉ោងពិតប្រាកដដែលបានជ្រើសរើសដោយដៃ
     document.getElementById('cargoGateForm').addEventListener('submit', async (e) => {
         e.preventDefault();
+
         const editId = document.getElementById('edit_id').value;
         const notesValue = document.getElementById('notes').value;
         const podValue = document.getElementById('port_discharge').value;
@@ -515,6 +562,7 @@
             cargo_code: document.getElementById('cargo_code').value,
             container_number: document.getElementById('container_number').value,
             gate_type: document.getElementById('gate_type').value,
+            // 🌟 ផ្ញើតម្លៃថ្ងៃ និងម៉ោងផ្ទាល់ដោយមិនប្តូរទៅ UTC ធ្វើឱ្យលែងខុសថ្ងៃខែ
             gate_date: rawDateVal ? new Date(rawDateVal).toISOString() : null,
             owner_name: document.getElementById('owner_name').value,
             container_qty: document.getElementById('container_qty').value,
@@ -523,9 +571,45 @@
             notes: fullNotes
         };
 
+        let changeDetails = '';
+        if (editId) {
+            const oldItem = allCargoData.find(item => String(item.id) === String(editId));
+            let changes = [];
+
+            if (oldItem) {
+                if (oldItem.cargo_code !== data.cargo_code) {
+                    changes.push(`កូដទំនិញ៖ "${oldItem.cargo_code || 'N/A'}" ➔ "${data.cargo_code}"`);
+                }
+                if (oldItem.container_number !== data.container_number) {
+                    changes.push(`កុងតឺន័រ៖ "${oldItem.container_number || 'N/A'}" ➔ "${data.container_number}"`);
+                }
+                if (oldItem.status !== data.status) {
+                    changes.push(`ស្ថានភាព៖ "${oldItem.status || 'N/A'}" ➔ "${data.status}"`);
+                }
+                if (oldItem.gate_type !== data.gate_type) {
+                    changes.push(`ផែដើម៖ "${oldItem.gate_type || 'N/A'}" ➔ "${data.gate_type}"`);
+                }
+                if (oldItem.owner_name !== data.owner_name) {
+                    changes.push(`ម្ចាស់ទំនិញ៖ "${oldItem.owner_name || 'N/A'}" ➔ "${data.owner_name}"`);
+                }
+                if (oldItem.container_qty !== data.container_qty) {
+                    changes.push(`ចំនួន Container៖ "${oldItem.container_qty || 'N/A'}" ➔ "${data.container_qty}"`);
+                }
+            }
+
+            if (changes.length > 0) {
+                changeDetails = `បានកែប្រែ៖ ${changes.join(' | ')}`;
+            } else {
+                changeDetails = `បានចុចអាប់ដេតទិន្នន័យ (កូដទំនិញ: ${data.cargo_code}, ស្ថានភាព: ${data.status})`;
+            }
+        } else {
+            changeDetails = `បានបង្កើតថ្មី - កូដទំនិញ: ${data.cargo_code} | កុងតឺន័រ: ${data.container_number || 'N/A'} | ស្ថានភាព: ${data.status}`;
+        }
+
         try {
             let url = '/api/fleet/cargo-gates';
             let method = 'POST';
+
             if (editId) {
                 url = `/api/fleet/cargo-gates/${editId}`;
                 method = 'PUT';
@@ -539,6 +623,21 @@
 
             const result = await response.json();
             if (response.ok && result.success) {
+                const loggedUser = JSON.parse(sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info')) || { username: 'System', full_name: 'Admin' };
+                const userInfoStr = `${loggedUser.full_name} (${loggedUser.username})`;
+
+                const logPayload = {
+                    username: userInfoStr,
+                    action_type: editId ? 'UPDATE_CARGO' : 'CREATE_CARGO',
+                    details: `[Cargo ID: ${editId || result.data?.id || 'New'}] ${changeDetails}`
+                };
+
+                await fetch('/api/fleet/activity-logs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(logPayload)
+                });
+
                 alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានរក្សាទុកទិន្នន័យខ្លោងទ្វារដោយជោគជ័យ!');
                 cancelEdit();
                 loadCargoGates();
@@ -553,8 +652,10 @@
 
     function calculateSeaProgress(gateType, etaDateStr) {
         if (!etaDateStr) return { percent: 0, statusLabel: 'N/A' };
+        
         const now = new Date();
         const eta = new Date(etaDateStr);
+        
         let totalTransitDays = 7;
         if (gateType.includes('China')) totalTransitDays = 9;
         else if (gateType.includes('Korea')) totalTransitDays = 12;
@@ -563,6 +664,7 @@
         else if (gateType.includes('Europe')) totalTransitDays = 28;
 
         const etd = new Date(eta.getTime() - (totalTransitDays * 24 * 60 * 60 * 1000));
+        
         if (now >= eta) return { percent: 100, statusLabel: 'បានមកដល់ផែ (100%)' };
         if (now <= etd) return { percent: 5, statusLabel: 'រៀបចំចេញដំណើរ (5%)' };
 
@@ -570,6 +672,7 @@
         const elapsedTime = now.getTime() - etd.getTime();
         let percent = Math.round((elapsedTime / totalTime) * 100);
         percent = Math.max(5, Math.min(99, percent));
+
         return { percent: percent, statusLabel: `${percent}% លើសមុទ្រ` };
     }
 
@@ -594,6 +697,7 @@
                     const notes = (item.notes || '').toLowerCase();
                     matchesSearch = containerNo.includes(searchVal) || cargoCode.includes(searchVal) || notes.includes(searchVal);
                 }
+
                 if (filterPodVal) {
                     let itemPod = 'Sihanoukville Port (SHV)';
                     if (item.notes && item.notes.includes('POD:')) {
@@ -602,15 +706,18 @@
                     }
                     if (itemPod !== filterPodVal) matchesPod = false;
                 }
+
                 if (fromDateVal || toDateVal) {
                     const itemDate = item.gate_date ? item.gate_date.split('T')[0] : '';
                     if (fromDateVal && itemDate < fromDateVal) matchesDate = false;
                     if (toDateVal && itemDate > toDateVal) matchesDate = false;
                 }
+
                 return matchesSearch && matchesPod && matchesDate;
             });
 
             allCargoData = filteredData; 
+
             const tbody = document.getElementById('cargoGateTableBody');
             tbody.innerHTML = '';
 
@@ -625,8 +732,12 @@
                     const d = new Date(item.gate_date);
                     if (!isNaN(d.getTime())) {
                         formattedDate = new Intl.DateTimeFormat('km-KH', {
-                            year: 'numeric', month: '2-digit', day: '2-digit',
-                            hour: '2-digit', minute: '2-digit', hour12: true,
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true,
                             timeZone: 'Asia/Phnom_Penh'
                         }).format(d);
                     }
@@ -655,18 +766,24 @@
                 else if (gateType.includes('Thailand')) badgeClass = 'bg-warning text-dark';
                 else if (gateType.includes('Vietnam')) badgeClass = 'bg-info text-dark';
                 
+                // 🌟 ពិនិត្យមើល៖ បើ "ទីតាំងលើសមុទ្រ" ស្មើ 100% ឱ្យប្តូរ "ស្ថានភាព" មកជា "បានមកដល់ផែ SHV" ដោយស្វ័យប្រវត្តិ
                 let currentStatus = item.status || '';
                 if (progressInfo.percent === 100 && !currentStatus.includes('CY') && currentStatus !== 'Delivered') {
                     currentStatus = 'បានមកដល់ផែ SHV';
+                    item.status = 'បានមកដល់ផែ SHV'; // អាប់ដេតក្នុង Array ដើម្បីឱ្យ Modal និង Edit បង្ហាញដូចគ្នា
                 }
 
                 let statusBadgeClass = 'bg-secondary';
-                if (currentStatus === 'Berthing') statusBadgeClass = 'bg-warning text-dark';
-                else if (currentStatus === 'Departed') statusBadgeClass = 'bg-dark text-white';
-                else if (currentStatus.includes('បានមកដល់') || currentStatus.includes('CY') || currentStatus === 'Delivered') statusBadgeClass = 'bg-success';
-                else if (currentStatus === 'កំពុង Loading') statusBadgeClass = 'bg-info text-dark';
+                if (currentStatus === 'Berthing') {
+                    statusBadgeClass = 'bg-warning text-dark';
+                } else if (currentStatus === 'Departed') {
+                    statusBadgeClass = 'bg-dark text-white';
+                } else if (currentStatus.includes('បានមកដល់') || currentStatus.includes('CY') || currentStatus === 'Delivered') {
+                    statusBadgeClass = 'bg-success';
+                } else if (currentStatus === 'កំពុង Loading') {
+                    statusBadgeClass = 'bg-info text-dark';
+                }
 
-                // 🌟 កន្លែងភ្ជាប់ លិង (Link) ទៅកាន់ VesselFinder ដោយប្រើប្រាស់ឈ្មោះនាវាដែលបានបញ្ចូលរួច
                 let trackingUrl = `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(vesselText)}`;
                 if (vesselText === '-' || !vesselText) {
                     trackingUrl = `https://www.vesselfinder.com`;
@@ -680,10 +797,7 @@
                         <td class="fw-bold text-primary">${item.cargo_code || '-'}</td>
                         <td>${item.container_number || '-'}</td>
                         <td>
-                            <div class="fw-bold text-dark d-flex align-items-center justify-content-center">
-                                ${vesselLogoHtml} 
-                                <a href="${trackingUrl}" target="_blank" class="text-decoration-none text-primary fw-bold" title="ចុចដើម្បីមើលលើ VesselFinder Free Plan">${vesselText}</a>
-                            </div>
+                            <div class="fw-bold text-dark d-flex align-items-center justify-content-center">${vesselLogoHtml} ${vesselText}</div>
                             <div class="small text-muted">Voy: ${voyText}</div>
                         </td>
                         <td>
@@ -696,11 +810,22 @@
                                 <div class="progress-bar-ocean" style="width: ${progressInfo.percent}%;"></div>
                                 <div class="ship-icon" style="left: ${progressInfo.percent}%;" title="${progressInfo.percent}%">
                                     <svg class="container-ship-img" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
+                                        <!-- ตัวเรือ (Hull) -->
                                         <path d="M 5 32 L 15 42 L 100 42 L 115 32 Z" fill="#475569"/>
                                         <path d="M 3 28 L 117 28 L 115 32 L 5 32 Z" fill="#0284c7"/>
                                         <path d="M 8 32 L 12 40 L 98 40 L 102 32 Z" fill="#0f172a"/>
+                                        <!-- កាប៊ីននាវា (Bridge) -->
                                         <rect x="95" y="14" width="16" height="14" fill="#cbd5e1" rx="2"/>
                                         <rect x="100" y="10" width="8" height="4" fill="#64748b"/>
+                                        <line x1="104" y1="4" x2="104" y2="10" stroke="#64748b" stroke-width="2"/>
+                                        <!-- កុងតឺន័រដឹកលើនាវា (Containers) -->
+                                        <rect x="12" y="16" width="15" height="12" fill="#cbd5e1"/>
+                                        <rect x="14" y="18" width="11" height="8" fill="#e2e8f0"/>
+                                        <rect x="29" y="16" width="15" height="12" fill="#0284c7"/>
+                                        <rect x="46" y="16" width="15" height="12" fill="#cbd5e1"/>
+                                        <rect x="48" y="18" width="11" height="8" fill="#e2e8f0"/>
+                                        <rect x="63" y="16" width="15" height="12" fill="#0284c7"/>
+                                        <rect x="80" y="16" width="13" height="12" fill="#cbd5e1"/>
                                     </svg>
                                 </div>
                             </div>
@@ -709,11 +834,14 @@
                         <td><span class="badge ${statusBadgeClass}">${currentStatus}</span></td>
                         <td class="no-print">
                             <div class="d-flex justify-content-center gap-1">
-                                <a href="${trackingUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="មើលទីតាំងនាវាលើ VesselFinder (Free)">
+                                <a href="${trackingUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="មើលទីតាំងនាវាលើផែនទីសមុទ្រ (Live Map)">
                                     <i class="fa-solid fa-map-location-dot"></i>
                                 </a>
                                 <button class="btn btn-sm btn-outline-info" title="មើលព័ត៌មានលម្អិត" onclick="showDetails(${index})">
                                     <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button class="btn btn-sm btn-outline-secondary" title="មើលប្រវត្តិសកម្មភាព (Activity Log)" onclick="showActivityLog('${item.id}', '${item.cargo_code || ''}')">
+                                    <i class="fa-solid fa-clock-rotate-left"></i>
                                 </button>
                                 <button class="btn btn-sm btn-outline-warning" title="កែប្រែ" onclick="editCargo(${index})">
                                     <i class="fa-solid fa-pen-to-square"></i>
@@ -734,9 +862,25 @@
         const item = allCargoData[index];
         if (!item) return;
 
+        let formattedDate = '-';
+        if (item.gate_date) {
+            const d = new Date(item.gate_date);
+            if (!isNaN(d.getTime())) {
+                formattedDate = new Intl.DateTimeFormat('km-KH', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                    timeZone: 'Asia/Phnom_Penh'
+                }).format(d);
+            }
+        }
+
+        let podText = 'Sihanoukville Port (SHV)';
         let vesselText = '-';
         let voyText = '-';
-        let podText = 'Sihanoukville Port (SHV)';
         let cleanNotes = item.notes || '';
 
         if (item.notes) {
@@ -752,9 +896,13 @@
 
         document.getElementById('modal_cargo_code').innerText = item.cargo_code || '-';
         document.getElementById('modal_container_number').innerText = item.container_number || '-';
-        document.getElementById('modal_vessel_info').innerHTML = `<a href="https://www.vesselfinder.com/vessels?name=${encodeURIComponent(vesselText)}" target="_blank" class="text-primary text-decoration-none fw-bold">${vesselText}</a> (Voy: ${voyText})`;
+        document.getElementById('modal_vessel_info').innerText = `${vesselText} (Voy: ${voyText})`;
         document.getElementById('modal_gate_type').innerText = item.gate_type || '-';
         document.getElementById('modal_port_discharge').innerText = podText;
+        document.getElementById('modal_gate_date').innerText = formattedDate;
+        document.getElementById('modal_owner_name').innerText = item.owner_name || '-';
+        document.getElementById('modal_container_qty').innerText = item.container_qty || '-';
+        document.getElementById('modal_company_name').innerText = item.company_name || '-';
         document.getElementById('modal_status').innerText = item.status || '-';
         document.getElementById('modal_notes').innerText = cleanNotes || 'គ្មានកំណត់សម្គាល់';
 
@@ -766,7 +914,66 @@
             trackingBtn.style.display = 'none';
         }
 
-        new bootstrap.Modal(document.getElementById('detailModal')).show();
+        const detailModal = new bootstrap.Modal(document.getElementById('detailModal'));
+        detailModal.show();
+    }
+
+    async function showActivityLog(cargoId, cargoCode) {
+        document.getElementById('activity_cargo_code').innerText = cargoCode || 'N/A';
+        const tbody = document.getElementById('activityTableBody');
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">កំពុងទាញយកទិន្នន័យ...</td></tr>`;
+
+        const activityModal = new bootstrap.Modal(document.getElementById('activityModal'));
+        activityModal.show();
+
+        try {
+            const response = await fetch(`/api/fleet/cargo-gates/${cargoId}/activities`);
+            
+            if (response.ok) {
+                const activities = await response.json();
+                tbody.innerHTML = '';
+                
+                if (!Array.isArray(activities) || activities.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">មិនទាន់មានប្រវត្តិសកម្មភាពនៅឡើយទេ</td></tr>`;
+                    return;
+                }
+
+                activities.forEach((act, idx) => {
+                    let formattedDate = '-';
+                    if (act.created_at) {
+                        const d = new Date(act.created_at);
+                        if (!isNaN(d.getTime())) {
+                            formattedDate = new Intl.DateTimeFormat('km-KH', {
+                                year: 'numeric',
+                                month: '2-digit',
+                                day: '2-digit',
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                second: '2-digit',
+                                hour12: true,
+                                timeZone: 'Asia/Phnom_Penh'
+                            }).format(d);
+                        }
+                    }
+
+                    const row = `
+                        <tr>
+                            <td>${idx + 1}</td>
+                            <td>${formattedDate}</td>
+                            <td><span class="badge bg-info text-dark">${act.action_type || act.action || '-'}</span></td>
+                            <td class="fw-bold text-primary">${act.username || 'System'}</td>
+                            <td class="text-start">${act.details || '-'}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            } else {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">ពុំទាន់មានទិន្នន័យប្រវត្តិសកម្មភាពសម្រាប់កូដនេះទេ</td></tr>`;
+            }
+        } catch (err) {
+            console.error('Error loading activity logs:', err);
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center text-danger py-3">មិនអាចទាញយកទិន្នន័យប្រវត្តិសកម្មភាពបានទេ</td></tr>`;
+        }
     }
 
     function editCargo(index) {
@@ -780,6 +987,8 @@
         
         let vesselText = '';
         let voyText = '';
+        let cleanNotes = item.notes || '';
+
         if (item.notes) {
             const parts = item.notes.split('|');
             parts.forEach(part => {
@@ -788,13 +997,47 @@
                 if (p.startsWith('Vessel:')) vesselText = p.replace('Vessel:', '').trim();
                 if (p.startsWith('Voy:')) voyText = p.replace('Voy:', '').trim();
             });
+            cleanNotes = parts.slice(3).join('|').trim();
         }
+        
         document.getElementById('vessel_name').value = vesselText !== 'N/A' ? vesselText : '';
         document.getElementById('voyage_number').value = voyText !== 'N/A' ? voyText : '';
+        document.getElementById('notes').value = cleanNotes;
+
+        if (item.gate_date) {
+            const dt = new Date(item.gate_date);
+            if (!isNaN(dt.getTime())) {
+                const formatter = new Intl.DateTimeFormat('en-CA', {
+                    timeZone: 'Asia/Phnom_Penh',
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+                const parts = formatter.formatToParts(dt);
+                let year, month, day, hour, minute;
+                parts.forEach(p => {
+                    if (p.type === 'year') year = p.value;
+                    if (p.type === 'month') month = p.value;
+                    if (p.type === 'day') day = p.value;
+                    if (p.type === 'hour') hour = p.value;
+                    if (p.type === 'minute') minute = p.value;
+                });
+                document.getElementById('gate_date').value = `${year}-${month}-${day}T${hour}:${minute}`;
+            }
+        }
+
+        document.getElementById('owner_name').value = item.owner_name || '';
+        document.getElementById('container_qty').value = item.container_qty || '';
+        document.getElementById('company_name').value = item.company_name || '';
         document.getElementById('status').value = item.status || '';
+
         document.getElementById('formTitle').innerText = 'កែប្រែព័ត៌មានការចូល/ចេញទំនិញ';
         document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកការកែប្រែ';
         document.getElementById('cancelEditBtn').style.display = 'inline-block';
+        
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -804,6 +1047,7 @@
         document.getElementById('formTitle').innerText = 'កត់ត្រាការចូល/ចេញទំនិញថ្មី';
         document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យខ្លោងទ្វារ';
         document.getElementById('cancelEditBtn').style.display = 'none';
+
         setLocalDateTime();
     }
 
