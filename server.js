@@ -1030,21 +1030,6 @@ app.put('/api/users/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
-// ឧទាហរណ៍កូដ Backend សម្រាប់លុបទិន្នន័យ Delivered លើសពី 7 ថ្ងៃដោយស្វ័យប្រវត្តិ
-function cleanOldDeliveredCargo() {
-    const deleteQuery = "DELETE FROM cargo_gates WHERE status = 'Delivered' AND gate_date < NOW() - INTERVAL 7 DAY";
-    db.query(deleteQuery, (err, result) => {
-        if (err) {
-            console.error('Error auto-deleting old delivered cargo:', err);
-        } else if (result.affectedRows > 0) {
-            console.log(`Auto-deleted ${result.affectedRows} old delivered cargo records.`);
-        }
-    });
-}
-
-// ហៅឱ្យវាពិនិត្យលុបពេល Server ចាប់ផ្តើមដំណើរការ ឬរៀងរាល់ ២៤ម៉ោងម្តង
-cleanOldDeliveredCargo();
-setInterval(cleanOldDeliveredCargo, 24 * 60 * 60 * 1000); // រៀងរាល់ ២៤ ម៉ោង
 
 // ==========================================
 // API Routes: កែប្រែ និងលុបចំណាយ (Expenses)
