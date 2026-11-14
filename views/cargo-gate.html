@@ -535,17 +535,13 @@
                 const userRole = (user.role || user.type || '').toLowerCase();
                 const username = (user.username || user.name || '').trim();
                 
-                // ប្រសិនបើជា staff ឬមាន username ឈ្មោះ "Net" (មិនគិតតួអក្សរតូចធំ)
                 if (userRole === 'staff' || username.toLowerCase() === 'net') {
-                    // លាក់ Form កត់ត្រា/កែប្រែទាំងស្រុង
                     const formSection = document.getElementById('formSection');
                     if (formSection) formSection.style.display = 'none';
 
-                    // លាក់ប៊ូតុងប្តូរទៅកាន់ Form កត់ត្រាថ្មី
                     const btnShowForm = document.getElementById('btnShowForm');
                     if (btnShowForm) btnShowForm.style.display = 'none';
 
-                    // បង្ហាញតារាងតាមដានជាស្វ័យប្រវត្តិ
                     switchSection('tracking');
                     return true;
                 }
@@ -562,7 +558,6 @@
         loadCargoGates(isStaff);
     });
 
-    // 🌟 មុខងារប្តូរទិដ្ឋភាពរវាង "កត់ត្រាថ្មី" និង "តារាងតាមដាន"
     function switchSection(section) {
         const userStr = sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info');
         if (userStr) {
@@ -816,6 +811,19 @@
                 let matchesSearch = true;
                 let matchesPod = true;
                 let matchesDate = true;
+                let notExpiredDelivered = true;
+
+                // 🌟 លក្ខខណ្ឌត្រងលាក់ទិន្នន័យ Delivered ដែលលើសពី 7 ថ្ងៃ (Frontend Display Filter)
+                if (item.status === 'Delivered' && item.gate_date) {
+                    const deliveredDate = new Date(item.gate_date);
+                    const now = new Date();
+                    const diffDays = (now - deliveredDate) / (1000 * 60 * 60 * 24);
+                    if (diffDays > 7) {
+                        notExpiredDelivered = false;
+                    }
+                }
+
+                if (!notExpiredDelivered) return false;
 
                 if (searchVal) {
                     const containerNo = (item.container_number || '').toLowerCase();
@@ -929,7 +937,6 @@
                     </button>
                 `;
 
-                // ប្រសិនបើមិនមែនជា Staff ឬ User "Net" ទើបបង្ហាញប៊ូតុងកែប្រែ (Edit)
                 if (!isRestricted) {
                     actionButtonsHtml += `
                         <button class="btn btn-sm btn-outline-warning" title="កែប្រែ" onclick="editCargo(${index})">
