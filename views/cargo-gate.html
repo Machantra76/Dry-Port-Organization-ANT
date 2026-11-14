@@ -339,11 +339,11 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">ឈ្មោះនាវា (Vessel Name)/លេខរៀងឡាន</label>
+                    <label class="form-label">ឈ្មោះនាវា (Vessel Name)</label>
                     <input type="text" class="form-control" id="vessel_name" placeholder="ឧ. MAERSK VERACRUZ">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">លេខជើងនាវា (Voyage No.)/ស្លាកលេខឡាន</label>
+                    <label class="form-label">លេខជើងនាវា (Voyage No.)</label>
                     <input type="text" class="form-control" id="voyage_number" placeholder="ឧ. 644N">
                 </div>
                 <div class="col-md-4">
@@ -370,11 +370,9 @@
                         <option value="ទូរនៅលើកាប៉ាល (On board)">ទូរនៅលើកាប៉ាល (On board)</option>
                         <option value="Berthing">Berthing (កំពុងចូលចត)</option>
                         <option value="Departed">Departed (បានចាកចេញ)</option>
-                        <option value="បានមកដល់ផែ SHV">បានមកដល់ផែ SHV</option>
+                        <option value="បានមកដល់ភ្នំពេញ">បានមកដល់ភ្នំពេញ</option>
                         <option value="ទូរ CY (SHV)">ទូរ CY (SHV)</option>
                         <option value="Delivered">Delivered</option>
-                        <option value="Delivered">នៅលើផ្លូវ</option>
-                        <option value="Delivered">មកដល់ភ្នំពេញ</option>
                     </select>
                 </div>
                 <div class="col-12">
@@ -894,8 +892,9 @@
                 else if (podText.includes('ភ្នំពេញ')) badgeClass = 'bg-success';
                 
                 let currentStatus = item.status || '';
+                // 🌟 កែសម្រួលត្រង់នេះ៖ បើដល់ 100% គឺដូរស្ថានភាពមកជា "បានមកដល់ភ្នំពេញ" ស្វ័យប្រវត្តិ
                 if (progressInfo.percent === 100 && !currentStatus.includes('CY') && currentStatus !== 'Delivered') {
-                    currentStatus = progressInfo.isRoad ? 'បានមកដល់គោលដៅ' : 'បានមកដល់ផែ SHV';
+                    currentStatus = 'បានមកដល់ភ្នំពេញ';
                     item.status = currentStatus;
                 }
 
@@ -917,7 +916,7 @@
 
                 const vesselLogoHtml = getVesselLogo(vesselText);
 
-                // 🌟 រូបតំណាងឡានដឹកទំនិញ V1 (Truck V1 SVG) ដែលដាក់ឱ្យរត់នៅលើរបារយ៉ាងស្អាត
+                // រូបតំណាងឡានដឹកទំនិញ V1 (Truck V1 SVG)
                 let vehicleIconHtml = '';
                 if (progressInfo.isRoad) {
                     vehicleIconHtml = `
