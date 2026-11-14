@@ -339,12 +339,12 @@
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">ឈ្មោះនាវា (Vessel Name)</label>
-                    <input type="text" class="form-control" id="vessel_name" placeholder="ឧ. MAERSK VERACRUZ">
+                    <label class="form-label">ឈ្មោះនាវា / ក្រុមហ៊ុនដឹកជញ្ជូន (Vessel / Transporter)</label>
+                    <input type="text" class="form-control" id="vessel_name" placeholder="ឧ. MAERSK VERACRUZ ឬ ឈ្មោះក្រុមហ៊ុនឡាន">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">លេខជើងនាវា (Voyage No.)</label>
-                    <input type="text" class="form-control" id="voyage_number" placeholder="ឧ. 644N">
+                    <label class="form-label">លេខជើងនាវា / លេខឡាន (Voyage / Truck No.)</label>
+                    <input type="text" class="form-control" id="voyage_number" placeholder="ឧ. 644N ឬ លេខផ្លាកឡាន">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង ETA (បំពេញដោយដៃ)</label>
@@ -359,7 +359,7 @@
                     <input type="text" class="form-control" id="container_qty" placeholder="ឧ. 1 Ctn" required>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">Shipping Line</label>
+                    <label class="form-label">Shipping Line / ក្រុមហ៊ុនដឹកជញ្ជូន</label>
                     <input type="text" class="form-control" id="company_name" placeholder="ឧ. ក្រុមហ៊ុន ឡូជីស្ទិក">
                 </div>
                 <!-- Status -->
@@ -444,7 +444,7 @@
                         <th class="table-custom-header">ល.រ</th>
                         <th class="table-custom-header">កូដទំនិញ</th>
                         <th class="table-custom-header">កុងតឺន័រ/BL</th>
-                        <th class="table-custom-header">នាវា (Vessel / Voy)</th>
+                        <th class="table-custom-header">មធ្យោបាយដឹកជញ្ជូន (នាវា / ឡាន)</th>
                         <th class="table-custom-header">ផែដើម & គោលដៅ</th>
                         <th class="table-custom-header">កាលបរិច្ឆេទ ETA</th>
                         <th class="table-custom-header" style="min-width: 180px;">ទីតាំង (សមុទ្រ / ផ្លូវគោក)</th>
@@ -473,7 +473,7 @@
             <div class="modal-body">
                 <p><strong>កូដទំនិញ:</strong> <span id="modal_cargo_code" class="text-primary"></span></p>
                 <p><strong>លេខកុងតឺន័រ/BL:</strong> <span id="modal_container_number"></span></p>
-                <p><strong>ឈ្មោះនាវា (Vessel/Voy):</strong> <span id="modal_vessel_info" class="fw-bold text-dark"></span></p>
+                <p><strong>មធ្យោបាយដឹកជញ្ជូន:</strong> <span id="modal_vessel_info" class="fw-bold text-dark"></span></p>
                 <p><strong>ផែដើម (POL):</strong> <span id="modal_gate_type"></span></p>
                 <p><strong>ផែគោលដៅ (POD):</strong> <span id="modal_port_discharge" class="text-success fw-bold"></span></p>
                 <p><strong>កាលបរិច្ឆេទ & ម៉ោង ETA:</strong> <span id="modal_gate_date"></span></p>
@@ -485,7 +485,7 @@
             </div>
             <div class="modal-footer">
                 <a href="#" id="modal_tracking_btn" target="_blank" class="btn btn-info btn-sm text-white" style="display:none;">
-                    <i class="fa-solid fa-map-location-dot me-1"></i> មើលទីតាំងនាវា (Live Map)
+                    <i class="fa-solid fa-map-location-dot me-1"></i> មើលទីតាំងលើផែនទី (Google Maps)
                 </a>
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">បិទ</button>
             </div>
@@ -892,7 +892,6 @@
                 else if (podText.includes('ភ្នំពេញ')) badgeClass = 'bg-success';
                 
                 let currentStatus = item.status || '';
-                // 🌟 កែសម្រួលត្រង់នេះ៖ បើដល់ 100% គឺដូរស្ថានភាពមកជា "បានមកដល់ភ្នំពេញ" ស្វ័យប្រវត្តិ
                 if (progressInfo.percent === 100 && !currentStatus.includes('CY') && currentStatus !== 'Delivered') {
                     currentStatus = 'បានមកដល់ភ្នំពេញ';
                     item.status = currentStatus;
@@ -914,7 +913,22 @@
                     trackingUrl = `https://www.google.com/maps`;
                 }
 
-                const vesselLogoHtml = getVesselLogo(vesselText);
+                // 🌟 កែសម្រួលត្រង់នេះ៖ បើជាផ្លូវគោក មិនបង្ហាញឈ្មោះនាវា/រូបនាវា គឺបង្ហាញរូបឡាន និងអត្ថបទផ្លូវគោកជំនួសវិញ
+                let vesselDisplayHtml = '';
+                if (progressInfo.isRoad) {
+                    vesselDisplayHtml = `
+                        <div class="fw-bold text-dark d-flex align-items-center justify-content-center">
+                            <i class="fa-solid fa-truck-fast text-warning me-1"></i> ${vesselText !== '-' ? vesselText : 'ដឹកជញ្ជូនតាមផ្លូវគោក'}
+                        </div>
+                        <div class="small text-muted">Truck/Ref: ${voyText !== '-' ? voyText : 'N/A'}</div>
+                    `;
+                } else {
+                    const vesselLogoHtml = getVesselLogo(vesselText);
+                    vesselDisplayHtml = `
+                        <div class="fw-bold text-dark d-flex align-items-center justify-content-center">${vesselLogoHtml} ${vesselText}</div>
+                        <div class="small text-muted">Voy: ${voyText}</div>
+                    `;
+                }
 
                 // រូបតំណាងឡានដឹកទំនិញ V1 (Truck V1 SVG)
                 let vehicleIconHtml = '';
@@ -987,8 +1001,7 @@
                         <td class="fw-bold text-primary">${item.cargo_code || '-'}</td>
                         <td>${item.container_number || '-'}</td>
                         <td>
-                            <div class="fw-bold text-dark d-flex align-items-center justify-content-center">${vesselLogoHtml} ${vesselText}</div>
-                            <div class="small text-muted">Voy: ${voyText}</div>
+                            ${vesselDisplayHtml}
                         </td>
                         <td>
                             <div><span class="badge ${badgeClass}">${gateType}</span></div>
@@ -1059,9 +1072,17 @@
             cleanNotes = parts.slice(3).join('|').trim();
         }
 
+        const isRoad = (podText === 'កំពង់សោម-ភ្នំពេញ' || podText === 'បាវិត-ភ្នំពេញ');
+
         document.getElementById('modal_cargo_code').innerText = item.cargo_code || '-';
         document.getElementById('modal_container_number').innerText = item.container_number || '-';
-        document.getElementById('modal_vessel_info').innerText = `${vesselText} (Voy: ${voyText})`;
+        
+        if (isRoad) {
+            document.getElementById('modal_vessel_info').innerText = `ផ្លូវគោក: ${vesselText} (Truck/Ref: ${voyText})`;
+        } else {
+            document.getElementById('modal_vessel_info').innerText = `${vesselText} (Voy: ${voyText})`;
+        }
+
         document.getElementById('modal_gate_type').innerText = item.gate_type || '-';
         document.getElementById('modal_port_discharge').innerText = podText;
         document.getElementById('modal_gate_date').innerText = formattedDate;
@@ -1072,8 +1093,13 @@
         document.getElementById('modal_notes').innerText = cleanNotes || 'គ្មានកំណត់សម្គាល់';
 
         const trackingBtn = document.getElementById('modal_tracking_btn');
-        if (vesselText && vesselText !== '-') {
+        if (vesselText && vesselText !== '-' && !isRoad) {
             trackingBtn.href = `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(vesselText)}`;
+            trackingBtn.innerHTML = `<i class="fa-solid fa-map-location-dot me-1"></i> មើលទីតាំងនាវា (Live Map)`;
+            trackingBtn.style.display = 'inline-block';
+        } else if (isRoad) {
+            trackingBtn.href = `https://www.google.com/maps`;
+            trackingBtn.innerHTML = `<i class="fa-solid fa-map-location-dot me-1"></i> មើលទីតាំងលើ Google Maps`;
             trackingBtn.style.display = 'inline-block';
         } else {
             trackingBtn.style.display = 'none';
