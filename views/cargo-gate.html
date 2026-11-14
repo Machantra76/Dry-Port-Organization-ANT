@@ -336,6 +336,7 @@
                         <option value="Laem Chabang Port (TH)">ផែ លែមឆាបាង (TH Port)</option>
                         <option value="កំពង់សោម-ភ្នំពេញ">កំពង់សោម-ភ្នំពេញ (ផ្លូវគោក)</option>
                         <option value="បាវិត-ភ្នំពេញ">បាវិត-ភ្នំពេញ (ផ្លូវគោក)</option>
+                        <option value="ពី VN មក បាវិត">ពី VN មក បាវិត (ផ្លូវគោក)</option>
                     </select>
                 </div>
                 <div class="col-md-4">
@@ -413,6 +414,7 @@
                         <option value="Laem Chabang Port (TH)">TH Port</option>
                         <option value="កំពង់សោម-ភ្នំពេញ">កំពង់សោម-ភ្នំពេញ</option>
                         <option value="បាវិត-ភ្នំពេញ">បាវិត-ភ្នំពេញ</option>
+                        <option value="ពី VN មក បាវិត">ពី VN មក បាវិត</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -743,13 +745,14 @@
     function calculateProgress(podText, gateType, etaDateStr) {
         if (!etaDateStr) return { percent: 0, statusLabel: 'N/A', isRoad: false };
         
-        const isRoad = (podText === 'កំពង់សោម-ភ្នំពេញ' || podText === 'បាវិត-ភ្នំពេញ');
+        // 🌟 កែសម្រួលត្រង់នេះ៖ បន្ថែម "ពី VN មក បាវិត" ឱ្យចូលក្នុងក្រុមផ្លូវគោក (Road)
+        const isRoad = (podText === 'កំពង់សោម-ភ្នំពេញ' || podText === 'បាវិត-ភ្នំពេញ' || podText === 'ពី VN មក បាវិត');
         const now = new Date();
         const eta = new Date(etaDateStr);
         
         let totalTransitDays = 7;
         if (isRoad) {
-            totalTransitDays = (podText === 'បាវិត-ភ្នំពេញ') ? 1 : 2;
+            totalTransitDays = (podText === 'បាវិត-ភ្នំពេញ' || podText === 'ពី VN មក បាវិត') ? 1 : 2;
         } else {
             if (gateType.includes('China')) totalTransitDays = 9;
             else if (gateType.includes('Korea')) totalTransitDays = 12;
@@ -890,12 +893,12 @@
                 else if (gateType.includes('Korea')) badgeClass = 'bg-dark';
                 else if (gateType.includes('Thailand')) badgeClass = 'bg-warning text-dark';
                 else if (gateType.includes('Vietnam')) badgeClass = 'bg-info text-dark';
-                else if (podText.includes('ភ្នំពេញ')) badgeClass = 'bg-success';
+                else if (podText.includes('ភ្នំពេញ') || podText.includes('បាវិត')) badgeClass = 'bg-success';
                 
                 let currentStatus = item.status || '';
                 
-                // 🌟 កែសម្រួលត្រង់នេះ៖ 
-                // - បើជាផ្លូវគោក ដល់ 100% គឺ "បានមកដល់ភ្នំពេញ"
+                // 🌟 លក្ខខណ្ឌ 100%: 
+                // - បើជាផ្លូវគោក (កំពង់សោម-ភ្នំពេញ, បាវិត-ភ្នំពេញ, ឬ ពី VN មក បាវិត) ដល់ 100% គឺ "បានមកដល់ភ្នំពេញ"
                 // - បើជាផ្លូវទឹក ដល់ 100% គឺ "បានមកដល់ផែ"
                 if (progressInfo.percent === 100 && !currentStatus.includes('CY') && currentStatus !== 'Delivered') {
                     if (progressInfo.isRoad) {
@@ -1075,7 +1078,7 @@
             cleanNotes = parts.slice(3).join('|').trim();
         }
 
-        const isRoad = (podText === 'កំពង់សោម-ភ្នំពេញ' || podText === 'បាវិត-ភ្នំពេញ');
+        const isRoad = (podText === 'កំពង់សោម-ភ្នំពេញ' || podText === 'បាវិត-ភ្នំពេញ' || podText === 'ពី VN មក បាវិត');
 
         document.getElementById('modal_cargo_code').innerText = item.cargo_code || '-';
         document.getElementById('modal_container_number').innerText = item.container_number || '-';
