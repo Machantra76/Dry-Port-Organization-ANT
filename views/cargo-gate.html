@@ -372,6 +372,7 @@
                         <option value="Berthing">Berthing (កំពុងចូលចត)</option>
                         <option value="Departed">Departed (បានចាកចេញ)</option>
                         <option value="បានមកដល់ភ្នំពេញ">បានមកដល់ភ្នំពេញ</option>
+                        <option value="បានមកដល់បាវិត">បានមកដល់បាវិត</option>
                         <option value="បានមកដល់ផែ">បានមកដល់ផែ</option>
                         <option value="ទូរ CY (SHV)">ទូរ CY (SHV)</option>
                         <option value="Delivered">Delivered</option>
@@ -745,7 +746,6 @@
     function calculateProgress(podText, gateType, etaDateStr) {
         if (!etaDateStr) return { percent: 0, statusLabel: 'N/A', isRoad: false };
         
-        // 🌟 កែសម្រួលត្រង់នេះ៖ បន្ថែម "ពី VN មក បាវិត" ឱ្យចូលក្នុងក្រុមផ្លូវគោក (Road)
         const isRoad = (podText === 'កំពង់សោម-ភ្នំពេញ' || podText === 'បាវិត-ភ្នំពេញ' || podText === 'ពី VN មក បាវិត');
         const now = new Date();
         const eta = new Date(etaDateStr);
@@ -897,11 +897,14 @@
                 
                 let currentStatus = item.status || '';
                 
-                // 🌟 លក្ខខណ្ឌ 100%: 
-                // - បើជាផ្លូវគោក (កំពង់សោម-ភ្នំពេញ, បាវិត-ភ្នំពេញ, ឬ ពី VN មក បាវិត) ដល់ 100% គឺ "បានមកដល់ភ្នំពេញ"
+                // 🌟 កែសម្រួលលក្ខខណ្ឌ 100% ត្រង់នេះ៖
+                // - បើជា "ពី VN មក បាវិត" ដល់ 100% គឺ "បានមកដល់បាវិត"
+                // - បើជា "កំពង់សោម-ភ្នំពេញ" ឬ "បាវិត-ភ្នំពេញ" ដល់ 100% គឺ "បានមកដល់ភ្នំពេញ"
                 // - បើជាផ្លូវទឹក ដល់ 100% គឺ "បានមកដល់ផែ"
                 if (progressInfo.percent === 100 && !currentStatus.includes('CY') && currentStatus !== 'Delivered') {
-                    if (progressInfo.isRoad) {
+                    if (podText === 'ពី VN មក បាវិត') {
+                        currentStatus = 'បានមកដល់បាវិត';
+                    } else if (progressInfo.isRoad) {
                         currentStatus = 'បានមកដល់ភ្នំពេញ';
                     } else {
                         currentStatus = 'បានមកដល់ផែ';
