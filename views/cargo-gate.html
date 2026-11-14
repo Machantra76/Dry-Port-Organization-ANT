@@ -268,7 +268,7 @@
     <h2 class="page-title">ការគ្រប់គ្រងការចូល/ចេញទំនិញ</h2>
     <p class="page-subtitle">CARGO GATE-IN / GATE-OUT SYSTEM & TRACKING</p>
 
-    <!-- ផ្នែកទី ១: Form កត់ត្រាថ្មី / កែប្រែ (នឹងលាក់ស្វ័យប្រវត្តិកុំឱ្យ Staff ឃើញ ឬកែប្រែ) -->
+    <!-- ផ្នែកទី ១: Form កត់ត្រាថ្មី / កែប្រែ -->
     <div id="formSection" class="section-card no-print">
         <div class="section-card-title" id="formTitle">កត់ត្រាការចូល/ចេញទំនិញថ្មី</div>
         <form id="cargoGateForm">
@@ -384,7 +384,7 @@
     </div>
 
     <!-- ផ្នែកទី ២: តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ -->
-    <div id="trackingSection" class="section-card">
+    <div id="trackingSection" class="section-card" style="display: none;">
         <div class="section-card-title mb-3">តារាងតាមដានការចូល/ចេញទំនិញ</div>
 
         <!-- ផ្នែកតម្រងស្វែងរក (Filter & Search Bar) -->
@@ -526,16 +526,17 @@
 <script>
     let allCargoData = [];
 
-    // 🌟 មុខងារពិនិត្យសិទ្ធិ User (Staff Check)
+    // 🌟 មុខងារពិនិត្យសិទ្ធិ User ផ្អែកលើ Role ឬ Username ជាក់លាក់ ("Net")
     function checkUserRole() {
         try {
             const userStr = sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info');
             if (userStr) {
                 const user = JSON.parse(userStr);
-                // ពិនិត្យថាតើ role ជា staff ឬអត់ (អាចកែសម្រួលលក្ខខណ្ឌបន្ថែមតាម field ក្នុង database របស់អ្នក ដូចជា role, type ជាដើម)
                 const userRole = (user.role || user.type || '').toLowerCase();
+                const username = (user.username || user.name || '').trim();
                 
-                if (userRole === 'staff') {
+                // ប្រសិនបើជា staff ឬមាន username ឈ្មោះ "Net" (មិនគិតតួអក្សរតូចធំ)
+                if (userRole === 'staff' || username.toLowerCase() === 'net') {
                     // លាក់ Form កត់ត្រា/កែប្រែទាំងស្រុង
                     const formSection = document.getElementById('formSection');
                     if (formSection) formSection.style.display = 'none';
@@ -563,11 +564,13 @@
 
     // 🌟 មុខងារប្តូរទិដ្ឋភាពរវាង "កត់ត្រាថ្មី" និង "តារាងតាមដាន"
     function switchSection(section) {
-        // ប្រសិនបើជា staff មិនអនុញ្ញាតឱ្យបើក Form ទេ។
         const userStr = sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info');
         if (userStr) {
             const user = JSON.parse(userStr);
-            if ((user.role || user.type || '').toLowerCase() === 'staff' && section === 'form') {
+            const userRole = (user.role || user.type || '').toLowerCase();
+            const username = (user.username || user.name || '').trim().toLowerCase();
+            
+            if ((userRole === 'staff' || username === 'net') && section === 'form') {
                 alert('អ្នកគ្មានសិទ្ធិកត់ត្រា ឬកែប្រែទិន្នន័យទេ។');
                 return;
             }
@@ -580,15 +583,15 @@
 
         if (section === 'tracking') {
             if (formSection) formSection.style.display = 'none';
-            trackingSection.style.display = 'block';
+            if (trackingSection) trackingSection.style.display = 'block';
             if (btnShowTracking) btnShowTracking.style.display = 'none';
-            // បើមិនមែន staff ទើបបង្ហាញប៊ូតុងកត់ត្រាថ្មី
-            if (btnShowForm && (!userStr || JSON.parse(userStr).role !== 'staff')) {
+            
+            if (btnShowForm && (!userStr || (JSON.parse(userStr).role !== 'staff' && (JSON.parse(userStr).username || JSON.parse(userStr).name || '').toLowerCase() !== 'net'))) {
                 btnShowForm.style.display = 'inline-flex';
             }
             loadCargoGates();
         } else {
-            trackingSection.style.display = 'none';
+            if (trackingSection) trackingSection.style.display = 'none';
             if (formSection) formSection.style.display = 'block';
             if (btnShowForm) btnShowForm.style.display = 'none';
             if (btnShowTracking) btnShowTracking.style.display = 'inline-flex';
@@ -783,15 +786,16 @@
         return { percent: percent, statusLabel: `${percent}% លើសមុទ្រ` };
     }
 
-    async function loadCargoGates(isStaffUser = false) {
+    async function loadCargoGates(isRestrictedUser = false) {
         try {
-            // ពិនិត្យសិទ្ធិម្តងទៀតពេលផ្ទុកតារាង
             const userStr = sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info');
-            let isStaff = isStaffUser;
+            let isRestricted = isRestrictedUser;
             if (userStr) {
                 const user = JSON.parse(userStr);
-                if ((user.role || user.type || '').toLowerCase() === 'staff') {
-                    isStaff = true;
+                const userRole = (user.role || user.type || '').toLowerCase();
+                const username = (user.username || user.name || '').trim().toLowerCase();
+                if (userRole === 'staff' || username === 'net') {
+                    isRestricted = true;
                 }
             }
 
@@ -913,7 +917,6 @@
 
                 const vesselLogoHtml = getVesselLogo(vesselText);
 
-                // 🌟 បង្កើតប៊ូតុងសកម្មភាព៖ បើជា staff គឺលាក់ប៊ូតុងកែប្រែ (Edit Button)
                 let actionButtonsHtml = `
                     <a href="${trackingUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="មើលទីតាំងនាវាលើផែនទីសមុទ្រ (Live Map)">
                         <i class="fa-solid fa-map-location-dot"></i>
@@ -926,8 +929,8 @@
                     </button>
                 `;
 
-                // ប្រសិនបើមិនមែនជា staff (ឧ. Admin ឬ Manager) ទើបបង្ហាញប៊ូតុងកែប្រែ (Edit)
-                if (!isStaff) {
+                // ប្រសិនបើមិនមែនជា Staff ឬ User "Net" ទើបបង្ហាញប៊ូតុងកែប្រែ (Edit)
+                if (!isRestricted) {
                     actionButtonsHtml += `
                         <button class="btn btn-sm btn-outline-warning" title="កែប្រែ" onclick="editCargo(${index})">
                             <i class="fa-solid fa-pen-to-square"></i>
@@ -1110,11 +1113,12 @@
     }
 
     function editCargo(index) {
-        // ការពារបន្ថែមមិនឱ្យ Staff បើក Form កែប្រែ
         const userStr = sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info');
         if (userStr) {
             const user = JSON.parse(userStr);
-            if ((user.role || user.type || '').toLowerCase() === 'staff') {
+            const userRole = (user.role || user.type || '').toLowerCase();
+            const username = (user.username || user.name || '').trim().toLowerCase();
+            if (userRole === 'staff' || username === 'net') {
                 alert('អ្នកគ្មានសិទ្ធិកែប្រែទិន្នន័យទេ។');
                 return;
             }
