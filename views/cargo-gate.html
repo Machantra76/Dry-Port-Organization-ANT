@@ -371,7 +371,7 @@
                         <option value="Berthing">Berthing (កំពុងចូលចត)</option>
                         <option value="Departed">Departed (បានចាកចេញ)</option>
                         <option value="បានមកដល់ភ្នំពេញ">បានមកដល់ភ្នំពេញ</option>
-                        <option value="បានមកដល់ផែ SHV">បានមកដល់ផែ SHV</option>
+                        <option value="បានមកដល់ផែ">បានមកដល់ផែ</option>
                         <option value="ទូរ CY (SHV)">ទូរ CY (SHV)</option>
                         <option value="Delivered">Delivered</option>
                     </select>
@@ -894,14 +894,14 @@
                 
                 let currentStatus = item.status || '';
                 
-                // 🌟 បែងចែកដាច់ស្រឡះ៖ 
-                // - បើជាផ្លូវគោក (កំពង់សោម-ភ្នំពេញ ឬ បាវិត-ភ្នំពេញ) ដល់ 100% គឺ "បានមកដល់ភ្នំពេញ"
-                // - បើជាផ្លូវទឹក ចូលផែ SHV ដល់ 100% គឺ "បានមកដល់ផែ SHV"
+                // 🌟 កែសម្រួលត្រង់នេះ៖ 
+                // - បើជាផ្លូវគោក ដល់ 100% គឺ "បានមកដល់ភ្នំពេញ"
+                // - បើជាផ្លូវទឹក ដល់ 100% គឺ "បានមកដល់ផែ"
                 if (progressInfo.percent === 100 && !currentStatus.includes('CY') && currentStatus !== 'Delivered') {
                     if (progressInfo.isRoad) {
                         currentStatus = 'បានមកដល់ភ្នំពេញ';
                     } else {
-                        currentStatus = 'បានមកដល់ផែ SHV';
+                        currentStatus = 'បានមកដល់ផែ';
                     }
                     item.status = currentStatus;
                 }
