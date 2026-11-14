@@ -488,7 +488,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ២៧. តារាងការគ្រប់គ្រងឯកសារគយ (Customs Document Management) - បន្ថែម Columns សម្រាប់ DO PDF
+        // ២៧. តារាងការគ្រប់គ្រងឯកសារគយ (Customs Document Management)
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_documents (
                 id SERIAL PRIMARY KEY,
@@ -513,7 +513,7 @@ async function initializeDatabase() {
         await client.query(`ALTER TABLE customs_documents ADD COLUMN IF NOT EXISTS has_do_pdf BOOLEAN DEFAULT FALSE;`);
         await client.query(`ALTER TABLE customs_documents DROP CONSTRAINT IF EXISTS customs_documents_document_number_key;`).catch(() => {});
 
-        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management) - បន្ថែម Columns សម្រាប់ Manifest PDF
+        // ២៨. តារាងការគ្រប់គ្រងបញ្ចូលទិន្នន័យប្រព័ន្ធគយ (Customs System Data Management)
         await client.query(`
             CREATE TABLE IF NOT EXISTS customs_system_data (
                 id SERIAL PRIMARY KEY,
@@ -1030,6 +1030,22 @@ app.put('/api/users/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'Server error' });
     }
 });
+
+// 🌟 កូដ Backend សម្រាប់លុបទិន្នន័យ Delivered លើសពី 7 ថ្ងៃដោយស្វ័យប្រវត្តិ (ដូរពី db.query មកជា pool.query)
+function cleanOldDeliveredCargo() {
+    const deleteQuery = "DELETE FROM cargo_gates WHERE status = 'Delivered' AND gate_date < NOW() - INTERVAL 7 DAY";
+    pool.query(deleteQuery, (err, result) => {
+        if (err) {
+            console.error('Error auto-deleting old delivered cargo:', err);
+        } else if (result.affectedRows > 0 || (result.rowCount && result.rowCount > 0)) {
+            console.log(`Auto-deleted old delivered cargo records.`);
+        }
+    });
+}
+
+// ហៅឱ្យវាពិនិត្យលុបពេល Server ចាប់ផ្តើមដំណើរការ និងរៀងរាល់ ២៤ម៉ោងម្តង
+cleanOldDeliveredCargo();
+setInterval(cleanOldDeliveredCargo, 24 * 60 * 60 * 1000); // រៀងរាល់ ២៤ ម៉ោង
 
 // ==========================================
 // API Routes: កែប្រែ និងលុបចំណាយ (Expenses)
