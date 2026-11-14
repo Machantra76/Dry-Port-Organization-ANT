@@ -162,7 +162,6 @@
             border: 1px solid #e2e8f0;
             margin-bottom: 20px;
         }
-        /* ប៊ូតុងតម្រង (ស្វែងរក, កំណត់ឡើងវិញ, បោះពុម្ព PDF) */
         .btn-action-custom {
             padding: 7px 12px;
             font-size: 0.8rem;
@@ -200,8 +199,6 @@
             background: linear-gradient(135deg, #6d28d9, #5b21b6); 
             color: white; 
         }
-        
-        /* បន្ទាត់ Progress Bar និងរូបនាវា */
         .progress-container {
             height: 4px; 
             border-radius: 2px;
@@ -271,7 +268,7 @@
     <h2 class="page-title">ការគ្រប់គ្រងការចូល/ចេញទំនិញ</h2>
     <p class="page-subtitle">CARGO GATE-IN / GATE-OUT SYSTEM & TRACKING</p>
 
-    <!-- ផ្នែកទី ១: Form កត់ត្រាថ្មី / កែប្រែ -->
+    <!-- ផ្នែកទី ១: Form កត់ត្រាថ្មី / កែប្រែ (នឹងលាក់ស្វ័យប្រវត្តិកុំឱ្យ Staff ឃើញ ឬកែប្រែ) -->
     <div id="formSection" class="section-card no-print">
         <div class="section-card-title" id="formTitle">កត់ត្រាការចូល/ចេញទំនិញថ្មី</div>
         <form id="cargoGateForm">
@@ -386,8 +383,8 @@
         </form>
     </div>
 
-    <!-- ផ្នែកទី ២: តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ (លាក់ទុកជាមុន) -->
-    <div id="trackingSection" class="section-card" style="display: none;">
+    <!-- ផ្នែកទី ២: តារាងបង្ហាញទិន្នន័យ និងរបាយការណ៍ -->
+    <div id="trackingSection" class="section-card">
         <div class="section-card-title mb-3">តារាងតាមដានការចូល/ចេញទំនិញ</div>
 
         <!-- ផ្នែកតម្រងស្វែងរក (Filter & Search Bar) -->
@@ -529,33 +526,75 @@
 <script>
     let allCargoData = [];
 
+    // 🌟 មុខងារពិនិត្យសិទ្ធិ User (Staff Check)
+    function checkUserRole() {
+        try {
+            const userStr = sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                // ពិនិត្យថាតើ role ជា staff ឬអត់ (អាចកែសម្រួលលក្ខខណ្ឌបន្ថែមតាម field ក្នុង database របស់អ្នក ដូចជា role, type ជាដើម)
+                const userRole = (user.role || user.type || '').toLowerCase();
+                
+                if (userRole === 'staff') {
+                    // លាក់ Form កត់ត្រា/កែប្រែទាំងស្រុង
+                    const formSection = document.getElementById('formSection');
+                    if (formSection) formSection.style.display = 'none';
+
+                    // លាក់ប៊ូតុងប្តូរទៅកាន់ Form កត់ត្រាថ្មី
+                    const btnShowForm = document.getElementById('btnShowForm');
+                    if (btnShowForm) btnShowForm.style.display = 'none';
+
+                    // បង្ហាញតារាងតាមដានជាស្វ័យប្រវត្តិ
+                    switchSection('tracking');
+                    return true;
+                }
+            }
+        } catch (e) {
+            console.error('Error checking user role:', e);
+        }
+        return false;
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         setLocalDateTime();
-        loadCargoGates();
+        const isStaff = checkUserRole();
+        loadCargoGates(isStaff);
     });
 
     // 🌟 មុខងារប្តូរទិដ្ឋភាពរវាង "កត់ត្រាថ្មី" និង "តារាងតាមដាន"
     function switchSection(section) {
+        // ប្រសិនបើជា staff មិនអនុញ្ញាតឱ្យបើក Form ទេ។
+        const userStr = sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info');
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            if ((user.role || user.type || '').toLowerCase() === 'staff' && section === 'form') {
+                alert('អ្នកគ្មានសិទ្ធិកត់ត្រា ឬកែប្រែទិន្នន័យទេ។');
+                return;
+            }
+        }
+
         const formSection = document.getElementById('formSection');
         const trackingSection = document.getElementById('trackingSection');
         const btnShowTracking = document.getElementById('btnShowTracking');
         const btnShowForm = document.getElementById('btnShowForm');
 
         if (section === 'tracking') {
-            formSection.style.display = 'none';
+            if (formSection) formSection.style.display = 'none';
             trackingSection.style.display = 'block';
-            btnShowTracking.style.display = 'none';
-            btnShowForm.style.display = 'inline-flex';
-            loadCargoGates(); // ទាញទិន្នន័យថ្មីៗមកបង្ហាញក្នុងតារាង
+            if (btnShowTracking) btnShowTracking.style.display = 'none';
+            // បើមិនមែន staff ទើបបង្ហាញប៊ូតុងកត់ត្រាថ្មី
+            if (btnShowForm && (!userStr || JSON.parse(userStr).role !== 'staff')) {
+                btnShowForm.style.display = 'inline-flex';
+            }
+            loadCargoGates();
         } else {
             trackingSection.style.display = 'none';
-            formSection.style.display = 'block';
-            btnShowForm.style.display = 'none';
-            btnShowTracking.style.display = 'inline-flex';
+            if (formSection) formSection.style.display = 'block';
+            if (btnShowForm) btnShowForm.style.display = 'none';
+            if (btnShowTracking) btnShowTracking.style.display = 'inline-flex';
         }
     }
 
-    // មុខងារទាញយករូប Logo ក្រុមហ៊ុននាវាស្វ័យប្រវត្តិ
     function getVesselLogo(vesselText) {
         if (!vesselText || vesselText === '-') {
             return `<i class="fa-solid fa-ship text-info me-1"></i>`;
@@ -592,7 +631,6 @@
         return `<i class="fa-solid fa-ship text-info me-1"></i>`;
     }
 
-    // កំណត់ម៉ោងបច្ចុប្បន្ននៅកម្ពុជា (Asia/Phnom_Penh)
     function setLocalDateTime() {
         const now = new Date();
         const formatter = new Intl.DateTimeFormat('en-CA', {
@@ -615,114 +653,109 @@
             if (p.type === 'minute') minute = p.value;
         });
 
-        document.getElementById('gate_date').value = `${year}-${month}-${day}T${hour}:${minute}`;
+        const gateDateInput = document.getElementById('gate_date');
+        if (gateDateInput) {
+            gateDateInput.value = `${year}-${month}-${day}T${hour}:${minute}`;
+        }
     }
 
-    // ការដាក់ស្នើទិន្នន័យ (Submit/Edit)
-    document.getElementById('cargoGateForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
+    const cargoGateForm = document.getElementById('cargoGateForm');
+    if (cargoGateForm) {
+        cargoGateForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
 
-        const editId = document.getElementById('edit_id').value;
-        const notesValue = document.getElementById('notes').value;
-        const podValue = document.getElementById('port_discharge').value;
-        const vesselVal = document.getElementById('vessel_name').value.trim();
-        const voyVal = document.getElementById('voyage_number').value.trim();
-        const rawDateVal = document.getElementById('gate_date').value;
+            const editId = document.getElementById('edit_id').value;
+            const notesValue = document.getElementById('notes').value;
+            const podValue = document.getElementById('port_discharge').value;
+            const vesselVal = document.getElementById('vessel_name').value.trim();
+            const voyVal = document.getElementById('voyage_number').value.trim();
+            const rawDateVal = document.getElementById('gate_date').value;
 
-        const fullNotes = `POD: ${podValue} | Vessel: ${vesselVal || 'N/A'} | Voy: ${voyVal || 'N/A'} | ${notesValue}`;
+            const fullNotes = `POD: ${podValue} | Vessel: ${vesselVal || 'N/A'} | Voy: ${voyVal || 'N/A'} | ${notesValue}`;
 
-        const data = {
-            cargo_code: document.getElementById('cargo_code').value,
-            container_number: document.getElementById('container_number').value,
-            gate_type: document.getElementById('gate_type').value,
-            gate_date: rawDateVal ? new Date(rawDateVal).toISOString() : null,
-            owner_name: document.getElementById('owner_name').value,
-            container_qty: document.getElementById('container_qty').value,
-            company_name: document.getElementById('company_name').value,
-            status: document.getElementById('status').value,
-            notes: fullNotes
-        };
+            const data = {
+                cargo_code: document.getElementById('cargo_code').value,
+                container_number: document.getElementById('container_number').value,
+                gate_type: document.getElementById('gate_type').value,
+                gate_date: rawDateVal ? new Date(rawDateVal).toISOString() : null,
+                owner_name: document.getElementById('owner_name').value,
+                container_qty: document.getElementById('container_qty').value,
+                company_name: document.getElementById('company_name').value,
+                status: document.getElementById('status').value,
+                notes: fullNotes
+            };
 
-        let changeDetails = '';
-        if (editId) {
-            const oldItem = allCargoData.find(item => String(item.id) === String(editId));
-            let changes = [];
-
-            if (oldItem) {
-                if (oldItem.cargo_code !== data.cargo_code) {
-                    changes.push(`កូដទំនិញ៖ "${oldItem.cargo_code || 'N/A'}" ➔ "${data.cargo_code}"`);
-                }
-                if (oldItem.container_number !== data.container_number) {
-                    changes.push(`កុងតឺន័រ៖ "${oldItem.container_number || 'N/A'}" ➔ "${data.container_number}"`);
-                }
-                if (oldItem.status !== data.status) {
-                    changes.push(`ស្ថានភាព៖ "${oldItem.status || 'N/A'}" ➔ "${data.status}"`);
-                }
-                if (oldItem.gate_type !== data.gate_type) {
-                    changes.push(`ផែដើម៖ "${oldItem.gate_type || 'N/A'}" ➔ "${data.gate_type}"`);
-                }
-                if (oldItem.owner_name !== data.owner_name) {
-                    changes.push(`ម្ចាស់ទំនិញ៖ "${oldItem.owner_name || 'N/A'}" ➔ "${data.owner_name}"`);
-                }
-                if (oldItem.container_qty !== data.container_qty) {
-                    changes.push(`ចំនួន Container៖ "${oldItem.container_qty || 'N/A'}" ➔ "${data.container_qty}"`);
-                }
-            }
-
-            if (changes.length > 0) {
-                changeDetails = `បានកែប្រែ៖ ${changes.join(' | ')}`;
-            } else {
-                changeDetails = `បានចុចអាប់ដេតទិន្នន័យ (កូដទំនិញ: ${data.cargo_code}, ស្ថានភាព: ${data.status})`;
-            }
-        } else {
-            changeDetails = `បានបង្កើតថ្មី - កូដទំនិញ: ${data.cargo_code} | កុងតឺន័រ: ${data.container_number || 'N/A'} | ស្ថានភាព: ${data.status}`;
-        }
-
-        try {
-            let url = '/api/fleet/cargo-gates';
-            let method = 'POST';
-
+            let changeDetails = '';
             if (editId) {
-                url = `/api/fleet/cargo-gates/${editId}`;
-                method = 'PUT';
+                const oldItem = allCargoData.find(item => String(item.id) === String(editId));
+                let changes = [];
+
+                if (oldItem) {
+                    if (oldItem.cargo_code !== data.cargo_code) {
+                        changes.push(`កូដទំនិញ៖ "${oldItem.cargo_code || 'N/A'}" ➔ "${data.cargo_code}"`);
+                    }
+                    if (oldItem.container_number !== data.container_number) {
+                        changes.push(`កុងតឺន័រ៖ "${oldItem.container_number || 'N/A'}" ➔ "${data.container_number}"`);
+                    }
+                    if (oldItem.status !== data.status) {
+                        changes.push(`ស្ថានភាព៖ "${oldItem.status || 'N/A'}" ➔ "${data.status}"`);
+                    }
+                }
+
+                if (changes.length > 0) {
+                    changeDetails = `បានកែប្រែ៖ ${changes.join(' | ')}`;
+                } else {
+                    changeDetails = `បានចុចអាប់ដេតទិន្នន័យ (កូដទំនិញ: ${data.cargo_code}, ស្ថានភាព: ${data.status})`;
+                }
+            } else {
+                changeDetails = `បានបង្កើតថ្មី - កូដទំនិញ: ${data.cargo_code} | កុងតឺន័រ: ${data.container_number || 'N/A'} | ស្ថានភាព: ${data.status}`;
             }
 
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
+            try {
+                let url = '/api/fleet/cargo-gates';
+                let method = 'POST';
 
-            const result = await response.json();
-            if (response.ok && result.success) {
-                const loggedUser = JSON.parse(sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info')) || { username: 'System', full_name: 'Admin' };
-                const userInfoStr = `${loggedUser.full_name} (${loggedUser.username})`;
+                if (editId) {
+                    url = `/api/fleet/cargo-gates/${editId}`;
+                    method = 'PUT';
+                }
 
-                const logPayload = {
-                    username: userInfoStr,
-                    action_type: editId ? 'UPDATE_CARGO' : 'CREATE_CARGO',
-                    details: `[Cargo ID: ${editId || result.data?.id || 'New'}] ${changeDetails}`
-                };
-
-                await fetch('/api/fleet/activity-logs', {
-                    method: 'POST',
+                const response = await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(logPayload)
+                    body: JSON.stringify(data)
                 });
 
-                alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានរក្សាទុកទិន្នន័យខ្លោងទ្វារដោយជោគជ័យ!');
-                cancelEdit();
-                loadCargoGates();
-                // ប្តូរទៅមើលតារាងបន្ទាប់ពីរក្សាទុករួច (ប្រសិនបើចង់ឱ្យនៅទំព័រ Form ដដែល អាចលុបបន្ទាត់ខាងក្រោមនេះចេញបាន)
-                switchSection('tracking');
-            } else {
-                alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    const loggedUser = JSON.parse(sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info')) || { username: 'System', full_name: 'Admin' };
+                    const userInfoStr = `${loggedUser.full_name} (${loggedUser.username})`;
+
+                    const logPayload = {
+                        username: userInfoStr,
+                        action_type: editId ? 'UPDATE_CARGO' : 'CREATE_CARGO',
+                        details: `[Cargo ID: ${editId || result.data?.id || 'New'}] ${changeDetails}`
+                    };
+
+                    await fetch('/api/fleet/activity-logs', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(logPayload)
+                    });
+
+                    alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានរក្សាទុកទិន្នន័យខ្លោងទ្វារដោយជោគជ័យ!');
+                    cancelEdit();
+                    loadCargoGates();
+                    switchSection('tracking');
+                } else {
+                    alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
+                }
+            } catch (err) {
+                console.error('Error submitting form:', err);
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
             }
-        } catch (err) {
-            console.error('Error submitting form:', err);
-            alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server!');
-        }
-    });
+        });
+    }
 
     function calculateSeaProgress(gateType, etaDateStr) {
         if (!etaDateStr) return { percent: 0, statusLabel: 'N/A' };
@@ -750,15 +783,30 @@
         return { percent: percent, statusLabel: `${percent}% លើសមុទ្រ` };
     }
 
-    async function loadCargoGates() {
+    async function loadCargoGates(isStaffUser = false) {
         try {
+            // ពិនិត្យសិទ្ធិម្តងទៀតពេលផ្ទុកតារាង
+            const userStr = sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info');
+            let isStaff = isStaffUser;
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                if ((user.role || user.type || '').toLowerCase() === 'staff') {
+                    isStaff = true;
+                }
+            }
+
             const response = await fetch('/api/fleet/cargo-gates');
             const data = await response.json();
             
-            const searchVal = document.getElementById('searchContainer').value.trim().toLowerCase();
-            const filterPodVal = document.getElementById('filterPod').value;
-            const fromDateVal = document.getElementById('filterFrom').value;
-            const toDateVal = document.getElementById('filterTo').value;
+            const searchContainerInput = document.getElementById('searchContainer');
+            const filterPodSelect = document.getElementById('filterPod');
+            const filterFromInput = document.getElementById('filterFrom');
+            const filterToInput = document.getElementById('filterTo');
+
+            const searchVal = searchContainerInput ? searchContainerInput.value.trim().toLowerCase() : '';
+            const filterPodVal = filterPodSelect ? filterPodSelect.value : '';
+            const fromDateVal = filterFromInput ? filterFromInput.value : '';
+            const toDateVal = filterToInput ? filterToInput.value : '';
 
             let filteredData = data.filter(item => {
                 let matchesSearch = true;
@@ -793,6 +841,7 @@
             allCargoData = filteredData; 
 
             const tbody = document.getElementById('cargoGateTableBody');
+            if (!tbody) return;
             tbody.innerHTML = '';
 
             if (!Array.isArray(filteredData) || filteredData.length === 0) {
@@ -864,6 +913,28 @@
 
                 const vesselLogoHtml = getVesselLogo(vesselText);
 
+                // 🌟 បង្កើតប៊ូតុងសកម្មភាព៖ បើជា staff គឺលាក់ប៊ូតុងកែប្រែ (Edit Button)
+                let actionButtonsHtml = `
+                    <a href="${trackingUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="មើលទីតាំងនាវាលើផែនទីសមុទ្រ (Live Map)">
+                        <i class="fa-solid fa-map-location-dot"></i>
+                    </a>
+                    <button class="btn btn-sm btn-outline-info" title="មើលព័ត៌មានលម្អិត" onclick="showDetails(${index})">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" title="មើលប្រវត្តិសកម្មភាព (Activity Log)" onclick="showActivityLog('${item.id}', '${item.cargo_code || ''}')">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                    </button>
+                `;
+
+                // ប្រសិនបើមិនមែនជា staff (ឧ. Admin ឬ Manager) ទើបបង្ហាញប៊ូតុងកែប្រែ (Edit)
+                if (!isStaff) {
+                    actionButtonsHtml += `
+                        <button class="btn btn-sm btn-outline-warning" title="កែប្រែ" onclick="editCargo(${index})">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                    `;
+                }
+
                 const row = `
                     <tr>
                         <td>${index + 1}</td>
@@ -904,18 +975,7 @@
                         <td><span class="badge ${statusBadgeClass}">${currentStatus}</span></td>
                         <td class="no-print">
                             <div class="d-flex justify-content-center gap-1">
-                                <a href="${trackingUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="មើលទីតាំងនាវាលើផែនទីសមុទ្រ (Live Map)">
-                                    <i class="fa-solid fa-map-location-dot"></i>
-                                </a>
-                                <button class="btn btn-sm btn-outline-info" title="មើលព័ត៌មានលម្អិត" onclick="showDetails(${index})">
-                                    <i class="fa-solid fa-eye"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-secondary" title="មើលប្រវត្តិសកម្មភាព (Activity Log)" onclick="showActivityLog('${item.id}', '${item.cargo_code || ''}')">
-                                    <i class="fa-solid fa-clock-rotate-left"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-warning" title="កែប្រែ" onclick="editCargo(${index})">
-                                    <i class="fa-solid fa-pen-to-square"></i>
-                                </button>
+                                ${actionButtonsHtml}
                             </div>
                         </td>
                     </tr>
@@ -924,7 +984,10 @@
             });
         } catch (err) {
             console.error('Error loading cargo gates:', err);
-            document.getElementById('cargoGateTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            const tbody = document.getElementById('cargoGateTableBody');
+            if (tbody) {
+                tbody.innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            }
         }
     }
 
@@ -1047,10 +1110,19 @@
     }
 
     function editCargo(index) {
+        // ការពារបន្ថែមមិនឱ្យ Staff បើក Form កែប្រែ
+        const userStr = sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info');
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            if ((user.role || user.type || '').toLowerCase() === 'staff') {
+                alert('អ្នកគ្មានសិទ្ធិកែប្រែទិន្នន័យទេ។');
+                return;
+            }
+        }
+
         const item = allCargoData[index];
         if (!item) return;
 
-        // បើកផ្នែក Form មកបង្ហាញវិញនៅពេលចុចកែប្រែ
         switchSection('form');
 
         document.getElementById('edit_id').value = item.id;
@@ -1115,20 +1187,33 @@
     }
 
     function cancelEdit() {
-        document.getElementById('cargoGateForm').reset();
-        document.getElementById('edit_id').value = '';
-        document.getElementById('formTitle').innerText = 'កត់ត្រាការចូល/ចេញទំនិញថ្មី';
-        document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ Submit';
-        document.getElementById('cancelEditBtn').style.display = 'none';
+        const form = document.getElementById('cargoGateForm');
+        if (form) form.reset();
+        const editIdElem = document.getElementById('edit_id');
+        if (editIdElem) editIdElem.value = '';
+        
+        const formTitleElem = document.getElementById('formTitle');
+        if (formTitleElem) formTitleElem.innerText = 'កត់ត្រាការចូល/ចេញទំនិញថ្មី';
+        
+        const submitBtnElem = document.getElementById('submitBtn');
+        if (submitBtnElem) submitBtnElem.innerHTML = '<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យ Submit';
+        
+        const cancelEditBtnElem = document.getElementById('cancelEditBtn');
+        if (cancelEditBtnElem) cancelEditBtnElem.style.display = 'none';
 
         setLocalDateTime();
     }
 
     function resetFilter() {
-        document.getElementById('searchContainer').value = '';
-        document.getElementById('filterPod').value = '';
-        document.getElementById('filterFrom').value = '';
-        document.getElementById('filterTo').value = '';
+        const searchCont = document.getElementById('searchContainer');
+        const fPod = document.getElementById('filterPod');
+        const fFrom = document.getElementById('filterFrom');
+        const fTo = document.getElementById('filterTo');
+
+        if (searchCont) searchCont.value = '';
+        if (fPod) fPod.value = '';
+        if (fFrom) fFrom.value = '';
+        if (fTo) fTo.value = '';
         loadCargoGates();
     }
 </script>
