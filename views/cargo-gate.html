@@ -371,6 +371,7 @@
                         <option value="Berthing">Berthing (កំពុងចូលចត)</option>
                         <option value="Departed">Departed (បានចាកចេញ)</option>
                         <option value="បានមកដល់ភ្នំពេញ">បានមកដល់ភ្នំពេញ</option>
+                        <option value="បានមកដល់ផែ SHV">បានមកដល់ផែ SHV</option>
                         <option value="ទូរ CY (SHV)">ទូរ CY (SHV)</option>
                         <option value="Delivered">Delivered</option>
                     </select>
@@ -892,8 +893,16 @@
                 else if (podText.includes('ភ្នំពេញ')) badgeClass = 'bg-success';
                 
                 let currentStatus = item.status || '';
+                
+                // 🌟 បែងចែកដាច់ស្រឡះ៖ 
+                // - បើជាផ្លូវគោក (កំពង់សោម-ភ្នំពេញ ឬ បាវិត-ភ្នំពេញ) ដល់ 100% គឺ "បានមកដល់ភ្នំពេញ"
+                // - បើជាផ្លូវទឹក ចូលផែ SHV ដល់ 100% គឺ "បានមកដល់ផែ SHV"
                 if (progressInfo.percent === 100 && !currentStatus.includes('CY') && currentStatus !== 'Delivered') {
-                    currentStatus = 'បានមកដល់ភ្នំពេញ';
+                    if (progressInfo.isRoad) {
+                        currentStatus = 'បានមកដល់ភ្នំពេញ';
+                    } else {
+                        currentStatus = 'បានមកដល់ផែ SHV';
+                    }
                     item.status = currentStatus;
                 }
 
@@ -913,7 +922,6 @@
                     trackingUrl = `https://www.google.com/maps`;
                 }
 
-                // 🌟 កែសម្រួលត្រង់នេះ៖ បើជាផ្លូវគោក មិនបង្ហាញឈ្មោះនាវា/រូបនាវា គឺបង្ហាញរូបឡាន និងអត្ថបទផ្លូវគោកជំនួសវិញ
                 let vesselDisplayHtml = '';
                 if (progressInfo.isRoad) {
                     vesselDisplayHtml = `
@@ -930,21 +938,16 @@
                     `;
                 }
 
-                // រូបតំណាងឡានដឹកទំនិញ V1 (Truck V1 SVG)
                 let vehicleIconHtml = '';
                 if (progressInfo.isRoad) {
                     vehicleIconHtml = `
                         <svg class="container-vehicle-img" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
-                            <!-- ក្បាលឡាន -->
                             <path d="M 85 22 L 95 22 L 108 30 L 112 36 L 112 42 L 85 42 Z" fill="#2563eb"/>
-                            <!-- កញ្ចក់ក្បាលឡាន -->
                             <path d="M 90 24 L 102 24 L 108 32 L 90 32 Z" fill="#93c5fd"/>
-                            <!-- ទូរគូទឡានដឹកទំនិញ -->
                             <rect x="15" y="15" width="72" height="27" fill="#0284c7" rx="2"/>
                             <line x1="33" y1="15" x2="33" y2="42" stroke="#0284c7" stroke-width="2"/>
                             <line x1="51" y1="15" x2="51" y2="42" stroke="#0284c7" stroke-width="2"/>
                             <line x1="69" y1="15" x2="69" y2="42" stroke="#0284c7" stroke-width="2"/>
-                            <!-- កង់ឡាន -->
                             <circle cx="28" cy="43" r="6" fill="#1e293b"/>
                             <circle cx="28" cy="43" r="2.5" fill="#94a3b8"/>
                             <circle cx="78" cy="43" r="6" fill="#1e293b"/>
