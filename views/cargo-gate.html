@@ -217,6 +217,13 @@
             animation: waveMotion 3s linear infinite;
             transition: width 0.6s ease;
         }
+        /* 🌟 ពណ៌សម្រាប់របារដំណើរការតាមផ្លូវគោក (Road Transit Bar) */
+        .progress-bar-road {
+            height: 100%;
+            border-radius: 2px;
+            background: linear-gradient(90deg, #f59e0b, #fbbf24, #fcd34d);
+            transition: width 0.6s ease;
+        }
         @keyframes waveMotion {
             0% { background-position: 0% 0%; }
             100% { background-position: 200% 0%; }
@@ -320,7 +327,7 @@
                         </optgroup>
                     </select>
                 </div>
-                <!-- ផែទម្លាក់ទំនិញ (Port of Discharge) -->
+                <!-- ផែទម្លាក់ទំនិញ (Port of Discharge) - បន្ថែម កំពង់សោម-ភ្នំពេញ និង បាវិត-ភ្នំពេញ -->
                 <div class="col-md-4">
                     <label class="form-label">ផែទម្លាក់ទំនិញ (Port of Discharge)</label>
                     <select class="form-select" id="port_discharge" required>
@@ -328,6 +335,8 @@
                         <option value="Phnom Penh Autonomous Port (PNH)">ផែស្វយ័តភ្នំពេញ (PNH Port)</option>
                         <option value="Ho Chi Minh Port (VN)">ផែ ហូជីមិញ (VN Port)</option>
                         <option value="Laem Chabang Port (TH)">ផែ លែមឆាបាង (TH Port)</option>
+                        <option value="កំពង់សោម-ភ្នំពេញ">កំពង់សោម-ភ្នំពេញ (ផ្លូវគោក)</option>
+                        <option value="បាវិត-ភ្នំពេញ">បាវិត-ភ្នំពេញ (ផ្លូវគោក)</option>
                     </select>
                 </div>
                 <div class="col-md-4">
@@ -402,6 +411,8 @@
                         <option value="Phnom Penh Autonomous Port (PNH)">PNH Port</option>
                         <option value="Ho Chi Minh Port (VN)">VN Port</option>
                         <option value="Laem Chabang Port (TH)">TH Port</option>
+                        <option value="កំពង់សោម-ភ្នំពេញ">កំពង់សោម-ភ្នំពេញ</option>
+                        <option value="បាវិត-ភ្នំពេញ">បាវិត-ភ្នំពេញ</option>
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -437,7 +448,7 @@
                         <th class="table-custom-header">នាវា (Vessel / Voy)</th>
                         <th class="table-custom-header">ផែដើម & គោលដៅ</th>
                         <th class="table-custom-header">កាលបរិច្ឆេទ ETA</th>
-                        <th class="table-custom-header" style="min-width: 170px;">ទីតាំងលើសមុទ្រ</th>
+                        <th class="table-custom-header" style="min-width: 170px;">ទីតាំង (សមុទ្រ / ផ្លូវគោក)</th>
                         <th class="table-custom-header">ស្ថានភាព</th>
                         <th class="table-custom-header no-print">សកម្មភាព</th>
                     </tr>
@@ -526,7 +537,6 @@
 <script>
     let allCargoData = [];
 
-    // 🌟 ពិនិត្យសិទ្ធិ User៖ ឲ្យគ្រប់ Staff មើលឃើញ Form និងប៊ូតុងកត់ត្រាបាន ប៉ុន្តែត្រួតពិនិត្យ Role ពេលចុចកែប្រែ (Edit)
     function checkUserRole() {
         try {
             const userStr = sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info');
@@ -534,8 +544,6 @@
                 const user = JSON.parse(userStr);
                 const userRole = (user.role || user.type || '').toLowerCase();
                 const username = (user.username || user.name || '').trim();
-                
-                // បើត្រូវការកំណត់អ្វីផ្សេងបន្ថែមសម្រាប់ Staff អាចដាក់ទីនេះ ប៉ុន្តែអនុញ្ញាតឱ្យចូល Form បានធម្មតា
                 return userRole === 'staff' || username.toLowerCase() === 'net';
             }
         } catch (e) {
@@ -732,35 +740,39 @@
         });
     }
 
-    function calculateSeaProgress(gateType, etaDateStr) {
-        if (!etaDateStr) return { percent: 0, statusLabel: 'N/A' };
+    function calculateProgress(podText, gateType, etaDateStr) {
+        if (!etaDateStr) return { percent: 0, statusLabel: 'N/A', isRoad: false };
         
+        const isRoad = (podText === 'កំពង់សោម-ភ្នំពេញ' || podText === 'បាវិត-ភ្នំពេញ');
         const now = new Date();
         const eta = new Date(etaDateStr);
         
         let totalTransitDays = 7;
-        if (gateType.includes('China')) totalTransitDays = 9;
-        else if (gateType.includes('Korea')) totalTransitDays = 12;
-        else if (gateType.includes('Thailand')) totalTransitDays = 2;
-        else if (gateType.includes('Vietnam')) totalTransitDays = 3;
-        else if (gateType.includes('Europe')) totalTransitDays = 28;
+        if (isRoad) {
+            totalTransitDays = (podText === 'បាវិត-ភ្នំពេញ') ? 1 : 2; // ផ្លូវគោកប្រើពេលខ្លីជាង
+        } else {
+            if (gateType.includes('China')) totalTransitDays = 9;
+            else if (gateType.includes('Korea')) totalTransitDays = 12;
+            else if (gateType.includes('Thailand')) totalTransitDays = 2;
+            else if (gateType.includes('Vietnam')) totalTransitDays = 3;
+            else if (gateType.includes('Europe')) totalTransitDays = 28;
+        }
 
         const etd = new Date(eta.getTime() - (totalTransitDays * 24 * 60 * 60 * 1000));
         
-        if (now >= eta) return { percent: 100, statusLabel: 'បានមកដល់ផែ (100%)' };
-        if (now <= etd) return { percent: 5, statusLabel: 'រៀបចំចេញដំណើរ (5%)' };
+        if (now >= eta) return { percent: 100, statusLabel: isRoad ? 'បានមកដល់គោលដៅ (100%)' : 'បានមកដល់ផែ (100%)', isRoad };
+        if (now <= etd) return { percent: 5, statusLabel: isRoad ? 'រៀបចំបើកចេញ (5%)' : 'រៀបចំចេញដំណើរ (5%)', isRoad };
 
         const totalTime = eta.getTime() - etd.getTime();
         const elapsedTime = now.getTime() - etd.getTime();
         let percent = Math.round((elapsedTime / totalTime) * 100);
         percent = Math.max(5, Math.min(99, percent));
 
-        return { percent: percent, statusLabel: `${percent}% លើសមុទ្រ` };
+        return { percent: percent, statusLabel: isRoad ? `${percent}% លើផ្លូវគោក` : `${percent}% លើសមុទ្រ`, isRoad };
     }
 
     async function loadCargoGates() {
         try {
-            // ពិនិត្យសិទ្ធិ User សម្រាប់កំណត់ការបង្ហាញប៊ូតុងកែប្រែ (Edit Button)
             let isAdmin = true;
             const userStr = sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info');
             if (userStr) {
@@ -768,7 +780,7 @@
                 const userRole = (user.role || user.type || '').toUpperCase();
                 const username = (user.username || user.name || '').trim().toUpperCase();
                 if (userRole === 'STAFF' || username === 'NET') {
-                    isAdmin = false; // Staff ឬ Net គឺលាក់ប៊ូតុងកែប្រែ (Edit)
+                    isAdmin = false;
                 }
             }
 
@@ -791,7 +803,6 @@
                 let matchesDate = true;
                 let notExpiredDelivered = true;
 
-                // លក្ខខណ្ឌត្រងលាក់ទិន្នន័យ Delivered ដែលលើសពី 7 ថ្ងៃ
                 if (item.status === 'Delivered' && item.gate_date) {
                     const deliveredDate = new Date(item.gate_date);
                     const now = new Date();
@@ -810,12 +821,13 @@
                     matchesSearch = containerNo.includes(searchVal) || cargoCode.includes(searchVal) || notes.includes(searchVal);
                 }
 
+                let itemPod = 'Sihanoukville Port (SHV)';
+                if (item.notes && item.notes.includes('POD:')) {
+                    const parts = item.notes.split('|');
+                    itemPod = parts[0].replace('POD:', '').trim();
+                }
+
                 if (filterPodVal) {
-                    let itemPod = 'Sihanoukville Port (SHV)';
-                    if (item.notes && item.notes.includes('POD:')) {
-                        const parts = item.notes.split('|');
-                        itemPod = parts[0].replace('POD:', '').trim();
-                    }
                     if (itemPod !== filterPodVal) matchesPod = false;
                 }
 
@@ -870,7 +882,7 @@
                     });
                 }
 
-                const progressInfo = calculateSeaProgress(item.gate_type || '', item.gate_date);
+                const progressInfo = calculateProgress(podText, item.gate_type || '', item.gate_date);
                 const gateType = item.gate_type || '';
                 
                 let badgeClass = 'bg-primary';
@@ -878,11 +890,12 @@
                 else if (gateType.includes('Korea')) badgeClass = 'bg-dark';
                 else if (gateType.includes('Thailand')) badgeClass = 'bg-warning text-dark';
                 else if (gateType.includes('Vietnam')) badgeClass = 'bg-info text-dark';
+                else if (podText.includes('ភ្នំពេញ')) badgeClass = 'bg-success';
                 
                 let currentStatus = item.status || '';
                 if (progressInfo.percent === 100 && !currentStatus.includes('CY') && currentStatus !== 'Delivered') {
-                    currentStatus = 'បានមកដល់ផែ SHV';
-                    item.status = 'បានមកដល់ផែ SHV';
+                    currentStatus = progressInfo.isRoad ? 'បានមកដល់គោលដៅ' : 'បានមកដល់ផែ SHV';
+                    item.status = currentStatus;
                 }
 
                 let statusBadgeClass = 'bg-secondary';
@@ -897,15 +910,44 @@
                 }
 
                 let trackingUrl = `https://www.vesselfinder.com/vessels?name=${encodeURIComponent(vesselText)}`;
-                if (vesselText === '-' || !vesselText) {
-                    trackingUrl = `https://www.vesselfinder.com`;
+                if (vesselText === '-' || !vesselText || progressInfo.isRoad) {
+                    trackingUrl = `https://www.google.com/maps`;
                 }
 
                 const vesselLogoHtml = getVesselLogo(vesselText);
 
-                // ប៊ូតុងសកម្មភាពមូលដ្ឋាន (មើល Live Map, មើលព័ត៌មានលម្អិត, មើល Log)
+                // 🌟 ប្តូររូបតំណាងរវាង នាវា (Ship) និង ឡានដឹកទំនិញ (Truck)
+                let vehicleIconHtml = '';
+                if (progressInfo.isRoad) {
+                    vehicleIconHtml = `
+                        <svg class="container-ship-img" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M19 17H22C22.5523 17 23 16.5523 23 16V13.8382C23 13.5413 22.8872 13.2562 22.6868 13.0457L20.5302 10.7935C20.2036 10.4502 19.7533 10.2564 19.2834 10.2564H17V6.5C17 5.67157 16.3284 5 15.5 5H3C2.17157 5 1.5 5.67157 1.5 6.5V17H4C4 18.1046 4.89543 19 6 19C7.10457 19 8 18.1046 8 17H15C15 18.1046 15.8954 19 17 19C18.1046 19 19 18.1046 19 17ZM6 21C4.89543 21 4 20.1046 4 19H3V7H15V17H14.1C13.7224 17.6116 13.054 18 12.3 18C11.546 18 10.8776 17.6116 10.5 17H7.5C7.12239 17.6116 6.45401 18 5.7 18C4.94599 18 4.27761 17.6116 3.9 17H4V19C4 20.1046 4.89543 21 6 21ZM17 12H19.5858L21 13.4142V15H17V12Z" fill="#d97706"/>
+                            <circle cx="5.5" cy="17.5" r="2.5" fill="#1e293b"/>
+                            <circle cx="17.5" cy="17.5" r="2.5" fill="#1e293b"/>
+                        </svg>
+                    `;
+                } else {
+                    vehicleIconHtml = `
+                        <svg class="container-ship-img" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M 5 32 L 15 42 L 100 42 L 115 32 Z" fill="#475569"/>
+                            <path d="M 3 28 L 117 28 L 115 32 L 5 32 Z" fill="#0284c7"/>
+                            <path d="M 8 32 L 12 40 L 98 40 L 102 32 Z" fill="#0f172a"/>
+                            <rect x="95" y="14" width="16" height="14" fill="#cbd5e1" rx="2"/>
+                            <rect x="100" y="10" width="8" height="4" fill="#64748b"/>
+                            <line x1="104" y1="4" x2="104" y2="10" stroke="#64748b" stroke-width="2"/>
+                            <rect x="12" y="16" width="15" height="12" fill="#cbd5e1"/>
+                            <rect x="14" y="18" width="11" height="8" fill="#e2e8f0"/>
+                            <rect x="29" y="16" width="15" height="12" fill="#0284c7"/>
+                            <rect x="46" y="16" width="15" height="12" fill="#cbd5e1"/>
+                            <rect x="48" y="18" width="11" height="8" fill="#e2e8f0"/>
+                            <rect x="63" y="16" width="15" height="12" fill="#0284c7"/>
+                            <rect x="80" y="16" width="13" height="12" fill="#cbd5e1"/>
+                        </svg>
+                    `;
+                }
+
                 let actionButtonsHtml = `
-                    <a href="${trackingUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="មើលទីតាំងនាវាលើផែនទីសមុទ្រ (Live Map)">
+                    <a href="${trackingUrl}" target="_blank" class="btn btn-sm btn-outline-primary" title="មើលទីតាំងលើផែនទី">
                         <i class="fa-solid fa-map-location-dot"></i>
                     </a>
                     <button class="btn btn-sm btn-outline-info" title="មើលព័ត៌មានលម្អិត" onclick="showDetails(${index})">
@@ -916,7 +958,6 @@
                     </button>
                 `;
 
-                // 🌟 បង្ហាញប៊ូតុងកែប្រែ (Edit) เฉพาะ Admin ប៉ុណ្ណោះ (ប្រសិនបើเป็น Staff/Net នឹងត្រូវលាក់)
                 if (isAdmin) {
                     actionButtonsHtml += `
                         <button class="btn btn-sm btn-outline-warning" title="កែប្រែ" onclick="editCargo(${index})">
@@ -924,6 +965,8 @@
                         </button>
                     `;
                 }
+
+                const progressBarClass = progressInfo.isRoad ? 'progress-bar-road' : 'progress-bar-ocean';
 
                 const row = `
                     <tr>
@@ -941,23 +984,9 @@
                         <td>${formattedDate}</td>
                         <td>
                             <div class="progress progress-container">
-                                <div class="progress-bar-ocean" style="width: ${progressInfo.percent}%;"></div>
+                                <div class="${progressBarClass}" style="width: ${progressInfo.percent}%;"></div>
                                 <div class="ship-icon" style="left: ${progressInfo.percent}%;" title="${progressInfo.percent}%">
-                                    <svg class="container-ship-img" viewBox="0 0 120 50" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M 5 32 L 15 42 L 100 42 L 115 32 Z" fill="#475569"/>
-                                        <path d="M 3 28 L 117 28 L 115 32 L 5 32 Z" fill="#0284c7"/>
-                                        <path d="M 8 32 L 12 40 L 98 40 L 102 32 Z" fill="#0f172a"/>
-                                        <rect x="95" y="14" width="16" height="14" fill="#cbd5e1" rx="2"/>
-                                        <rect x="100" y="10" width="8" height="4" fill="#64748b"/>
-                                        <line x1="104" y1="4" x2="104" y2="10" stroke="#64748b" stroke-width="2"/>
-                                        <rect x="12" y="16" width="15" height="12" fill="#cbd5e1"/>
-                                        <rect x="14" y="18" width="11" height="8" fill="#e2e8f0"/>
-                                        <rect x="29" y="16" width="15" height="12" fill="#0284c7"/>
-                                        <rect x="46" y="16" width="15" height="12" fill="#cbd5e1"/>
-                                        <rect x="48" y="18" width="11" height="8" fill="#e2e8f0"/>
-                                        <rect x="63" y="16" width="15" height="12" fill="#0284c7"/>
-                                        <rect x="80" y="16" width="13" height="12" fill="#cbd5e1"/>
-                                    </svg>
+                                    ${vehicleIconHtml}
                                 </div>
                             </div>
                             <span class="small text-secondary d-block mt-1 fw-bold">${progressInfo.statusLabel}</span>
@@ -1100,7 +1129,6 @@
     }
 
     function editCargo(index) {
-        // ត្រួតពិនិត្យសិទ្ធិបន្ថែមការពារក្រែង User ພະຍាយាមហៅតាម Function
         const userStr = sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info');
         if (userStr) {
             const user = JSON.parse(userStr);
