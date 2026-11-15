@@ -117,6 +117,8 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
+            padding: 15px;
+            box-sizing: border-box;
         }
 
         .auth-card {
@@ -194,7 +196,7 @@
             cursor: pointer;
         }
 
-        /* 🌟 Main Layout: រំកិលកាតទៅខាងស្តាំបន្ថែមទៀត */
+        /* Main Layout សម្រាប់ PC */
         .main-layout {
             width: 100%;
             max-width: 1850px;
@@ -205,7 +207,6 @@
             box-sizing: border-box;
         }
 
-        /* 🌲 បង្រួមកាតឱ្យខ្លីជាងមុន និងដាក់ Auto size */
         .right-cards-container {
             display: flex;
             flex-direction: column;
@@ -227,7 +228,6 @@
             width: 100%;
         }
 
-        /* 💡 ពេលដាក់ម៉ៅលើកាត (Hover Effect & ផ្លេកពណ៌អក្សរ) */
         .card:hover {
             background: linear-gradient(135deg, #1e3c72, #2a5298);
             border-color: #00c6ff;
@@ -386,10 +386,28 @@
             transition: color 0.2s ease;
         }
 
-        /* Responsive Optimization សម្រាប់អេក្រងធំ (រំកិលទៅស្តាំបន្ថែម) */
-        @media (min-width: 1400px) {
+        /* 🌟 កូដពិសេស Responsive សម្រាប់ទូរសព្ទដៃ (Mobile Only) ដោយមិនប៉ះពាល់ PC */
+        @media (max-width: 768px) {
+            header {
+                padding: 10px 15px;
+            }
+            header .header-title h1 {
+                font-size: 14px;
+            }
+            header .header-title p {
+                font-size: 9px;
+            }
             .main-layout {
-                padding-right: 140px;
+                padding: 0 10px;
+                margin: 15px auto;
+                justify-content: center;
+            }
+            .right-cards-container {
+                max-width: 100%;
+            }
+            .auth-card {
+                padding: 20px;
+                max-width: 330px;
             }
         }
     </style>
@@ -468,7 +486,7 @@
             <h2 style="text-align: center;">គ្រប់គ្រងគណនីអ្នកប្រើប្រាស់ (User Management)</h2>
             <p style="text-align: center;">ប្ដូរស្ថានភាព Active ឬ Inactive ពេលបុគ្គលិកឈប់ការងារ</p>
             
-            <div style="margin-top: 20px;">
+            <div style="margin-top: 20px; overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
                     <thead>
                         <tr style="background: #f1f5f9; border-bottom: 2px solid #cbd5e1;">
@@ -506,7 +524,6 @@
 
     <!-- 🌟 Main Layout -->
     <div class="main-layout">
-        <!-- ផ្នែកខាងស្តាំសម្រាប់បង្ហាញកាតរៀបជាជួរចុះមកក្រោម -->
         <div id="dashboard" class="right-cards-container">
             <!-- Content Rendered dynamically -->
         </div>
@@ -585,7 +602,6 @@
             "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ": { en: "Customs Permit & Document Control (BWH)", url: "/views/bwh-customs.html" }
         };
 
-        /* 💡 បានកែប្រែឈ្មោះ Role ក្នុង array នេះឱ្យត្រូវតាមអក្ខរាវិរុទ្ធខ្មែរ ១០០% */
         const departments = [
             { id: "HR_ADMIN", name: "ធនធានមនុស្ស & រដ្ឋបាល", roles: ["វត្តមាន ចេញ/ចូល", "ទ្រព្យសម្បត្តិ/ស្តុក និងការគ្រប់គ្រង សារពើភណ្ឌ", "ការជ្រើសរើសបុគ្គលិក & ការបណ្តុះបណ្តាល", "ប្រាក់បៀវត្សរ៍ - ដំណើរការប្រាក់ខែ & អត្ថប្រយោជន៍"] },
             { id: "ACC_FIN", name: "គណនេយ្យ & ហិរញ្ញវត្ថុ", roles: ["គណនេយ្យប្រាក់ចំណូល", "គណនេយ្យទទួល", "របាយការណ៍ហិរញ្ញវត្ថុ", "ការគ្រប់គ្រងថវិកា / ចំណាយ", "វិក្កយបត្រពន្ធ (TAX INVOICE)"] },
@@ -689,7 +705,7 @@
         function closeRegisterModal() {
             document.getElementById('authModal').style.display = 'none';
             document.getElementById('registerCard').style.display = 'none';
-            document.getElementById('loginCard').style.display = 'block';
+            document.getElementById('loginCard').style.display = 'flex';
         }
 
         function openManageUsersModal() {
