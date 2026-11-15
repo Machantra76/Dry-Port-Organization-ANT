@@ -8,6 +8,7 @@ const axios = require('axios');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.use(express.static(__dirname));
 
 // 🌟 ប្រើ memoryStorage ដើម្បីទាញយក Buffer របស់ PDF យកមកបម្លែងជា Base64 រក្សាទុកក្នុង Database
 const upload = multer({ 
