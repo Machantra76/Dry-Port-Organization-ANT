@@ -1,12 +1,17 @@
 {
   "name": "Cargo Gate System",
   "short_name": "CargoApp",
-  "start_url": "/cargo-gate.html",
+  "start_url": "/views/cargo-gate.html",
   "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#1e3a8a",
   "icons": [
+    {
+      "src": "/views/icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
@@ -21,3 +26,5 @@
     }
   ]
 }
+
+
