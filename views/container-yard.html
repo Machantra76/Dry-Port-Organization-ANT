@@ -514,7 +514,7 @@
                 month: '2-digit',
                 day: '2-digit'
             });
-            const formattedDate = formatter.format(now); // ទម្រង់ YYYY-MM-DD
+            const formattedDate = formatter.format(now);
             const el = document.getElementById(elementId);
             if (el) {
                 el.value = formattedDate;
@@ -526,7 +526,6 @@
             loadYardLocations();
         });
 
-        // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
         function switchSection(section) {
             const formYard = document.getElementById('formYardSection');
             const historySection = document.getElementById('historySection');
@@ -809,8 +808,12 @@
             }
         }
 
-        // 🌟 ស្តង់ដារ API លុបទិន្នន័យ (DELETE)
+        // 🌟 ស្តង់ដារ API លុបទិន្នន័យ (DELETE API)
         async function executeDelete(id, callback = null) {
+            if (!id) {
+                alert('រកមិនឃើញ ID សម្រាប់លុបទេ!');
+                return;
+            }
             try {
                 const response = await fetch(`/api/fleet/container-yard/${id}`, {
                     method: 'DELETE'
@@ -911,7 +914,7 @@
                 console.error('PDF Export Error:', err);
                 if(filterForm) filterForm.style.display = '';
                 actionCells.forEach(cell => cell.style.display = '');
-                alert('មានបញ្ហាក្នុងการទាញយក PDF');
+                alert('មានបញ្ហាក្នុងការទាញយក PDF');
             });
         }
 
