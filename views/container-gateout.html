@@ -147,63 +147,67 @@
             box-shadow: 0 6px 15px rgba(16, 185, 129, 0.3);
             color: white;
         }
-        .btn-search {
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
+
+        /* 🌟 កែសម្រួលទំហំ Compact និងបន្ថែម Zoom Out + Glow Effect ពេលដាក់ម៉ៅលើប៊ូតុង */
+        .filter-section .form-label {
+            font-size: 12.5px;
+            margin-bottom: 3px;
+        }
+        .filter-section .form-control, .filter-section .form-select {
+            height: 38px;
+            padding: 6px 10px;
+            font-size: 13px;
+        }
+        
+        .btn-search, .btn-reset, .btn-pdf {
+            height: 38px;
+            font-size: 13px;
             font-weight: 600;
-            padding: 0 16px;
-            border-radius: 10px;
-            font-size: 14px;
-            height: 45px;
+            border-radius: 8px;
+            border: none;
             display: inline-flex;
             align-items: center;
             justify-content: center;
             width: 100%;
-            transition: all 0.2s;
+            transition: all 0.25s ease-in-out;
+        }
+
+        /* 🌟 ពណ៌ប៊ូតុងស្វែងរក និង Zoom Effect ពេល Hover */
+        .btn-search {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            box-shadow: 0 2px 5px rgba(37, 99, 235, 0.25);
         }
         .btn-search:hover {
-            background-color: #1d4ed8;
+            transform: scale(0.97); /* Zoom out បន្តិចពេលដាក់ម៉ៅលើ */
+            box-shadow: 0 0 12px rgba(37, 99, 235, 0.7); /* បន្ថែមពន្លឺពណ៌ខៀវជុំវិញ */
             color: white;
         }
+
+        /* 🌟 ពណ៌ប៊ូតុងកំណត់ឡើងវិញ និង Zoom Effect ពេល Hover */
         .btn-reset {
-            background-color: #475569;
+            background: linear-gradient(135deg, #64748b 0%, #475569 100%);
             color: white;
-            border: none;
-            font-weight: 600;
-            padding: 0 16px;
-            border-radius: 10px;
-            font-size: 14px;
-            height: 45px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(100, 116, 139, 0.25);
         }
         .btn-reset:hover {
-            background-color: #334155;
+            transform: scale(0.97);
+            box-shadow: 0 0 12px rgba(100, 116, 139, 0.7); /* ពន្លឺពណ៌ប្រផេះជុំវិញ */
             color: white;
         }
+
+        /* 🌟 ពណ៌ប៊ូតុង Download PDF និង Zoom Effect ពេល Hover */
         .btn-pdf {
-            background-color: #d97706;
+            background: linear-gradient(135deg, #ea580c 0%, #c2410c 100%);
             color: white;
-            border: none;
-            font-weight: 600;
-            padding: 0 16px;
-            border-radius: 10px;
-            font-size: 14px;
-            height: 45px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(234, 88, 12, 0.25);
         }
         .btn-pdf:hover {
-            background-color: #b45309;
+            transform: scale(0.97);
+            box-shadow: 0 0 12px rgba(234, 88, 12, 0.7); /* ពន្លឺពណ៌ទឹកក្រូចជុំវិញ */
             color: white;
         }
+
         .table thead th {
             background-color: var(--primary-color);
             color: white;
@@ -332,11 +336,11 @@
                 <span><i class="fa-solid fa-list-check text-primary me-2"></i> បញ្ជីប្រវត្តិកុងតឺន័រចេញ (Gate-Out History Records)</span>
             </div>
             <div class="section-body">
-                <!-- Search Filter Form រៀបចំប៊ូតុងស្មើគ្នាជាជួរដេក -->
-                <form id="filterForm" class="row g-3 mb-4 bg-light p-3 rounded-3 border align-items-end">
-                    <div class="col-md-3">
+                <!-- Search Filter Form រៀបចំ Compact និង Zoom/Glow Effect នៅលើប៊ូតុង -->
+                <form id="filterForm" class="row g-2 mb-4 bg-light p-3 rounded-3 border align-items-end filter-section">
+                    <div class="col-md-2">
                         <label for="filterContainer" class="form-label">លេខកុងតឺន័រ:</label>
-                        <input type="text" class="form-control" id="filterContainer" placeholder="ឧ. 4567 ឬ TGHU1234567">
+                        <input type="text" class="form-control" id="filterContainer" placeholder="លេខកុងតឺន័រ...">
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Shipping Line:</label>
@@ -353,7 +357,7 @@
                             <option value="45'">45 Feet</option>
                         </select>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-3">
                         <label class="form-label">ចាប់ពីថ្ងៃទី - ដល់ថ្ងៃទី:</label>
                         <div class="input-group">
                             <input type="date" class="form-control" id="filterFrom">
@@ -361,20 +365,20 @@
                         </div>
                     </div>
                     
-                    <!-- ប៊ូតុងទាំងបីរៀបចំស្មើគ្នាក្នុងជួរដេកតែមួយ ពណ៌ឆ្លាស់គ្នាស្រស់ស្អាត -->
-                    <div class="col-md-4">
-                        <button type="submit" class="btn-search">
-                            <i class="fa-solid fa-search me-1"></i> ស្វែងរក
+                    <!-- ប៊ូតុងបញ្ជាតូចស្អាត មាន Effect Zoom Out & Glow ពេលយកម៉ៅដាក់លើ -->
+                    <div class="col-md-1">
+                        <button type="submit" class="btn-search" title="ស្វែងរក">
+                            <i class="fa-solid fa-search"></i>
                         </button>
                     </div>
-                    <div class="col-md-4">
-                        <button type="button" class="btn-reset" onclick="resetFilter()">
-                            <i class="fa-solid fa-rotate-right me-1"></i> កំណត់ឡើងវិញ
+                    <div class="col-md-1">
+                        <button type="button" class="btn-reset" onclick="resetFilter()" title="កំណត់ឡើងវិញ">
+                            <i class="fa-solid fa-rotate-right"></i>
                         </button>
                     </div>
-                    <div class="col-md-4">
-                        <button type="button" class="btn-pdf" onclick="exportHistoryToPDF()">
-                            <i class="fa-solid fa-file-pdf me-1"></i> Download PDF
+                    <div class="col-md-1">
+                        <button type="button" class="btn-pdf" onclick="exportHistoryToPDF()" title="Download PDF">
+                            <i class="fa-solid fa-file-pdf"></i>
                         </button>
                     </div>
                 </form>
@@ -739,7 +743,7 @@
             gateOutForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
-                // 🌟 แปลงកាលបរិច្ឆេទជា ISO String ឱ្យត្រូវម៉ោងអន្តរជាតិដើម្បីការពារការលូតម៉ោងខុសលើ Server
+                // 🌟 แปลងកាលបរិច្ឆេទជា ISO String ឱ្យត្រូវម៉ោងអន្តរជាតិដើម្បីការពារការលូតម៉ោងខុសលើ Server
                 const rawDateInput = document.getElementById('gate_out_date').value;
                 const formattedISO = rawDateInput ? new Date(rawDateInput).toISOString() : new Date().toISOString();
 
