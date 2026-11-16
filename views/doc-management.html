@@ -376,7 +376,7 @@
             </button>
         </div>
 
-        <!-- KPI Summary Cards (រួមបញ្ចូលទាំងចំនួនសរុប ស្ថានភាពនីមួយៗ និងចំនួន Container សរុប) -->
+        <!-- KPI Summary Cards -->
         <div class="row g-3 mb-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6">
             <div class="col">
                 <div class="kpi-card bg-kpi-total">
@@ -662,7 +662,7 @@
         }
     }
 
-    // មុខងារគណនា និងបង្ហាញទិន្នន័យលើ Dashboard រួមទាំង Container
+    // មុខងារគណនា និងបង្ហាញទិន្នន័យលើ Dashboard រួមទាំងការបំបែករាប់កុងតឺន័រតាមសញ្ញា "/"
     function updateDashboardCharts(data) {
         const list = Array.isArray(data) ? data : [];
 
@@ -673,12 +673,12 @@
         const pendingCount = list.filter(d => d.status === 'Pending').length;
         const rejectedCount = list.filter(d => d.status === 'Rejected').length;
 
-        // រាប់ចំនួនកុងតឺន័រ (ពិនិត្យប្រអប់ reference_no ដែលមានអត្ថបទ ឬលេខកុងតឺន័រ)
-        // បើមានការកត់ត្រាចំនួនជាក់លាក់ ឬរាប់រាល់ឯកសារដែលមាន Reference ដាក់ជាកុងតឺន័រ
+        // 💡 រាប់ចំនួនកុងតឺន័រសរុបដោយបំបែកតាមសញ្ញា "/" ស្វ័យប្រវត្តិ
         let totalContainers = 0;
         list.forEach(d => {
             if (d.reference_no && d.reference_no.trim() !== '') {
-                totalContainers += 1; // ឯកសារនីមួយដែលមាន Reference គិតជា 1 កុងតឺន័រ (ឬអាចបូកបន្ថែមតាមតម្រូវការ)
+                const containers = d.reference_no.split('/').map(c => c.trim()).filter(c => c !== '');
+                totalContainers += containers.length;
             }
         });
 
@@ -764,7 +764,14 @@
 
         // 4. ក្រាហ្វិកទី ៣: ចំនួនកុងតឺន័រតាមប្រភេទឯកសារ (Bar Chart for Containers)
         const containerCounts = typeCategories.map(t => {
-            return list.filter(d => d.document_type === t.key && d.reference_no && d.reference_no.trim() !== '').length;
+            let count = 0;
+            list.filter(d => d.document_type === t.key).forEach(d => {
+                if (d.reference_no && d.reference_no.trim() !== '') {
+                    const splitContainers = d.reference_no.split('/').map(c => c.trim()).filter(c => c !== '');
+                    count += splitContainers.length;
+                }
+            });
+            return count;
         });
 
         const ctxContainer = document.getElementById('containerBarChart').getContext('2d');
