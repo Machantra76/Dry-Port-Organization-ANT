@@ -300,7 +300,7 @@ async function initializeDatabase() {
             );
         `);
 
-        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations)
+        // ១៥. តារាងគ្រប់គ្រងទីតាំងកុងតឺន័រ (Container Yard Locations) - កែប្រែ updated_date ជា TIMESTAMP
         await client.query(`
             CREATE TABLE IF NOT EXISTS container_yard_locations (
                 id SERIAL PRIMARY KEY,
@@ -312,11 +312,13 @@ async function initializeDatabase() {
                 row_number INT NOT NULL,
                 tier_number INT NOT NULL,
                 status VARCHAR(50) DEFAULT 'Stored',
-                updated_date DATE NOT NULL,
+                updated_date TIMESTAMP NOT NULL,
                 notes TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+        // ធានាថាALTER TABLE ប្រសិនបើមានតារាងរួចហើយ គឺដូរប្រភេទជា TIMESTAMP តែម្តង
+        await client.query(`ALTER TABLE container_yard_locations ALTER COLUMN updated_date TYPE TIMESTAMP USING updated_date::TIMESTAMP;`).catch(() => {});
 
         // ១៦. តារាងការថែទាំ និងជួសជុលកុងតឺន័រ (Container Repair Logs)
         await client.query(`
@@ -3313,7 +3315,7 @@ app.put('/api/fleet/container-yard/:id', async (req, res) => {
     }
 });
 
-// 🌟 ត្រូវបន្ថែម API DELETE នេះចូលបន្ថែម ដើម្បីឱ្យប៊ូតុងលុបដំណើរការបាន
+// 🌟 API DELETE សម្រាប់លុបទិន្នន័យទីតាំងកុងតឺន័រ
 app.delete('/api/fleet/container-yard/:id', async (req, res) => {
     const { id } = req.params;
     try {
@@ -3329,6 +3331,7 @@ app.delete('/api/fleet/container-yard/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការលុបទិន្នន័យ' });
     }
 });
+
 // ==========================================
 // API Routes: Container Repair Logs
 // ==========================================
@@ -3411,7 +3414,7 @@ app.post('/api/fleet/container-repairs', async (req, res) => {
         const yardStatus = repairStatus === 'Completed' ? 'Stored' : 'In Repair';
         await client.query(`
             UPDATE container_yard_locations 
-            SET status = $1, updated_date = CURRENT_DATE 
+            SET status = $1, updated_date = CURRENT_TIMESTAMP 
             WHERE container_number = $2
         `, [yardStatus, container_number]);
 
@@ -3461,7 +3464,7 @@ app.put('/api/fleet/container-repairs/:id', async (req, res) => {
         const yardStatus = status === 'Completed' ? 'Stored' : 'In Repair';
         await client.query(`
             UPDATE container_yard_locations 
-            SET status = $1, updated_date = CURRENT_DATE 
+            SET status = $1, updated_date = CURRENT_TIMESTAMP 
             WHERE container_number = $2
         `, [yardStatus, container_number]);
 
@@ -3527,7 +3530,7 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
                 await client.query('ROLLBACK');
                 return res.status(400).json({ 
                     success: false, 
-                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out បានទេ!` 
+                    error: `កំហុស៖ កុងតឺន័រលេខ ${container_number} ស្ថិតក្នុងស្ថានភាព "${currentYardStatus}" រួចហើយ មិនអាចធ្វើការ Gate-Out ได้ទេ!` 
                 });
             }
         }
@@ -3553,7 +3556,7 @@ app.post('/api/fleet/container-gate-out', async (req, res) => {
 
         await client.query(`
             UPDATE container_yard_locations 
-            SET status = 'Gate-Out', updated_date = CURRENT_DATE 
+            SET status = 'Gate-Out', updated_date = CURRENT_TIMESTAMP 
             WHERE container_number = $1
         `, [container_number]);
 
