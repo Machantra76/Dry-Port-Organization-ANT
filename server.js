@@ -3283,6 +3283,7 @@ app.post('/api/fleet/container-yard', async (req, res) => {
     }
 });
 
+// API សម្រាប់កែប្រែ/ដោះដូរ (ដែលមានស្រាប់របស់អ្នក)
 app.put('/api/fleet/container-yard/:id', async (req, res) => {
     const { id } = req.params;
     const { container_number, container_size, container_type, shipping_line, block_code, row_number, tier_number, status, updated_date, notes } = req.body;
@@ -3312,6 +3313,22 @@ app.put('/api/fleet/container-yard/:id', async (req, res) => {
     }
 });
 
+// 🌟 ត្រូវបន្ថែម API DELETE នេះចូលបន្ថែម ដើម្បីឱ្យប៊ូតុងលុបដំណើរការបាន
+app.delete('/api/fleet/container-yard/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const query = 'DELETE FROM container_yard_locations WHERE id = $1 RETURNING *;';
+        const result = await pool.query(query, [id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យសម្រាប់លុបទេ' });
+        }
+        res.json({ success: true, message: 'បានលុបទិន្នន័យដោយជោគជ័យ' });
+    } catch (err) {
+        console.error('Error deleting container yard location:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការលុបទិន្នន័យ' });
+    }
+});
 // ==========================================
 // API Routes: Container Repair Logs
 // ==========================================
