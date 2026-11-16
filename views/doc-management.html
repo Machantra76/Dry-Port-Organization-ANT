@@ -311,6 +311,7 @@
         .bg-kpi-processing { background: linear-gradient(135deg, #0284c7, #38bdf8); }
         .bg-kpi-pending { background: linear-gradient(135deg, #d97706, #f59e0b); }
         .bg-kpi-rejected { background: linear-gradient(135deg, #dc2626, #ef4444); }
+        .bg-kpi-container { background: linear-gradient(135deg, #4f46e5, #6366f1); }
 
         .chart-box {
             border: 1px solid #e2e8f0;
@@ -375,13 +376,20 @@
             </button>
         </div>
 
-        <!-- KPI Summary Cards -->
-        <div class="row g-3 mb-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
+        <!-- KPI Summary Cards (រួមបញ្ចូលទាំងចំនួនសរុប ស្ថានភាពនីមួយៗ និងចំនួន Container សរុប) -->
+        <div class="row g-3 mb-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6">
             <div class="col">
                 <div class="kpi-card bg-kpi-total">
                     <div class="kpi-title">ឯកសារសរុប (Total)</div>
                     <h3 class="kpi-value" id="kpiTotal">0</h3>
                     <i class="fa-solid fa-folder-open kpi-icon"></i>
+                </div>
+            </div>
+            <div class="col">
+                <div class="kpi-card bg-kpi-container">
+                    <div class="kpi-title">កុងតឺន័រសរុប (Containers)</div>
+                    <h3 class="kpi-value" id="kpiContainers">0</h3>
+                    <i class="fa-solid fa-box-archive kpi-icon"></i>
                 </div>
             </div>
             <div class="col">
@@ -432,9 +440,17 @@
                     </div>
                 </div>
             </div>
-            <div class="col-12">
+            <div class="col-lg-6">
                 <div class="chart-box">
-                    <div class="chart-box-title"><i class="fa-solid fa-chart-area me-1"></i> និន្នាការចំនួនឯកសារប្រចាំខែ (Monthly Document Trend)</div>
+                    <div class="chart-box-title"><i class="fa-solid fa-boxes-stacked me-1"></i> ចំនួនកុងតឺន័រតាមប្រភេទឯកសារ (Containers by Type)</div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="containerBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="chart-box">
+                    <div class="chart-box-title"><i class="fa-solid fa-chart-area me-1"></i> និន្នាការចំនួនឯកសារប្រចាំខែ (Monthly Trend)</div>
                     <div class="chart-canvas-wrapper">
                         <canvas id="monthlyLineChart"></canvas>
                     </div>
@@ -594,6 +610,7 @@
     let documentDataList = [];
     let statusChartInstance = null;
     let typeChartInstance = null;
+    let containerChartInstance = null;
     let monthlyChartInstance = null;
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -645,7 +662,7 @@
         }
     }
 
-    // មុខងារគណនា និងបង្ហាញទិន្នន័យលើ Dashboard & Charts
+    // មុខងារគណនា និងបង្ហាញទិន្នន័យលើ Dashboard រួមទាំង Container
     function updateDashboardCharts(data) {
         const list = Array.isArray(data) ? data : [];
 
@@ -656,7 +673,17 @@
         const pendingCount = list.filter(d => d.status === 'Pending').length;
         const rejectedCount = list.filter(d => d.status === 'Rejected').length;
 
+        // រាប់ចំនួនកុងតឺន័រ (ពិនិត្យប្រអប់ reference_no ដែលមានអត្ថបទ ឬលេខកុងតឺន័រ)
+        // បើមានការកត់ត្រាចំនួនជាក់លាក់ ឬរាប់រាល់ឯកសារដែលមាន Reference ដាក់ជាកុងតឺន័រ
+        let totalContainers = 0;
+        list.forEach(d => {
+            if (d.reference_no && d.reference_no.trim() !== '') {
+                totalContainers += 1; // ឯកសារនីមួយដែលមាន Reference គិតជា 1 កុងតឺន័រ (ឬអាចបូកបន្ថែមតាមតម្រូវការ)
+            }
+        });
+
         document.getElementById('kpiTotal').innerText = totalCount;
+        document.getElementById('kpiContainers').innerText = totalContainers;
         document.getElementById('kpiApproved').innerText = approvedCount;
         document.getElementById('kpiProcessing').innerText = processingCount;
         document.getElementById('kpiPending').innerText = pendingCount;
@@ -717,7 +744,7 @@
                     data: typeCounts,
                     backgroundColor: ['#2563eb', '#0d9488', '#8b5cf6', '#f59e0b', '#64748b'],
                     borderRadius: 6,
-                    maxBarThickness: 45
+                    maxBarThickness: 40
                 }]
             },
             options: {
@@ -735,7 +762,41 @@
             }
         });
 
-        // 4. ក្រាហ្វិកទី ៣: និន្នាការប្រចាំខែ (Line Chart)
+        // 4. ក្រាហ្វិកទី ៣: ចំនួនកុងតឺន័រតាមប្រភេទឯកសារ (Bar Chart for Containers)
+        const containerCounts = typeCategories.map(t => {
+            return list.filter(d => d.document_type === t.key && d.reference_no && d.reference_no.trim() !== '').length;
+        });
+
+        const ctxContainer = document.getElementById('containerBarChart').getContext('2d');
+        if (containerChartInstance) containerChartInstance.destroy();
+        containerChartInstance = new Chart(ctxContainer, {
+            type: 'bar',
+            data: {
+                labels: typeCategories.map(t => t.label),
+                datasets: [{
+                    label: 'ចំនួនកុងតឺន័រ',
+                    data: containerCounts,
+                    backgroundColor: ['#4f46e5', '#06b6d4', '#3b82f6', '#10b981', '#64748b'],
+                    borderRadius: 6,
+                    maxBarThickness: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, precision: 0 }
+                    }
+                }
+            }
+        });
+
+        // 5. ក្រាហ្វិកទី ៤: និន្នាការប្រចាំខែ (Line Chart)
         const monthMap = {};
         list.forEach(item => {
             if (item.document_date) {
