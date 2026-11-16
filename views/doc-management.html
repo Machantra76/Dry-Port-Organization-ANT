@@ -440,6 +440,15 @@
                     </div>
                 </div>
             </div>
+            <!-- 💡 ក្រាហ្វិកថ្មី៖ ចំនួនឯកសារតាមមាត់ច្រក -->
+            <div class="col-lg-6">
+                <div class="chart-box">
+                    <div class="chart-box-title"><i class="fa-solid fa-map-location-dot me-1"></i> ចំនួនឯកសារតាមមាត់ច្រក (By Gate/Port)</div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="gateBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
             <div class="col-lg-6">
                 <div class="chart-box">
                     <div class="chart-box-title"><i class="fa-solid fa-boxes-stacked me-1"></i> ចំនួនកុងតឺន័រតាមប្រភេទឯកសារ (Containers by Type)</div>
@@ -448,7 +457,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-12">
                 <div class="chart-box">
                     <div class="chart-box-title"><i class="fa-solid fa-chart-area me-1"></i> និន្នាការចំនួនឯកសារប្រចាំខែ (Monthly Trend)</div>
                     <div class="chart-canvas-wrapper">
@@ -511,15 +520,24 @@
                     <input type="file" class="form-control" id="pdf_file" accept="application/pdf">
                 </div>
 
-                <!-- 💡 ប្រអប់ Upload PDF សម្រាប់ "DO" (Delivery Order) ដាច់ដោយឡែក -->
+                <!-- ប្រអប់ Upload PDF សម្រាប់ "DO" (Delivery Order) ដាច់ដោយឡែក -->
                 <div class="col-md-6">
                     <label class="form-label text-primary fw-bold"><i class="fa-solid fa-file-arrow-up"></i> ឯកសារ PDF ឈ្មោះ "DO" (Delivery Order):</label>
                     <input type="file" class="form-control border-primary" id="do_pdf_file" accept="application/pdf">
                 </div>
 
+                <!-- 💡 ដូរពី Notes មកជា Dropdown មាត់ច្រក -->
                 <div class="col-md-12">
-                    <label class="form-label">កំណត់សម្គាល់ ឬព័ត៌មានលម្អិត (Notes / Description):</label>
-                    <textarea class="form-control" id="notes" rows="2" placeholder="ព័ត៌មានបន្ថែមទាក់ទងនឹងឯកសារគយនេះ..."></textarea>
+                    <label class="form-label text-primary fw-bold"><i class="fa-solid fa-map-marked-alt"></i> មាត់ច្រក (Gate / Port):</label>
+                    <select class="form-select border-primary" id="notes" required>
+                        <option value="" disabled selected>-- សូមជ្រើសរើសមាត់ច្រក --</option>
+                        <option value="កំពង់សោម">កំពង់សោម</option>
+                        <option value="បាវិត">បាវិត</option>
+                        <option value="កែវផុស">កែវផុស</option>
+                        <option value="កំពត">កំពត</option>
+                        <option value="ព្រៃវរ័ណ៏">ព្រៃវរ័ណ៏</option>
+                        <option value="ផែរភ្នំពេញ">ផែរភ្នំពេញ</option>
+                    </select>
                 </div>
                 
                 <div class="col-12 mt-4">
@@ -540,7 +558,7 @@
         </form>
     </div>
 
-    <!-- ផ្នែកទី ២: តារាងបង្ហាញទិន្នន័យ (លាក់ទុកដំបូង) -->
+    <!-- ផ្នែកទី ២: តារាងបង្ហាញទិន្នន័យ -->
     <div id="tableSection" class="section-card" style="display: none;">
         <div class="section-card-title mb-3"><i class="fa-solid fa-table-list me-2"></i> តារាងបញ្ជីគ្រប់គ្រងឯកសារគយ (Customs Documents List)</div>
 
@@ -592,12 +610,13 @@
                         <th class="table-custom-header">កាលបរិច្ឆេទ</th>
                         <th class="table-custom-header">មន្ត្រីទទួលបន្ទុក</th>
                         <th class="table-custom-header">ឯកសារយោង</th>
+                        <th class="table-custom-header">មាត់ច្រក</th>
                         <th class="table-custom-header">ស្ថានភាព</th>
                         <th class="table-custom-header no-print">សកម្មភាព</th>
                     </tr>
                 </thead>
                 <tbody id="documentTableBody">
-                    <tr><td colspan="9" class="text-center text-muted py-4">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                    <tr><td colspan="10" class="text-center text-muted py-4">កំពុងទាញយកទិន្នន័យ...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -610,6 +629,7 @@
     let documentDataList = [];
     let statusChartInstance = null;
     let typeChartInstance = null;
+    let gateChartInstance = null;
     let containerChartInstance = null;
     let monthlyChartInstance = null;
 
@@ -657,12 +677,12 @@
             updateDashboardCharts(documentDataList);
         } catch (err) {
             console.error('Error loading customs documents:', err);
-            document.getElementById('documentTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            document.getElementById('documentTableBody').innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
             updateDashboardCharts([]);
         }
     }
 
-    // មុខងារគណនា និងបង្ហាញទិន្នន័យលើ Dashboard រួមទាំងការបំបែករាប់កុងតឺន័រតាមសញ្ញា "/"
+    // មុខងារគណនា និងបង្ហាញទិន្នន័យលើ Dashboard រួមទាំងក្រាហ្វិកមាត់ច្រក
     function updateDashboardCharts(data) {
         const list = Array.isArray(data) ? data : [];
 
@@ -673,7 +693,6 @@
         const pendingCount = list.filter(d => d.status === 'Pending').length;
         const rejectedCount = list.filter(d => d.status === 'Rejected').length;
 
-        // 💡 រាប់ចំនួនកុងតឺន័រសរុបដោយបំបែកតាមសញ្ញា "/" ស្វ័យប្រវត្តិ
         let totalContainers = 0;
         list.forEach(d => {
             if (d.reference_no && d.reference_no.trim() !== '') {
@@ -689,7 +708,6 @@
         document.getElementById('kpiPending').innerText = pendingCount;
         document.getElementById('kpiRejected').innerText = rejectedCount;
 
-        // កំណត់ Font សម្រាប់ Chart.js
         Chart.defaults.font.family = "'Kantumruy Pro', sans-serif";
 
         // 2. ក្រាហ្វិកទី ១: សមាមាត្រស្ថានភាពឯកសារ (Doughnut Chart)
@@ -748,21 +766,39 @@
                 }]
             },
             options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { stepSize: 1, precision: 0 }
-                    }
-                }
+                responsive: { maintainAspectRatio: false },
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } }
             }
         });
 
-        // 4. ក្រាហ្វិកទី ៣: ចំនួនកុងតឺន័រតាមប្រភេទឯកសារ (Bar Chart for Containers)
+        // 4. ក្រាហ្វិកទី ៣ (ថ្មី): ចំនួនឯកសារតាមមាត់ច្រក (Bar Chart for Gates)
+        const gateList = ['កំពង់សោម', 'បាវិត', 'កែវផុស', 'កំពត', 'ព្រៃវរ័ណ៏', 'ផែរភ្នំពេញ'];
+        const gateCounts = gateList.map(gate => list.filter(d => d.notes === gate).length);
+
+        const ctxGate = document.getElementById('gateBarChart').getContext('2d');
+        if (gateChartInstance) gateChartInstance.destroy();
+        gateChartInstance = new Chart(ctxGate, {
+            type: 'bar',
+            data: {
+                labels: gateList,
+                datasets: [{
+                    label: 'ចំនួនឯកសារ',
+                    data: gateCounts,
+                    backgroundColor: ['#0284c7', '#059669', '#d97706', '#7c3aed', '#dc2626', '#4f46e5'],
+                    borderRadius: 6,
+                    maxBarThickness: 35
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } }
+            }
+        });
+
+        // 5. ក្រាហ្វិកទី ៤: ចំនួនកុងតឺន័រតាមប្រភេទឯកសារ
         const containerCounts = typeCategories.map(t => {
             let count = 0;
             list.filter(d => d.document_type === t.key).forEach(d => {
@@ -791,23 +827,16 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { stepSize: 1, precision: 0 }
-                    }
-                }
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } }
             }
         });
 
-        // 5. ក្រាហ្វិកទី ៤: និន្នាការប្រចាំខែ (Line Chart)
+        // 6. ក្រាហ្វិកទី ៥: និន្នាការប្រចាំខែ (Line Chart)
         const monthMap = {};
         list.forEach(item => {
             if (item.document_date) {
-                const ym = item.document_date.substring(0, 7); // YYYY-MM
+                const ym = item.document_date.substring(0, 7);
                 monthMap[ym] = (monthMap[ym] || 0) + 1;
             }
         });
@@ -835,15 +864,8 @@
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'top' }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { stepSize: 1, precision: 0 }
-                    }
-                }
+                plugins: { legend: { position: 'top' } },
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } }
             }
         });
     }
@@ -853,7 +875,7 @@
         tbody.innerHTML = '';
 
         if (!Array.isArray(data) || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">ពុំមានទិន្នន័យឯកសារគយទេ</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">ពុំមានទិន្នន័យឯកសារគយទេ</td></tr>`;
             return;
         }
 
@@ -865,7 +887,6 @@
             else if (item.status === 'Rejected') statusBadge = 'bg-danger';
 
             let downloadBtn = '';
-            
             if (item.has_pdf) {
                 downloadBtn += `<a href="/api/customs-documents/${item.id}/pdf" class="btn btn-sm btn-outline-success me-1" target="_blank" title="មើល ឬទាញយក PDF ទូទៅ"><i class="fa-solid fa-file-pdf"></i> PDF</a>`;
             } else {
@@ -887,6 +908,7 @@
                     <td>${item.document_date ? item.document_date.split('T')[0] : '-'}</td>
                     <td>${item.officer_name}</td>
                     <td>${item.reference_no || '-'}</td>
+                    <td><span class="badge bg-info text-dark">${item.notes || '-'}</span></td>
                     <td><span class="badge ${statusBadge}">${item.status}</span></td>
                     <td class="no-print action-column">
                         ${downloadBtn}
@@ -959,15 +981,10 @@
         formData.append('status', document.getElementById('status').value);
         formData.append('officer_name', document.getElementById('officer_name').value);
         formData.append('reference_no', document.getElementById('reference_no').value);
-        formData.append('notes', document.getElementById('notes').value);
+        formData.append('notes', document.getElementById('notes').value); // រក្សាទុកតម្លៃមាត់ច្រកក្នុង field notes 
 
-        if (pdfFile) {
-            formData.append('pdf_file', pdfFile);
-        }
-        
-        if (doPdfFile) {
-            formData.append('do_pdf_file', doPdfFile);
-        }
+        if (pdfFile) formData.append('pdf_file', pdfFile);
+        if (doPdfFile) formData.append('do_pdf_file', doPdfFile);
 
         try {
             const url = editId ? `/api/customs-documents/${editId}` : '/api/customs-documents';
