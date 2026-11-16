@@ -394,12 +394,13 @@
                                 <th>គោលដៅ</th>
                                 <th>B/L No.</th>
                                 <th>អ្នកចេញ</th>
-                                <th class="text-center rounded-end">ស្ថានភាព</th>
+                                <th>ស្ថានភាព</th>
+                                <th class="text-center rounded-end">សកម្មភាព</th>
                             </tr>
                         </thead>
                         <tbody id="gateOutTableBody">
                             <tr>
-                                <td colspan="11" class="empty-text">កំពុងទាញយកទិន្នន័យ...</td>
+                                <td colspan="12" class="empty-text">កំពុងទាញយកទិន្នន័យ...</td>
                             </tr>
                         </tbody>
                     </table>
@@ -532,7 +533,7 @@
                 console.error('Error fetching data:', err);
                 const tbody = document.getElementById('gateOutTableBody');
                 if (tbody) {
-                    tbody.innerHTML = `<tr><td colspan="11" class="text-center text-danger py-3">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="12" class="text-center text-danger py-3">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
                 }
             }
         }
@@ -562,7 +563,7 @@
             tbody.innerHTML = '';
 
             if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="empty-text">រកមិនឃើញទិន្នន័យកុងតឺន័រចេញទេ</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="12" class="empty-text">រកមិនឃើញទិន្នន័យកុងតឺន័រចេញទេ</td></tr>`;
                 return;
             }
 
@@ -602,9 +603,37 @@
                     <td class="text-center">
                         <span class="badge bg-secondary px-2.5 py-1">Released</span>
                     </td>
+                    <td class="text-center">
+                        <button class="btn btn-danger btn-sm fw-bold px-2 py-1 shadow-sm" style="font-size: 0.8rem; border-radius: 6px;" title="លុប" onclick="deleteGateOutRecord(${item.id})">
+                            <i class="fas fa-trash-alt"></i> លុប
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        // 🌟 មុខងារសម្រាប់លុបទិន្នន័យ Gate-Out
+        async function deleteGateOutRecord(id) {
+            if (!id) return;
+            if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យការចេញកុងតឺន័រ (Gate-Out) នេះមែនទេ?')) {
+                try {
+                    const response = await fetch(`/api/fleet/container-gate-out/${id}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        alert('បានលុបទិន្នន័យដោយជោគជ័យ!');
+                        fetchGateOutData();
+                        fetchYardContainers();
+                    } else {
+                        alert('កំហុស៖ ' + (result.error || 'មិនអាចលុបទិន្នន័យបានទេ'));
+                    }
+                } catch (err) {
+                    console.error('Delete Error:', err);
+                    alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server!');
+                }
+            }
         }
 
         const filterFormElem = document.getElementById('filterForm');
@@ -669,10 +698,14 @@
             if (!historyElement) return;
 
             const filterForm = historyElement.querySelector('#filterForm');
+            const actionCells = historyElement.querySelectorAll('th:nth-child(12), td:nth-child(12)');
+
             if(filterForm) filterForm.style.display = 'none';
+            actionCells.forEach(cell => cell.style.display = 'none');
 
             html2canvas(historyElement, { scale: 2 }).then(canvas => {
                 if(filterForm) filterForm.style.display = '';
+                actionCells.forEach(cell => cell.style.display = '');
 
                 const imgData = canvas.toDataURL('image/png');
                 const pdf = new jsPDF('p', 'mm', 'a4');
@@ -696,6 +729,7 @@
             }).catch(err => {
                 console.error('PDF Export Error:', err);
                 if(filterForm) filterForm.style.display = '';
+                actionCells.forEach(cell => cell.style.display = '');
                 alert('មានបញ្ហាក្នុងការទាញយក PDF');
             });
         }
