@@ -500,7 +500,7 @@
     <script>
         let allYardData = [];
 
-        // មុខងារទាញយកថ្ងៃខែឆ្នាំ និងម៉ោងបច្ចុប្បន្ននៅកម្ពុជា (Asia/Phnom_Penh - UTC+7) ត្រឹមត្រូវពិតប្រាកដ
+        // មុខងារទាញយកថ្ងៃខែឆ្នាំ និងម៉ោងបច្ចុប្បន្ននៅកម្ពុជា (Asia/Phnom_Penh - UTC+7) សម្រាប់បញ្ចូលក្នុង input datetime-local
         function getCambodiaDateTimeForInput(dateInput = new Date()) {
             const dateObj = new Date(dateInput);
             if (isNaN(dateObj.getTime())) return '';
@@ -523,19 +523,42 @@
             return `${map.year}-${map.month}-${map.day}T${hour}:${map.minute}`;
         }
 
-        // មុខងារបង្ហាញកាលបរិច្ឆេទ និងម៉ោងក្នុងតារាង (ទប់ស្កាត់មិនให้อ่านម៉ោង 07:00 AM លើសទិន្នន័យចាស់ដែលគ្មានម៉ោង)
+        // មុខងារបំប្លែងតម្លៃម៉ោងក្នុង Input ឲ្យទៅជាទម្រង់ ISO ត្រឹមត្រូវតាមម៉ោងក្នុងเครื่อง (Local ISO) មុននឹងផ្ញើទៅ Server
+        function toLocalDateTimeISO(datetimeLocalValue) {
+            if (!datetimeLocalValue) return '';
+            const dt = new Date(datetimeLocalValue);
+            if (isNaN(dt.getTime())) return datetimeLocalValue;
+
+            const pad = (n) => String(n).padStart(2, '0');
+            const year = dt.getFullYear();
+            const month = pad(dt.getMonth() + 1);
+            const day = pad(dt.getDate());
+            const hours = pad(dt.getHours());
+            const minutes = pad(dt.getMinutes());
+            const seconds = pad(dt.getSeconds());
+
+            // ទាញយក Timezone Offset របស់ម៉ាស៊ីនអ្នកប្រើប្រាស់ផ្ទាល់
+            const tzOffsetMinutes = -dt.getTimezoneOffset();
+            const sign = tzOffsetMinutes >= 0 ? '+' : '-';
+            const absOffset = Math.abs(tzOffsetMinutes);
+            const offsetHours = pad(Math.floor(absOffset / 60));
+            const offsetMinutes = pad(absOffset % 60);
+
+            return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${sign}${offsetHours}:${offsetMinutes}`;
+        }
+
+        // មុខងារបង្ហាញកាលបរិច្ឆេទ និងម៉ោងក្នុងតារាង
         function formatCambodiaDateTimeDisplay(dateStr) {
             if (!dateStr) return '-';
             
             const trimmed = dateStr.trim();
 
-            // បើសិនជាទិន្នន័យក្នុង DB ជាទម្រង់ថ្ងៃខែឆ្នាំសុទ្ធ (YYYY-MM-DD) មិនមានម៉ោង គឺបង្ហាញត្រឹមថ្ងៃខែឆ្នាំនោះតែប៉ុណ្ណោះ គ្មានម៉ោង 07:00 AM ឡើយ
             if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
                 return trimmed;
             }
 
-            // បើសិនជាមានម៉ោងមកជាមួយ តែគ្មាន Timezone គឺថែម +07:00 ចូលដើម្បីឲ្យត្រូវម៉ោងខ្មែរ
             let normalizedStr = trimmed;
+            // បើ Server រក្សាទុកគ្មាន Timezone គឺដាក់បញ្ចូល +07:00 ស្វ័យប្រវត្តិ
             if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/.test(normalizedStr)) {
                 normalizedStr = normalizedStr.replace(' ', 'T') + '+07:00';
             }
@@ -654,7 +677,7 @@
                 console.error('Error loading data:', err);
                 const tbody = document.getElementById('yardTableBody');
                 if (tbody) {
-                    tbody.innerHTML = `<tr><td colspan="11" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="11" class="text-center text-danger py-4">មានបញ្ហាក្នុងการទាញយកទិន្នន័យពី Server</td></tr>`;
                 }
             }
         }
@@ -868,7 +891,9 @@
                 const idElem = document.getElementById('edit_id');
                 const id = idElem ? idElem.value : '';
                 const rawUpdatedDate = document.getElementById('edit_updated_date').value;
-                const cambodiaUpdatedDate = rawUpdatedDate ? `${rawUpdatedDate}:00+07:00` : '';
+                
+                // បម្លែងម៉ោងក្នុង Input ឲ្យទៅជា Local ISO String ត្រឹមត្រូវតាមម៉ោងជ្រើសរើសពិតប្រាកដ
+                const formattedUpdatedDate = toLocalDateTimeISO(rawUpdatedDate);
 
                 const updatedData = {
                     container_number: document.getElementById('edit_container_number').value.trim(),
@@ -878,7 +903,7 @@
                     block_code: document.getElementById('edit_block_code').value.trim(),
                     row_number: parseInt(document.getElementById('edit_row_number').value) || 1,
                     tier_number: parseInt(document.getElementById('edit_tier_number').value) || 1,
-                    updated_date: cambodiaUpdatedDate,
+                    updated_date: formattedUpdatedDate,
                     status: document.getElementById('edit_status').value,
                     notes: document.getElementById('edit_notes').value.trim()
                 };
@@ -957,8 +982,9 @@
                 const formData = new FormData(this);
                 const payload = Object.fromEntries(formData.entries());
 
-                if (payload.updated_date && payload.updated_date.includes('T')) {
-                    payload.updated_date = `${payload.updated_date}:00+07:00`;
+                // បម្លែងម៉ោងក្នុង Input ឲ្យទៅជា Local ISO String ត្រឹមត្រូវតាមម៉ោងជ្រើសរើសពិតប្រាកដមុនពេលផ្ញើ
+                if (payload.updated_date) {
+                    payload.updated_date = toLocalDateTimeISO(payload.updated_date);
                 }
 
                 try {
