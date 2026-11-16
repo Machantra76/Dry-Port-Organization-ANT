@@ -537,7 +537,6 @@
             const minutes = pad(dt.getMinutes());
             const seconds = pad(dt.getSeconds());
 
-            // ទាញយក Timezone Offset របស់ម៉ាស៊ីនអ្នកប្រើប្រាស់ផ្ទាល់
             const tzOffsetMinutes = -dt.getTimezoneOffset();
             const sign = tzOffsetMinutes >= 0 ? '+' : '-';
             const absOffset = Math.abs(tzOffsetMinutes);
@@ -547,20 +546,27 @@
             return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${sign}${offsetHours}:${offsetMinutes}`;
         }
 
-        // មុខងារបង្ហាញកាលបរិច្ឆេទ និងម៉ោងក្នុងតារាង
+        // មុខងារបង្ហាញកាលបរិច្ឆេទ និងម៉ោងក្នុងតារាង (បានកែសម្រួលដើម្បីបាំងម៉ោង 7:00 AM លើទិន្នន័យចាស់)
         function formatCambodiaDateTimeDisplay(dateStr) {
             if (!dateStr) return '-';
             
             const trimmed = dateStr.trim();
 
+            // បើសិនជាទិន្នន័យក្នុង DB ជាទម្រង់កាលបរិច្ឆេទសុទ្ធ (YYYY-MM-DD) បង្ហាញាតែថ្ងៃខែឆ្នាំ
             if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
                 return trimmed;
             }
 
             let normalizedStr = trimmed;
-            // បើ Server រក្សាទុកគ្មាន Timezone គឺដាក់បញ្ចូល +07:00 ស្វ័យប្រវត្តិ
+            
+            // បើសិនជាមានទម្រង់ម៉ោង ប៉ុន្តែគ្មាន Timezone ភ្ជាប់មកជាមួយ
             if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/.test(normalizedStr)) {
-                normalizedStr = normalizedStr.replace(' ', 'T') + '+07:00';
+                normalizedStr = normalizedStr.replace(' ', 'T');
+                // ប្រសិនបើវាជាម៉ោង 00:00:00 ដែលទម្លាក់ពី Server មក ចាត់ទុកថាវាជាទិន្នន័យចាស់គ្មានម៉ោងពិតប្រាកដ
+                if (normalizedStr.endsWith('00:00') || normalizedStr.endsWith('00:00:00')) {
+                    return normalizedStr.substring(0, 10);
+                }
+                normalizedStr += '+07:00';
             }
 
             const dateObj = new Date(normalizedStr);
@@ -579,6 +585,11 @@
             const parts = new Intl.DateTimeFormat('en-US', options).formatToParts(dateObj);
             const map = {};
             parts.forEach(p => { map[p.type] = p.value; });
+
+            // ប្រសិនបើគណនាមកចំម៉ោង 07:00 AM  ακριβώς ដែលជាកំហុសពីទិន្នន័យចាស់ ឱ្យបង្ហាញាតែថ្ងៃខែឆ្នាំជំនួសវិញ
+            if (map.hour === '07' && map.minute === '00' && map.dayPeriod === 'AM' && !trimmed.includes('T')) {
+                return dateObj.toISOString().substring(0, 10);
+            }
 
             return `${map.year}-${map.month}-${map.day} <br><small class="text-primary fw-semibold"><i class="far fa-clock me-1"></i>${map.hour}:${map.minute} ${map.dayPeriod}</small>`;
         }
@@ -892,7 +903,6 @@
                 const id = idElem ? idElem.value : '';
                 const rawUpdatedDate = document.getElementById('edit_updated_date').value;
                 
-                // បម្លែងម៉ោងក្នុង Input ឲ្យទៅជា Local ISO String ត្រឹមត្រូវតាមម៉ោងជ្រើសរើសពិតប្រាកដ
                 const formattedUpdatedDate = toLocalDateTimeISO(rawUpdatedDate);
 
                 const updatedData = {
@@ -971,7 +981,7 @@
                 console.error('PDF Export Error:', err);
                 if(filterForm) filterForm.style.display = '';
                 actionCells.forEach(cell => cell.style.display = '');
-                alert('មានបញ្ហាក្នុងការទាញយក PDF');
+                alert('មានបញ្ហាក្នុងการទាញយក PDF');
             });
         }
 
@@ -982,7 +992,6 @@
                 const formData = new FormData(this);
                 const payload = Object.fromEntries(formData.entries());
 
-                // បម្លែងម៉ោងក្នុង Input ឲ្យទៅជា Local ISO String ត្រឹមត្រូវតាមម៉ោងជ្រើសរើសពិតប្រាកដមុនពេលផ្ញើ
                 if (payload.updated_date) {
                     payload.updated_date = toLocalDateTimeISO(payload.updated_date);
                 }
