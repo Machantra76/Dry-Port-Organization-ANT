@@ -500,7 +500,7 @@
     <script>
         let allYardData = [];
 
-        // មុខងារទាញយកថ្ងៃខែឆ្នាំ និងម៉ោងបច្ចុប្បន្ននៅកម្ពុជា (Asia/Phnom_Penh - UTC+7) សម្រាប់បញ្ចូលក្នុង input datetime-local
+        // មុខងារទាញយកថ្ងៃខែឆ្នាំ និងម៉ោងបច្ចុប្បន្ននៅកម្ពុជា (Asia/Phnom_Penh - UTC+7) ត្រឹមត្រូវពិតប្រាកដ
         function getCambodiaDateTimeForInput(dateInput = new Date()) {
             const dateObj = new Date(dateInput);
             if (isNaN(dateObj.getTime())) return '';
@@ -523,24 +523,25 @@
             return `${map.year}-${map.month}-${map.day}T${hour}:${map.minute}`;
         }
 
-        // មុខងារបំប្លែងថ្ងៃខែឆ្នាំ និងម៉ោងសម្រាប់បង្ហាញក្នុងតារាង
+        // មុខងារបង្ហាញកាលបរិច្ឆេទ និងម៉ោងក្នុងតារាង (ទប់ស្កាត់មិនให้อ่านម៉ោង 07:00 AM លើសទិន្នន័យចាស់ដែលគ្មានម៉ោង)
         function formatCambodiaDateTimeDisplay(dateStr) {
             if (!dateStr) return '-';
             
             const trimmed = dateStr.trim();
 
-            // បើសិនជាទិន្នន័យចាស់មានត្រឹមតែថ្ងៃខែឆ្នាំ (YYYY-MM-DD) គ្មានម៉ោង គឺបង្ហាញតែថ្ងៃខែឆ្នាំធម្មតា
+            // បើសិនជាទិន្នន័យក្នុង DB ជាទម្រង់ថ្ងៃខែឆ្នាំសុទ្ធ (YYYY-MM-DD) មិនមានម៉ោង គឺបង្ហាញត្រឹមថ្ងៃខែឆ្នាំនោះតែប៉ុណ្ណោះ គ្មានម៉ោង 07:00 AM ឡើយ
             if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
                 return trimmed;
             }
 
+            // បើសិនជាមានម៉ោងមកជាមួយ តែគ្មាន Timezone គឺថែម +07:00 ចូលដើម្បីឲ្យត្រូវម៉ោងខ្មែរ
             let normalizedStr = trimmed;
             if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/.test(normalizedStr)) {
                 normalizedStr = normalizedStr.replace(' ', 'T') + '+07:00';
             }
 
             const dateObj = new Date(normalizedStr);
-            if (isNaN(dateObj.getTime())) return dateStr;
+            if (isNaN(dateObj.getTime())) return trimmed;
 
             const options = {
                 timeZone: 'Asia/Phnom_Penh',
@@ -902,7 +903,7 @@
                     }
                 } catch (err) {
                     console.error(err);
-                    alert('មានបញ្ហាក្នុងการភ្ជាប់ទៅកាន់ Server');
+                    alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
                 }
             });
         }
@@ -980,7 +981,7 @@
                     }
                 } catch (err) {
                     console.error('Error saving data:', err);
-                    alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ Server');
+                    alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ Server');
                 }
             });
         }
