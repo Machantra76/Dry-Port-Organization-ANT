@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Font Kantumruy Pro -->
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: 'Kantumruy Pro', sans-serif;
@@ -44,6 +46,8 @@
             transition: all 0.2s;
             border: none;
             cursor: pointer;
+            font-size: 0.95rem;
+            line-height: 1.5;
         }
         .btn-back:hover {
             background: linear-gradient(135deg, #0369a1, #075985);
@@ -63,6 +67,8 @@
             border: none;
             cursor: pointer;
             transition: background 0.2s;
+            font-size: 0.95rem;
+            line-height: 1.5;
         }
         .btn-nav-table:hover {
             background-color: #0369a1;
@@ -81,10 +87,34 @@
             border: none;
             cursor: pointer;
             transition: background 0.2s;
+            font-size: 0.95rem;
+            line-height: 1.5;
         }
         .btn-nav-form:hover {
             background-color: #047857;
             color: white;
+        }
+        .btn-nav-dashboard {
+            background: linear-gradient(135deg, #7c3aed, #6d28d9);
+            color: white;
+            font-weight: 500;
+            border-radius: 8px;
+            padding: 10px 18px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(124, 58, 237, 0.2);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        .btn-nav-dashboard:hover {
+            background: linear-gradient(135deg, #6d28d9, #5b21b6);
+            color: white;
+            transform: translateY(-1px);
         }
 
         .page-title {
@@ -242,6 +272,65 @@
             border: 1px solid #e2e8f0;
             margin-bottom: 20px;
         }
+
+        /* Dashboard KPI & Chart Styles */
+        .kpi-card {
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s;
+            height: 100%;
+        }
+        .kpi-card:hover {
+            transform: translateY(-3px);
+        }
+        .kpi-card .kpi-icon {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2.6rem;
+            opacity: 0.25;
+        }
+        .kpi-title {
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            opacity: 0.95;
+        }
+        .kpi-value {
+            font-size: 1.85rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        .bg-kpi-total { background: linear-gradient(135deg, #1e3a8a, #2563eb); }
+        .bg-kpi-approved { background: linear-gradient(135deg, #059669, #10b981); }
+        .bg-kpi-processing { background: linear-gradient(135deg, #0284c7, #38bdf8); }
+        .bg-kpi-pending { background: linear-gradient(135deg, #d97706, #f59e0b); }
+        .bg-kpi-rejected { background: linear-gradient(135deg, #dc2626, #ef4444); }
+
+        .chart-box {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #f8fafc;
+            height: 100%;
+        }
+        .chart-box-title {
+            font-size: 0.98rem;
+            font-weight: 600;
+            color: #1e3a8a;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .chart-canvas-wrapper {
+            position: relative;
+            height: 290px;
+            width: 100%;
+        }
         
         @media print {
             @page {
@@ -261,6 +350,9 @@
         <a href="/" class="btn-back">
             <i class="fa-solid fa-arrow-left"></i> ត្រឡប់ទៅ Dashboard វិញ
         </a>
+        <button type="button" id="btnShowDashboard" class="btn-nav-dashboard" onclick="switchSection('dashboard')">
+            <i class="fa-solid fa-chart-pie"></i> ផ្ទាំងក្រាហ្វិកសង្ខេប (Dashboard Chart)
+        </button>
         <button type="button" id="btnShowTable" class="btn-nav-table" onclick="switchSection('table')">
             <i class="fa-solid fa-table-list"></i> តារាងបញ្ជីគ្រប់គ្រងឯកសារគយ
         </button>
@@ -271,6 +363,85 @@
 
     <h2 class="page-title">ការគ្រប់គ្រងឯកសារគយ</h2>
     <p class="page-subtitle">CUSTOMS DOCUMENT MANAGEMENT SYSTEM</p>
+
+    <!-- ផ្នែកទី ០: Dashboard & Charts (ក្រាហ្វិកសង្ខេបទិន្នន័យ) -->
+    <div id="dashboardSection" class="section-card no-print" style="display: none;">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+            <div class="section-card-title mb-0">
+                <i class="fa-solid fa-chart-line me-2"></i> ផ្ទាំងវិភាគ និងក្រាហ្វិកសង្ខេបឯកសារគយ (Customs Analytics Dashboard)
+            </div>
+            <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadDocuments()">
+                <i class="fa-solid fa-rotate me-1"></i> ធ្វើបច្ចុប្បន្នភាពទិន្នន័យ
+            </button>
+        </div>
+
+        <!-- KPI Summary Cards -->
+        <div class="row g-3 mb-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-5">
+            <div class="col">
+                <div class="kpi-card bg-kpi-total">
+                    <div class="kpi-title">ឯកសារសរុប (Total)</div>
+                    <h3 class="kpi-value" id="kpiTotal">0</h3>
+                    <i class="fa-solid fa-folder-open kpi-icon"></i>
+                </div>
+            </div>
+            <div class="col">
+                <div class="kpi-card bg-kpi-approved">
+                    <div class="kpi-title">បានអនុម័ត (Approved)</div>
+                    <h3 class="kpi-value" id="kpiApproved">0</h3>
+                    <i class="fa-solid fa-circle-check kpi-icon"></i>
+                </div>
+            </div>
+            <div class="col">
+                <div class="kpi-card bg-kpi-processing">
+                    <div class="kpi-title">កំពុងដំណើរការ (Processing)</div>
+                    <h3 class="kpi-value" id="kpiProcessing">0</h3>
+                    <i class="fa-solid fa-spinner kpi-icon"></i>
+                </div>
+            </div>
+            <div class="col">
+                <div class="kpi-card bg-kpi-pending">
+                    <div class="kpi-title">រង់ចាំពិនិត្យ (Pending)</div>
+                    <h3 class="kpi-value" id="kpiPending">0</h3>
+                    <i class="fa-solid fa-clock kpi-icon"></i>
+                </div>
+            </div>
+            <div class="col">
+                <div class="kpi-card bg-kpi-rejected">
+                    <div class="kpi-title">ច្រានចោល (Rejected)</div>
+                    <h3 class="kpi-value" id="kpiRejected">0</h3>
+                    <i class="fa-solid fa-circle-xmark kpi-icon"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="row g-4">
+            <div class="col-lg-5">
+                <div class="chart-box">
+                    <div class="chart-box-title"><i class="fa-solid fa-chart-pie me-1"></i> សមាមាត្រស្ថានភាពឯកសារ (By Status)</div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="statusDoughnutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="chart-box">
+                    <div class="chart-box-title"><i class="fa-solid fa-chart-column me-1"></i> ចំនួនឯកសារតាមប្រភេទ (By Document Type)</div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="typeBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12">
+                <div class="chart-box">
+                    <div class="chart-box-title"><i class="fa-solid fa-chart-area me-1"></i> និន្នាការចំនួនឯកសារប្រចាំខែ (Monthly Document Trend)</div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="monthlyLineChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- ផ្នែកទី ១: Form កត់ត្រាថ្មី -->
     <div id="formSection" class="section-card no-print">
@@ -421,30 +592,43 @@
 
 <script>
     let documentDataList = [];
+    let statusChartInstance = null;
+    let typeChartInstance = null;
+    let monthlyChartInstance = null;
 
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('document_date').value = new Date().toISOString().split('T')[0];
         loadDocuments();
     });
 
-    // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
+    // មុខងារប្តូរទិដ្ឋភាពរវាង Form, Table និង Dashboard
     function switchSection(section) {
         const formSection = document.getElementById('formSection');
         const tableSection = document.getElementById('tableSection');
+        const dashboardSection = document.getElementById('dashboardSection');
         const btnShowTable = document.getElementById('btnShowTable');
         const btnShowForm = document.getElementById('btnShowForm');
+        const btnShowDashboard = document.getElementById('btnShowDashboard');
+
+        formSection.style.display = 'none';
+        tableSection.style.display = 'none';
+        dashboardSection.style.display = 'none';
+
+        btnShowForm.style.display = 'inline-flex';
+        btnShowTable.style.display = 'inline-flex';
+        btnShowDashboard.style.display = 'inline-flex';
 
         if (section === 'table') {
-            formSection.style.display = 'none';
             tableSection.style.display = 'block';
             btnShowTable.style.display = 'none';
-            btnShowForm.style.display = 'inline-flex';
+            loadDocuments();
+        } else if (section === 'dashboard') {
+            dashboardSection.style.display = 'block';
+            btnShowDashboard.style.display = 'none';
             loadDocuments();
         } else {
-            tableSection.style.display = 'none';
             formSection.style.display = 'block';
             btnShowForm.style.display = 'none';
-            btnShowTable.style.display = 'inline-flex';
         }
     }
 
@@ -453,10 +637,147 @@
             const response = await fetch('/api/customs-documents');
             documentDataList = await response.json();
             renderTable(documentDataList);
+            updateDashboardCharts(documentDataList);
         } catch (err) {
             console.error('Error loading customs documents:', err);
             document.getElementById('documentTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            updateDashboardCharts([]);
         }
+    }
+
+    // មុខងារគណនា និងបង្ហាញទិន្នន័យលើ Dashboard & Charts
+    function updateDashboardCharts(data) {
+        const list = Array.isArray(data) ? data : [];
+
+        // 1. គណនា KPI Cards
+        const totalCount = list.length;
+        const approvedCount = list.filter(d => d.status === 'Approved').length;
+        const processingCount = list.filter(d => d.status === 'Processing').length;
+        const pendingCount = list.filter(d => d.status === 'Pending').length;
+        const rejectedCount = list.filter(d => d.status === 'Rejected').length;
+
+        document.getElementById('kpiTotal').innerText = totalCount;
+        document.getElementById('kpiApproved').innerText = approvedCount;
+        document.getElementById('kpiProcessing').innerText = processingCount;
+        document.getElementById('kpiPending').innerText = pendingCount;
+        document.getElementById('kpiRejected').innerText = rejectedCount;
+
+        // កំណត់ Font សម្រាប់ Chart.js
+        Chart.defaults.font.family = "'Kantumruy Pro', sans-serif";
+
+        // 2. ក្រាហ្វិកទី ១: សមាមាត្រស្ថានភាពឯកសារ (Doughnut Chart)
+        const ctxStatus = document.getElementById('statusDoughnutChart').getContext('2d');
+        if (statusChartInstance) statusChartInstance.destroy();
+        statusChartInstance = new Chart(ctxStatus, {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    'បានអនុម័ត (Approved)',
+                    'កំពុងដំណើរការ (Processing)',
+                    'រង់ចាំពិនិត្យ (Pending)',
+                    'ច្រានចោល (Rejected)'
+                ],
+                datasets: [{
+                    data: [approvedCount, processingCount, pendingCount, rejectedCount],
+                    backgroundColor: ['#10b981', '#0284c7', '#f59e0b', '#ef4444'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { padding: 15, font: { size: 12 } }
+                    }
+                }
+            }
+        });
+
+        // 3. ក្រាហ្វិកទី ២: ចំនួនឯកសារតាមប្រភេទ (Bar Chart)
+        const typeCategories = [
+            { key: 'Import Declaration', label: 'ប្រកាសទំនិញចូល (Import)' },
+            { key: 'Export Declaration', label: 'ប្រកាសទំនិញចេញ (Export)' },
+            { key: 'Transit Permit', label: 'ប័ណ្ណឆ្លងដែន (Transit)' },
+            { key: 'Certificate of Origin', label: 'ដើមកំណើត (C/O)' },
+            { key: 'Other Clearance', label: 'ផ្សេងៗ (Other)' }
+        ];
+        const typeCounts = typeCategories.map(t => list.filter(d => d.document_type === t.key).length);
+
+        const ctxType = document.getElementById('typeBarChart').getContext('2d');
+        if (typeChartInstance) typeChartInstance.destroy();
+        typeChartInstance = new Chart(ctxType, {
+            type: 'bar',
+            data: {
+                labels: typeCategories.map(t => t.label),
+                datasets: [{
+                    label: 'ចំនួនឯកសារ',
+                    data: typeCounts,
+                    backgroundColor: ['#2563eb', '#0d9488', '#8b5cf6', '#f59e0b', '#64748b'],
+                    borderRadius: 6,
+                    maxBarThickness: 45
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, precision: 0 }
+                    }
+                }
+            }
+        });
+
+        // 4. ក្រាហ្វិកទី ៣: និន្នាការប្រចាំខែ (Line Chart)
+        const monthMap = {};
+        list.forEach(item => {
+            if (item.document_date) {
+                const ym = item.document_date.substring(0, 7); // YYYY-MM
+                monthMap[ym] = (monthMap[ym] || 0) + 1;
+            }
+        });
+        const sortedMonths = Object.keys(monthMap).sort();
+        const monthlyCounts = sortedMonths.map(m => monthMap[m]);
+
+        const ctxMonthly = document.getElementById('monthlyLineChart').getContext('2d');
+        if (monthlyChartInstance) monthlyChartInstance.destroy();
+        monthlyChartInstance = new Chart(ctxMonthly, {
+            type: 'line',
+            data: {
+                labels: sortedMonths.length > 0 ? sortedMonths : ['ពុំទាន់មានទិន្នន័យ'],
+                datasets: [{
+                    label: 'ចំនួនឯកសារសរុបប្រចាំខែ',
+                    data: sortedMonths.length > 0 ? monthlyCounts : [0],
+                    borderColor: '#1e3a8a',
+                    backgroundColor: 'rgba(30, 58, 138, 0.12)',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#0284c7',
+                    pointRadius: 5,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top' }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, precision: 0 }
+                    }
+                }
+            }
+        });
     }
 
     function renderTable(data) {
