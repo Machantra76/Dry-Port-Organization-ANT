@@ -645,70 +645,72 @@
             return diffDays >= 0 ? `${diffDays + 1} ថ្ងៃ` : '0 ថ្ងៃ';
         }
 
-     function displayTableData(data) {
-    const tbody = document.getElementById('yardTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+        function displayTableData(data) {
+            const tbody = document.getElementById('yardTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
 
-    if (!Array.isArray(data) || data.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">ពុំមានទិន្នន័យទីតាំងកុងតឺន័រទេ (No data found)</td></tr>`;
-        return;
-    }
-
-    data.forEach((item, index) => {
-        let statusBadge = 'bg-primary text-white';
-        if (item.status === 'Stored') statusBadge = 'bg-success text-white';
-        else if (item.status === 'Dispatched') statusBadge = 'bg-secondary text-white';
-        else if (item.status === 'Gate-Out') statusBadge = 'bg-danger text-white';
-        else if (item.status === 'Moved') statusBadge = 'bg-warning text-dark';
-
-        const dayInYardText = calculateDayInYard(item);
-        
-        let formattedDateTime = '-';
-        if (item.updated_date) {
-            // កាត់យក string ថ្ងៃខែ និងម៉ោងមករៀបចំបង្ហាញដោយផ្ទាល់
-            const cleanStr = item.updated_date.replace('T', ' ').substring(0, 16);
-            const [datePart, timePart] = cleanStr.split(' ');
-            if (datePart && timePart) {
-                const [year, month, day] = datePart.split('-');
-                let [hours, minutes] = timePart.split(':');
-                let hourInt = parseInt(hours, 10);
-                const ampm = hourInt >= 12 ? 'PM' : 'AM';
-                hourInt = hourInt % 12;
-                hourInt = hourInt ? hourInt : 12;
-                formattedDateTime = `${month}/${day}/${year}, ${String(hourInt).padStart(2, '0')}:${minutes} ${ampm}`;
-            } else {
-                formattedDateTime = item.updated_date;
+            if (!Array.isArray(data) || data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">ពុំមានទិន្នន័យទីតាំងកុងតឺន័រទេ (No data found)</td></tr>`;
+                return;
             }
-        }
 
-        const row = `
-            <tr>
-                <td>${index + 1}</td>
-                <td><strong>${item.container_number}</strong></td>
-                <td><span class="badge bg-info text-dark">${item.container_size || "40'"} / ${item.container_type || "DC"}</span></td>
-                <td><span class="fw-semibold text-dark">${item.shipping_line || '-'}</span></td>
-                <td><span class="badge bg-dark">${item.block_code}</span></td>
-                <td>ជួរទី ${item.row_number} / ជាន់ទី ${item.tier_number}</td>
-                <td><span class="badge ${statusBadge}">${item.status}</span></td>
-                <td>${formattedDateTime}</td>
-                <td><span class="badge bg-danger text-white">${dayInYardText}</span></td>
-                <td>${item.notes || '-'}</td>
-                <td>
-                    <div class="d-flex justify-content-center gap-1">
-                        <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1 shadow-sm" style="font-size: 0.8rem; border-radius: 6px;" title="ដោះដូរ / កែប្រែ" onclick="openEditModal(${item.id})">
-                            <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
-                        </button>
-                        <button class="btn btn-danger btn-sm fw-bold px-2 py-1 shadow-sm" style="font-size: 0.8rem; border-radius: 6px;" title="លុប" onclick="deleteYardRecordDirect(${item.id})">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `;
-        tbody.innerHTML += row;
-    });
-}
+            data.forEach((item, index) => {
+                let statusBadge = 'bg-primary text-white';
+                if (item.status === 'Stored') statusBadge = 'bg-success text-white';
+                else if (item.status === 'Dispatched') statusBadge = 'bg-secondary text-white';
+                else if (item.status === 'Gate-Out') statusBadge = 'bg-danger text-white';
+                else if (item.status === 'Moved') statusBadge = 'bg-warning text-dark';
+
+                const dayInYardText = calculateDayInYard(item);
+                
+                // 🌟 បង្ហាញកាលបរិច្ឆេទ & ម៉ោង ឱ្យត្រូវចំម៉ោងក្នុងស្រុកខ្មែរ (Asia/Phnom_Penh) ស្វ័យប្រវត្តិ
+                let formattedDateTime = '-';
+                if (item.updated_date) {
+                    const dt = new Date(item.updated_date);
+                    if (!isNaN(dt.getTime())) {
+                        formattedDateTime = new Intl.DateTimeFormat('en-US', {
+                            timeZone: 'Asia/Phnom_Penh',
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true
+                        }).format(dt);
+                    } else {
+                        formattedDateTime = item.updated_date;
+                    }
+                }
+
+                const row = `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td><strong>${item.container_number}</strong></td>
+                        <td><span class="badge bg-info text-dark">${item.container_size || "40'"} / ${item.container_type || "DC"}</span></td>
+                        <td><span class="fw-semibold text-dark">${item.shipping_line || '-'}</span></td>
+                        <td><span class="badge bg-dark">${item.block_code}</span></td>
+                        <td>ជួរទី ${item.row_number} / ជាន់ទី ${item.tier_number}</td>
+                        <td><span class="badge ${statusBadge}">${item.status}</span></td>
+                        <td>${formattedDateTime}</td>
+                        <td><span class="badge bg-danger text-white">${dayInYardText}</span></td>
+                        <td>${item.notes || '-'}</td>
+                        <td>
+                            <div class="d-flex justify-content-center gap-1">
+                                <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1 shadow-sm" style="font-size: 0.8rem; border-radius: 6px;" title="ដោះដូរ / កែប្រែ" onclick="openEditModal(${item.id})">
+                                    <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
+                                </button>
+                                <button class="btn btn-danger btn-sm fw-bold px-2 py-1 shadow-sm" style="font-size: 0.8rem; border-radius: 6px;" title="លុប" onclick="deleteYardRecordDirect(${item.id})">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
 
         const filterFormElem = document.getElementById('filterForm');
         if (filterFormElem) {
@@ -893,6 +895,7 @@
                 const idElem = document.getElementById('edit_id');
                 const id = idElem ? idElem.value : '';
                 const rawDateVal = document.getElementById('edit_updated_date').value;
+                const formattedISO = rawDateVal ? new Date(rawDateVal).toISOString() : null;
 
                 const updatedData = {
                     container_number: document.getElementById('edit_container_number').value.trim(),
@@ -902,7 +905,7 @@
                     block_code: document.getElementById('edit_block_code').value.trim(),
                     row_number: parseInt(document.getElementById('edit_row_number').value) || 1,
                     tier_number: parseInt(document.getElementById('edit_tier_number').value) || 1,
-                    updated_date: rawDateVal || null, // ផ្ញើជា string ធម្មតាដោយមិនបាច់ .toISOString()
+                    updated_date: formattedISO,
                     status: document.getElementById('edit_status').value,
                     notes: document.getElementById('edit_notes').value.trim()
                 };
@@ -980,6 +983,7 @@
                 e.preventDefault();
                 const formData = new FormData(this);
                 const rawDateVal = formData.get('updated_date');
+                const formattedISO = rawDateVal ? new Date(rawDateVal).toISOString() : null;
 
                 const payload = {
                     container_number: formData.get('container_number'),
@@ -989,7 +993,7 @@
                     block_code: formData.get('block_code'),
                     row_number: formData.get('row_number'),
                     tier_number: formData.get('tier_number'),
-                    updated_date: rawDateVal || null, // ផ្ញើជា string ធម្មតាដោយមិនបាច់ .toISOString()
+                    updated_date: formattedISO,
                     status: formData.get('status'),
                     notes: formData.get('notes')
                 };
