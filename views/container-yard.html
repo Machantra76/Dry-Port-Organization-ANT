@@ -299,8 +299,8 @@
                             <input type="number" class="form-control" name="tier_number" required value="1" min="1">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">កាលបរិច្ឆេទធ្វើបច្ចុប្បន្នភាព</label>
-                            <input type="date" class="form-control" name="updated_date" id="updated_date" required>
+                            <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង</label>
+                            <input type="datetime-local" class="form-control" name="updated_date" id="updated_date" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">ស្ថានភាព (Status)</label>
@@ -399,7 +399,7 @@
                                 <th>ប្លុក (Block)</th>
                                 <th>ជួរ / ជាន់</th>
                                 <th>ស្ថានភាព</th>
-                                <th>កាលបរិច្ឆេទ</th>
+                                <th>កាលបរិច្ឆេទ & ម៉ោង</th>
                                 <th>Day in Yard</th>
                                 <th>កំណត់ចំណាំ</th>
                                 <th class="text-center rounded-end">សកម្មភាព</th>
@@ -466,8 +466,8 @@
                                 <input type="number" class="form-control" id="edit_tier_number" required min="1">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">កាលបរិច្ឆេទ</label>
-                                <input type="date" class="form-control" id="edit_updated_date" required>
+                                <label class="form-label">កាលបរិច្ឆេទ & ម៉ោង</label>
+                                <input type="datetime-local" class="form-control" id="edit_updated_date" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">ស្ថានភាព (Status)</label>
@@ -505,24 +505,37 @@
     <script>
         let allYardData = [];
 
-        // 🌟 មុខងារកំណត់ថ្ងៃខែឆ្នាំតាមម៉ោងក្នុងស្រុកខ្មែរ (Asia/Phnom_Penh)
-        function setLocalKhmerDate(elementId = 'updated_date') {
+        // 🌟 មុខងារកំណត់ថ្ងៃខែនិងម៉ោងតាមម៉ោងក្នុងស្រុកខ្មែរ (Asia/Phnom_Penh) ស្វ័យប្រវត្តិ
+        function setLocalKhmerDateTime(elementId = 'updated_date') {
             const now = new Date();
             const formatter = new Intl.DateTimeFormat('en-CA', {
                 timeZone: 'Asia/Phnom_Penh',
                 year: 'numeric',
                 month: '2-digit',
-                day: '2-digit'
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
             });
-            const formattedDate = formatter.format(now);
+            
+            const parts = formatter.formatToParts(now);
+            let year, month, day, hour, minute;
+            parts.forEach(p => {
+                if (p.type === 'year') year = p.value;
+                if (p.type === 'month') month = p.value;
+                if (p.type === 'day') day = p.value;
+                if (p.type === 'hour') hour = p.value;
+                if (p.type === 'minute') minute = p.value;
+            });
+
             const el = document.getElementById(elementId);
             if (el) {
-                el.value = formattedDate;
+                el.value = `${year}-${month}-${day}T${hour}:${minute}`;
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            setLocalKhmerDate('updated_date');
+            setLocalKhmerDateTime('updated_date');
             loadYardLocations();
         });
 
@@ -545,7 +558,7 @@
                 formYard.style.display = 'block';
                 if (btnShowForm) btnShowForm.style.display = 'none';
                 if (btnShowTable) btnShowTable.style.display = 'inline-flex';
-                setLocalKhmerDate('updated_date');
+                setLocalKhmerDateTime('updated_date');
             }
         }
 
@@ -614,13 +627,13 @@
 
         function calculateDayInYard(item) {
             if (!item.updated_date) return '-';
-            const entryDate = new Date(item.updated_date.split('T')[0]);
+            const entryDate = new Date(item.updated_date);
             
             let endDate = new Date();
             const status = (item.status || '').trim();
 
             if (status === 'Dispatched' || status === 'Gate-Out') {
-                endDate = new Date(item.updated_date.split('T')[0]);
+                endDate = new Date(item.updated_date);
             }
 
             endDate.setHours(0, 0, 0, 0);
@@ -650,7 +663,22 @@
                 else if (item.status === 'Moved') statusBadge = 'bg-warning text-dark';
 
                 const dayInYardText = calculateDayInYard(item);
-                const rowDate = item.updated_date ? item.updated_date.split('T')[0] : '';
+                
+                let formattedDateTime = '-';
+                if (item.updated_date) {
+                    const d = new Date(item.updated_date);
+                    if (!isNaN(d.getTime())) {
+                        formattedDateTime = new Intl.DateTimeFormat('km-KH', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: true,
+                            timeZone: 'Asia/Phnom_Penh'
+                        }).format(d);
+                    }
+                }
 
                 const row = `
                     <tr>
@@ -661,7 +689,7 @@
                         <td><span class="badge bg-dark">${item.block_code}</span></td>
                         <td>ជួរទី ${item.row_number} / ជាន់ទី ${item.tier_number}</td>
                         <td><span class="badge ${statusBadge}">${item.status}</span></td>
-                        <td>${rowDate}</td>
+                        <td>${formattedDateTime}</td>
                         <td><span class="badge bg-danger text-white">${dayInYardText}</span></td>
                         <td>${item.notes || '-'}</td>
                         <td>
@@ -773,7 +801,34 @@
             if (eBlock) eBlock.value = item.block_code || '';
             if (eRow) eRow.value = item.row_number || 1;
             if (eTier) eTier.value = item.tier_number || 1;
-            if (eDate) eDate.value = item.updated_date ? item.updated_date.split('T')[0] : '';
+            
+            if (eDate) {
+                if (item.updated_date) {
+                    const dt = new Date(item.updated_date);
+                    if (!isNaN(dt.getTime())) {
+                        const formatter = new Intl.DateTimeFormat('en-CA', {
+                            timeZone: 'Asia/Phnom_Penh',
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hour12: false
+                        });
+                        const parts = formatter.formatToParts(dt);
+                        let year, month, day, hour, minute;
+                        parts.forEach(p => {
+                            if (p.type === 'year') year = p.value;
+                            if (p.type === 'month') month = p.value;
+                            if (p.type === 'day') day = p.value;
+                            if (p.type === 'hour') hour = p.value;
+                            if (p.type === 'minute') minute = p.value;
+                        });
+                        eDate.value = `${year}-${month}-${day}T${hour}:${minute}`;
+                    }
+                }
+            }
+
             if (eStat) eStat.value = item.status || 'Stored';
             if (eNotes) eNotes.value = item.notes || '';
 
@@ -784,7 +839,6 @@
             }
         }
 
-        // 🌟 មុខងារលុបទិន្នន័យពីក្នុង Modal កែប្រែ
         async function deleteYardRecord() {
             const idElem = document.getElementById('edit_id');
             const id = idElem ? idElem.value : '';
@@ -801,14 +855,12 @@
             }
         }
 
-        // 🌟 មុខងារលុបទិន្នន័យផ្ទាល់ពីតារាង
         async function deleteYardRecordDirect(id) {
             if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យទីតាំងកុងតឺន័រនេះមែនទេ?')) {
                 await executeDelete(id);
             }
         }
 
-        // 🌟 ស្តង់ដារ API លុបទិន្នន័យ (DELETE API)
         async function executeDelete(id, callback = null) {
             if (!id) {
                 alert('រកមិនឃើញ ID សម្រាប់លុបទេ!');
@@ -838,6 +890,8 @@
                 e.preventDefault();
                 const idElem = document.getElementById('edit_id');
                 const id = idElem ? idElem.value : '';
+                const rawDateVal = document.getElementById('edit_updated_date').value;
+
                 const updatedData = {
                     container_number: document.getElementById('edit_container_number').value.trim(),
                     container_size: document.getElementById('edit_container_size').value,
@@ -846,7 +900,7 @@
                     block_code: document.getElementById('edit_block_code').value.trim(),
                     row_number: parseInt(document.getElementById('edit_row_number').value) || 1,
                     tier_number: parseInt(document.getElementById('edit_tier_number').value) || 1,
-                    updated_date: document.getElementById('edit_updated_date').value,
+                    updated_date: rawDateVal ? new Date(rawDateVal).toISOString() : null,
                     status: document.getElementById('edit_status').value,
                     notes: document.getElementById('edit_notes').value.trim()
                 };
@@ -923,7 +977,20 @@
             yardForm.addEventListener('submit', async function(e) {
                 e.preventDefault();
                 const formData = new FormData(this);
-                const payload = Object.fromEntries(formData.entries());
+                const rawDateVal = formData.get('updated_date');
+
+                const payload = {
+                    container_number: formData.get('container_number'),
+                    container_size: formData.get('container_size'),
+                    container_type: formData.get('container_type'),
+                    shipping_line: formData.get('shipping_line'),
+                    block_code: formData.get('block_code'),
+                    row_number: formData.get('row_number'),
+                    tier_number: formData.get('tier_number'),
+                    updated_date: rawDateVal ? new Date(rawDateVal).toISOString() : null,
+                    status: formData.get('status'),
+                    notes: formData.get('notes')
+                };
 
                 try {
                     const response = await fetch('/api/fleet/container-yard', {
@@ -936,7 +1003,7 @@
                     if (response.ok) {
                         alert('បានកត់ត្រាទីតាំងកុងតឺន័រដោយជោគជ័យ!');
                         this.reset();
-                        setLocalKhmerDate('updated_date');
+                        setLocalKhmerDateTime('updated_date');
                         loadYardLocations();
                         switchSection('table');
                     } else {
