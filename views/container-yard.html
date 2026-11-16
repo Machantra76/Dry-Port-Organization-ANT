@@ -500,7 +500,6 @@
     <script>
         let allYardData = [];
 
-        // មុខងារទាញយកថ្ងៃខែឆ្នាំ និងម៉ោងបច្ចុប្បន្ននៅកម្ពុជា (Asia/Phnom_Penh - UTC+7) សម្រាប់បញ្ចូលក្នុង input datetime-local
         function getCambodiaDateTimeForInput(dateInput = new Date()) {
             const dateObj = new Date(dateInput);
             if (isNaN(dateObj.getTime())) return '';
@@ -523,7 +522,6 @@
             return `${map.year}-${map.month}-${map.day}T${hour}:${map.minute}`;
         }
 
-        // មុខងារបំប្លែងតម្លៃម៉ោងក្នុង Input ឲ្យទៅជាទម្រង់ ISO ត្រឹមត្រូវតាមម៉ោងក្នុងเครื่อง (Local ISO) មុននឹងផ្ញើទៅ Server
         function toLocalDateTimeISO(datetimeLocalValue) {
             if (!datetimeLocalValue) return '';
             const dt = new Date(datetimeLocalValue);
@@ -546,23 +544,18 @@
             return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${sign}${offsetHours}:${offsetMinutes}`;
         }
 
-        // មុខងារបង្ហាញកាលបរិច្ឆេទ និងម៉ោងក្នុងតារាង (បានកែសម្រួលដើម្បីបាំងម៉ោង 7:00 AM លើទិន្នន័យចាស់)
         function formatCambodiaDateTimeDisplay(dateStr) {
             if (!dateStr) return '-';
             
             const trimmed = dateStr.trim();
 
-            // បើសិនជាទិន្នន័យក្នុង DB ជាទម្រង់កាលបរិច្ឆេទសុទ្ធ (YYYY-MM-DD) បង្ហាញាតែថ្ងៃខែឆ្នាំ
             if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
                 return trimmed;
             }
 
             let normalizedStr = trimmed;
-            
-            // បើសិនជាមានទម្រង់ម៉ោង ប៉ុន្តែគ្មាន Timezone ភ្ជាប់មកជាមួយ
             if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/.test(normalizedStr)) {
                 normalizedStr = normalizedStr.replace(' ', 'T');
-                // ប្រសិនបើវាជាម៉ោង 00:00:00 ដែលទម្លាក់ពី Server មក ចាត់ទុកថាវាជាទិន្នន័យចាស់គ្មានម៉ោងពិតប្រាកដ
                 if (normalizedStr.endsWith('00:00') || normalizedStr.endsWith('00:00:00')) {
                     return normalizedStr.substring(0, 10);
                 }
@@ -586,7 +579,6 @@
             const map = {};
             parts.forEach(p => { map[p.type] = p.value; });
 
-            // ប្រសិនបើគណនាមកចំម៉ោង 07:00 AM  ακριβώς ដែលជាកំហុសពីទិន្នន័យចាស់ ឱ្យបង្ហាញាតែថ្ងៃខែឆ្នាំជំនួសវិញ
             if (map.hour === '07' && map.minute === '00' && map.dayPeriod === 'AM' && !trimmed.includes('T')) {
                 return dateObj.toISOString().substring(0, 10);
             }
@@ -594,7 +586,6 @@
             return `${map.year}-${map.month}-${map.day} <br><small class="text-primary fw-semibold"><i class="far fa-clock me-1"></i>${map.hour}:${map.minute} ${map.dayPeriod}</small>`;
         }
 
-        // មុខងារទាញយកតែកាលបរិច្ឆេទ (YYYY-MM-DD) តាមម៉ោងខ្មែរ សម្រាប់ Filter និងគណនាថ្ងៃ
         function getCambodiaDateOnly(dateInput = new Date()) {
             if (!dateInput) return '';
             let normalizedStr = typeof dateInput === 'string' ? dateInput.trim() : dateInput;
@@ -624,7 +615,6 @@
             loadYardLocations();
         });
 
-        // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
         function switchSection(section) {
             const formYard = document.getElementById('formYardSection');
             const historySection = document.getElementById('historySection');
@@ -767,14 +757,40 @@
                         <td><span class="badge bg-danger text-white">${dayInYardText}</span></td>
                         <td>${item.notes || '-'}</td>
                         <td>
-                            <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1 shadow-sm" style="font-size: 0.8rem; border-radius: 6px;" onclick="openEditModal(${item.id})">
-                                <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
-                            </button>
+                            <div class="d-flex justify-content-center gap-1">
+                                <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1 shadow-sm" style="font-size: 0.8rem; border-radius: 6px;" onclick="openEditModal(${item.id})">
+                                    <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
+                                </button>
+                                <button class="btn btn-danger btn-sm fw-bold px-2 py-1 shadow-sm" style="font-size: 0.8rem; border-radius: 6px;" onclick="deleteYardRecord(${item.id})">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 `;
                 tbody.innerHTML += row;
             });
+        }
+
+        // មុខងារសម្រាប់លុបទិន្នន័យពី Server
+        async function deleteYardRecord(id) {
+            if (!confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះចេញពីប្រព័ន្ធមែនទេ?')) return;
+
+            try {
+                const response = await fetch(`/api/fleet/container-yard/${id}`, {
+                    method: 'DELETE'
+                });
+                const result = await response.json();
+                if (response.ok && (result.success !== false)) {
+                    alert('បានលុបទិន្នន័យដោយជោគជ័យ!');
+                    loadYardLocations();
+                } else {
+                    alert('កំហុស៖ ' + (result.error || 'មិនអាចលុបទិន្នន័យបានទេ'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ Server ពេលព្យាយាមលុប');
+            }
         }
 
         const filterFormElem = document.getElementById('filterForm');
@@ -981,7 +997,7 @@
                 console.error('PDF Export Error:', err);
                 if(filterForm) filterForm.style.display = '';
                 actionCells.forEach(cell => cell.style.display = '');
-                alert('មានបញ្ហាក្នុងการទាញយក PDF');
+                alert('មានបញ្ហាក្នុងការទាញយក PDF');
             });
         }
 
@@ -997,7 +1013,7 @@
                 }
 
                 try {
-                    const response = await fetch('/api/fleet/container-yard', {
+                    const response = await fetch(`/api/fleet/container-yard`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload)
