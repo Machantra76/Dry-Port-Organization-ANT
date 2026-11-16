@@ -312,6 +312,7 @@
         .bg-kpi-pending { background: linear-gradient(135deg, #d97706, #f59e0b); }
         .bg-kpi-rejected { background: linear-gradient(135deg, #dc2626, #ef4444); }
         .bg-kpi-container { background: linear-gradient(135deg, #4f46e5, #6366f1); }
+        .bg-kpi-gate { background: linear-gradient(135deg, #0d9488, #14b8a6); }
 
         .chart-box {
             border: 1px solid #e2e8f0;
@@ -376,8 +377,8 @@
             </button>
         </div>
 
-        <!-- KPI Summary Cards -->
-        <div class="row g-3 mb-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-6">
+        <!-- KPI Summary Cards (រួមបញ្ចូលទាំងកាត "មាន់ច្រក") -->
+        <div class="row g-3 mb-4 row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-7">
             <div class="col">
                 <div class="kpi-card bg-kpi-total">
                     <div class="kpi-title">ឯកសារសរុប (Total)</div>
@@ -390,6 +391,13 @@
                     <div class="kpi-title">កុងតឺន័រសរុប (Containers)</div>
                     <h3 class="kpi-value" id="kpiContainers">0</h3>
                     <i class="fa-solid fa-box-archive kpi-icon"></i>
+                </div>
+            </div>
+            <div class="col">
+                <div class="kpi-card bg-kpi-gate">
+                    <div class="kpi-title">មាន់ច្រក (Gate Logged)</div>
+                    <h3 class="kpi-value" id="kpiGate">0</h3>
+                    <i class="fa-solid fa-clock kpi-icon"></i>
                 </div>
             </div>
             <div class="col">
@@ -440,17 +448,25 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-4">
                 <div class="chart-box">
-                    <div class="chart-box-title"><i class="fa-solid fa-boxes-stacked me-1"></i> ចំនួនកុងតឺន័រតាមប្រភេទឯកសារ (Containers by Type)</div>
+                    <div class="chart-box-title"><i class="fa-solid fa-boxes-stacked me-1"></i> ចំនួនកុងតឺន័រតាមប្រភេទឯកសារ</div>
                     <div class="chart-canvas-wrapper">
                         <canvas id="containerBarChart"></canvas>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6">
+            <div class="col-lg-4">
                 <div class="chart-box">
-                    <div class="chart-box-title"><i class="fa-solid fa-chart-area me-1"></i> និន្នាការចំនួនឯកសារប្រចាំខែ (Monthly Trend)</div>
+                    <div class="chart-box-title"><i class="fa-solid fa-clock-rotate-left me-1"></i> ចំនួនឯកសារតាម "មាន់ច្រក"</div>
+                    <div class="chart-canvas-wrapper">
+                        <canvas id="gateBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-box">
+                    <div class="chart-box-title"><i class="fa-solid fa-chart-area me-1"></i> និន្នាការចំនួនឯកសារប្រចាំខែ</div>
                     <div class="chart-canvas-wrapper">
                         <canvas id="monthlyLineChart"></canvas>
                     </div>
@@ -496,11 +512,16 @@
                         <option value="Rejected">បានច្រានចោល (Rejected)</option>
                     </select>
                 </div>
-                <div class="col-md-6">
+                <div class="col-md-4">
                     <label class="form-label">មន្ត្រីទទួលបន្ទុក (Officer in Charge):</label>
                     <input type="text" class="form-control" id="officer_name" placeholder="ឧ. លោក វណ្ណា" required>
                 </div>
-                <div class="col-md-6">
+                <!-- Column មាន់ច្រក -->
+                <div class="col-md-4">
+                    <label class="form-label text-success fw-bold"><i class="fa-solid fa-clock"></i> មាន់ច្រក / ម៉ោងច្រក (Gate Time):</label>
+                    <input type="text" class="form-control border-success" id="gate_time" placeholder="ឧ. 08:30 AM ឬ ព្រឹក">
+                </div>
+                <div class="col-md-4">
                     <label class="form-label">ឯកសារយោង / លេខកុងតឺន័រ (Reference / Container No.):</label>
                     <input type="text" class="form-control" id="reference_no" placeholder="ឧ. CONT1234567 ឬ BL-998877">
                 </div>
@@ -511,7 +532,7 @@
                     <input type="file" class="form-control" id="pdf_file" accept="application/pdf">
                 </div>
 
-                <!-- 💡 ប្រអប់ Upload PDF សម្រាប់ "DO" (Delivery Order) ដាច់ដោយឡែក -->
+                <!-- ប្រអប់ Upload PDF សម្រាប់ "DO" (Delivery Order) ដាច់ដោយឡែក -->
                 <div class="col-md-6">
                     <label class="form-label text-primary fw-bold"><i class="fa-solid fa-file-arrow-up"></i> ឯកសារ PDF ឈ្មោះ "DO" (Delivery Order):</label>
                     <input type="file" class="form-control border-primary" id="do_pdf_file" accept="application/pdf">
@@ -591,13 +612,14 @@
                         <th class="table-custom-header">ប្រភេទឯកសារ</th>
                         <th class="table-custom-header">កាលបរិច្ឆេទ</th>
                         <th class="table-custom-header">មន្ត្រីទទួលបន្ទុក</th>
+                        <th class="table-custom-header text-success">មាន់ច្រក</th>
                         <th class="table-custom-header">ឯកសារយោង</th>
                         <th class="table-custom-header">ស្ថានភាព</th>
                         <th class="table-custom-header no-print">សកម្មភាព</th>
                     </tr>
                 </thead>
                 <tbody id="documentTableBody">
-                    <tr><td colspan="9" class="text-center text-muted py-4">កំពុងទាញយកទិន្នន័យ...</td></tr>
+                    <tr><td colspan="10" class="text-center text-muted py-4">កំពុងទាញយកទិន្នន័យ...</td></tr>
                 </tbody>
             </table>
         </div>
@@ -611,6 +633,7 @@
     let statusChartInstance = null;
     let typeChartInstance = null;
     let containerChartInstance = null;
+    let gateChartInstance = null;
     let monthlyChartInstance = null;
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -657,12 +680,12 @@
             updateDashboardCharts(documentDataList);
         } catch (err) {
             console.error('Error loading customs documents:', err);
-            document.getElementById('documentTableBody').innerHTML = `<tr><td colspan="9" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
+            document.getElementById('documentTableBody').innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
             updateDashboardCharts([]);
         }
     }
 
-    // មុខងារគណនា និងបង្ហាញទិន្នន័យលើ Dashboard រួមទាំងការបំបែករាប់កុងតឺន័រតាមសញ្ញា "/"
+    // មុខងារគណនា និងបង្ហាញទិន្នន័យលើ Dashboard រួមទាំងមាន់ច្រក និងកុងតឺន័រ
     function updateDashboardCharts(data) {
         const list = Array.isArray(data) ? data : [];
 
@@ -672,8 +695,9 @@
         const processingCount = list.filter(d => d.status === 'Processing').length;
         const pendingCount = list.filter(d => d.status === 'Pending').length;
         const rejectedCount = list.filter(d => d.status === 'Rejected').length;
+        const gateLoggedCount = list.filter(d => d.gate_time && d.gate_time.trim() !== '').length;
 
-        // 💡 រាប់ចំនួនកុងតឺន័រសរុបដោយបំបែកតាមសញ្ញា "/" ស្វ័យប្រវត្តិ
+        // រាប់ចំនួនកុងតឺន័រសរុបដោយបំបែកតាមសញ្ញា "/"
         let totalContainers = 0;
         list.forEach(d => {
             if (d.reference_no && d.reference_no.trim() !== '') {
@@ -684,6 +708,7 @@
 
         document.getElementById('kpiTotal').innerText = totalCount;
         document.getElementById('kpiContainers').innerText = totalContainers;
+        document.getElementById('kpiGate').innerText = gateLoggedCount;
         document.getElementById('kpiApproved').innerText = approvedCount;
         document.getElementById('kpiProcessing').innerText = processingCount;
         document.getElementById('kpiPending').innerText = pendingCount;
@@ -785,7 +810,7 @@
                     data: containerCounts,
                     backgroundColor: ['#4f46e5', '#06b6d4', '#3b82f6', '#10b981', '#64748b'],
                     borderRadius: 6,
-                    maxBarThickness: 40
+                    maxBarThickness: 30
                 }]
             },
             options: {
@@ -803,7 +828,47 @@
             }
         });
 
-        // 5. ក្រាហ្វិកទី ៤: និន្នាការប្រចាំខែ (Line Chart)
+        // 5. ក្រាហ្វិកទី ៤: ចំនួនឯកសារតាម "មាន់ច្រក" (Gate Time Bar Chart)
+        const gateMap = {};
+        list.forEach(d => {
+            if (d.gate_time && d.gate_time.trim() !== '') {
+                const g = d.gate_time.trim();
+                gateMap[g] = (gateMap[g] || 0) + 1;
+            }
+        });
+        const gateLabels = Object.keys(gateMap);
+        const gateCounts = gateLabels.map(g => gateMap[g]);
+
+        const ctxGate = document.getElementById('gateBarChart').getContext('2d');
+        if (gateChartInstance) gateChartInstance.destroy();
+        gateChartInstance = new Chart(ctxGate, {
+            type: 'bar',
+            data: {
+                labels: gateLabels.length > 0 ? gateLabels : ['ពុំទាន់มีទិន្នន័យ'],
+                datasets: [{
+                    label: 'ចំនួនឯកសារតាមមាន់ច្រក',
+                    data: gateLabels.length > 0 ? gateCounts : [0],
+                    backgroundColor: '#0d9488',
+                    borderRadius: 6,
+                    maxBarThickness: 35
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1, precision: 0 }
+                    }
+                }
+            }
+        });
+
+        // 6. ក្រាហ្វិកទី ៥: និន្នាការប្រចាំខែ (Line Chart)
         const monthMap = {};
         list.forEach(item => {
             if (item.document_date) {
@@ -853,7 +918,7 @@
         tbody.innerHTML = '';
 
         if (!Array.isArray(data) || data.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="9" class="text-center text-muted py-4">ពុំមានទិន្នន័យឯកសារគយទេ</td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="10" class="text-center text-muted py-4">ពុំមានទិន្នន័យឯកសារគយទេ</td></tr>`;
             return;
         }
 
@@ -886,6 +951,7 @@
                     <td><span class="badge bg-secondary">${item.document_type}</span></td>
                     <td>${item.document_date ? item.document_date.split('T')[0] : '-'}</td>
                     <td>${item.officer_name}</td>
+                    <td class="fw-bold text-success">${item.gate_time || '-'}</td>
                     <td>${item.reference_no || '-'}</td>
                     <td><span class="badge ${statusBadge}">${item.status}</span></td>
                     <td class="no-print action-column">
@@ -958,6 +1024,7 @@
         formData.append('document_date', document.getElementById('document_date').value);
         formData.append('status', document.getElementById('status').value);
         formData.append('officer_name', document.getElementById('officer_name').value);
+        formData.append('gate_time', document.getElementById('gate_time').value);
         formData.append('reference_no', document.getElementById('reference_no').value);
         formData.append('notes', document.getElementById('notes').value);
 
@@ -1011,6 +1078,7 @@
         document.getElementById('document_date').value = item.document_date ? item.document_date.split('T')[0] : '';
         document.getElementById('status').value = item.status;
         document.getElementById('officer_name').value = item.officer_name;
+        document.getElementById('gate_time').value = item.gate_time || '';
         document.getElementById('reference_no').value = item.reference_no || '';
         document.getElementById('notes').value = item.notes || '';
 
