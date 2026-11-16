@@ -299,7 +299,7 @@
                             <input type="number" class="form-control" name="tier_number" required value="1" min="1">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង</label>
+                            <label class="form-label">កាលបរិច្ឆេទ & ម៉ោង</label>
                             <input type="datetime-local" class="form-control" name="updated_date" id="updated_date" required>
                         </div>
                         <div class="col-md-6">
@@ -900,7 +900,7 @@
                     block_code: document.getElementById('edit_block_code').value.trim(),
                     row_number: parseInt(document.getElementById('edit_row_number').value) || 1,
                     tier_number: parseInt(document.getElementById('edit_tier_number').value) || 1,
-                    updated_date: rawDateVal ? new Date(rawDateVal).toISOString() : null,
+                    updated_date: rawDateVal || null, // ផ្ញើជា string ធម្មតាដោយមិនបាច់ .toISOString()
                     status: document.getElementById('edit_status').value,
                     notes: document.getElementById('edit_notes').value.trim()
                 };
@@ -987,7 +987,7 @@
                     block_code: formData.get('block_code'),
                     row_number: formData.get('row_number'),
                     tier_number: formData.get('tier_number'),
-                    updated_date: rawDateVal ? new Date(rawDateVal).toISOString() : null,
+                    updated_date: rawDateVal || null, // ផ្ញើជា string ធម្មតាដោយមិនបាច់ .toISOString()
                     status: formData.get('status'),
                     notes: formData.get('notes')
                 };
