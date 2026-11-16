@@ -3311,19 +3311,7 @@ app.put('/api/fleet/container-yard/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែ/ដោះដូរទិន្នន័យ' });
     }
 });
-// ១. សម្រាប់កែប្រែទិន្នន័យ (PUT)
-app.put('/api/fleet/container-yard/:id', async (req, res) => {
-    const { id } = req.params;
-    // កូដសម្រាប់ធ្វើបច្ចុប្បន្នភាពក្នុង Database ...
-    res.json({ success: true });
-});
 
-// ២. សម្រាប់លុបទិន្នន័យ (DELETE)
-app.delete('/api/fleet/container-yard/:id', async (req, res) => {
-    const { id } = req.params;
-    // កូដសម្រាប់លុបចេញពី Database ...
-    res.json({ success: true });
-});
 // ==========================================
 // API Routes: Container Repair Logs
 // ==========================================
