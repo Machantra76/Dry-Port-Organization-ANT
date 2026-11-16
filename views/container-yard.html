@@ -523,17 +523,18 @@
             return `${map.year}-${map.month}-${map.day}T${hour}:${map.minute}`;
         }
 
-        // មុខងារបំប្លែងថ្ងៃខែឆ្នាំ និងម៉ោងសម្រាប់បង្ហាញក្នុងតារាង ឲ្យត្រូវតាមម៉ោងនៅខ្មែរ (Asia/Phnom_Penh)
+        // មុខងារបំប្លែងថ្ងៃខែឆ្នាំ និងម៉ោងសម្រាប់បង្ហាញក្នុងតារាង
         function formatCambodiaDateTimeDisplay(dateStr) {
             if (!dateStr) return '-';
             
-            // បើទិន្នន័យជាប្រភេទ YYYY-MM-DD តែប៉ុណ្ណោះ (គ្មានម៉ោងពីមុន)
-            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr.trim())) {
-                return dateStr.trim();
+            const trimmed = dateStr.trim();
+
+            // បើសិនជាទិន្នន័យចាស់មានត្រឹមតែថ្ងៃខែឆ្នាំ (YYYY-MM-DD) គ្មានម៉ោង គឺបង្ហាញតែថ្ងៃខែឆ្នាំធម្មតា
+            if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+                return trimmed;
             }
 
-            // បើទិន្នន័យមកពី form (YYYY-MM-DDTHH:mm) ឲ្យភ្ជាប់ +07:00 ដើម្បីកំណត់ថាម៉ោងខ្មែរ
-            let normalizedStr = dateStr.trim();
+            let normalizedStr = trimmed;
             if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/.test(normalizedStr)) {
                 normalizedStr = normalizedStr.replace(' ', 'T') + '+07:00';
             }
@@ -866,7 +867,6 @@
                 const idElem = document.getElementById('edit_id');
                 const id = idElem ? idElem.value : '';
                 const rawUpdatedDate = document.getElementById('edit_updated_date').value;
-                // ភ្ជាប់ +07:00 (ម៉ោងខ្មែរ) មុនពេលបញ្ជូនទៅ Server
                 const cambodiaUpdatedDate = rawUpdatedDate ? `${rawUpdatedDate}:00+07:00` : '';
 
                 const updatedData = {
@@ -902,7 +902,7 @@
                     }
                 } catch (err) {
                     console.error(err);
-                    alert('មានបញ្ហាក្នុងការភ្ជាប់ទៅកាន់ Server');
+                    alert('មានបញ្ហាក្នុងการភ្ជាប់ទៅកាន់ Server');
                 }
             });
         }
@@ -956,7 +956,6 @@
                 const formData = new FormData(this);
                 const payload = Object.fromEntries(formData.entries());
 
-                // ភ្ជាប់ +07:00 (ម៉ោងខ្មែរ) ទៅក្នុង updated_date មុនពេលរក្សាទុក
                 if (payload.updated_date && payload.updated_date.includes('T')) {
                     payload.updated_date = `${payload.updated_date}:00+07:00`;
                 }
@@ -970,7 +969,7 @@
 
                     const result = await response.json();
                     if (response.ok) {
-                        alert('បានកត់ត្រាទីតាំងកុងតឺន័រដោយជោគជ័យ!');
+                        alert('បានកត់ត្រាទិន្នន័យដោយជោគជ័យ!');
                         this.reset();
                         const updDate = document.getElementById('updated_date');
                         if (updDate) updDate.value = getCambodiaDateTimeForInput(new Date());
@@ -981,7 +980,7 @@
                     }
                 } catch (err) {
                     console.error('Error saving data:', err);
-                    alert('មានបញ្ហាក្នុងការតភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ Server');
+                    alert('មានបញ្ហាក្នុងการតភ្ជាប់ទៅកាន់ម៉ាស៊ីនមេ Server');
                 }
             });
         }
