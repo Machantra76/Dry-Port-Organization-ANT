@@ -299,8 +299,8 @@
                             <input type="number" class="form-control" name="tier_number" required value="1" min="1">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">កាលបរិច្ឆេទធ្វើបច្ចុប្បន្នភាព</label>
-                            <input type="date" class="form-control" name="updated_date" id="updated_date" required>
+                            <label class="form-label">កាលបរិច្ឆេទ និងម៉ោងធ្វើបច្ចុប្បន្នភាព (ម៉ោងខ្មែរ)</label>
+                            <input type="datetime-local" class="form-control" name="updated_date" id="updated_date" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">ស្ថានភាព (Status)</label>
@@ -399,7 +399,7 @@
                                 <th>ប្លុក (Block)</th>
                                 <th>ជួរ / ជាន់</th>
                                 <th>ស្ថានភាព</th>
-                                <th>កាលបរិច្ឆេទ</th>
+                                <th>កាលបរិច្ឆេទ និងម៉ោង</th>
                                 <th>Day in Yard</th>
                                 <th>កំណត់ចំណាំ</th>
                                 <th class="text-center rounded-end">សកម្មភាព</th>
@@ -466,8 +466,8 @@
                                 <input type="number" class="form-control" id="edit_tier_number" required min="1">
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">កាលបរិច្ឆេទ</label>
-                                <input type="date" class="form-control" id="edit_updated_date" required>
+                                <label class="form-label">កាលបរិច្ឆេទ និងម៉ោង (ម៉ោងខ្មែរ)</label>
+                                <input type="datetime-local" class="form-control" id="edit_updated_date" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label">ស្ថានភាព (Status)</label>
@@ -500,18 +500,90 @@
     <script>
         let allYardData = [];
 
-        // មុខងារទាញយកកាលបរិច្ឆេទបច្ចុប្បន្នតាមម៉ោងនៅកម្ពុជា (Asia/Phnom_Penh)
-        function getCambodiaDateString() {
-            const options = { timeZone: 'Asia/Phnom_Penh', year: 'numeric', month: '2-digit', day: '2-digit' };
-            const formatter = new Intl.DateTimeFormat('en-CA', options); // en-CA ផ្តល់ទ្រង់ទ្រាយ YYYY-MM-DD
-            return formatter.format(new Date());
+        // មុខងារទាញយកថ្ងៃខែឆ្នាំ និងម៉ោងបច្ចុប្បន្ននៅកម្ពុជា (Asia/Phnom_Penh - UTC+7) សម្រាប់បញ្ចូលក្នុង input datetime-local
+        function getCambodiaDateTimeForInput(dateInput = new Date()) {
+            const dateObj = new Date(dateInput);
+            if (isNaN(dateObj.getTime())) return '';
+
+            const options = {
+                timeZone: 'Asia/Phnom_Penh',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            };
+
+            const parts = new Intl.DateTimeFormat('en-GB', options).formatToParts(dateObj);
+            const map = {};
+            parts.forEach(p => { map[p.type] = p.value; });
+            const hour = map.hour === '24' ? '00' : map.hour;
+
+            return `${map.year}-${map.month}-${map.day}T${hour}:${map.minute}`;
+        }
+
+        // មុខងារបំប្លែងថ្ងៃខែឆ្នាំ និងម៉ោងសម្រាប់បង្ហាញក្នុងតារាង ឲ្យត្រូវតាមម៉ោងនៅខ្មែរ (Asia/Phnom_Penh)
+        function formatCambodiaDateTimeDisplay(dateStr) {
+            if (!dateStr) return '-';
+            
+            // បើទិន្នន័យជាប្រភេទ YYYY-MM-DD តែប៉ុណ្ណោះ (គ្មានម៉ោងពីមុន)
+            if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr.trim())) {
+                return dateStr.trim();
+            }
+
+            // បើទិន្នន័យមកពី form (YYYY-MM-DDTHH:mm) ឲ្យភ្ជាប់ +07:00 ដើម្បីកំណត់ថាម៉ោងខ្មែរ
+            let normalizedStr = dateStr.trim();
+            if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/.test(normalizedStr)) {
+                normalizedStr = normalizedStr.replace(' ', 'T') + '+07:00';
+            }
+
+            const dateObj = new Date(normalizedStr);
+            if (isNaN(dateObj.getTime())) return dateStr;
+
+            const options = {
+                timeZone: 'Asia/Phnom_Penh',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            };
+
+            const parts = new Intl.DateTimeFormat('en-US', options).formatToParts(dateObj);
+            const map = {};
+            parts.forEach(p => { map[p.type] = p.value; });
+
+            return `${map.year}-${map.month}-${map.day} <br><small class="text-primary fw-semibold"><i class="far fa-clock me-1"></i>${map.hour}:${map.minute} ${map.dayPeriod}</small>`;
+        }
+
+        // មុខងារទាញយកតែកាលបរិច្ឆេទ (YYYY-MM-DD) តាមម៉ោងខ្មែរ សម្រាប់ Filter និងគណនាថ្ងៃ
+        function getCambodiaDateOnly(dateInput = new Date()) {
+            if (!dateInput) return '';
+            let normalizedStr = typeof dateInput === 'string' ? dateInput.trim() : dateInput;
+            if (typeof normalizedStr === 'string' && /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/.test(normalizedStr)) {
+                normalizedStr = normalizedStr.replace(' ', 'T') + '+07:00';
+            }
+            const dateObj = new Date(normalizedStr);
+            if (isNaN(dateObj.getTime())) return '';
+
+            const options = {
+                timeZone: 'Asia/Phnom_Penh',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            };
+            const parts = new Intl.DateTimeFormat('en-GB', options).formatToParts(dateObj);
+            const map = {};
+            parts.forEach(p => { map[p.type] = p.value; });
+            return `${map.year}-${map.month}-${map.day}`;
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             const updDate = document.getElementById('updated_date');
             if (updDate) {
-                // កំណត់កាលបរិច្ឆេទស្វ័យប្រវត្តិស្របតាមម៉ោងនៅខ្មែរ
-                updDate.value = getCambodiaDateString();
+                updDate.value = getCambodiaDateTimeForInput(new Date());
             }
             loadYardLocations();
         });
@@ -536,9 +608,8 @@
                 formYard.style.display = 'block';
                 if (btnShowForm) btnShowForm.style.display = 'none';
                 if (btnShowTable) btnShowTable.style.display = 'inline-flex';
-                // កំណត់កាលបរិច្ឆេទឡើងវិញពេលចុចបើក Form ថ្មី
                 const updDate = document.getElementById('updated_date');
-                if (updDate) updDate.value = getCambodiaDateString();
+                if (updDate) updDate.value = getCambodiaDateTimeForInput(new Date());
             }
         }
 
@@ -607,17 +678,19 @@
 
         function calculateDayInYard(item) {
             if (!item.updated_date) return '-';
-            const entryDate = new Date(item.updated_date.split('T')[0]);
+            const entryDateStr = getCambodiaDateOnly(item.updated_date);
+            if (!entryDateStr) return '-';
+
+            const entryDate = new Date(entryDateStr + 'T00:00:00+07:00');
             
-            let endDate = new Date();
+            let endDateStr = getCambodiaDateOnly(new Date());
             const status = (item.status || '').trim();
 
             if (status === 'Dispatched' || status === 'Gate-Out') {
-                endDate = new Date(item.updated_date.split('T')[0]);
+                endDateStr = entryDateStr;
             }
 
-            endDate.setHours(0, 0, 0, 0);
-            entryDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(endDateStr + 'T00:00:00+07:00');
 
             const diffTime = endDate - entryDate;
             const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
@@ -643,7 +716,7 @@
                 else if (item.status === 'Moved') statusBadge = 'bg-warning text-dark';
 
                 const dayInYardText = calculateDayInYard(item);
-                const rowDate = item.updated_date ? item.updated_date.split('T')[0] : '';
+                const rowDateTime = formatCambodiaDateTimeDisplay(item.updated_date);
 
                 const row = `
                     <tr>
@@ -654,7 +727,7 @@
                         <td><span class="badge bg-dark">${item.block_code}</span></td>
                         <td>ជួរទី ${item.row_number} / ជាន់ទី ${item.tier_number}</td>
                         <td><span class="badge ${statusBadge}">${item.status}</span></td>
-                        <td>${rowDate}</td>
+                        <td>${rowDateTime}</td>
                         <td><span class="badge bg-danger text-white">${dayInYardText}</span></td>
                         <td>${item.notes || '-'}</td>
                         <td>
@@ -705,7 +778,7 @@
 
                     let matchDate = true;
                     if (dateFrom || dateTo) {
-                        const itemDate = item.updated_date ? item.updated_date.split('T')[0] : '';
+                        const itemDate = getCambodiaDateOnly(item.updated_date);
                         if (dateFrom && itemDate < dateFrom) matchDate = false;
                         if (dateTo && itemDate > dateTo) matchDate = false;
                     }
@@ -761,7 +834,21 @@
             if (eBlock) eBlock.value = item.block_code || '';
             if (eRow) eRow.value = item.row_number || 1;
             if (eTier) eTier.value = item.tier_number || 1;
-            if (eDate) eDate.value = item.updated_date ? item.updated_date.split('T')[0] : getCambodiaDateString();
+            if (eDate) {
+                if (item.updated_date) {
+                    let normalized = item.updated_date.trim();
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+                        eDate.value = getCambodiaDateTimeForInput(new Date());
+                    } else {
+                        if (/^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(:\d{2})?$/.test(normalized)) {
+                            normalized = normalized.replace(' ', 'T') + '+07:00';
+                        }
+                        eDate.value = getCambodiaDateTimeForInput(new Date(normalized));
+                    }
+                } else {
+                    eDate.value = getCambodiaDateTimeForInput(new Date());
+                }
+            }
             if (eStat) eStat.value = item.status || 'Stored';
             if (eNotes) eNotes.value = item.notes || '';
 
@@ -778,6 +865,10 @@
                 e.preventDefault();
                 const idElem = document.getElementById('edit_id');
                 const id = idElem ? idElem.value : '';
+                const rawUpdatedDate = document.getElementById('edit_updated_date').value;
+                // ភ្ជាប់ +07:00 (ម៉ោងខ្មែរ) មុនពេលបញ្ជូនទៅ Server
+                const cambodiaUpdatedDate = rawUpdatedDate ? `${rawUpdatedDate}:00+07:00` : '';
+
                 const updatedData = {
                     container_number: document.getElementById('edit_container_number').value.trim(),
                     container_size: document.getElementById('edit_container_size').value,
@@ -786,7 +877,7 @@
                     block_code: document.getElementById('edit_block_code').value.trim(),
                     row_number: parseInt(document.getElementById('edit_row_number').value) || 1,
                     tier_number: parseInt(document.getElementById('edit_tier_number').value) || 1,
-                    updated_date: document.getElementById('edit_updated_date').value,
+                    updated_date: cambodiaUpdatedDate,
                     status: document.getElementById('edit_status').value,
                     notes: document.getElementById('edit_notes').value.trim()
                 };
@@ -865,6 +956,11 @@
                 const formData = new FormData(this);
                 const payload = Object.fromEntries(formData.entries());
 
+                // ភ្ជាប់ +07:00 (ម៉ោងខ្មែរ) ទៅក្នុង updated_date មុនពេលរក្សាទុក
+                if (payload.updated_date && payload.updated_date.includes('T')) {
+                    payload.updated_date = `${payload.updated_date}:00+07:00`;
+                }
+
                 try {
                     const response = await fetch('/api/fleet/container-yard', {
                         method: 'POST',
@@ -877,7 +973,7 @@
                         alert('បានកត់ត្រាទីតាំងកុងតឺន័រដោយជោគជ័យ!');
                         this.reset();
                         const updDate = document.getElementById('updated_date');
-                        if (updDate) updDate.value = getCambodiaDateString();
+                        if (updDate) updDate.value = getCambodiaDateTimeForInput(new Date());
                         loadYardLocations();
                         switchSection('table');
                     } else {
