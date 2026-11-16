@@ -645,68 +645,70 @@
             return diffDays >= 0 ? `${diffDays + 1} ថ្ងៃ` : '0 ថ្ងៃ';
         }
 
-        function displayTableData(data) {
-            const tbody = document.getElementById('yardTableBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
+      function displayTableData(data) {
+    const tbody = document.getElementById('yardTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
 
-            if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">ពុំមានទិន្នន័យទីតាំងកុងតឺន័រទេ (No data found)</td></tr>`;
-                return;
+    if (!Array.isArray(data) || data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="11" class="text-center text-muted py-4">ពុំមានទិន្នន័យទីតាំងកុងតឺន័រទេ (No data found)</td></tr>`;
+        return;
+    }
+
+    data.forEach((item, index) => {
+        let statusBadge = 'bg-primary text-white';
+        if (item.status === 'Stored') statusBadge = 'bg-success text-white';
+        else if (item.status === 'Dispatched') statusBadge = 'bg-secondary text-white';
+        else if (item.status === 'Gate-Out') statusBadge = 'bg-danger text-white';
+        else if (item.status === 'Moved') statusBadge = 'bg-warning text-dark';
+
+        const dayInYardText = calculateDayInYard(item);
+        
+        let formattedDateTime = '-';
+        if (item.updated_date) {
+            // កែសម្រួលកន្លែងនេះ៖ កាត់យកទម្រង់ string មកបង្ហាញផ្ទាល់ដោយមិនបាច់ຜ່ານ new Date() ដែលធ្វើឱ្យប្តូរ Timezone
+            const dateStr = item.updated_date.replace('T', ' ').substring(0, 16); // ឧ. 2026-11-16 14:00
+            const [datePart, timePart] = dateStr.split(' ');
+            if (datePart && timePart) {
+                const [year, month, day] = datePart.split('-');
+                let [hours, minutes] = timePart.split(':');
+                let hourInt = parseInt(hours, 10);
+                const ampm = hourInt >= 12 ? 'PM' : 'AM';
+                hourInt = hourInt % 12;
+                hourInt = hourInt ? hourInt : 12;
+                formattedDateTime = `${month}/${day}/${year}, ${String(hourInt).padStart(2, '0')}:${minutes} ${ampm}`;
+            } else {
+                formattedDateTime = item.updated_date;
             }
-
-            data.forEach((item, index) => {
-                let statusBadge = 'bg-primary text-white';
-                if (item.status === 'Stored') statusBadge = 'bg-success text-white';
-                else if (item.status === 'Dispatched') statusBadge = 'bg-secondary text-white';
-                else if (item.status === 'Gate-Out') statusBadge = 'bg-danger text-white';
-                else if (item.status === 'Moved') statusBadge = 'bg-warning text-dark';
-
-                const dayInYardText = calculateDayInYard(item);
-                
-                let formattedDateTime = '-';
-                if (item.updated_date) {
-                    const d = new Date(item.updated_date);
-                    if (!isNaN(d.getTime())) {
-                        formattedDateTime = new Intl.DateTimeFormat('km-KH', {
-                            year: 'numeric',
-                            month: '2-digit',
-                            day: '2-digit',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true,
-                            timeZone: 'Asia/Phnom_Penh'
-                        }).format(d);
-                    }
-                }
-
-                const row = `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td><strong>${item.container_number}</strong></td>
-                        <td><span class="badge bg-info text-dark">${item.container_size || "40'"} / ${item.container_type || "DC"}</span></td>
-                        <td><span class="fw-semibold text-dark">${item.shipping_line || '-'}</span></td>
-                        <td><span class="badge bg-dark">${item.block_code}</span></td>
-                        <td>ជួរទី ${item.row_number} / ជាន់ទី ${item.tier_number}</td>
-                        <td><span class="badge ${statusBadge}">${item.status}</span></td>
-                        <td>${formattedDateTime}</td>
-                        <td><span class="badge bg-danger text-white">${dayInYardText}</span></td>
-                        <td>${item.notes || '-'}</td>
-                        <td>
-                            <div class="d-flex justify-content-center gap-1">
-                                <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1 shadow-sm" style="font-size: 0.8rem; border-radius: 6px;" title="ដោះដូរ / កែប្រែ" onclick="openEditModal(${item.id})">
-                                    <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
-                                </button>
-                                <button class="btn btn-danger btn-sm fw-bold px-2 py-1 shadow-sm" style="font-size: 0.8rem; border-radius: 6px;" title="លុប" onclick="deleteYardRecordDirect(${item.id})">
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                tbody.innerHTML += row;
-            });
         }
+
+        const row = `
+            <tr>
+                <td>${index + 1}</td>
+                <td><strong>${item.container_number}</strong></td>
+                <td><span class="badge bg-info text-dark">${item.container_size || "40'"} / ${item.container_type || "DC"}</span></td>
+                <td><span class="fw-semibold text-dark">${item.shipping_line || '-'}</span></td>
+                <td><span class="badge bg-dark">${item.block_code}</span></td>
+                <td>ជួរទី ${item.row_number} / ជាន់ទី ${item.tier_number}</td>
+                <td><span class="badge ${statusBadge}">${item.status}</span></td>
+                <td>${formattedDateTime}</td>
+                <td><span class="badge bg-danger text-white">${dayInYardText}</span></td>
+                <td>${item.notes || '-'}</td>
+                <td>
+                    <div class="d-flex justify-content-center gap-1">
+                        <button class="btn btn-warning btn-sm fw-bold text-dark px-2 py-1 shadow-sm" style="font-size: 0.8rem; border-radius: 6px;" title="ដោះដូរ / កែប្រែ" onclick="openEditModal(${item.id})">
+                            <i class="fas fa-exchange-alt me-1"></i> ដោះដូរ
+                        </button>
+                        <button class="btn btn-danger btn-sm fw-bold px-2 py-1 shadow-sm" style="font-size: 0.8rem; border-radius: 6px;" title="លុប" onclick="deleteYardRecordDirect(${item.id})">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
 
         const filterFormElem = document.getElementById('filterForm');
         if (filterFormElem) {
