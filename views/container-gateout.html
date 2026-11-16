@@ -414,13 +414,37 @@
         let allGateOutData = [];
         let availableYardContainers = [];
 
-        document.addEventListener('DOMContentLoaded', () => {
+        // 🌟 កំណត់ថ្ងៃខែ និងម៉ោងតាមម៉ោងក្នុងស្រុកខ្មែរ (Asia/Phnom_Penh) ស្វ័យប្រវត្តិ
+        function setLocalKhmerDateTime(elementId = 'gate_out_date') {
             const now = new Date();
-            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-            const dateInput = document.getElementById('gate_out_date');
-            if(dateInput) {
-                dateInput.value = now.toISOString().slice(0, 16);
+            const formatter = new Intl.DateTimeFormat('en-CA', {
+                timeZone: 'Asia/Phnom_Penh',
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            });
+            
+            const parts = formatter.formatToParts(now);
+            let year, month, day, hour, minute;
+            parts.forEach(p => {
+                if (p.type === 'year') year = p.value;
+                if (p.type === 'month') month = p.value;
+                if (p.type === 'day') day = p.value;
+                if (p.type === 'hour') hour = p.value;
+                if (p.type === 'minute') minute = p.value;
+            });
+
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.value = `${year}-${month}-${day}T${hour}:${minute}`;
             }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setLocalKhmerDateTime('gate_out_date');
             fetchYardContainers();
             fetchGateOutData();
         });
@@ -445,6 +469,7 @@
                 formSection.style.display = 'block';
                 if (btnShowForm) btnShowForm.style.display = 'none';
                 if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+                setLocalKhmerDateTime('gate_out_date');
             }
         }
 
@@ -537,21 +562,30 @@
             tbody.innerHTML = '';
 
             if (!Array.isArray(data) || data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="empty-text">រកមិនឃើញទិន្នន័យកុងតឺន័រចេញទេ[cite: 8]</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="empty-text">រកមិនឃើញទិន្នន័យកុងតឺន័រចេញទេ</td></tr>`;
                 return;
             }
 
             data.forEach((item, index) => {
-                const formattedDate = item.gate_out_date ? new Date(item.gate_out_date).toLocaleString('en-US', { 
-                    timeZone: 'UTC', 
-                    year: 'numeric', 
-                    month: '2-digit', 
-                    day: '2-digit', 
-                    hour: '2-digit', 
-                    minute: '2-digit', 
-                    second: '2-digit',
-                    hour12: true 
-                }) : '';
+                // 🌟 បង្ហាញម៉ោងឱ្យត្រូវចំម៉ោងក្នុងស្រុកខ្មែរ (Asia/Phnom_Penh)
+                let formattedDate = '-';
+                if (item.gate_out_date) {
+                    const dt = new Date(item.gate_out_date);
+                    if (!isNaN(dt.getTime())) {
+                        formattedDate = new Intl.DateTimeFormat('en-US', {
+                            timeZone: 'Asia/Phnom_Penh',
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                            hour12: true
+                        }).format(dt);
+                    } else {
+                        formattedDate = item.gate_out_date;
+                    }
+                }
                 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -671,12 +705,16 @@
             gateOutForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
+                // 🌟 แปลงកាលបរិច្ឆេទជា ISO String ឱ្យត្រូវម៉ោងអន្តរជាតិដើម្បីការពារការលូតម៉ោងខុសលើ Server
+                const rawDateInput = document.getElementById('gate_out_date').value;
+                const formattedISO = rawDateInput ? new Date(rawDateInput).toISOString() : new Date().toISOString();
+
                 const formData = {
                     container_number: document.getElementById('container_number').value,
                     container_size: document.getElementById('container_size').value,
                     container_type: document.getElementById('container_type').value,
                     shipping_line: document.getElementById('shippingLineInput').value,
-                    gate_out_date: document.getElementById('gate_out_date').value,
+                    gate_out_date: formattedISO,
                     truck_plate_number: document.getElementById('truck_plate_number').value.trim(),
                     driver_name: document.getElementById('driver_name').value.trim(),
                     destination: document.getElementById('destination').value.trim(),
@@ -696,10 +734,7 @@
                     if (response.ok && result.success) {
                         alert('កត់ត្រាការចេញកុងតឺន័រ និងកាត់ស្តុកបានជោគជ័យ!');
                         gateOutForm.reset();
-                        const now = new Date();
-                        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-                        const dateInput = document.getElementById('gate_out_date');
-                        if(dateInput) dateInput.value = now.toISOString().slice(0, 16);
+                        setLocalKhmerDateTime('gate_out_date');
                         
                         fetchYardContainers();
                         fetchGateOutData();
