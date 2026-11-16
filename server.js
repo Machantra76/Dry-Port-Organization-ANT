@@ -3603,6 +3603,43 @@ app.put('/api/fleet/container-gate-out/:id', async (req, res) => {
         res.status(500).json({ success: false, error: 'កំហុសក្នុងការកែប្រែ/ដោះដូរទិន្នន័យ' });
     }
 });
+// 🌟 API សម្រាប់លុបទិន្នន័យ Gate-Out តាម ID
+app.delete('/api/fleet/container-gate-out/:id', async (req, res) => {
+    const { id } = req.params;
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
+
+        // (ជាជម្រើស) បើអ្នកចង់ឱ្យពេលលុប Gate-Out រួច ឱ្យវាដូរស្ថានភាពកុងតឺន័រក្នុង Yard មកជា Stored វិញ អ្នកអាចបើកកូដខាងក្រោមនេះ៖
+        /*
+        const gateOutRecord = await client.query('SELECT container_number FROM container_gate_out WHERE id = $1', [id]);
+        if (gateOutRecord.rows.length > 0) {
+            const containerNo = gateOutRecord.rows[0].container_number;
+            await client.query(
+                `UPDATE container_yard_locations SET status = 'Stored', updated_date = CURRENT_TIMESTAMP WHERE container_number = $1`,
+                [containerNo]
+            );
+        }
+        */
+
+        // លុបទិន្នន័យចេញពីតារាង container_gate_out
+        const deleteResult = await client.query('DELETE FROM container_gate_out WHERE id = $1 RETURNING *', [id]);
+
+        if (deleteResult.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ success: false, error: 'រកមិនឃើញទិន្នន័យសម្រាប់លុបទេ' });
+        }
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'បានលុបទិន្នន័យដោយជោគជ័យ' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        console.error('Delete Gate-Out Error:', err);
+        res.status(500).json({ success: false, error: 'កំហុសក្នុងការលុបទិន្នន័យពី Server' });
+    } finally {
+        client.release();
+    }
+});
 
 // ==========================================
 // API Routes: Yard Operations
