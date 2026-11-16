@@ -500,10 +500,18 @@
     <script>
         let allYardData = [];
 
+        // មុខងារទាញយកកាលបរិច្ឆេទបច្ចុប្បន្នតាមម៉ោងនៅកម្ពុជា (Asia/Phnom_Penh)
+        function getCambodiaDateString() {
+            const options = { timeZone: 'Asia/Phnom_Penh', year: 'numeric', month: '2-digit', day: '2-digit' };
+            const formatter = new Intl.DateTimeFormat('en-CA', options); // en-CA ផ្តល់ទ្រង់ទ្រាយ YYYY-MM-DD
+            return formatter.format(new Date());
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             const updDate = document.getElementById('updated_date');
             if (updDate) {
-                updDate.valueAsDate = new Date();
+                // កំណត់កាលបរិច្ឆេទស្វ័យប្រវត្តិស្របតាមម៉ោងនៅខ្មែរ
+                updDate.value = getCambodiaDateString();
             }
             loadYardLocations();
         });
@@ -528,6 +536,9 @@
                 formYard.style.display = 'block';
                 if (btnShowForm) btnShowForm.style.display = 'none';
                 if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+                // កំណត់កាលបរិច្ឆេទឡើងវិញពេលចុចបើក Form ថ្មី
+                const updDate = document.getElementById('updated_date');
+                if (updDate) updDate.value = getCambodiaDateString();
             }
         }
 
@@ -750,7 +761,7 @@
             if (eBlock) eBlock.value = item.block_code || '';
             if (eRow) eRow.value = item.row_number || 1;
             if (eTier) eTier.value = item.tier_number || 1;
-            if (eDate) eDate.value = item.updated_date ? item.updated_date.split('T')[0] : '';
+            if (eDate) eDate.value = item.updated_date ? item.updated_date.split('T')[0] : getCambodiaDateString();
             if (eStat) eStat.value = item.status || 'Stored';
             if (eNotes) eNotes.value = item.notes || '';
 
@@ -866,7 +877,7 @@
                         alert('បានកត់ត្រាទីតាំងកុងតឺន័រដោយជោគជ័យ!');
                         this.reset();
                         const updDate = document.getElementById('updated_date');
-                        if (updDate) updDate.valueAsDate = new Date();
+                        if (updDate) updDate.value = getCambodiaDateString();
                         loadYardLocations();
                         switchSection('table');
                     } else {
