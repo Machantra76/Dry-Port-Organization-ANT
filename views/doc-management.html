@@ -367,13 +367,41 @@
 
     <!-- ផ្នែកទី ០: Dashboard & Charts (ក្រាហ្វិកសង្ខេបទិន្នន័យ) -->
     <div id="dashboardSection" class="section-card no-print" style="display: none;">
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-2">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
             <div class="section-card-title mb-0">
                 <i class="fa-solid fa-chart-line me-2"></i> ផ្ទាំងវិភាគ និងក្រាហ្វិកសង្ខេបឯកសារគយ (Customs Analytics Dashboard)
             </div>
             <button type="button" class="btn btn-sm btn-outline-primary" onclick="loadDocuments()">
                 <i class="fa-solid fa-rotate me-1"></i> ធ្វើបច្ចុប្បន្នភាពទិន្នន័យ
             </button>
+        </div>
+
+        <!-- របារច្រោះកាលបរិច្ឆេទសម្រាប់ Dashboard (From Date - To Date) -->
+        <div class="filter-action-bar mb-4">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label"><i class="fa-regular fa-calendar me-1"></i> កាលបរិច្ឆេទចាប់ពី (From Date):</label>
+                    <input type="date" class="form-control" id="dashFromDate">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><i class="fa-regular fa-calendar-check me-1"></i> ដល់កាលបរិច្ឆេទ (To Date):</label>
+                    <input type="date" class="form-control" id="dashToDate">
+                </div>
+                <div class="col-md-4">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button type="button" class="btn btn-filter-custom" onclick="filterDashboardCharts()" title="ត្រងទិន្នន័យក្រាហ្វិក">
+                                <i class="fa-solid fa-filter me-1"></i> ត្រងទិន្នន័យ
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button type="button" class="btn btn-reset-custom" onclick="resetDashboardFilter()" title="បង្ហាញទាំងអស់ឡើងវិញ">
+                                <i class="fa-solid fa-rotate-right me-1"></i> កំណត់ឡើងវិញ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- KPI Summary Cards -->
@@ -674,12 +702,38 @@
             const response = await fetch('/api/customs-documents');
             documentDataList = await response.json();
             renderTable(documentDataList);
-            updateDashboardCharts(documentDataList);
+            filterDashboardCharts();
         } catch (err) {
             console.error('Error loading customs documents:', err);
             document.getElementById('documentTableBody').innerHTML = `<tr><td colspan="10" class="text-center text-danger py-4">មានបញ្ហាក្នុងការទាញយកទិន្នន័យពី Server</td></tr>`;
             updateDashboardCharts([]);
         }
+    }
+
+    // មុខងារច្រោះទិន្នន័យ Dashboard តាម From Date និង To Date
+    function filterDashboardCharts() {
+        const fromDate = document.getElementById('dashFromDate').value;
+        const toDate = document.getElementById('dashToDate').value;
+
+        const filtered = documentDataList.filter(item => {
+            if (!fromDate && !toDate) return true;
+            if (item.document_date) {
+                const itemDate = item.document_date.split('T')[0];
+                if (fromDate && itemDate < fromDate) return false;
+                if (toDate && itemDate > toDate) return false;
+                return true;
+            }
+            return false;
+        });
+
+        updateDashboardCharts(filtered);
+    }
+
+    // មុខងារកំណត់ការច្រោះ Dashboard ឡើងវិញ
+    function resetDashboardFilter() {
+        document.getElementById('dashFromDate').value = '';
+        document.getElementById('dashToDate').value = '';
+        updateDashboardCharts(documentDataList);
     }
 
     // មុខងារគណនា និងបង្ហាញទិន្នន័យលើ Dashboard រួមទាំងក្រាហ្វិកមាត់ច្រក
@@ -766,7 +820,8 @@
                 }]
             },
             options: {
-                responsive: { maintainAspectRatio: false },
+                responsive: true,
+                maintainAspectRatio: false,
                 plugins: { legend: { display: false } },
                 scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } }
             }
