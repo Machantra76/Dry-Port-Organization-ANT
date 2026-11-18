@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ (Customs Permit & Document Control BWH) - ANT Dry Port</title>
+    
+    <!-- 🌟 បន្ថែម Script ពិនិត្យអេក្រង់ទូរសព្ទដៃ ដើម្បីរត់ទៅ mobile-bwh-customs.html ដោយស្វ័យប្រវត្តិ -->
+    <script>
+        if (window.innerWidth <= 768) {
+            window.location.replace("mobile-bwh-customs.html");
+        }
+    </script>
+
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -86,7 +94,6 @@
             background: var(--danger-color); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
         }
 
-        /* Style សម្រាប់ Button Disabled */
         button:disabled {
             background-color: #cbd5e1 !important;
             color: #94a3b8 !important;
@@ -106,7 +113,6 @@
         .badge-active { background-color: #d1fae5; color: #065f46; }
         .badge-type { background-color: #e0f2fe; color: #0369a1; font-weight: 700; }
 
-        /* Modal */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.7); display: none; justify-content: center; align-items: center; z-index: 1000;
         }
@@ -484,7 +490,7 @@
                         alert('បានលុបទិន្នន័យដោយជោគជ័យ!');
                         loadPermits();
                     } else {
-                        alert('មានបញ្ហា៖ ' + (result.error || 'មិនអាចលុបបានទេ'));
+                        alert('មានបញ្ហា៖ ' + (result.error || 'មិនអាចលុបได้ទេ'));
                     }
                 } catch (err) {
                     console.error('Error:', err);
@@ -520,6 +526,449 @@
                 (i.company_name && i.company_name.toLowerCase().includes(query))
             );
             renderTable(filtered);
+        }
+    </script>
+</body>
+</html>
+```[cite: 6]
+
+---
+
+### ២. កូដសម្រាប់ទូរសព្ទដៃ (Mobile File): `mobile-bwh-customs.html`
+សូមបង្កើត File ថ្មីមួយដាក់ឈ្មោះថា **`mobile-bwh-customs.html`** នៅក្នុង Folder ជាមួយគ្នា រួចចម្លងកូដពេញលេញខាងក្រោមនេះដាក់ចូល៖
+
+```html
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>លិខិតអនុញ្ញាតគយ - Mobile</title>
+    
+    <!-- 🌟 បើបើកលើកុំព្យូទ័រ (អេក្រង់ធំ) ឱ្យត្រឡប់ទៅ bwh-customs.html វិញ -->
+    <script>
+        if (window.innerWidth > 768) {
+            window.location.replace("bwh-customs.html");
+        }
+    </script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1e3c72;
+            --secondary: #2a5298;
+            --accent: #00c6ff;
+            --bg-light: #f1f5f9;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            background: var(--bg-light);
+            margin: 0; padding: 0; padding-bottom: 30px;
+            color: #1e293b;
+        }
+
+        /* Mobile Header */
+        .app-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 15px 16px 20px 16px;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            box-shadow: 0 4px 12px rgba(30, 60, 114, 0.25);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2); color: white; border: none;
+            width: 38px; height: 38px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none; font-size: 16px;
+        }
+
+        .header-title h1 { margin: 0; font-size: 14px; font-weight: 700; text-align: center; }
+        .header-title p { margin: 2px 0 0 0; font-size: 9px; color: #cbd5e1; text-align: center; text-transform: uppercase; }
+
+        .container { padding: 16px; }
+
+        /* Tab Switcher */
+        .tab-switcher {
+            display: flex; background: #e2e8f0; border-radius: 10px; padding: 4px; margin-bottom: 16px;
+        }
+        .tab-btn {
+            flex: 1; padding: 10px; text-align: center; border: none; background: transparent;
+            font-family: 'Kantumruy Pro', sans-serif; font-size: 13px; font-weight: 600; color: #64748b;
+            border-radius: 8px; cursor: pointer; transition: all 0.2s;
+        }
+        .tab-btn.active { background: white; color: var(--primary); box-shadow: 0 2px 6px rgba(0,0,0,0.08); }
+
+        .card-box {
+            background: white; border-radius: 14px; padding: 16px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 14px;
+        }
+
+        .form-group { margin-bottom: 12px; }
+        label { display: block; font-weight: 600; font-size: 12px; color: var(--primary); margin-bottom: 4px; }
+        input, select, textarea {
+            width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px;
+            font-family: 'Kantumruy Pro', sans-serif; font-size: 13px; background: #fff;
+        }
+        textarea { resize: vertical; height: 50px; }
+
+        .btn-submit {
+            background: #10b981; color: white; border: none; width: 100%; padding: 12px;
+            border-radius: 8px; font-family: 'Kantumruy Pro', sans-serif; font-weight: 700;
+            font-size: 14px; margin-top: 8px; cursor: pointer;
+        }
+
+        /* Mobile Permit Item List */
+        .permit-item {
+            background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+            padding: 12px; margin-bottom: 10px;
+        }
+        .permit-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 6px; }
+        .permit-no { font-weight: 700; font-size: 13.5px; color: var(--primary); }
+        .badge-type { background-color: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 6px; font-size: 11px; font-weight: bold; }
+        .permit-details { font-size: 11.5px; color: #64748b; margin-top: 4px; display: flex; justify-content: space-between; }
+        
+        .permit-actions {
+            margin-top: 8px; padding-top: 8px; border-top: 1px solid #e2e8f0;
+            display: flex; gap: 8px; justify-content: flex-end;
+        }
+        .btn-act-mob { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 5px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer; font-family: 'Kantumruy Pro'; }
+        .btn-del-mob { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; padding: 5px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 600; cursor: pointer; font-family: 'Kantumruy Pro'; }
+    </style>
+</head>
+<body>
+
+    <!-- Mobile Header -->
+    <div class="app-header">
+        <a href="mobile.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+        <div class="header-title">
+            <h1>លិខិតអនុញ្ញាតគយ (BWH)</h1>
+            <p>Customs Permit & Document Control</p>
+        </div>
+        <div style="width: 38px;"></div>
+    </div>
+
+    <div class="container">
+        <!-- Tab Switcher -->
+        <div class="tab-switcher">
+            <button class="tab-btn active" id="tabFormBtn" onclick="switchTab('form')">បញ្ចូលថ្មី</button>
+            <button class="tab-btn" id="tabListBtn" onclick="switchTab('list')">បញ្ជីលិខិត</button>
+        </div>
+
+        <!-- Form Section -->
+        <div id="formSection" class="card-box">
+            <h3 id="mobFormTitle" style="margin: 0 0 12px 0; font-size: 14px; color: var(--primary);">បញ្ចូលលិខិតអនុញ្ញាតគយថ្មី</h3>
+            <form id="mobilePermitForm" onsubmit="saveMobilePermit(event)">
+                <input type="hidden" id="mob_editId">
+                <div class="form-group">
+                    <label>ទាញយកទិន្នន័យពី BWH:</label>
+                    <select id="mob_bwhSelect" class="form-select" onchange="selectMobileBwhRecord()" required>
+                        <option value="">-- ជ្រើសរើសទំនិញ/យានយន្ត --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ប្រភេទឯកសារ (Type):</label>
+                    <select id="mob_docType" class="form-select">
+                        <option value="I">I (Import - នាំចូល)</option>
+                        <option value="T">T (Transit - ឆ្លងកាត់)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>លេខលិខិតអនុញ្ញាតគយ (Permit No.):</label>
+                    <input type="text" id="mob_permitNumber" required placeholder="ឧ. PER-2026-001">
+                </div>
+                <div class="form-group">
+                    <label>លេខចុះបញ្ជីគយ (Customs Reg No.):</label>
+                    <input type="text" id="mob_customsRegNo" required placeholder="ឧ. CUST-REG-8899">
+                </div>
+                <div class="form-group">
+                    <label>លេខ Manifest No.:</label>
+                    <input type="text" id="mob_manifestNo" placeholder="ឧ. MAN-2026-112">
+                </div>
+                <div class="form-group">
+                    <label>លេខកុងតឺន័រ:</label>
+                    <input type="text" id="mob_containerNo" readonly required>
+                </div>
+                <div class="form-group">
+                    <label>លេខតួឡាន / VIN (Chassis No.):</label>
+                    <input type="text" id="mob_vehicleVin" readonly placeholder="គ្មានលេខតួ">
+                </div>
+                <div class="form-group">
+                    <label>ឈ្មោះទំនិញ / ម៉ាកឡាន:</label>
+                    <input type="text" id="mob_cargoName" readonly required>
+                </div>
+                <div class="form-group">
+                    <label>ក្រុមហ៊ុន / ម្ចាស់ទំនិញ:</label>
+                    <input type="text" id="mob_companyName" readonly required>
+                </div>
+                <div class="form-group">
+                    <label>ប្រភេទលិខិតអនុញ្ញាត (Permit Type):</label>
+                    <select id="mob_permitType" class="form-select">
+                        <option value="លិខិតអនុញ្ញាតទំនិញចូលឃ្លាំង">លិខិតអនុញ្ញាតទំនិញចូលឃ្លាំង</option>
+                        <option value="លិខិតអនុញ្ញាតបង់ពន្ធនិងបើកទំនិញ">លិខិតអនុញ្ញាតបង់ពន្ធនិងបើកទំនិញ</option>
+                        <option value="លិខិតផ្ទេរទំនិញចេញក្រៅឃ្លាំង">លិខិតផ្ទេរទំនិញចេញក្រៅឃ្លាំង</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>កាលបរិច្ឆេទចេញលិខិត (Issue Date):</label>
+                    <input type="date" id="mob_issueDate" required>
+                </div>
+                <div class="form-group">
+                    <label>មន្ត្រីគយទទួលបន្ទុក (Customs Officer):</label>
+                    <input type="text" id="mob_officerName" required placeholder="ឈ្មោះមន្ត្រីគយ">
+                </div>
+                <div class="form-group">
+                    <label>កំណត់សម្គាល់ (Notes):</label>
+                    <textarea id="mob_notes" placeholder="ព័ត៌មានបន្ថែម..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit" id="mobSubmitBtn">💾 រក្សាទុកលិខិត</button>
+            </form>
+        </div>
+
+        <!-- List Section -->
+        <div id="listSection" class="card-box" style="display: none;">
+            <div class="form-group" style="margin-bottom: 12px;">
+                <input type="text" id="mobSearchInput" placeholder="ស្វែងរកលេខលិខិត, កុងតឺន័រ..." onkeyup="filterMobileTable()">
+            </div>
+            <div id="permitListContainer">
+                <div style="text-align: center; color: #64748b; padding: 20px;">កំពុងទាញយកទិន្នន័យ...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mobPermitData = [];
+        let mobBwhRecords = [];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dateInput = document.getElementById('mob_issueDate');
+            if (dateInput) dateInput.valueAsDate = new Date();
+            loadMobilePermits();
+            loadMobileBwhDropdown();
+        });
+
+        function switchTab(tab) {
+            const formSec = document.getElementById('formSection');
+            const listSec = document.getElementById('listSection');
+            const tabFormBtn = document.getElementById('tabFormBtn');
+            const tabListBtn = document.getElementById('tabListBtn');
+
+            if (tab === 'form') {
+                formSec.style.display = 'block';
+                listSec.style.display = 'none';
+                tabFormBtn.classList.add('active');
+                tabListBtn.classList.remove('active');
+            } else {
+                formSec.style.display = 'none';
+                listSec.style.display = 'block';
+                tabListBtn.classList.add('active');
+                tabFormBtn.classList.remove('active');
+                loadMobilePermits();
+            }
+        }
+
+        async function loadMobileBwhDropdown() {
+            try {
+                const res = await fetch('/api/bwh-records');
+                mobBwhRecords = await res.json();
+                const select = document.getElementById('mob_bwhSelect');
+                select.innerHTML = '<option value="">-- ជ្រើសរើសទំនិញ/យានយន្ត --</option>';
+                mobBwhRecords.forEach(item => {
+                    const identifier = item.vehicle_vin ? `VIN: ${item.vehicle_vin}` : (item.container_number || 'N/A');
+                    select.innerHTML += `<option value="${item.id}">${identifier} - ${item.cargo_name || item.cargo} (${item.owner_name || item.owner})</option>`;
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function selectMobileBwhRecord() {
+            const id = document.getElementById('mob_bwhSelect').value;
+            const selected = mobBwhRecords.find(item => item.id == id);
+            if (selected) {
+                document.getElementById('mob_containerNo').value = selected.container_number || 'N/A';
+                document.getElementById('mob_vehicleVin').value = selected.vehicle_vin || '';
+                document.getElementById('mob_cargoName').value = selected.cargo_name || selected.cargo || '';
+                document.getElementById('mob_companyName').value = selected.owner_name || selected.owner || '';
+            } else {
+                document.getElementById('mob_containerNo').value = '';
+                document.getElementById('mob_vehicleVin').value = '';
+                document.getElementById('mob_cargoName').value = '';
+                document.getElementById('mob_companyName').value = '';
+            }
+        }
+
+        async function loadMobilePermits() {
+            try {
+                const res = await fetch('/api/customs-permits');
+                mobPermitData = await res.json();
+                renderMobileList(mobPermitData);
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderMobileList(data) {
+            const container = document.getElementById('permitListContainer');
+            container.innerHTML = '';
+
+            if (!Array.isArray(data) || data.length === 0) {
+                container.innerHTML = '<div style="text-align: center; color: #64748b; padding: 20px;">មិនមានទិន្នន័យលិខិតអនុញ្ញាតគយទេ</div>';
+                return;
+            }
+
+            data.forEach(item => {
+                const isRegistered = item.manifest_number && item.manifest_number.trim() !== '';
+                const issueDateFormatted = item.issue_date ? item.issue_date.slice(0, 10) : '';
+
+                container.innerHTML += `
+                    <div class="permit-item">
+                        <div class="permit-header">
+                            <div>
+                                <span class="badge-type">${item.doc_type || 'I'}</span>
+                                <span class="permit-no">${item.permit_number || '-'}</span>
+                            </div>
+                            <span style="font-size: 11px; color: #0369a1; font-weight: 600;">Reg: ${item.customs_reg_number || '-'}</span>
+                        </div>
+                        <div style="font-size: 12px; color: #334155; margin-bottom: 4px;">
+                            <b>កុងតឺន័រ/តួ:</b> ${item.container_number || 'N/A'} ${item.vehicle_vin ? '/ ' + item.vehicle_vin : ''}
+                        </div>
+                        <div style="font-size: 11.5px; color: #475569; margin-bottom: 4px;">
+                            <b>ទំនិញ:</b> ${item.cargo_description || '-'} (${item.company_name || '-'})
+                        </div>
+                        <div class="permit-details">
+                            <span>មន្ត្រី: ${item.officer_name || '-'}</span>
+                            <span>ចេញថ្ងៃ: ${issueDateFormatted}</span>
+                        </div>
+                        <div class="permit-actions">
+                            <button class="btn-act-mob" ${isRegistered ? 'disabled style="background:#cbd5e1; color:#64748b;"' : ''} onclick="editMobilePermit(${item.id})">✏️ ${isRegistered ? 'បានចុះបញ្ជី' : 'កែ/ចុះបញ្ជី'}</button>
+                            <button class="btn-del-mob" onclick="deleteMobilePermit(${item.id})">🗑️ លុប</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterMobileTable() {
+            const query = document.getElementById('mobSearchInput').value.toLowerCase();
+            const filtered = mobPermitData.filter(i => 
+                (i.permit_number && i.permit_number.toLowerCase().includes(query)) || 
+                (i.customs_reg_number && i.customs_reg_number.toLowerCase().includes(query)) ||
+                (i.container_number && i.container_number.toLowerCase().includes(query)) ||
+                (i.vehicle_vin && i.vehicle_vin.toLowerCase().includes(query)) ||
+                (i.company_name && i.company_name.toLowerCase().includes(query))
+            );
+            renderMobileList(filtered);
+        }
+
+        function editMobilePermit(id) {
+            const item = mobPermitData.find(d => d.id == id);
+            if (!item) return;
+
+            switchTab('form');
+            document.getElementById('mob_editId').value = item.id;
+            document.getElementById('mobFormTitle').textContent = 'កែប្រែ និងចុះបញ្ជីលិខិតអនុញ្ញាតគយ';
+            document.getElementById('mobSubmitBtn').textContent = '💾 រក្សាទុកការកែប្រែ';
+
+            document.getElementById('mob_bwhSelect').value = item.bonded_record_id || '';
+            document.getElementById('mob_docType').value = item.doc_type || 'I';
+            document.getElementById('mob_permitNumber').value = item.permit_number || '';
+            document.getElementById('mob_customsRegNo').value = item.customs_reg_number || '';
+            document.getElementById('mob_manifestNo').value = item.manifest_number || '';
+            document.getElementById('mob_containerNo').value = item.container_number || '';
+            document.getElementById('mob_vehicleVin').value = item.vehicle_vin || '';
+            document.getElementById('mob_cargoName').value = item.cargo_description || '';
+            document.getElementById('mob_companyName').value = item.company_name || '';
+            document.getElementById('mob_permitType').value = item.permit_type || '';
+            document.getElementById('mob_issueDate').value = item.issue_date ? item.issue_date.slice(0, 10) : '';
+            document.getElementById('mob_officerName').value = item.officer_name || '';
+            document.getElementById('mob_notes').value = item.notes || '';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function deleteMobilePermit(id) {
+            if (confirm('តើអ្នកពិតជាចង់លុបទិន្នន័យនេះមែនទេ?')) {
+                try {
+                    const res = await fetch(`/api/customs-permits/${id}`, { method: 'DELETE' });
+                    const result = await res.json();
+                    if (result.success) {
+                        alert('បានលុបដោយជោគជ័យ!');
+                        loadMobilePermits();
+                    } else {
+                        alert('បរាជ័យក្នុងការលុប!');
+                    }
+                } catch (err) {
+                    alert('មិនអាចតភ្ជាប់ Server បានទេ!');
+                }
+            }
+        }
+
+        async function saveMobilePermit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('mob_editId').value;
+            const manifestVal = document.getElementById('mob_manifestNo').value.trim();
+            const bondedRecordId = document.getElementById('mob_bwhSelect').value;
+
+            const payload = {
+                bonded_record_id: bondedRecordId,
+                doc_type: document.getElementById('mob_docType').value,
+                permit_number: document.getElementById('mob_permitNumber').value.trim(),
+                customs_reg_number: document.getElementById('mob_customsRegNo').value.trim(),
+                manifest_number: manifestVal || null,
+                container_number: document.getElementById('mob_containerNo').value,
+                vehicle_vin: document.getElementById('mob_vehicleVin').value,
+                cargo_description: document.getElementById('mob_cargoName').value,
+                company_name: document.getElementById('mob_companyName').value,
+                permit_type: document.getElementById('mob_permitType').value,
+                issue_date: document.getElementById('mob_issueDate').value,
+                officer_name: document.getElementById('mob_officerName').value.trim(),
+                notes: document.getElementById('mob_notes').value.trim(),
+                status: 'Active'
+            };
+
+            try {
+                let url = '/api/customs-permits';
+                let method = 'POST';
+                if (editId) {
+                    url = `/api/customs-permits/${editId}`;
+                    method = 'PUT';
+                }
+
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await res.json();
+
+                if (result.success) {
+                    if (manifestVal && bondedRecordId) {
+                        await fetch(`/api/bwh-records/${bondedRecordId}/duty-status`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ duty_status: 'បានបង់ពន្ធរួច (Duty Paid / Released)' })
+                        });
+                    }
+
+                    alert('បានរក្សាទុកដោយជោគជ័យ!');
+                    document.getElementById('mobilePermitForm').reset();
+                    document.getElementById('mob_editId').value = '';
+                    document.getElementById('mobFormTitle').textContent = 'បញ្ចូលលិខិតអនុញ្ញាតគយថ្មី';
+                    document.getElementById('mobSubmitBtn').textContent = '💾 រក្សាទុកលិខិត';
+                    document.getElementById('mob_issueDate').valueAsDate = new Date();
+                    switchTab('list');
+                } else {
+                    alert('មានបញ្ហា៖ ' + result.error);
+                }
+            } catch (err) {
+                alert('មិនអាចតភ្ជាប់ Server បានទេ!');
+            }
         }
     </script>
 </body>
