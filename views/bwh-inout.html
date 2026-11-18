@@ -4,14 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ការគ្រប់គ្រងទំនិញ ឬយានយន្ត ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out) - ANT Dry Port</title>
-    
-    <!-- 🌟 បន្ថែម Script ពិនិត្យអេក្រង់៖ បើបើកលើទូរសព្ទដៃ នឹងរត់ទៅ mobile-bwh-inout_2.html ដោយស្វ័យប្រវត្តិ -->
-    <script>
-        if (window.innerWidth <= 768) {
-            window.location.replace("mobile-bwh-inout_2.html");
-        }
-    </script>
-
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -662,6 +654,7 @@
             const movement_type = document.getElementById('movementType').value;
             const customs_status = document.getElementById('customsStatus').value;
 
+            // កសាង Payload មូលដ្ឋាន
             const payload = {
                 container_number,
                 vehicle_vin,
@@ -671,6 +664,7 @@
                 customs_status
             };
 
+            // បើជាការបង្កើតថ្មី (Create) ដាក់បញ្ចូលកាលបរិច្ឆេទថ្ងៃនេះ ប៉ុន្តែបើជាការកែប្រែ (Update) មិនបាច់ផ្ញើ record_date ទៅទេ ដើម្បីឱ្យ Server រក្សារកាលបរិច្ឆេទចាស់នៅដដែល
             if (!id) {
                 payload.record_date = new Date().toISOString().split('T')[0];
                 payload.days_in_bonded = 0;

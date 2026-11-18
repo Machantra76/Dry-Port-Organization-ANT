@@ -4,14 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>របាយការណ៍ហិរញ្ញវត្ថុ - Financial Reporting</title>
-    
-    <!-- 🌟 បន្ថែម Script ពិនិត្យអេក្រង់ទូរសព្ទដៃ ដើម្បីរត់ទៅ mobile-acc-finance.html ដោយស្វ័យប្រវត្តិ -->
-    <script>
-        if (window.innerWidth <= 768) {
-            window.location.replace("mobile-acc-finance.html");
-        }
-    </script>
-
     <link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -125,10 +117,15 @@
             height: 42px;
             white-space: nowrap;
         }
+        /* ប៊ូតុងទី១: ពណ៌ខៀវស្រស់ (Search / Filter) */
         .filter-btn { background: #2563eb; color: white; width: 100%; }
         .filter-btn:hover { background: #1d4ed8; }
+
+        /* ប៊ូតុងទី២: ពណ៌ប្រផេះដិត (Reset) */
         .reset-btn { background: #475569; color: white; width: 100%; }
         .reset-btn:hover { background: #334155; }
+
+        /* ប៊ូតុងទី៣: ពណ៌ទឹកក្រូច / លឿងទុំ (Print / PDF) */
         .print-btn { background: #d97706; color: white; }
         .print-btn:hover { background: #b45309; }
 
