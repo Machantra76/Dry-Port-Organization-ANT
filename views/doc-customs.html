@@ -473,16 +473,20 @@
         }
     }
 
+    function normalizeRef(val) {
+        return (val || '').trim().toLowerCase();
+    }
+
     // ពិនិត្យថាតើ លេខយោង / ឯកសារ ត្រូវបានប្រើរួចហើយឬនៅក្នុង customsList
     function isReferenceDuplicate(refNo, excludeEditId = '') {
-        const normalizedRef = (refNo || '').trim().toLowerCase();
+        const normalizedRef = normalizeRef(refNo);
         if (!normalizedRef) return false;
 
         return customsList.some(item => {
             if (excludeEditId && String(item.id) === String(excludeEditId)) {
                 return false;
             }
-            return (item.reference_number || '').trim().toLowerCase() === normalizedRef;
+            return normalizeRef(item.reference_number) === normalizedRef;
         });
     }
 
@@ -498,12 +502,13 @@
             const editIdElem = document.getElementById('editId');
             const currentEditId = editIdElem ? editIdElem.value : '';
             const currentSelectedValue = preserveRefNo || select.value;
+            const normCurrentSelected = normalizeRef(currentSelectedValue);
 
             // យកលេខយោងដែលបានប្រើរួច (លើកលែងតែ record ដែលកំពុងកែប្រែ)
             const usedRefSet = new Set(
                 customsList
                     .filter(item => !currentEditId || String(item.id) !== String(currentEditId))
-                    .map(item => (item.reference_number || '').trim().toLowerCase())
+                    .map(item => normalizeRef(item.reference_number))
                     .filter(Boolean)
             );
 
@@ -511,12 +516,12 @@
             const seenApiRefSet = new Set();
             const filteredDocs = availableDocuments.filter(doc => {
                 const docRef = (doc.document_number || '').trim();
-                const normRef = docRef.toLowerCase();
+                const normRef = normalizeRef(docRef);
                 if (!docRef) return false;
                 if (seenApiRefSet.has(normRef)) return false;
                 seenApiRefSet.add(normRef);
 
-                if (currentSelectedValue && normRef === currentSelectedValue.trim().toLowerCase()) {
+                if (normCurrentSelected && normRef === normCurrentSelected) {
                     return true;
                 }
                 return !usedRefSet.has(normRef);
@@ -524,15 +529,31 @@
 
             select.innerHTML = '<option value="">-- ជ្រើសរើសលេខឯកសារគយ --</option>';
             
+            let matchedOptionValue = '';
             filteredDocs.forEach(doc => {
                 const option = document.createElement('option');
                 option.value = doc.document_number;
                 option.textContent = `${doc.document_number} (${doc.company_name})`;
+                if (normCurrentSelected && normalizeRef(doc.document_number) === normCurrentSelected) {
+                    matchedOptionValue = doc.document_number;
+                }
                 select.appendChild(option);
             });
 
-            if (currentSelectedValue && filteredDocs.some(d => d.document_number === currentSelectedValue)) {
-                select.value = currentSelectedValue;
+            // បើលេខយោងដើមរបស់ record ដែលកំពុងកែប្រែ មិនមានក្នុង /api/customs-documents ទេ ក៏បន្ថែមវាចូលដើម្បីកុំឱ្យបាត់ពេលកែប្រែ
+            if (currentSelectedValue && !matchedOptionValue) {
+                const editingItem = customsList.find(d => String(d.id) === String(currentEditId));
+                const option = document.createElement('option');
+                option.value = currentSelectedValue;
+                option.textContent = editingItem && editingItem.company_name
+                    ? `${currentSelectedValue} (${editingItem.company_name})`
+                    : currentSelectedValue;
+                select.appendChild(option);
+                matchedOptionValue = currentSelectedValue;
+            }
+
+            if (matchedOptionValue) {
+                select.value = matchedOptionValue;
             }
         } catch (err) {
             console.error('Error loading documents for dropdown:', err);
@@ -560,11 +581,12 @@
             return;
         }
 
-        const matchedDoc = availableDocuments.find(doc => doc.document_number === selectedRefNo);
+        const matchedDoc = availableDocuments.find(doc => normalizeRef(doc.document_number) === normalizeRef(selectedRefNo));
         if (matchedDoc && matchedDoc.company_name) {
             companyInput.value = matchedDoc.company_name;
         } else {
-            companyInput.value = '';
+            const editingItem = customsList.find(d => String(d.id) === String(currentEditId));
+            companyInput.value = (editingItem && editingItem.company_name) ? editingItem.company_name : '';
         }
     }
 
@@ -805,13 +827,16 @@
     }
 
     async function editCustomsData(id) {
-        const item = customsList.find(d => d.id === id);
+        const item = customsList.find(d => String(d.id) === String(id));
         if (!item) return;
 
         switchSection('form');
-        await loadDocumentDropdown(item.reference_number || '');
 
         const editId = document.getElementById('editId');
+        if (editId) editId.value = item.id;
+
+        await loadDocumentDropdown(item.reference_number || '');
+
         const sysCode = document.getElementById('sys_code');
         const refNo = document.getElementById('reference_number');
         const companyName = document.getElementById('company_name');
@@ -823,14 +848,13 @@
         const remarks = document.getElementById('remarks');
         const saveBtn = document.getElementById('saveBtn');
 
-        if (editId) editId.value = item.id;
         if (sysCode) sysCode.value = item.sys_code || '';
-        if (refNo) refNo.value = item.reference_number || '';
-        if (companyName) companyName.value = item.company_name;
-        if (txType) txType.value = item.transaction_type;
+        if (refNo && item.reference_number) refNo.value = item.reference_number;
+        if (companyName) companyName.value = item.company_name || '';
+        if (txType) txType.value = item.transaction_type || '';
         if (entryDate) entryDate.value = item.entry_date ? item.entry_date.split('T')[0] : '';
-        if (sysStatus) sysStatus.value = item.system_status;
-        if (operatorName) operatorName.value = item.operator_name;
+        if (sysStatus) sysStatus.value = item.system_status || 'Pending';
+        if (operatorName) operatorName.value = item.operator_name || '';
         if (customsOffice) customsOffice.value = item.customs_office || '';
         if (remarks) remarks.value = item.remarks || '';
 
