@@ -28,20 +28,15 @@
 
         body {
             font-family: 'Kantumruy Pro', sans-serif;
-            background-color: #0f172a;
-            background-image: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('/views/bg.jpg');
-            background-repeat: no-repeat;
-            background-position: center center;
+            background: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('/views/bg.jpg') no-repeat center center fixed;
             background-size: cover;
             -webkit-background-size: cover;
             -moz-background-size: cover;
             -o-background-size: cover;
-            background-attachment: scroll;
             color: var(--text-main);
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            overflow-x: hidden;
         }
 
         header {
@@ -234,7 +229,7 @@
         .card {
             background: var(--card-bg);
             border-radius: 10px;
-            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
+            transition: all 0.3s ease;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -248,7 +243,7 @@
             background: linear-gradient(135deg, #1e3c72, #2a5298);
             border-color: #00c6ff;
             box-shadow: 0 0 20px rgba(0, 198, 255, 0.9), 0 8px 25px rgba(0, 0, 0, 0.4);
-            transform: translateY(-2px);
+            transform: translateY(-3px);
         }
 
         .card-header {
@@ -259,8 +254,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background 0.25s ease;
-            -webkit-tap-highlight-color: transparent;
+            transition: background 0.3s ease;
         }
 
         .card:hover .card-header {
@@ -278,7 +272,7 @@
             font-size: 16px; 
             font-weight: 700;
             color: var(--primary-color);
-            transition: color 0.25s ease, text-shadow 0.25s ease;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
         }
 
         .card:hover .card-header-info h3 {
@@ -291,7 +285,7 @@
             font-weight: 600;
             color: #475569;
             margin-top: 2px;
-            transition: color 0.25s ease;
+            transition: color 0.3s ease;
         }
 
         .card:hover .card-header-info .eng-title {
@@ -301,7 +295,7 @@
         .tree-toggle-icon {
             font-size: 13px;
             color: var(--primary-color);
-            transition: transform 0.28s cubic-bezier(0.25, 0.8, 0.25, 1), color 0.25s ease;
+            transition: transform 0.3s ease, color 0.3s ease;
             position: absolute;
             right: 15px;
         }
@@ -315,22 +309,18 @@
             transform: rotate(180deg);
         }
 
-        /* ✨ ធ្វើឱ្យ Dropdown បើក-បិទ Smooth រលូនល្អ */
         .card-body {
-            padding: 0 14px;
+            padding: 0;
             max-height: 0;
-            opacity: 0;
             overflow: hidden;
-            transition: max-height 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
-                        opacity 0.25s ease,
-                        padding 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition: max-height 0.3s ease-out;
             background: rgba(255, 255, 255, 0.95);
         }
 
         .card.active .card-body {
-            max-height: 850px;
-            opacity: 1;
+            max-height: 800px;
             padding: 10px 14px 14px 14px;
+            transition: max-height 0.4s ease-in;
         }
 
         .role-list {
@@ -363,7 +353,7 @@
             padding: 8px 10px 8px 24px;
             border-radius: 6px;
             text-decoration: none;
-            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+            transition: all 0.2s ease;
             margin-left: 6px;
         }
 
@@ -638,7 +628,7 @@
             { id: "BONDED_WH", name: "ផ្នែកឃ្លាំងទំនិញពន្ធដារ (BWH)", roles: ["ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)", "ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ", "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ"] }
         ];
 
-        function initAppUI() {
+        document.addEventListener('DOMContentLoaded', () => {
             const loggedUser = JSON.parse(sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info'));
             if (loggedUser) {
                 document.getElementById('authModal').style.display = 'none';
@@ -650,14 +640,6 @@
                     document.getElementById('btnManageUsers').style.display = 'inline-block';
                 }
                 renderDashboard(loggedUser);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', initAppUI);
-
-        window.addEventListener('pageshow', (event) => {
-            if (event.persisted) {
-                initAppUI();
             }
         });
 
