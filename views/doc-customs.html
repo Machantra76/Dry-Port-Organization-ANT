@@ -445,8 +445,8 @@
         if (entryDateInput) {
             entryDateInput.value = new Date().toISOString().split('T')[0];
         }
-        await loadDocumentDropdown();
         await loadCustomsData();
+        await loadDocumentDropdown();
     });
 
     // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
@@ -469,25 +469,52 @@
             formSection.style.display = 'block';
             if (btnShowForm) btnShowForm.style.display = 'none';
             if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+            loadDocumentDropdown();
         }
     }
 
-    async function loadDocumentDropdown() {
+    // 🟢 កែសម្រួល៖ ច្រោះយកតែលេខឯកសារយោងដែលមិនទាន់មានក្នុង customsList (កុំឱ្យស្ទួន) លើកលែងតែកំពុង Edit record នោះ
+    async function loadDocumentDropdown(editingRecordId = null, currentEditingRefNo = '') {
         try {
             const response = await fetch('/api/customs-documents');
             const docs = await response.json();
             availableDocuments = Array.isArray(docs) ? docs : [];
-            
+
+            // ប្រមូលលេខយោងដែលបានប្រើរួចហើយ (លើកលែង record ដែលកំពុង edit)
+            const usedRefNumbers = new Set(
+                (Array.isArray(customsList) ? customsList : [])
+                    .filter(item => !editingRecordId || String(item.id) !== String(editingRecordId))
+                    .map(item => (item.reference_number || '').trim())
+                    .filter(Boolean)
+            );
+
+            // ច្រោះយកតែឯកសារដែលមិនស្ទួន ហើយមិនមានលេខ document_number ស្ទួនគ្នាក្នុង availableDocuments ផងដែរ
+            const seenDocNums = new Set();
+            const uniqueDocs = availableDocuments.filter(doc => {
+                const docNum = (doc.document_number || '').trim();
+                if (!docNum) return false;
+                if (seenDocNums.has(docNum)) return false;
+                seenDocNums.add(docNum);
+
+                const isCurrentEditingDoc = currentEditingRefNo && docNum === currentEditingRefNo.trim();
+                return isCurrentEditingDoc || !usedRefNumbers.has(docNum);
+            });
+
             const select = document.getElementById('reference_number');
             if (!select) return;
+            const previousValue = currentEditingRefNo || select.value;
             select.innerHTML = '<option value="">-- ជ្រើសរើសលេខឯកសារគយ --</option>';
-            
-            availableDocuments.forEach(doc => {
+
+            uniqueDocs.forEach(doc => {
                 const option = document.createElement('option');
                 option.value = doc.document_number;
                 option.textContent = `${doc.document_number} (${doc.company_name})`;
                 select.appendChild(option);
             });
+
+            if (previousValue && uniqueDocs.some(d => d.document_number === previousValue)) {
+                select.value = previousValue;
+            }
         } catch (err) {
             console.error('Error loading documents for dropdown:', err);
         }
@@ -654,6 +681,7 @@
         if (entryDate) entryDate.value = new Date().toISOString().split('T')[0];
         const saveBtn = document.getElementById('saveBtn');
         if (saveBtn) saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យប្រព័ន្ធគយ`;
+        loadDocumentDropdown();
     }
 
     const customsDataForm = document.getElementById('customsDataForm');
@@ -723,8 +751,8 @@
                 if (response.ok && result.success) {
                     alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានចុះបញ្ជីទិន្នន័យប្រព័ន្ធគយថ្មីដោយជោគជ័យ!');
                     resetForm();
-                    loadDocumentDropdown();
-                    loadCustomsData();
+                    await loadCustomsData();
+                    await loadDocumentDropdown();
                     switchSection('table');
                 } else {
                     alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
@@ -736,11 +764,12 @@
         });
     }
 
-    function editCustomsData(id) {
+    async function editCustomsData(id) {
         const item = customsList.find(d => d.id === id);
         if (!item) return;
 
         switchSection('form');
+        await loadDocumentDropdown(item.id, item.reference_number || '');
 
         const editId = document.getElementById('editId');
         const sysCode = document.getElementById('sys_code');
