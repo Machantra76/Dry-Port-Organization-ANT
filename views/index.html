@@ -28,15 +28,30 @@
 
         body {
             font-family: 'Kantumruy Pro', sans-serif;
-            background: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('/views/bg.jpg') no-repeat center center fixed;
-            background-size: cover;
-            -webkit-background-size: cover;
-            -moz-background-size: cover;
-            -o-background-size: cover;
+            background-color: #0f172a;
             color: var(--text-main);
             margin: 0;
             padding: 0;
             min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 🔒 ចាក់សោរ Background ឱ្យនៅនឹងថ្កល់ មិន Zoom In / Zoom Out ពេល Dropdown បើក-បិទ */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100lvh;
+            background: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('/views/bg.jpg') no-repeat center center;
+            background-size: cover;
+            -webkit-background-size: cover;
+            z-index: -1;
+            pointer-events: none;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
         }
 
         header {
@@ -229,7 +244,7 @@
         .card {
             background: var(--card-bg);
             border-radius: 10px;
-            transition: all 0.3s ease;
+            transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease, transform 0.25s ease;
             position: relative;
             display: flex;
             flex-direction: column;
@@ -243,7 +258,7 @@
             background: linear-gradient(135deg, #1e3c72, #2a5298);
             border-color: #00c6ff;
             box-shadow: 0 0 20px rgba(0, 198, 255, 0.9), 0 8px 25px rgba(0, 0, 0, 0.4);
-            transform: translateY(-3px);
+            transform: translateY(-2px);
         }
 
         .card-header {
@@ -254,7 +269,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background 0.3s ease;
+            transition: background 0.25s ease;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .card:hover .card-header {
@@ -272,7 +288,7 @@
             font-size: 16px; 
             font-weight: 700;
             color: var(--primary-color);
-            transition: color 0.3s ease, text-shadow 0.3s ease;
+            transition: color 0.25s ease, text-shadow 0.25s ease;
         }
 
         .card:hover .card-header-info h3 {
@@ -285,7 +301,7 @@
             font-weight: 600;
             color: #475569;
             margin-top: 2px;
-            transition: color 0.3s ease;
+            transition: color 0.25s ease;
         }
 
         .card:hover .card-header-info .eng-title {
@@ -295,7 +311,7 @@
         .tree-toggle-icon {
             font-size: 13px;
             color: var(--primary-color);
-            transition: transform 0.3s ease, color 0.3s ease;
+            transition: transform 0.28s cubic-bezier(0.25, 0.8, 0.25, 1), color 0.25s ease;
             position: absolute;
             right: 15px;
         }
@@ -309,18 +325,22 @@
             transform: rotate(180deg);
         }
 
+        /* ✨ ធ្វើឱ្យ Dropdown បើក-បិទ Smooth រលូនល្អ */
         .card-body {
-            padding: 0;
+            padding: 0 14px;
             max-height: 0;
+            opacity: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease-out;
+            transition: max-height 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
+                        opacity 0.25s ease,
+                        padding 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
             background: rgba(255, 255, 255, 0.95);
         }
 
         .card.active .card-body {
-            max-height: 800px;
+            max-height: 850px;
+            opacity: 1;
             padding: 10px 14px 14px 14px;
-            transition: max-height 0.4s ease-in;
         }
 
         .role-list {
@@ -353,7 +373,7 @@
             padding: 8px 10px 8px 24px;
             border-radius: 6px;
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
             margin-left: 6px;
         }
 
@@ -399,9 +419,6 @@
 
         /* 🌟 Responsive Media Query សម្រាប់ទូរសព្ទដៃ (Mobile Only) ដោយមិនប៉ះពាល់ PC */
         @media (max-width: 768px) {
-            body {
-                background-attachment: scroll;
-            }
             header {
                 padding: 10px 15px;
             }
