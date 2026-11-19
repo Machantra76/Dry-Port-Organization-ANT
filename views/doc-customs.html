@@ -445,8 +445,8 @@
         if (entryDateInput) {
             entryDateInput.value = new Date().toISOString().split('T')[0];
         }
-        await loadDocumentDropdown();
         await loadCustomsData();
+        await loadDocumentDropdown();
     });
 
     // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
@@ -469,40 +469,66 @@
             formSection.style.display = 'block';
             if (btnShowForm) btnShowForm.style.display = 'none';
             if (btnShowTable) btnShowTable.style.display = 'inline-flex';
+            populateReferenceDropdown(document.getElementById('editId')?.value || '');
         }
     }
 
-    // 🟢 មុខងារទាញទិន្នន័យ Dropdown ដោយកែសម្រួលតែរឿង Filter មិនឱ្យមានលេខស្ទួនគ្នាក្នុង Dropdown (Unique Document Numbers Only)
-    async function loadDocumentDropdown() {
+    // មុខងារបង្ហាញជម្រើសលេខឯកសារយោង / វិក្កយបត្រ ដោយត្រងមិនឱ្យមានលេខស្ទួន
+    function populateReferenceDropdown(editingId = '') {
+        const select = document.getElementById('reference_number');
+        if (!select) return;
+
+        const currentSelectedValue = select.value;
+
+        // ប្រមូលលេខឯកសារយោងដែលបានប្រើរួចនៅក្នុង customsList (លើកលែងតែ record ដែលកំពុងកែប្រែ)
+        const usedRefNumbers = new Set(
+            (Array.isArray(customsList) ? customsList : [])
+                .filter(item => item.reference_number && String(item.id) !== String(editingId))
+                .map(item => String(item.reference_number).trim().toLowerCase())
+        );
+
+        // ត្រងឯកសារមិនឱ្យស្ទួនគ្នាទាំងក្នុង availableDocuments និងក្នុង customsList
+        const seenDocNumbers = new Set();
+        const uniqueFilteredDocs = (Array.isArray(availableDocuments) ? availableDocuments : []).filter(doc => {
+            if (!doc || !doc.document_number) return false;
+            const docNoClean = String(doc.document_number).trim();
+            const docNoLower = docNoClean.toLowerCase();
+
+            if (!docNoClean) return false;
+            if (seenDocNumbers.has(docNoLower)) return false;
+            seenDocNumbers.add(docNoLower);
+
+            // មិនបង្ហាញលេខដែលបានបញ្ចូលរួចក្នុងតារាងប្រព័ន្ធគយ លើកលែងតែលេខរបស់ record កំពុងកែប្រែ ឬលេខដែលកំពុងជ្រើស
+            const isCurrentlyEditingRef = editingId && String(currentSelectedValue).trim().toLowerCase() === docNoLower;
+            if (usedRefNumbers.has(docNoLower) && !isCurrentlyEditingRef) {
+                return false;
+            }
+
+            return true;
+        });
+
+        select.innerHTML = '<option value="">-- ជ្រើសរើសលេខឯកសារគយ --</option>';
+
+        uniqueFilteredDocs.forEach(doc => {
+            const option = document.createElement('option');
+            option.value = doc.document_number;
+            option.textContent = `${doc.document_number} (${doc.company_name || ''})`;
+            select.appendChild(option);
+        });
+
+        if (currentSelectedValue && Array.from(select.options).some(opt => opt.value === currentSelectedValue)) {
+            select.value = currentSelectedValue;
+        } else {
+            select.value = '';
+        }
+    }
+
+    async function loadDocumentDropdown(editingId = '') {
         try {
             const response = await fetch('/api/customs-documents');
             const docs = await response.json();
             availableDocuments = Array.isArray(docs) ? docs : [];
-            
-            const select = document.getElementById('reference_number');
-            if (!select) return;
-            
-            const currentSelectedVal = select.value;
-            select.innerHTML = '<option value="">-- ជ្រើសរើសលេខឯកសារគយ --</option>';
-            
-            // 🟢 ច្រោះយកតែលេខឯកសារយោងណាដែលមិនទាន់មានក្នុង Dropdown (កុំឱ្យបង្ហាញលេខស្ទួន)
-            const seenNumbers = new Set();
-
-            availableDocuments.forEach(doc => {
-                const docNum = (doc.document_number || '').trim();
-                if (docNum && !seenNumbers.has(docNum)) {
-                    seenNumbers.add(docNum);
-                    
-                    const option = document.createElement('option');
-                    option.value = docNum;
-                    option.textContent = `${docNum} (${doc.company_name || ''})`;
-                    select.appendChild(option);
-                }
-            });
-
-            if (currentSelectedVal) {
-                select.value = currentSelectedVal;
-            }
+            populateReferenceDropdown(editingId);
         } catch (err) {
             console.error('Error loading documents for dropdown:', err);
         }
@@ -511,15 +537,32 @@
     function onReferenceChange() {
         const refElem = document.getElementById('reference_number');
         const companyInput = document.getElementById('company_name');
+        const editIdElem = document.getElementById('editId');
         if (!refElem || !companyInput) return;
 
-        const selectedRefNo = refElem.value;
+        const selectedRefNo = refElem.value.trim();
         if (!selectedRefNo) {
             companyInput.value = '';
             return;
         }
 
-        const matchedDoc = availableDocuments.find(doc => doc.document_number === selectedRefNo);
+        const editingId = editIdElem ? editIdElem.value : '';
+        const isDuplicate = (Array.isArray(customsList) ? customsList : []).some(item =>
+            item.reference_number &&
+            String(item.reference_number).trim().toLowerCase() === selectedRefNo.toLowerCase() &&
+            String(item.id) !== String(editingId)
+        );
+
+        if (isDuplicate) {
+            alert('លេខឯកសារយោង / វិក្កយបត្រនេះ ត្រូវបានបញ្ចូលរួចហើយ (មិនអនុញ្ញាតឱ្យស្ទួនទេ)!');
+            refElem.value = '';
+            companyInput.value = '';
+            return;
+        }
+
+        const matchedDoc = availableDocuments.find(doc =>
+            doc.document_number && String(doc.document_number).trim() === selectedRefNo
+        );
         if (matchedDoc && matchedDoc.company_name) {
             companyInput.value = matchedDoc.company_name;
         } else {
@@ -533,6 +576,7 @@
             customsList = await response.json();
             renderTable(customsList);
             populateOfficeDropdown(customsList);
+            populateReferenceDropdown(document.getElementById('editId')?.value || '');
         } catch (err) {
             console.error('Error loading customs system data:', err);
             const tbody = document.getElementById('customsTableBody');
@@ -669,6 +713,7 @@
         if (entryDate) entryDate.value = new Date().toISOString().split('T')[0];
         const saveBtn = document.getElementById('saveBtn');
         if (saveBtn) saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យប្រព័ន្ធគយ`;
+        populateReferenceDropdown('');
     }
 
     const customsDataForm = document.getElementById('customsDataForm');
@@ -680,11 +725,26 @@
             const sysCodeElem = document.getElementById('sys_code');
             const pdfFileElem = document.getElementById('pdf_file');
             const manifestPdfFileElem = document.getElementById('manifest_pdf_file');
+            const refNumElem = document.getElementById('reference_number');
 
             const editId = editIdElem ? editIdElem.value : '';
             const sysCode = sysCodeElem ? sysCodeElem.value.trim() : '';
+            const refNumVal = refNumElem ? refNumElem.value.trim() : '';
             const pdfFile = pdfFileElem && pdfFileElem.files ? pdfFileElem.files[0] : null;
             const manifestPdfFile = manifestPdfFileElem && manifestPdfFileElem.files ? manifestPdfFileElem.files[0] : null;
+
+            // ពិនិត្យការពារលេខឯកសារយោងស្ទួនមុនពេលបញ្ជូនទៅ Server
+            if (refNumVal) {
+                const isDuplicate = (Array.isArray(customsList) ? customsList : []).some(item =>
+                    item.reference_number &&
+                    String(item.reference_number).trim().toLowerCase() === refNumVal.toLowerCase() &&
+                    String(item.id) !== String(editId)
+                );
+                if (isDuplicate) {
+                    alert('លេខឯកសារយោង / វិក្កយបត្រនេះ មានរួចហើយនៅក្នុងប្រព័ន្ធ! សូមជ្រើសរើសលេខផ្សេង។');
+                    return;
+                }
+            }
 
             if ((pdfFile && pdfFile.size > 10 * 1024 * 1024) || (manifestPdfFile && manifestPdfFile.size > 10 * 1024 * 1024)) {
                 alert('ឯកសារ PDF ធំពេក! សូមជ្រើសរើសឯកសារដែលមានទំហំទាបជាង 10MB។');
@@ -699,7 +759,6 @@
             const entryDateElem = document.getElementById('entry_date');
             const sysStatusElem = document.getElementById('system_status');
             const operatorElem = document.getElementById('operator_name');
-            const refNumElem = document.getElementById('reference_number');
             const officeElem = document.getElementById('customs_office');
             const remarksElem = document.getElementById('remarks');
 
@@ -708,7 +767,7 @@
             formData.append('entry_date', entryDateElem ? entryDateElem.value : '');
             formData.append('system_status', sysStatusElem ? sysStatusElem.value : '');
             formData.append('operator_name', operatorElem ? operatorElem.value : '');
-            formData.append('reference_number', refNumElem ? refNumElem.value : '');
+            formData.append('reference_number', refNumVal);
             formData.append('customs_office', officeElem ? officeElem.value : '');
             formData.append('remarks', remarksElem ? remarksElem.value : '');
 
@@ -738,8 +797,8 @@
                 if (response.ok && result.success) {
                     alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានចុះបញ្ជីទិន្នន័យប្រព័ន្ធគយថ្មីដោយជោគជ័យ!');
                     resetForm();
-                    loadDocumentDropdown();
-                    loadCustomsData();
+                    await loadCustomsData();
+                    await loadDocumentDropdown();
                     switchSection('table');
                 } else {
                     alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
@@ -771,7 +830,21 @@
 
         if (editId) editId.value = item.id;
         if (sysCode) sysCode.value = item.sys_code || '';
-        if (refNo) refNo.value = item.reference_number || '';
+
+        // ធ្វើបច្ចុប្បន្នភាពជម្រើសលេខឯកសារយោងដោយអនុញ្ញាតឱ្យបង្ហាញលេខរបស់ item កំពុងកែប្រែ ប៉ុន្តែត្រងលេខអ្នកដទៃមិនឱ្យស្ទួន
+        populateReferenceDropdown(item.id);
+
+        if (refNo) {
+            const targetRef = item.reference_number || '';
+            if (targetRef && !Array.from(refNo.options).some(opt => opt.value === targetRef)) {
+                const opt = document.createElement('option');
+                opt.value = targetRef;
+                opt.textContent = `${targetRef} (${item.company_name || ''})`;
+                refNo.appendChild(opt);
+            }
+            refNo.value = targetRef;
+        }
+
         if (companyName) companyName.value = item.company_name;
         if (txType) txType.value = item.transaction_type;
         if (entryDate) entryDate.value = item.entry_date ? item.entry_date.split('T')[0] : '';
