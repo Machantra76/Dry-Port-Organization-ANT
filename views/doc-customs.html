@@ -450,7 +450,7 @@
     });
 
     // មុខងារប្តូរទិដ្ឋភាពរវាង Form និង Table
-    function switchSection(section) {
+    function switchSection(section, skipDropdownReload = false) {
         const formSection = document.getElementById('formSection');
         const tableSection = document.getElementById('tableSection');
         const btnShowTable = document.getElementById('btnShowTable');
@@ -469,7 +469,9 @@
             formSection.style.display = 'block';
             if (btnShowForm) btnShowForm.style.display = 'none';
             if (btnShowTable) btnShowTable.style.display = 'inline-flex';
-            loadDocumentDropdown();
+            if (!skipDropdownReload) {
+                loadDocumentDropdown();
+            }
         }
     }
 
@@ -491,7 +493,7 @@
         });
     }
 
-    async function loadDocumentDropdown(preserveRefNo = '') {
+    async function loadDocumentDropdown(preserveRefNo = '', explicitEditId = null) {
         try {
             const response = await fetch('/api/customs-documents');
             const docs = await response.json();
@@ -501,14 +503,14 @@
             if (!select) return;
 
             const editIdElem = document.getElementById('editId');
-            const currentEditId = editIdElem ? editIdElem.value : '';
+            const currentEditId = explicitEditId !== null ? String(explicitEditId) : (editIdElem ? String(editIdElem.value) : '');
             const currentSelectedValue = preserveRefNo || select.value;
             const normCurrentSelected = normalizeRef(currentSelectedValue);
 
             // យកលេខសុទ្ធដែលបានប្រើរួច (លើកលែងតែ record ដែលកំពុងកែប្រែ)
             const usedRefSet = new Set(
                 customsList
-                    .filter(item => !currentEditId || String(item.id) !== String(currentEditId))
+                    .filter(item => !currentEditId || String(item.id) !== currentEditId)
                     .map(item => normalizeRef(item.reference_number))
                     .filter(Boolean)
             );
@@ -543,7 +545,7 @@
 
             // បើលេខយោងដើមរបស់ record ដែលកំពុងកែប្រែ មិនមានក្នុង /api/customs-documents ទេ ក៏បន្ថែមវាចូលដើម្បីកុំឱ្យបាត់ពេលកែប្រែ
             if (currentSelectedValue && !matchedOptionValue) {
-                const editingItem = customsList.find(d => String(d.id) === String(currentEditId));
+                const editingItem = customsList.find(d => String(d.id) === currentEditId);
                 const option = document.createElement('option');
                 option.value = currentSelectedValue;
                 option.textContent = editingItem && editingItem.company_name
@@ -577,8 +579,9 @@
 
         if (isReferenceDuplicate(selectedRefNo, currentEditId)) {
             alert('លេខយោង / ឯកសារនេះមានលេខស្ទួនគ្នា (ទោះខុសអក្សរក៏ដោយ) នៅក្នុងបញ្ជីរួចហើយ! សូមជ្រើសរើសលេខផ្សេង។');
-            refElem.value = '';
-            companyInput.value = '';
+            const prevItem = currentEditId ? customsList.find(d => String(d.id) === String(currentEditId)) : null;
+            refElem.value = prevItem && prevItem.reference_number ? prevItem.reference_number : '';
+            companyInput.value = prevItem && prevItem.company_name ? prevItem.company_name : '';
             return;
         }
 
@@ -733,7 +736,7 @@
         if (entryDate) entryDate.value = new Date().toISOString().split('T')[0];
         const saveBtn = document.getElementById('saveBtn');
         if (saveBtn) saveBtn.innerHTML = `<i class="fa-solid fa-floppy-disk me-2"></i> រក្សាទុកទិន្នន័យប្រព័ន្ធគយ`;
-        loadDocumentDropdown('');
+        loadDocumentDropdown('', '');
     }
 
     const customsDataForm = document.getElementById('customsDataForm');
@@ -815,7 +818,7 @@
                     alert(editId ? 'បានកែប្រែទិន្នន័យដោយជោគជ័យ!' : 'បានចុះបញ្ជីទិន្នន័យប្រព័ន្ធគយថ្មីដោយជោគជ័យ!');
                     resetForm();
                     await loadCustomsData();
-                    await loadDocumentDropdown('');
+                    await loadDocumentDropdown('', '');
                     switchSection('table');
                 } else {
                     alert('បរាជ័យ៖ ' + (result.error || 'សូមពិនិត្យទិន្នន័យឡើងវិញ'));
@@ -831,12 +834,12 @@
         const item = customsList.find(d => String(d.id) === String(id));
         if (!item) return;
 
-        switchSection('form');
-
         const editId = document.getElementById('editId');
         if (editId) editId.value = item.id;
 
-        await loadDocumentDropdown(item.reference_number || '');
+        switchSection('form', true);
+
+        await loadDocumentDropdown(item.reference_number || '', item.id);
 
         const sysCode = document.getElementById('sys_code');
         const refNo = document.getElementById('reference_number');
@@ -850,7 +853,12 @@
         const saveBtn = document.getElementById('saveBtn');
 
         if (sysCode) sysCode.value = item.sys_code || '';
-        if (refNo && item.reference_number) refNo.value = item.reference_number;
+        if (refNo && item.reference_number) {
+            const matchingOption = Array.from(refNo.options).find(
+                opt => normalizeRef(opt.value) === normalizeRef(item.reference_number)
+            );
+            refNo.value = matchingOption ? matchingOption.value : item.reference_number;
+        }
         if (companyName) companyName.value = item.company_name || '';
         if (txType) txType.value = item.transaction_type || '';
         if (entryDate) entryDate.value = item.entry_date ? item.entry_date.split('T')[0] : '';
