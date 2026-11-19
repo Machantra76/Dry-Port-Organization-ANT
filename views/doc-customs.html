@@ -480,17 +480,22 @@
         return String(val || '').replace(/\D+/g, '');
     }
 
-    // ពិនិត្យថាតើ លេខយោង / ឯកសារ ត្រូវបានប្រើរួចហើយឬនៅក្នុង customsList (ផ្អែកលើលេខសុទ្ធ)
-    function isReferenceDuplicate(refNo, excludeEditId = '') {
+    // ស្វែងរក record ដែលមានលេខយោង/តួលេខសុទ្ធស្ទួនគ្នា (លើកលែងតែ record ដែលកំពុង Edit)
+    function findDuplicateReferenceItem(refNo, excludeEditId = '') {
         const normalizedRef = normalizeRef(refNo);
-        if (!normalizedRef) return false;
+        if (!normalizedRef) return null;
 
-        return customsList.some(item => {
-            if (excludeEditId && String(item.id) === String(excludeEditId)) {
+        return customsList.find(item => {
+            if (excludeEditId !== '' && excludeEditId !== null && String(item.id) === String(excludeEditId)) {
                 return false;
             }
             return normalizeRef(item.reference_number) === normalizedRef;
-        });
+        }) || null;
+    }
+
+    // ពិនិត្យថាតើ លេខយោង / ឯកសារ ត្រូវបានប្រើរួចហើយឬនៅក្នុង customsList (ផ្អែកលើលេខសុទ្ធ)
+    function isReferenceDuplicate(refNo, excludeEditId = '') {
+        return Boolean(findDuplicateReferenceItem(refNo, excludeEditId));
     }
 
     async function loadDocumentDropdown(preserveRefNo = '', explicitEditId = null) {
@@ -577,8 +582,9 @@
             return;
         }
 
-        if (isReferenceDuplicate(selectedRefNo, currentEditId)) {
-            alert('លេខយោង / ឯកសារនេះមានលេខស្ទួនគ្នា (ទោះខុសអក្សរក៏ដោយ) នៅក្នុងបញ្ជីរួចហើយ! សូមជ្រើសរើសលេខផ្សេង។');
+        const dupItem = findDuplicateReferenceItem(selectedRefNo, currentEditId);
+        if (dupItem) {
+            alert('លេខយោង / ឯកសារនេះមានលេខស្ទួនគ្នា (' + normalizeRef(selectedRefNo) + ') ជាមួយលេខ "' + (dupItem.reference_number || '') + '" រួចហើយ! សូមជ្រើសរើសលេខផ្សេង។');
             const prevItem = currentEditId ? customsList.find(d => String(d.id) === String(currentEditId)) : null;
             refElem.value = prevItem && prevItem.reference_number ? prevItem.reference_number : '';
             companyInput.value = prevItem && prevItem.company_name ? prevItem.company_name : '';
@@ -761,8 +767,9 @@
                 return;
             }
 
-            if (isReferenceDuplicate(refNum, editId)) {
-                alert('មិនអាចរក្សាទុកបានទេ! លេខយោង / ឯកសារ "' + refNum + '" មានលេខស្ទួន (' + normalizeRef(refNum) + ') រួចហើយ។');
+            const dupItem = findDuplicateReferenceItem(refNum, editId);
+            if (dupItem) {
+                alert('មិនអាចរក្សាទុកបានទេ! លេខយោង / ឯកសារ "' + refNum + '" មានលេខស្ទួន (' + normalizeRef(refNum) + ') ជាមួយលេខ "' + (dupItem.reference_number || '') + '" រួចហើយ។');
                 return;
             }
 
