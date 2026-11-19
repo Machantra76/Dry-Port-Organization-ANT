@@ -26,32 +26,55 @@
             --border-color: #e2e8f0;
         }
 
-        body {
-            font-family: 'Kantumruy Pro', sans-serif;
-            background-color: #0f172a;
-            color: var(--text-main);
+        html, body {
             margin: 0;
             padding: 0;
+            min-height: 100vh;
+            background-color: #0f172a;
+        }
+
+        body {
+            font-family: 'Kantumruy Pro', sans-serif;
+            color: var(--text-main);
             min-height: 100vh;
             position: relative;
             overflow-x: hidden;
         }
 
-        /* 🔒 ចាក់សោរ Background ឱ្យនៅនឹងថ្កល់ មិន Zoom In / Zoom Out ពេល Dropdown បើក-បិទ */
+        /* 🔒 ចាក់សោរ Background ឱ្យនៅនឹងថ្កល់ កាត់បន្ថយការលោតបិទបើកពេលត្រឡប់ចូលទំព័រដើម */
         body::before {
             content: '';
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100lvh;
-            background: linear-gradient(rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0.45)), url('/views/bg.jpg') no-repeat center center;
+            height: 100vh;
+            background: url('/views/bg.jpg') no-repeat center center;
             background-size: cover;
             -webkit-background-size: cover;
+            z-index: -2;
+            pointer-events: none;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            transform: translate3d(0, 0, 0);
+            -webkit-transform: translate3d(0, 0, 0);
+        }
+
+        /* ស្រទាប់ស្រមោលងងឹតដាច់ដោយឡែក ដើម្បីកុំឱ្យរូបភាព Repaint ញឹកញាប់ */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(15, 23, 42, 0.45);
             z-index: -1;
             pointer-events: none;
-            transform: translateZ(0);
-            -webkit-transform: translateZ(0);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            transform: translate3d(0, 0, 0);
+            -webkit-transform: translate3d(0, 0, 0);
         }
 
         header {
@@ -645,7 +668,7 @@
             { id: "BONDED_WH", name: "ផ្នែកឃ្លាំងទំនិញពន្ធដារ (BWH)", roles: ["ការគ្រប់គ្រងទំនិញចូល-ចេញ ក្នុងឃ្លាំងពន្ធដារ (BWH In/Out)", "ការត្រួតពិនិត្យស្តុកទំនិញមិនទាន់បង់ពន្ធ", "ការគ្រប់គ្រងឯកសារ និងលិខិតអនុញ្ញាតគយ"] }
         ];
 
-        document.addEventListener('DOMContentLoaded', () => {
+        function initAppUI() {
             const loggedUser = JSON.parse(sessionStorage.getItem('ant_logged_user_info') || localStorage.getItem('ant_logged_user_info'));
             if (loggedUser) {
                 document.getElementById('authModal').style.display = 'none';
@@ -657,6 +680,14 @@
                     document.getElementById('btnManageUsers').style.display = 'inline-block';
                 }
                 renderDashboard(loggedUser);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initAppUI);
+
+        window.addEventListener('pageshow', (event) => {
+            if (event.persisted) {
+                initAppUI();
             }
         });
 
