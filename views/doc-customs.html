@@ -473,11 +473,12 @@
         }
     }
 
+    // ចាប់យកតែតួលេខសុទ្ធ (0-9) ពីលេខយោង / ឯកសារ ដោយមិនខ្វល់ពីអក្សរ ឬសញ្ញា
     function normalizeRef(val) {
-        return (val || '').trim().toLowerCase();
+        return String(val || '').replace(/\D+/g, '');
     }
 
-    // ពិនិត្យថាតើ លេខយោង / ឯកសារ ត្រូវបានប្រើរួចហើយឬនៅក្នុង customsList
+    // ពិនិត្យថាតើ លេខយោង / ឯកសារ ត្រូវបានប្រើរួចហើយឬនៅក្នុង customsList (ផ្អែកលើលេខសុទ្ធ)
     function isReferenceDuplicate(refNo, excludeEditId = '') {
         const normalizedRef = normalizeRef(refNo);
         if (!normalizedRef) return false;
@@ -504,7 +505,7 @@
             const currentSelectedValue = preserveRefNo || select.value;
             const normCurrentSelected = normalizeRef(currentSelectedValue);
 
-            // យកលេខយោងដែលបានប្រើរួច (លើកលែងតែ record ដែលកំពុងកែប្រែ)
+            // យកលេខសុទ្ធដែលបានប្រើរួច (លើកលែងតែ record ដែលកំពុងកែប្រែ)
             const usedRefSet = new Set(
                 customsList
                     .filter(item => !currentEditId || String(item.id) !== String(currentEditId))
@@ -512,12 +513,12 @@
                     .filter(Boolean)
             );
 
-            // លុបឯកសារស្ទួនពី API (បើមាន) និងត្រងចេញលេខយោងដែលបានប្រើរួច
+            // លុបឯកសារដែលមានលេខសុទ្ធស្ទួនគ្នាពី API និងត្រងចេញលេខសុទ្ធដែលបានប្រើរួច
             const seenApiRefSet = new Set();
             const filteredDocs = availableDocuments.filter(doc => {
-                const docRef = (doc.document_number || '').trim();
+                const docRef = String(doc.document_number || '').trim();
                 const normRef = normalizeRef(docRef);
-                if (!docRef) return false;
+                if (!normRef) return false;
                 if (seenApiRefSet.has(normRef)) return false;
                 seenApiRefSet.add(normRef);
 
@@ -575,7 +576,7 @@
         }
 
         if (isReferenceDuplicate(selectedRefNo, currentEditId)) {
-            alert('លេខយោង / ឯកសារនេះមានរួចហើយនៅក្នុងបញ្ជី! សូមជ្រើសរើសលេខយោងផ្សេងទៀតដែលមិនស្ទួន។');
+            alert('លេខយោង / ឯកសារនេះមានលេខស្ទួនគ្នា (ទោះខុសអក្សរក៏ដោយ) នៅក្នុងបញ្ជីរួចហើយ! សូមជ្រើសរើសលេខផ្សេង។');
             refElem.value = '';
             companyInput.value = '';
             return;
@@ -758,7 +759,7 @@
             }
 
             if (isReferenceDuplicate(refNum, editId)) {
-                alert('មិនអាចរក្សាទុកបានទេ! លេខយោង / ឯកសារ "' + refNum + '" មានរួចហើយកុំឱ្យស្ទួន។');
+                alert('មិនអាចរក្សាទុកបានទេ! លេខយោង / ឯកសារ "' + refNum + '" មានលេខស្ទួន (' + normalizeRef(refNum) + ') រួចហើយ។');
                 return;
             }
 
